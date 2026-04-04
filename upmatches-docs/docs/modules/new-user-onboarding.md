@@ -188,4 +188,4 @@ sequenceDiagram
 - The client must call `GET /api/v1/me` on every cold start — never cache onboarding state locally, as it may be reset server-side.
 - Profile completion is a single atomic operation, not a multi-step flow. All required fields (`name`, `contactMethod`, `skillLevel`) must be submitted together.
 - At least one contact method with a valid name (`whatsapp`, `telegram`, or `messenger`) and a non-blank value is required.
-- After completion, profile updates are done via `PUT /api/v1/me` (see [User Profile](./user-profile.md) documentation).
+- After completion, profile updates are done via `PUT /api/v1/me`.
