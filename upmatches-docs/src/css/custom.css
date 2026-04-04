@@ -28,3 +28,8 @@
   --ifm-color-primary-lightest: #f4848d;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+.attention {
+  color: red;
+  font-weight: bold;
+}
