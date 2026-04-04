@@ -15,7 +15,7 @@ New users must complete a one-time profile completion step before accessing the 
 |----------------|-------------------------------|----------------------------------------------------------------------------|---------|
 | `name`         | `string`                      | <span class="attention">Required</span>, non-blank, max 200 characters                                    | |
 | `contactMethod`| `array` of `ContactMethodDto` | <span class="attention">At least one</span> valid contact method (`whatsapp`, `telegram`, or `messenger`) | |
-| `skillLevel`   | `integer`                     | <span class="attention">Required</span>, non-null                                                         | See [Badminton levels](/docs/sports/badminton#skill-levels) |
+| `skillLevel`   | `integer`                     | <span class="attention">Required</span>, non-null                                                         | See [Badminton levels](/docs/sports/badminton/skill-levels) |
 
 ### ContactMethodDto
 
