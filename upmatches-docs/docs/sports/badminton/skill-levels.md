@@ -1,11 +1,9 @@
 ---
-title: Badminton
+title: Skill Levels
 sidebar_position: 1
 ---
 
-# Badminton
-
-## Skill Levels
+# Skill Levels
 
 Badminton uses a 7-level skill rating system. The `skillLevel` field in the API is an integer (`1`–`7`).
 
