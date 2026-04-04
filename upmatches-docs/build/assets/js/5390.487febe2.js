@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkupmatches_docs=globalThis.webpackChunkupmatches_docs||[]).push([[5390],{5390(c,e,s){s.d(e,{createArchitectureServices:()=>a.S});var a=s(5530);s(2519)}}]);
