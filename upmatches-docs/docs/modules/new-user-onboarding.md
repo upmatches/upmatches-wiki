@@ -1,84 +1,136 @@
 ---
-title: New User Onboarding
-sidebar_position: 1
+title: Onboarding
+sidebar_position: 2
 ---
 
-# New User Onboarding
+# Onboarding
 
 ## Overview
 
-New users must complete a mandatory 3-step onboarding flow before accessing the main application. The flow captures essential profile information and is resumable across sessions.
+New users must complete a one-time profile completion step before accessing the main application. The client checks onboarding status on every app launch via `GET /api/v1/me` and redirects incomplete users to the onboarding screen.
 
-## Onboarding Steps
+## Profile Fields
 
-| Step | Screen          | Fields Collected                       | Validation                                      |
-|------|-----------------|----------------------------------------|--------------------------------------------------|
-| 1    | Name            | `first_name`, `last_name`              | Required, 1–50 characters each                   |
-| 2    | Skill Level     | `skill_level` (`beginner` / `intermediate` / `advanced`) | Required, must be one of the enum values |
-| 3    | Contact Details | `email`, `phone` (optional)            | `email`: valid format, `phone`: E.164 if present |
+| Field          | Type                          | Validation                                                                 | Remarks |
+|----------------|-------------------------------|----------------------------------------------------------------------------|---------|
+| `name`         | `string`                      | <span class="attention">Required</span>, non-blank, max 200 characters                                    | |
+| `contactMethod`| `array` of `ContactMethodDto` | <span class="attention">At least one</span> valid contact method (`whatsapp`, `telegram`, or `messenger`) | |
+| `skillLevel`   | `integer`                     | <span class="attention">Required</span>, non-null                                                         | See [Badminton levels](/docs/sports/badminton#skill-levels) |
 
-Each step is persisted server-side on submission so the user can resume from where they left off.
+### ContactMethodDto
+
+| Field   | Type     | Description                                           |
+|---------|----------|-------------------------------------------------------|
+| `name`  | `string` | One of `whatsapp`, `telegram`, `messenger`            |
+| `value` | `string` | The contact handle or number; must be non-blank       |
 
 ## API Contract
 
+All endpoints are under `/api/v1/me` and require a valid JWT. Responses are wrapped in a standard `ApiResponse` envelope:
+
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": "...",
+  "timestamp": "2026-04-04T12:00:00Z",
+  "path": "/api/v1/me"
+}
+```
+
 ### `GET /api/v1/me`
 
-Called on every app launch. Returns the current user profile and onboarding state.
+Returns the current user profile and onboarding state. Called on every app launch.
+
+**cURL**
+
+```bash
+curl -X GET http://localhost:8080/api/v1/me \
+  -H "Authorization: Bearer <TOKEN>"
+```
 
 **Response `200 OK`**
 
 ```json
 {
-  "id": "usr_abc123",
-  "onboarding_completed": false,
-  "onboarding_step": 2,
-  "profile": {
-    "first_name": "Jane",
-    "last_name": "Doe",
-    "skill_level": null,
-    "email": null,
-    "phone": null
-  }
+  "success": true,
+  "data": {
+    "userId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+    "authProvider": "auth0",
+    "providerUuid": "auth0|abc123",
+    "name": null,
+    "contactMethod": [],
+    "skillLevel": null,
+    "hasCompletedOnboarding": false
+  },
+  "message": "User profile retrieved successfully.",
+  "timestamp": "2026-04-04T12:00:00Z",
+  "path": "/api/v1/me"
 }
 ```
 
-- `onboarding_completed: false` — the client must redirect to step `onboarding_step`.
-- `onboarding_completed: true` — proceed to the main app.
+- `hasCompletedOnboarding: false` — redirect to the onboarding screen.
+- `hasCompletedOnboarding: true` — proceed to the main app.
 
 ### `POST /api/v1/me`
 
-Submits profile data. Called once per step, and a final time to mark onboarding as complete.
+Completes the user profile. This is a one-time operation — calling it again after onboarding is complete returns `409 Conflict`.
 
-**Request body (step submission)**
+**cURL**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/me \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Jane Doe",
+    "contactMethod": [
+      { "name": "whatsapp", "value": "+6591234567" },
+      { "name": "telegram", "value": "@janedoe" }
+    ],
+    "skillLevel": 3
+  }'
+```
+
+**Request body**
 
 ```json
 {
-  "onboarding_step": 2,
-  "profile": {
-    "skill_level": "intermediate"
-  }
+  "name": "Jane Doe",
+  "contactMethod": [
+    { "name": "whatsapp", "value": "+6591234567" },
+    { "name": "telegram", "value": "@janedoe" }
+  ],
+  "skillLevel": 3
 }
 ```
 
-**Request body (finalize)**
+**Response `200 OK`**
 
 ```json
 {
-  "onboarding_step": 3,
-  "finalize": true,
-  "profile": {
-    "email": "jane@example.com",
-    "phone": "+6591234567"
-  }
+  "success": true,
+  "data": {
+    "userId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+    "authProvider": "auth0",
+    "providerUuid": "auth0|abc123",
+    "name": "Jane Doe",
+    "contactMethod": [
+      { "name": "whatsapp", "value": "+6591234567" },
+      { "name": "telegram", "value": "@janedoe" }
+    ],
+    "skillLevel": 3,
+    "hasCompletedOnboarding": true
+  },
+  "message": "User profile completed successfully.",
+  "timestamp": "2026-04-04T12:00:00Z",
+  "path": "/api/v1/me"
 }
 ```
-
-- When `finalize: true` is included and all required fields are present, the server sets `onboarding_completed` to `true`.
-- Returns `422 Unprocessable Entity` if required fields for the current step are missing or invalid.
 
 ## Sequence Diagram
 
-### Happy Path (new user, no prior session)
+### Happy Path
 
 ```mermaid
 sequenceDiagram
@@ -86,24 +138,16 @@ sequenceDiagram
     participant API as API Server
 
     Client->>API: GET /api/v1/me
-    API-->>Client: 200 { onboarding_completed: false, onboarding_step: 1 }
+    API-->>Client: 200 { hasCompletedOnboarding: false }
 
-    Note over Client: Show Step 1 — Name
-    Client->>API: POST /api/v1/me { onboarding_step: 1, profile: { first_name, last_name } }
-    API-->>Client: 200 { onboarding_step: 2 }
-
-    Note over Client: Show Step 2 — Skill Level
-    Client->>API: POST /api/v1/me { onboarding_step: 2, profile: { skill_level } }
-    API-->>Client: 200 { onboarding_step: 3 }
-
-    Note over Client: Show Step 3 — Contact Details
-    Client->>API: POST /api/v1/me { onboarding_step: 3, finalize: true, profile: { email, phone } }
-    API-->>Client: 200 { onboarding_completed: true }
+    Note over Client: Show onboarding screen
+    Client->>API: POST /api/v1/me { name, contactMethod, skillLevel }
+    API-->>Client: 200 { hasCompletedOnboarding: true }
 
     Note over Client: Redirect to main app
 ```
 
-### Session Resumption (returning user, partially completed)
+### Already Completed
 
 ```mermaid
 sequenceDiagram
@@ -111,30 +155,37 @@ sequenceDiagram
     participant API as API Server
 
     Client->>API: GET /api/v1/me
-    API-->>Client: 200 { onboarding_completed: false, onboarding_step: 2 }
+    API-->>Client: 200 { hasCompletedOnboarding: true }
 
-    Note over Client: Skip Step 1, show Step 2 — Skill Level
-    Client->>API: POST /api/v1/me { onboarding_step: 2, profile: { skill_level } }
-    API-->>Client: 200 { onboarding_step: 3 }
+    Note over Client: Proceed to main app
+```
 
-    Note over Client: Show Step 3 — Contact Details
-    Client->>API: POST /api/v1/me { onboarding_step: 3, finalize: true, profile: { email, phone } }
-    API-->>Client: 200 { onboarding_completed: true }
+### Duplicate Completion Attempt
 
-    Note over Client: Redirect to main app
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as API Server
+
+    Client->>API: POST /api/v1/me { name, contactMethod, skillLevel }
+    API-->>Client: 409 { PROFILE_ALREADY_COMPLETED }
+
+    Note over Client: Show error or redirect to main app
 ```
 
 ## Error Handling
 
-| Scenario                         | HTTP Status | Client Behavior                          |
-|----------------------------------|-------------|------------------------------------------|
-| Missing required fields          | `422`       | Highlight invalid fields, stay on step   |
-| Auth token expired               | `401`       | Redirect to login                        |
-| Server error                     | `500`       | Show retry prompt                        |
-| Network failure                  | —           | Show offline banner, retry on reconnect  |
+| Scenario                          | HTTP Status | Error Code                     | Client Behavior                         |
+|-----------------------------------|-------------|--------------------------------|-----------------------------------------|
+| Missing or invalid required fields| `400`       | Validation error               | Highlight invalid fields, stay on screen|
+| Profile already completed         | `409`       | `PROFILE_ALREADY_COMPLETED`    | Redirect to main app                    |
+| Auth token expired / missing      | `401`       | —                              | Redirect to login                       |
+| User not found                    | `404`       | —                              | Redirect to login                       |
+| Server error                      | `500`       | —                              | Show retry prompt                       |
 
 ## Implementation Notes
 
-- The client must call `GET /api/v1/me` on every cold start — never cache onboarding state locally, as an admin may reset it server-side.
-- Step data is saved incrementally; there is no "save all at once" step except when `finalize: true` is sent on the last step.
-- The `phone` field is optional but, if provided, must conform to E.164 format.
+- The client must call `GET /api/v1/me` on every cold start — never cache onboarding state locally, as it may be reset server-side.
+- Profile completion is a single atomic operation, not a multi-step flow. All required fields (`name`, `contactMethod`, `skillLevel`) must be submitted together.
+- At least one contact method with a valid name (`whatsapp`, `telegram`, or `messenger`) and a non-blank value is required.
+- After completion, profile updates are done via `PUT /api/v1/me` (see [User Profile](./user-profile.md) documentation).
