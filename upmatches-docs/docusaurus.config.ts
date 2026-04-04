@@ -11,7 +11,7 @@ const config: Config = {
     v4: true,
   },
 
-  url: 'https://your-docusaurus-site.example.com',
+  url: 'https://upmatches-wiki.netlify.app',
   baseUrl: '/',
 
   onBrokenLinks: 'throw',
@@ -61,7 +61,7 @@ const config: Config = {
           label: 'Docs',
         },
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/weehong/upmatches-wiki',
           label: 'GitHub',
           position: 'right',
         },
