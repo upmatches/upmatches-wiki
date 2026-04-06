@@ -9,17 +9,19 @@ All notable changes to this documentation are listed here, ordered by most recen
 
 | Date | Commit | Description |
 |------|--------|-------------|
-| 2025-05-24 | [`33ff956`](https://github.com/weehong/upmatches-wiki/commit/33ff956) | fix(docs): correct badminton skill levels link |
-| 2025-05-24 | [`ffccbac`](https://github.com/weehong/upmatches-wiki/commit/ffccbac) | docs: restructure badminton docs into category |
-| 2025-05-24 | [`0615031`](https://github.com/weehong/upmatches-wiki/commit/0615031) | docs: add algorithms sports rules and setup docs |
-| 2025-05-24 | [`55fe410`](https://github.com/weehong/upmatches-wiki/commit/55fe410) | docs: reorganize sidebar and fix broken links |
-| 2025-05-24 | [`0d4c78a`](https://github.com/weehong/upmatches-wiki/commit/0d4c78a) | docs(onboarding): rewrite user onboarding documentation |
-| 2025-05-24 | [`3ddaf56`](https://github.com/weehong/upmatches-wiki/commit/3ddaf56) | docs(auth): add authentication module documentation |
-| 2025-05-24 | [`6e35f4f`](https://github.com/weehong/upmatches-wiki/commit/6e35f4f) | docs(rules): add game rules section |
-| 2025-05-24 | [`33ab8cf`](https://github.com/weehong/upmatches-wiki/commit/33ab8cf) | docs(sports): add sports section with badminton levels |
-| 2025-05-24 | [`cbc5acd`](https://github.com/weehong/upmatches-wiki/commit/cbc5acd) | style(css): add attention class for highlighting |
-| 2025-05-24 | [`fdf5dae`](https://github.com/weehong/upmatches-wiki/commit/fdf5dae) | chore: add ai agent configuration files |
-| 2025-05-24 | [`2cff00b`](https://github.com/weehong/upmatches-wiki/commit/2cff00b) | docs(setup): add backend setup guide |
-| 2025-05-24 | [`97cbee8`](https://github.com/weehong/upmatches-wiki/commit/97cbee8) | chore: update repository metadata |
-| 2025-05-24 | [`eacc983`](https://github.com/weehong/upmatches-wiki/commit/eacc983) | feat(docs): add docusaurus documentation site |
-| 2025-05-24 | [`9895ad6`](https://github.com/weehong/upmatches-wiki/commit/9895ad6) | chore: initialize repository |
+| 2026-04-05 | [`ee6592e`](https://github.com/weehong/upmatches-wiki/commit/ee6592e) | docs: add venue module documentation |
+| 2026-04-05 | [`13fb79a`](https://github.com/weehong/upmatches-wiki/commit/13fb79a) | docs: add changelog and update claude.md |
+| 2026-04-05 | [`33ff956`](https://github.com/weehong/upmatches-wiki/commit/33ff956) | fix(docs): correct badminton skill levels link |
+| 2026-04-05 | [`ffccbac`](https://github.com/weehong/upmatches-wiki/commit/ffccbac) | docs: restructure badminton docs into category |
+| 2026-04-05 | [`0615031`](https://github.com/weehong/upmatches-wiki/commit/0615031) | docs: add algorithms sports rules and setup docs |
+| 2026-04-04 | [`55fe410`](https://github.com/weehong/upmatches-wiki/commit/55fe410) | docs: reorganize sidebar and fix broken links |
+| 2026-04-04 | [`0d4c78a`](https://github.com/weehong/upmatches-wiki/commit/0d4c78a) | docs(onboarding): rewrite user onboarding documentation |
+| 2026-04-04 | [`3ddaf56`](https://github.com/weehong/upmatches-wiki/commit/3ddaf56) | docs(auth): add authentication module documentation |
+| 2026-04-04 | [`6e35f4f`](https://github.com/weehong/upmatches-wiki/commit/6e35f4f) | docs(rules): add game rules section |
+| 2026-04-04 | [`33ab8cf`](https://github.com/weehong/upmatches-wiki/commit/33ab8cf) | docs(sports): add sports section with badminton levels |
+| 2026-04-04 | [`cbc5acd`](https://github.com/weehong/upmatches-wiki/commit/cbc5acd) | style(css): add attention class for highlighting |
+| 2026-04-04 | [`fdf5dae`](https://github.com/weehong/upmatches-wiki/commit/fdf5dae) | chore: add ai agent configuration files |
+| 2026-04-04 | [`2cff00b`](https://github.com/weehong/upmatches-wiki/commit/2cff00b) | docs(setup): add backend setup guide |
+| 2026-04-04 | [`97cbee8`](https://github.com/weehong/upmatches-wiki/commit/97cbee8) | chore: update repository metadata |
+| 2026-04-04 | [`eacc983`](https://github.com/weehong/upmatches-wiki/commit/eacc983) | feat(docs): add docusaurus documentation site |
+| 2026-04-04 | [`9895ad6`](https://github.com/weehong/upmatches-wiki/commit/9895ad6) | chore: initialize repository |

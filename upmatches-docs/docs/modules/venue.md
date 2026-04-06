@@ -49,7 +49,8 @@ Venues are linked to **activities** (e.g., Badminton), **stations** (nearby publ
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `long` | Auto-generated primary key |
+| `id` | `UUID` | Auto-generated primary key |
+| `referenceId` | `integer` | Auto-generated unique integer identifier (database-managed, read-only) |
 | `name` | `string` | Activity name, e.g. `Badminton` (unique, max 100 chars) |
 
 ## API Contract
@@ -87,7 +88,8 @@ curl -X GET http://localhost:8080/api/v1/venues \
       "id": 1,
       "sourceId": "SRC-001",
       "activity": {
-        "id": 10,
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "referenceId": 1,
         "name": "Badminton"
       },
       "name": "Clementi Sports Hall",
@@ -145,7 +147,7 @@ The JSON file must contain an array of venue objects:
 [
   {
     "sourceId": "SRC-001",
-    "activityId": 10,
+    "activityId": 1,
     "name": "Clementi Sports Hall",
     "address": "518 Clementi Ave 1",
     "postalCode": 129907,
@@ -169,7 +171,7 @@ The JSON file must contain an array of venue objects:
 | Field | Type | Validation |
 |-------|------|------------|
 | `sourceId` | `string` | <span class="attention">Required</span>, unique per venue |
-| `activityId` | `long` | <span class="attention">Required</span>, must reference an existing activity |
+| `activityId` | `integer` | <span class="attention">Required</span>, must match an existing activity's `referenceId` |
 | `name` | `string` | <span class="attention">Required</span> |
 | `address` | `string` | <span class="attention">Required</span> |
 | `postalCode` | `integer` | Formatted as 6-digit string with leading zeros |

@@ -15,7 +15,7 @@ New users must complete a one-time profile completion step before accessing the 
 |----------------|-------------------------------|----------------------------------------------------------------------------|---------|
 | `name`         | `string`                      | <span class="attention">Required</span>, non-blank, max 200 characters                                    | |
 | `contactMethod`| `array` of `ContactMethodDto` | <span class="attention">At least one</span> valid contact method (`whatsapp`, `telegram`, or `messenger`) | |
-| `skillLevel`   | `integer`                     | <span class="attention">Required</span>, non-null                                                         | See [Badminton levels](/docs/sports/badminton/skill-levels) |
+| `skillLevelId` | `long`                        | <span class="attention">Required</span>, non-null                                                         | ID from [`GET /api/v1/activities/{id}/skill-levels`](/docs/modules/activity#get-apiv1activitiesidskill-levels) |
 
 ### ContactMethodDto
 
@@ -88,7 +88,7 @@ curl -X POST http://localhost:8080/api/v1/me \
       { "name": "whatsapp", "value": "+6591234567" },
       { "name": "telegram", "value": "@janedoe" }
     ],
-    "skillLevel": 3
+    "skillLevelId": 3
   }'
 ```
 
@@ -101,7 +101,7 @@ curl -X POST http://localhost:8080/api/v1/me \
     { "name": "whatsapp", "value": "+6591234567" },
     { "name": "telegram", "value": "@janedoe" }
   ],
-  "skillLevel": 3
+  "skillLevelId": 3
 }
 ```
 
@@ -119,7 +119,11 @@ curl -X POST http://localhost:8080/api/v1/me \
       { "name": "whatsapp", "value": "+6591234567" },
       { "name": "telegram", "value": "@janedoe" }
     ],
-    "skillLevel": 3,
+    "skillLevel": {
+      "id": 3,
+      "name": "High Beginner",
+      "sortOrder": 3
+    },
     "hasCompletedOnboarding": true
   },
   "message": "User profile completed successfully.",
@@ -127,6 +131,86 @@ curl -X POST http://localhost:8080/api/v1/me \
   "path": "/api/v1/me"
 }
 ```
+
+### `PUT /api/v1/me`
+
+Updates the authenticated user's profile. This endpoint uses patch semantics — only provided (non-null) fields are updated; omitted fields are left unchanged.
+
+**cURL**
+
+```bash
+curl -X PUT http://localhost:8080/api/v1/me \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Updated",
+    "contactMethod": [
+      { "name": "whatsapp", "value": "+6587654321" }
+    ],
+    "skillLevelId": 5
+  }'
+```
+
+**Request body**
+
+```json
+{
+  "name": "John Updated",
+  "contactMethod": [
+    { "name": "whatsapp", "value": "+6587654321" }
+  ],
+  "skillLevelId": 5
+}
+```
+
+All fields are optional — only include the fields you want to update.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | Updated display name |
+| `contactMethod` | `array` of `ContactMethodDto` | Replaces all contact methods |
+| `skillLevelId` | `long` | Updated skill level ID |
+
+**Response `200 OK`**
+
+```json
+{
+  "success": true,
+  "data": {
+    "userId": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+    "authProvider": "auth0",
+    "providerUuid": "auth0|abc123",
+    "name": "John Updated",
+    "contactMethod": [
+      { "name": "whatsapp", "value": "+6587654321" }
+    ],
+    "skillLevel": {
+      "id": 5,
+      "name": "Middle Intermediate",
+      "sortOrder": 5
+    },
+    "hasCompletedOnboarding": true
+  },
+  "message": "User profile updated successfully.",
+  "timestamp": "2026-04-06T12:00:00Z",
+  "path": "/api/v1/me"
+}
+```
+
+### `DELETE /api/v1/me`
+
+Permanently deletes the authenticated user's account and all associated data. This action is irreversible.
+
+**cURL**
+
+```bash
+curl -X DELETE http://localhost:8080/api/v1/me \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+**Response `204 No Content`**
+
+No response body.
 
 ## Sequence Diagram
 
@@ -141,7 +225,7 @@ sequenceDiagram
     API-->>Client: 200 { hasCompletedOnboarding: false }
 
     Note over Client: Show onboarding screen
-    Client->>API: POST /api/v1/me { name, contactMethod, skillLevel }
+    Client->>API: POST /api/v1/me { name, contactMethod, skillLevelId }
     API-->>Client: 200 { hasCompletedOnboarding: true }
 
     Note over Client: Redirect to main app
@@ -167,7 +251,7 @@ sequenceDiagram
     participant Client
     participant API as API Server
 
-    Client->>API: POST /api/v1/me { name, contactMethod, skillLevel }
+    Client->>API: POST /api/v1/me { name, contactMethod, skillLevelId }
     API-->>Client: 409 { PROFILE_ALREADY_COMPLETED }
 
     Note over Client: Show error or redirect to main app
@@ -180,12 +264,13 @@ sequenceDiagram
 | Missing or invalid required fields| `400`       | Validation error               | Highlight invalid fields, stay on screen|
 | Profile already completed         | `409`       | `PROFILE_ALREADY_COMPLETED`    | Redirect to main app                    |
 | Auth token expired / missing      | `401`       | —                              | Redirect to login                       |
-| User not found                    | `404`       | —                              | Redirect to login                       |
+| User not found (any endpoint)     | `404`       | —                              | Redirect to login                       |
 | Server error                      | `500`       | —                              | Show retry prompt                       |
 
 ## Implementation Notes
 
 - The client must call `GET /api/v1/me` on every cold start — never cache onboarding state locally, as it may be reset server-side.
-- Profile completion is a single atomic operation, not a multi-step flow. All required fields (`name`, `contactMethod`, `skillLevel`) must be submitted together.
+- Profile completion is a single atomic operation, not a multi-step flow. All required fields (`name`, `contactMethod`, `skillLevelId`) must be submitted together.
 - At least one contact method with a valid name (`whatsapp`, `telegram`, or `messenger`) and a non-blank value is required.
-- After completion, profile updates are done via `PUT /api/v1/me`.
+- After completion, profile updates are done via `PUT /api/v1/me` (see API contract above). Only non-null fields are updated.
+- `DELETE /api/v1/me` permanently removes the user account — this action is irreversible.

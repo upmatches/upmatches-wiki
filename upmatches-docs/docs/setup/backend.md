@@ -174,9 +174,15 @@ Multiple origins can be separated with a semicolon (`;`).
 | `POST`   | `/api/v1/me`                  |      Yes      | Complete user profile (onboarding) |
 | `PUT`    | `/api/v1/me`                  |      Yes      | Update user profile                |
 | `DELETE` | `/api/v1/me`                  |      Yes      | Delete user account                |
-| `GET`    | `/api/v1/venues`              |      Yes      | Get all venues                     |
-| `POST`   | `/api/v1/venues/upload`       |      Yes      | Bulk import venues from JSON file  |
-| `GET`    | `/.well-known/jwks.json`      |      No       | Public signing keys (JWKS)         |
+| `GET`    | `/api/v1/activities`                    |      Yes      | Get all activities                          |
+| `GET`    | `/api/v1/activities/{id}`               |      Yes      | Get activity by ID                          |
+| `POST`   | `/api/v1/activities`                    |      Yes      | Create activity                             |
+| `PUT`    | `/api/v1/activities/{id}`               |      Yes      | Update activity                             |
+| `DELETE` | `/api/v1/activities/{id}`               |      Yes      | Delete activity                             |
+| `GET`    | `/api/v1/activities/{id}/skill-levels`  |      Yes      | Get skill levels for activity               |
+| `GET`    | `/api/v1/venues`                        |      Yes      | Get all venues                              |
+| `POST`   | `/api/v1/venues/upload`                 |      Yes      | Bulk import venues from JSON file           |
+| `GET`    | `/.well-known/jwks.json`                |      No       | Public signing keys (JWKS)                  |
 
 ### Auth flow (how login works)
 
