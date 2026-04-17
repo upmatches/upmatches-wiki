@@ -28,7 +28,7 @@ export default {
     },
     "experimental_router": "browser"
   },
-  "url": "https://your-docusaurus-site.example.com",
+  "url": "https://upmatches-wiki.netlify.app",
   "baseUrl": "/",
   "onBrokenLinks": "throw",
   "i18n": {
@@ -94,7 +94,7 @@ export default {
           "label": "Docs"
         },
         {
-          "href": "https://github.com/facebook/docusaurus",
+          "href": "https://github.com/weehong/upmatches-wiki",
           "label": "GitHub",
           "position": "right"
         }
@@ -320,13 +320,6 @@ export default {
         }
       ]
     },
-    "mermaid": {
-      "theme": {
-        "dark": "dark",
-        "light": "default"
-      },
-      "options": {}
-    },
     "docs": {
       "versionPersistence": "localStorage",
       "sidebar": {
@@ -343,6 +336,13 @@ export default {
     "tableOfContents": {
       "minHeadingLevel": 2,
       "maxHeadingLevel": 3
+    },
+    "mermaid": {
+      "theme": {
+        "dark": "dark",
+        "light": "default"
+      },
+      "options": {}
     }
   },
   "baseUrlIssueBanner": true,

@@ -9,6 +9,8 @@ All notable changes to this documentation are listed here, ordered by most recen
 
 | Date | Commit | Description |
 |------|--------|-------------|
+| 2026-04-14 | [`ebdbe6c`](https://github.com/weehong/upmatches-wiki/commit/ebdbe6c) | docs(rules): add game participation rules |
+| 2026-04-06 | [`3aa8470`](https://github.com/weehong/upmatches-wiki/commit/3aa8470) | docs: add activity module and update onboarding venue docs |
 | 2026-04-05 | [`ee6592e`](https://github.com/weehong/upmatches-wiki/commit/ee6592e) | docs: add venue module documentation |
 | 2026-04-05 | [`13fb79a`](https://github.com/weehong/upmatches-wiki/commit/13fb79a) | docs: add changelog and update claude.md |
 | 2026-04-05 | [`33ff956`](https://github.com/weehong/upmatches-wiki/commit/33ff956) | fix(docs): correct badminton skill levels link |

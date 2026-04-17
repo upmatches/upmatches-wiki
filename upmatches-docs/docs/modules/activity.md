@@ -7,9 +7,9 @@ sidebar_position: 4
 
 ## Overview
 
-The activity module manages sport and activity types (e.g., Badminton, Volleyball) that serve as lookup references for other modules such as [Venue](/docs/modules/venue). It provides standard CRUD operations for managing activities.
+The activity module manages sport and activity types (e.g., Badminton, Volleyball) that serve as lookup references for other modules such as [Venue](/docs/modules/venue), [Skill Levels](/docs/modules/skill-levels), and the per-activity skill selections captured during [Onboarding](/docs/modules/new-user-onboarding).
 
-Each activity has a database-generated `referenceId` — a stable integer identifier used for cross-referencing.
+Each activity has a database-generated `referenceId` — a stable integer identifier used for cross-referencing. Skill levels are scoped per activity, and users select at most one skill level per activity during onboarding.
 
 ## Data Model
 
@@ -123,7 +123,7 @@ curl -X POST http://localhost:8080/api/v1/activities \
 |-------|------|------------|
 | `name` | `string` | <span class="attention">Required</span>, non-blank, unique |
 
-**Response `200 OK`**
+**Response `201 Created`**
 
 ```json
 {
@@ -197,64 +197,9 @@ curl -X DELETE http://localhost:8080/api/v1/activities/550e8400-e29b-41d4-a716-4
 
 No response body.
 
-### `GET /api/v1/activities/{id}/skill-levels`
+### Skill levels for an activity
 
-Returns the skill levels defined for a specific activity, ordered by `sortOrder`.
-
-**cURL**
-
-```bash
-curl -X GET http://localhost:8080/api/v1/activities/550e8400-e29b-41d4-a716-446655440000/skill-levels \
-  -H "Authorization: Bearer <TOKEN>"
-```
-
-**Response `200 OK`**
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "name": "Beginner",
-      "sortOrder": 1
-    },
-    {
-      "id": 2,
-      "name": "Middle Beginner",
-      "sortOrder": 2
-    },
-    {
-      "id": 3,
-      "name": "High Beginner",
-      "sortOrder": 3
-    },
-    {
-      "id": 4,
-      "name": "Low Intermediate",
-      "sortOrder": 4
-    },
-    {
-      "id": 5,
-      "name": "Middle Intermediate",
-      "sortOrder": 5
-    },
-    {
-      "id": 6,
-      "name": "High Intermediate",
-      "sortOrder": 6
-    },
-    {
-      "id": 7,
-      "name": "Expert",
-      "sortOrder": 7
-    }
-  ],
-  "message": "Skill levels retrieved successfully.",
-  "timestamp": "2026-04-06T12:00:00Z",
-  "path": "/api/v1/activities/550e8400-e29b-41d4-a716-446655440000/skill-levels"
-}
-```
+Skill levels are served by a dedicated module — see [`GET /api/v1/skill-levels?activity_id=...`](/docs/modules/skill-levels).
 
 ## Error Handling
 

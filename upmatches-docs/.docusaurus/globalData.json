@@ -8,11 +8,91 @@
           "label": "Next",
           "isLast": true,
           "path": "/docs",
-          "mainDocId": "modules/new-user-onboarding",
+          "mainDocId": "changelog",
           "docs": [
+            {
+              "id": "algorithms/skill-adjustment",
+              "path": "/docs/algorithms/skill-adjustment",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/withdrawal-penalty",
+              "path": "/docs/algorithms/withdrawal-penalty",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "api/overview",
+              "path": "/docs/api/overview",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "changelog",
+              "path": "/docs/changelog",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "modules/activity",
+              "path": "/docs/modules/activity",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "modules/authentication",
+              "path": "/docs/modules/authentication",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "modules/game",
+              "path": "/docs/modules/game",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "modules/health",
+              "path": "/docs/modules/health",
+              "sidebar": "docsSidebar"
+            },
             {
               "id": "modules/new-user-onboarding",
               "path": "/docs/modules/new-user-onboarding",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "modules/notification",
+              "path": "/docs/modules/notification",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "modules/share-link",
+              "path": "/docs/modules/share-link",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "modules/skill-levels",
+              "path": "/docs/modules/skill-levels",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "modules/venue",
+              "path": "/docs/modules/venue",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "rules/game-rules",
+              "path": "/docs/rules/game-rules",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "setup/backend",
+              "path": "/docs/setup/backend",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "sports/badminton/skill-levels",
+              "path": "/docs/sports/badminton/skill-levels",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "sports/badminton/venues",
+              "path": "/docs/sports/badminton/venues",
               "sidebar": "docsSidebar"
             }
           ],
@@ -20,8 +100,8 @@
           "sidebars": {
             "docsSidebar": {
               "link": {
-                "path": "/docs/modules/new-user-onboarding",
-                "label": "modules/new-user-onboarding"
+                "path": "/docs/changelog",
+                "label": "changelog"
               }
             }
           }

@@ -7,7 +7,9 @@ sidebar_position: 1
 
 ## Overview
 
-Upmatches uses OAuth 2.0 with PKCE for authentication, supporting two identity providers: **Singpass** and **Auth0**. After authentication, the server issues a short-lived access token and a long-lived refresh token.
+Upmatches uses OAuth 2.0 with PKCE for authentication, supporting two identity providers: **Singpass** (FAPI 2.0 with Pushed Authorisation Requests and DPoP) and **Auth0** (standard OAuth 2.0 with connection selection). After authentication, the server issues a short-lived access token and a long-lived refresh token.
+
+Tokens are accepted from either the `Authorization: Bearer` header (mobile / server-to-server) or the `access_token` HTTP cookie (web BFF) — the header is checked first.
 
 ## Token Expiry
 
@@ -109,6 +111,34 @@ curl -X POST http://localhost:8080/api/v1/auth/refresh \
 
 Tokens are set in HttpOnly cookies for web clients.
 
+### `GET /callback/singpass` and `GET /callback/auth0`
+
+Internal endpoints invoked by the identity provider at the end of the OAuth flow. They exchange the authorisation code for tokens, create or update the local user, and redirect the browser to `FRONTEND_CALLBACK_URL` (web) or a custom-scheme deep link using `MOBILE_CALLBACK_SCHEME` (mobile).
+
+For new users the redirect includes `?isNewUser=true` so the client can route into onboarding.
+
+### `GET /.well-known/jwks.json`
+
+Publishes the ES256 public keys used to verify access tokens issued by this service. Cache-friendly; no authentication.
+
+**Response `200 OK`**
+
+```json
+{
+  "keys": [
+    {
+      "kty": "EC",
+      "crv": "P-256",
+      "kid": "upmatches-2026-04",
+      "x": "...",
+      "y": "...",
+      "use": "sig",
+      "alg": "ES256"
+    }
+  ]
+}
+```
+
 ### `POST /api/v1/auth/logout`
 
 Logs out the user and revokes all refresh tokens.
@@ -125,6 +155,50 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 ```json
 {
   "message": "Logged out successfully."
+}
+```
+
+### `POST /api/v1/auth/dev/tokens`
+
+**Development-only.** Mints access and refresh tokens for an arbitrary `userId` without going through the OAuth flow. Intended for local testing, Bruno collections, and integration tests.
+
+Gated by:
+
+1. Active Spring profile is not `prod`.
+2. `app.auth.dev.mint-endpoint-enabled=true`.
+3. Request originates from `localhost` / `127.0.0.1` / `::1` (`Host` header is checked).
+
+Requests from any other host return `401 Unauthorized`.
+
+**cURL**
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/dev/tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+  }'
+```
+
+**Request body**
+
+| Field | Type | Validation |
+|---|---|---|
+| `userId` | `UUID` | <span class="attention">Required</span>, must reference an existing user |
+
+**Response `200 OK`**
+
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJ...",
+    "refreshToken": "new-base64-encoded-token",
+    "expiresAt": 1712234400
+  },
+  "message": "Dev token minted successfully.",
+  "timestamp": "2026-04-15T12:00:00Z",
+  "path": "/api/v1/auth/dev/tokens"
 }
 ```
 

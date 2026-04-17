@@ -11,11 +11,11 @@ New users must complete a one-time profile completion step before accessing the 
 
 ## Profile Fields
 
-| Field          | Type                          | Validation                                                                 | Remarks |
-|----------------|-------------------------------|----------------------------------------------------------------------------|---------|
-| `name`         | `string`                      | <span class="attention">Required</span>, non-blank, max 200 characters                                    | |
-| `contactMethod`| `array` of `ContactMethodDto` | <span class="attention">At least one</span> valid contact method (`whatsapp`, `telegram`, or `messenger`) | |
-| `skillLevelId` | `long`                        | <span class="attention">Required</span>, non-null                                                         | ID from [`GET /api/v1/activities/{id}/skill-levels`](/docs/modules/activity#get-apiv1activitiesidskill-levels) |
+| Field          | Type                              | Validation                                                                 | Remarks |
+|----------------|-----------------------------------|----------------------------------------------------------------------------|---------|
+| `name`         | `string`                          | <span class="attention">Required</span>, non-blank, max 200 characters                                    | |
+| `contactMethod`| `array` of `ContactMethodDto`     | <span class="attention">At least one</span> valid contact method (`whatsapp`, `telegram`, or `messenger`), max 10 entries | |
+| `skillLevels`  | `array` of `SkillLevelSelection`  | <span class="attention">Required</span>, non-null, max 50 entries; at most one entry per activity         | Each entry pairs an activity with the user's skill level for that activity |
 
 ### ContactMethodDto
 
@@ -23,6 +23,15 @@ New users must complete a one-time profile completion step before accessing the 
 |---------|----------|-------------------------------------------------------|
 | `name`  | `string` | One of `whatsapp`, `telegram`, `messenger`            |
 | `value` | `string` | The contact handle or number; must be non-blank       |
+
+### SkillLevelSelection
+
+| Field          | Type   | Description                                                                                   |
+|----------------|--------|-----------------------------------------------------------------------------------------------|
+| `activityId`   | `UUID` | The activity this selection applies to (see [Activity](/docs/modules/activity))               |
+| `skillLevelId` | `long` | A skill level from [`GET /api/v1/skill-levels?activity_id=...`](/docs/modules/skill-levels) that belongs to `activityId` |
+
+Only one skill level per activity is allowed. Listing the same `activityId` twice returns `409 Conflict` with error code `DUPLICATE_SKILL_LEVEL_ACTIVITY`.
 
 ## API Contract
 
@@ -60,7 +69,7 @@ curl -X GET http://localhost:8080/api/v1/me \
     "providerUuid": "auth0|abc123",
     "name": null,
     "contactMethod": [],
-    "skillLevel": null,
+    "skillLevels": [],
     "hasCompletedOnboarding": false
   },
   "message": "User profile retrieved successfully.",
@@ -88,7 +97,9 @@ curl -X POST http://localhost:8080/api/v1/me \
       { "name": "whatsapp", "value": "+6591234567" },
       { "name": "telegram", "value": "@janedoe" }
     ],
-    "skillLevelId": 3
+    "skillLevels": [
+      { "activityId": "550e8400-e29b-41d4-a716-446655440000", "skillLevelId": 3 }
+    ]
   }'
 ```
 
@@ -101,11 +112,13 @@ curl -X POST http://localhost:8080/api/v1/me \
     { "name": "whatsapp", "value": "+6591234567" },
     { "name": "telegram", "value": "@janedoe" }
   ],
-  "skillLevelId": 3
+  "skillLevels": [
+    { "activityId": "550e8400-e29b-41d4-a716-446655440000", "skillLevelId": 3 }
+  ]
 }
 ```
 
-**Response `200 OK`**
+**Response `201 Created`**
 
 ```json
 {
@@ -119,11 +132,9 @@ curl -X POST http://localhost:8080/api/v1/me \
       { "name": "whatsapp", "value": "+6591234567" },
       { "name": "telegram", "value": "@janedoe" }
     ],
-    "skillLevel": {
-      "id": 3,
-      "name": "High Beginner",
-      "sortOrder": 3
-    },
+    "skillLevels": [
+      { "id": 3, "name": "High Beginner", "sortOrder": 3 }
+    ],
     "hasCompletedOnboarding": true
   },
   "message": "User profile completed successfully.",
@@ -147,7 +158,9 @@ curl -X PUT http://localhost:8080/api/v1/me \
     "contactMethod": [
       { "name": "whatsapp", "value": "+6587654321" }
     ],
-    "skillLevelId": 5
+    "skillLevels": [
+      { "activityId": "550e8400-e29b-41d4-a716-446655440000", "skillLevelId": 5 }
+    ]
   }'
 ```
 
@@ -159,7 +172,9 @@ curl -X PUT http://localhost:8080/api/v1/me \
   "contactMethod": [
     { "name": "whatsapp", "value": "+6587654321" }
   ],
-  "skillLevelId": 5
+  "skillLevels": [
+    { "activityId": "550e8400-e29b-41d4-a716-446655440000", "skillLevelId": 5 }
+  ]
 }
 ```
 
@@ -167,9 +182,9 @@ All fields are optional — only include the fields you want to update.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | `string` | Updated display name |
-| `contactMethod` | `array` of `ContactMethodDto` | Replaces all contact methods |
-| `skillLevelId` | `long` | Updated skill level ID |
+| `name` | `string` | Updated display name (max 200 chars) |
+| `contactMethod` | `array` of `ContactMethodDto` | Replaces all contact methods (max 10 entries) |
+| `skillLevels` | `array` of `SkillLevelSelection` | Replaces all skill levels (max 50 entries; one per activity) |
 
 **Response `200 OK`**
 
@@ -184,11 +199,9 @@ All fields are optional — only include the fields you want to update.
     "contactMethod": [
       { "name": "whatsapp", "value": "+6587654321" }
     ],
-    "skillLevel": {
-      "id": 5,
-      "name": "Middle Intermediate",
-      "sortOrder": 5
-    },
+    "skillLevels": [
+      { "id": 5, "name": "Middle Intermediate", "sortOrder": 5 }
+    ],
     "hasCompletedOnboarding": true
   },
   "message": "User profile updated successfully.",
@@ -225,7 +238,7 @@ sequenceDiagram
     API-->>Client: 200 { hasCompletedOnboarding: false }
 
     Note over Client: Show onboarding screen
-    Client->>API: POST /api/v1/me { name, contactMethod, skillLevelId }
+    Client->>API: POST /api/v1/me { name, contactMethod, skillLevels }
     API-->>Client: 200 { hasCompletedOnboarding: true }
 
     Note over Client: Redirect to main app
@@ -251,7 +264,7 @@ sequenceDiagram
     participant Client
     participant API as API Server
 
-    Client->>API: POST /api/v1/me { name, contactMethod, skillLevelId }
+    Client->>API: POST /api/v1/me { name, contactMethod, skillLevels }
     API-->>Client: 409 { PROFILE_ALREADY_COMPLETED }
 
     Note over Client: Show error or redirect to main app
@@ -259,18 +272,21 @@ sequenceDiagram
 
 ## Error Handling
 
-| Scenario                          | HTTP Status | Error Code                     | Client Behavior                         |
-|-----------------------------------|-------------|--------------------------------|-----------------------------------------|
-| Missing or invalid required fields| `400`       | Validation error               | Highlight invalid fields, stay on screen|
-| Profile already completed         | `409`       | `PROFILE_ALREADY_COMPLETED`    | Redirect to main app                    |
-| Auth token expired / missing      | `401`       | —                              | Redirect to login                       |
-| User not found (any endpoint)     | `404`       | —                              | Redirect to login                       |
-| Server error                      | `500`       | —                              | Show retry prompt                       |
+| Scenario                          | HTTP Status | Error Code                          | Client Behavior                         |
+|-----------------------------------|-------------|-------------------------------------|-----------------------------------------|
+| Missing or invalid required fields| `400`       | Validation error                    | Highlight invalid fields, stay on screen|
+| Profile already completed         | `409`       | `PROFILE_ALREADY_COMPLETED`         | Redirect to main app                    |
+| Multiple skill levels for same activity | `409` | `DUPLICATE_SKILL_LEVEL_ACTIVITY`    | Collapse selections; only one per activity |
+| Skill level does not belong to its activity | `400` | Validation error              | Re-fetch the activity's skill levels    |
+| Auth token expired / missing      | `401`       | —                                   | Redirect to login                       |
+| User not found (any endpoint)     | `404`       | —                                   | Redirect to login                       |
+| Server error                      | `500`       | —                                   | Show retry prompt                       |
 
 ## Implementation Notes
 
 - The client must call `GET /api/v1/me` on every cold start — never cache onboarding state locally, as it may be reset server-side.
-- Profile completion is a single atomic operation, not a multi-step flow. All required fields (`name`, `contactMethod`, `skillLevelId`) must be submitted together.
+- Profile completion is a single atomic operation, not a multi-step flow. All required fields (`name`, `contactMethod`, `skillLevels`) must be submitted together.
+- Skill level selections are scoped per activity: each entry in `skillLevels` must pair an `activityId` with a `skillLevelId` that belongs to that activity, and each activity may appear at most once.
 - At least one contact method with a valid name (`whatsapp`, `telegram`, or `messenger`) and a non-blank value is required.
 - After completion, profile updates are done via `PUT /api/v1/me` (see API contract above). Only non-null fields are updated.
 - `DELETE /api/v1/me` permanently removes the user account — this action is irreversible.

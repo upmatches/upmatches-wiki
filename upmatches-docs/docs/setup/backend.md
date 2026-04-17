@@ -67,6 +67,27 @@ INFISICAL_PROJECT_ID=<your-project-id>
 
 The remaining values in `.env` have sensible defaults and can be left as-is.
 
+:::tip Local Singpass testing
+For local development without calling the real Singpass staging environment, run [MockPass](https://github.com/opengovsg/mockpass) and copy the overrides from `.env.mockpass`. The API repo's `MOCKPASS.md` file lists the test NRICs and UUIDs you can use.
+:::
+
+### Reference: environment variables
+
+| Group | Key variables |
+|---|---|
+| Server | `SERVER_PORT`, `SPRING_PROFILES_ACTIVE`, `SWAGGER_ENABLED` |
+| Database | `POSTGRES_DB_HOST`, `POSTGRES_DB_PORT`, `POSTGRES_DB_NAME`, `POSTGRES_DB_USER`, `POSTGRES_DB_PASS` |
+| DB pool | `DB_POOL_SIZE`, `DB_POOL_MIN_IDLE`, `DB_IDLE_TIMEOUT`, `DB_MAX_LIFETIME`, `DB_CONNECTION_TIMEOUT`, `DB_LEAK_DETECTION` |
+| Flyway / cache | `FLYWAY_ENABLED`, `CACHE_TYPE` |
+| Redis | `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_PASSWORD` |
+| CORS | `CORS_ALLOWED_ORIGINS` (semicolon-delimited) |
+| JWT | `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_ACCESS_TOKEN_EXPIRY_MINUTES`, `JWT_REFRESH_TOKEN_EXPIRY_DAYS`, `FRONTEND_CALLBACK_URL`, `MOBILE_CALLBACK_SCHEME` |
+| Singpass | `SINGPASS_CLIENT_ID`, `SINGPASS_REDIRECT_URI`, `SINGPASS_ISSUER`, `SINGPASS_AUTHORIZATION_ENDPOINT`, `SINGPASS_PAR_ENDPOINT`, `SINGPASS_TOKEN_ENDPOINT`, `SINGPASS_JWKS_ENDPOINT`, `SINGPASS_USERINFO_ENDPOINT`, `SINGPASS_SCOPES`, `SINGPASS_AUTH_CONTEXT_TYPE`, `SINGPASS_AUTH_CONTEXT_MESSAGE`, `SINGPASS_PRIVATE_SIGNING_KEY_PATH`, `SINGPASS_PRIVATE_ENCRYPTION_KEY_PATH` |
+| Auth0 | `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `AUTH0_REDIRECT_URI`, `AUTH0_SCOPES` |
+| Infisical | `INFISICAL_CLIENT_ID`, `INFISICAL_CLIENT_SECRET`, `INFISICAL_PROJECT_ID`, `INFISICAL_ENVIRONMENT` |
+| Share links | `SHARE_LINK_BASE_URL` |
+| Observability | `TRACING_ENABLED`, `TRACING_OTLP_ENDPOINT`, `TRACING_SAMPLING_PROBABILITY` |
+
 ### Default infrastructure credentials (already configured)
 
 | Service    | Host        | Port   | Username   | Password   | Database        |
@@ -181,7 +202,22 @@ Multiple origins can be separated with a semicolon (`;`).
 | `DELETE` | `/api/v1/activities/{id}`               |      Yes      | Delete activity                             |
 | `GET`    | `/api/v1/activities/{id}/skill-levels`  |      Yes      | Get skill levels for activity               |
 | `GET`    | `/api/v1/venues`                        |      Yes      | Get all venues                              |
-| `POST`   | `/api/v1/venues/upload`                 |      Yes      | Bulk import venues from JSON file           |
+| `POST`   | `/api/v1/venues/imports`                |   Yes (admin) | Bulk import venues from JSON file           |
+| `GET`    | `/api/v1/skill-levels?activity_id=...`  |      Yes      | Get skill levels for an activity            |
+| `GET`    | `/api/v1/games`                         |      Yes      | List games (paginated)                      |
+| `POST`   | `/api/v1/games`                         |      Yes      | Create a game                               |
+| `GET`    | `/api/v1/games/{id}`                    |      Yes      | Get a game                                  |
+| `PUT`    | `/api/v1/games/{id}`                    |      Yes      | Update a game (organiser only)              |
+| `DELETE` | `/api/v1/games/{id}`                    |      Yes      | Soft-delete a game (organiser only)         |
+| `DELETE` | `/api/v1/games/{id}/hard`               |      Yes      | Hard-delete a game (organiser only)         |
+| `POST`   | `/api/v1/games/{id}/participants`       |      Yes      | Join a game                                 |
+| `DELETE` | `/api/v1/games/{id}/participants/me`    |      Yes      | Leave a game                                |
+| `GET`    | `/api/v1/game-bookmarks`                |      Yes      | List the caller's bookmarks                 |
+| `POST`   | `/api/v1/game-bookmarks`                |      Yes      | Bookmark a game                             |
+| `DELETE` | `/api/v1/game-bookmarks/{gameId}`       |      Yes      | Remove a bookmark                           |
+| `POST`   | `/api/v1/share-links`                   |      Yes      | Create a share link                         |
+| `GET`    | `/api/v1/share-links/{code}`            |      No       | Resolve a share link (rate-limited)         |
+| `GET`    | `/api/v1/public/health`                 |      No       | Public health check                         |
 | `GET`    | `/.well-known/jwks.json`                |      No       | Public signing keys (JWKS)                  |
 
 ### Auth flow (how login works)

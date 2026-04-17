@@ -1,76 +1,97 @@
 {
-  "/__docusaurus/debug-5ff": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/config-5ba": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/content-a2b": {
-    "__comp": "__comp---theme-debug-contentba-8-ce7",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    },
-    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
-  },
-  "/__docusaurus/debug/globalData-c3c": {
-    "__comp": "__comp---theme-debug-global-dataede-0fa",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/metadata-156": {
-    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/registry-88c": {
-    "__comp": "__comp---theme-debug-registry-679-501",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/routes-000": {
-    "__comp": "__comp---theme-debug-routes-946-699",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
   "/markdown-page-3d7": {
-    "__comp": "__comp---theme-mdx-page-1-f-3-b90",
+    "__comp": "1f391b9e",
     "__context": {
-      "plugin": "plugin---markdown-pagea-74-7b5"
+      "plugin": "a7456010"
     },
-    "content": "content---markdown-page-393-028"
+    "content": "393be207"
   },
-  "/docs-5fc": {
-    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+  "/docs-9ec": {
+    "__comp": "5e95c892",
     "__context": {
-      "plugin": "plugin---docsaba-d7c"
+      "plugin": "aba21aa0"
     }
   },
-  "/docs-d97": {
-    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
-    "__props": "__props---docs-005-788"
+  "/docs-0fb": {
+    "__comp": "a7bd4aaa",
+    "__props": "0058b4c6"
   },
-  "/docs-9f4": {
-    "__comp": "__comp---theme-doc-roota-94-67a"
+  "/docs-06f": {
+    "__comp": "a94703ab"
+  },
+  "/docs/algorithms/skill-adjustment-ca3": {
+    "__comp": "17896441",
+    "content": "4b89ac69"
+  },
+  "/docs/algorithms/withdrawal-penalty-eb6": {
+    "__comp": "17896441",
+    "content": "a676ca5e"
+  },
+  "/docs/api/overview-e02": {
+    "__comp": "17896441",
+    "content": "65df3d35"
+  },
+  "/docs/changelog-74a": {
+    "__comp": "17896441",
+    "content": "9beb87c2"
+  },
+  "/docs/modules/activity-cc8": {
+    "__comp": "17896441",
+    "content": "6d832321"
+  },
+  "/docs/modules/authentication-4ad": {
+    "__comp": "17896441",
+    "content": "85c91dc0"
+  },
+  "/docs/modules/game-699": {
+    "__comp": "17896441",
+    "content": "4f8f1ae3"
+  },
+  "/docs/modules/health-d3e": {
+    "__comp": "17896441",
+    "content": "a488aedd"
   },
   "/docs/modules/new-user-onboarding-531": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---docs-modules-new-user-onboarding-528-3f7"
+    "__comp": "17896441",
+    "content": "5285d63c"
+  },
+  "/docs/modules/notification-db0": {
+    "__comp": "17896441",
+    "content": "e948b695"
+  },
+  "/docs/modules/share-link-274": {
+    "__comp": "17896441",
+    "content": "f037289e"
+  },
+  "/docs/modules/skill-levels-41c": {
+    "__comp": "17896441",
+    "content": "72775078"
+  },
+  "/docs/modules/venue-3cf": {
+    "__comp": "17896441",
+    "content": "b0434d76"
+  },
+  "/docs/rules/game-rules-065": {
+    "__comp": "17896441",
+    "content": "2656b24c"
+  },
+  "/docs/setup/backend-cfa": {
+    "__comp": "17896441",
+    "content": "e1af06a0"
+  },
+  "/docs/sports/badminton/skill-levels-b42": {
+    "__comp": "17896441",
+    "content": "f3427633"
+  },
+  "/docs/sports/badminton/venues-6d4": {
+    "__comp": "17896441",
+    "content": "11b01c89"
   },
   "/-e5f": {
-    "__comp": "__comp---site-src-pages-index-tsx-1-df-d3e",
+    "__comp": "1df93b7f",
     "__context": {
-      "plugin": "plugin---markdown-pagea-74-7b5"
+      "plugin": "a7456010"
     },
-    "config": "config---5-e-9-4f3"
+    "config": "5e9f5e1a"
   }
 }

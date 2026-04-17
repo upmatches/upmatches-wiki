@@ -7,7 +7,7 @@ sidebar_position: 3
 
 ## Overview
 
-The venue management module handles venue data including physical locations, nearby transit stations, and associated activities. It provides endpoints to retrieve all venues and bulk import venues from a JSON file.
+The venue management module handles venue data including physical locations, nearby transit stations, and associated activities. It provides endpoints to retrieve all venues and, for administrators, to bulk import venues from a JSON file.
 
 Venues are linked to **activities** (e.g., Badminton), **stations** (nearby public transit), and **transit lines** (e.g., MRT line codes). Stations are shared across venues — if two venues are near the same station, they reference the same station record.
 
@@ -69,69 +69,81 @@ All endpoints are under `/api/v1/venues`. Responses are wrapped in the standard 
 
 ### `GET /api/v1/venues`
 
-Returns all venues with their associated stations and transit lines.
+Offset-paginated listing of venues with their associated stations and transit lines. Sorted by `name` ascending.
 
 **cURL**
 
 ```bash
-curl -X GET http://localhost:8080/api/v1/venues \
+curl -X GET "http://localhost:8080/api/v1/venues?page=0&size=20" \
   -H "Authorization: Bearer <TOKEN>"
 ```
 
-**Response `200 OK`**
+**Query parameters**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `page` | `integer` | Zero-based page index, default `0` |
+| `size` | `integer` | Page size, default `20` |
+
+**Response `200 OK`** — `data` is a `PagedResponse<VenueResponse>` (see [overview](/docs/api/overview)).
 
 ```json
 {
   "success": true,
-  "data": [
-    {
-      "id": 1,
-      "sourceId": "SRC-001",
-      "activity": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "referenceId": 1,
-        "name": "Badminton"
-      },
-      "name": "Clementi Sports Hall",
-      "address": "518 Clementi Ave 1",
-      "postalCode": "129907",
-      "latitude": 1.3150,
-      "longitude": 103.7651,
-      "stations": [
-        {
-          "id": 5,
-          "name": "Clementi MRT Station",
-          "latitude": 1.3148,
-          "longitude": 103.7653,
-          "transitLines": [
-            {
-              "code": "EW",
-              "name": "East West Line",
-              "color": "#0066CC",
-              "stationNumber": 8
-            }
-          ]
-        }
-      ],
-      "createdAt": "2026-04-05T12:00:00Z",
-      "updatedAt": "2026-04-05T12:00:00Z"
-    }
-  ],
+  "data": {
+    "content": [
+      {
+        "id": 1,
+        "sourceId": "SRC-001",
+        "activity": {
+          "id": "550e8400-e29b-41d4-a716-446655440000",
+          "referenceId": 1,
+          "name": "Badminton"
+        },
+        "name": "Clementi Sports Hall",
+        "address": "518 Clementi Ave 1",
+        "postalCode": "129907",
+        "latitude": 1.3150,
+        "longitude": 103.7651,
+        "stations": [
+          {
+            "id": 5,
+            "name": "Clementi MRT Station",
+            "latitude": 1.3148,
+            "longitude": 103.7653,
+            "transitLines": [
+              {
+                "code": "EW",
+                "name": "East West Line",
+                "color": "#0066CC",
+                "stationNumber": 8
+              }
+            ]
+          }
+        ],
+        "createdAt": "2026-04-05T12:00:00Z",
+        "updatedAt": "2026-04-05T12:00:00Z"
+      }
+    ],
+    "page": { "number": 0, "size": 20, "totalElements": 42, "totalPages": 3 }
+  },
   "message": "Venues retrieved successfully.",
   "timestamp": "2026-04-05T12:00:00Z",
   "path": "/api/v1/venues"
 }
 ```
 
-### `POST /api/v1/venues/upload`
+Each transit line entry includes `stationNumber`, the integer extracted from the station code (e.g., `EW8` → `8`).
 
-Bulk import venues from a JSON file. The operation is transactional and idempotent — venues with an existing `sourceId` are skipped.
+### `POST /api/v1/venues/imports`
+
+Bulk import venues from a JSON file. Requires the `ADMIN` role. The operation is transactional and idempotent — venues with an existing `sourceId` are skipped.
 
 **cURL**
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/venues/upload \
-  -H "Authorization: Bearer <TOKEN>" \
+curl -X POST http://localhost:8080/api/v1/venues/imports \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
   -F "file=@venues.json"
 ```
 
@@ -203,7 +215,7 @@ The station `code` is parsed into two parts:
   },
   "message": "Venues imported successfully.",
   "timestamp": "2026-04-05T12:00:00Z",
-  "path": "/api/v1/venues/upload"
+  "path": "/api/v1/venues/imports"
 }
 ```
 
@@ -211,6 +223,7 @@ The station `code` is parsed into two parts:
 
 | Scenario | HTTP Status | Description |
 |----------|-------------|-------------|
+| Caller lacks `ADMIN` role | `403` | Import is admin-only |
 | Invalid JSON file format | `400` | File cannot be parsed as JSON |
 | Invalid station code format | `400` | Station code does not match `^([A-Za-z]+)(\d+)$` |
 | Referenced activity does not exist | `404` | `activityId` has no matching activity |

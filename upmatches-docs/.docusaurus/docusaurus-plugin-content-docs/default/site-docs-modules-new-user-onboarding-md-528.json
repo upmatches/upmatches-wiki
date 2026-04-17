@@ -1,6 +1,6 @@
 {
   "id": "modules/new-user-onboarding",
-  "title": "New User Onboarding",
+  "title": "Onboarding",
   "description": "Overview",
   "source": "@site/docs/modules/new-user-onboarding.md",
   "sourceDirName": "modules",
@@ -10,10 +10,18 @@
   "unlisted": false,
   "tags": [],
   "version": "current",
-  "sidebarPosition": 1,
+  "sidebarPosition": 2,
   "frontMatter": {
-    "title": "New User Onboarding",
-    "sidebar_position": 1
+    "title": "Onboarding",
+    "sidebar_position": 2
   },
-  "sidebar": "docsSidebar"
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Authentication",
+    "permalink": "/docs/modules/authentication"
+  },
+  "next": {
+    "title": "Venue",
+    "permalink": "/docs/modules/venue"
+  }
 }
