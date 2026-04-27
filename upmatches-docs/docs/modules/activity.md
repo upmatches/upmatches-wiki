@@ -23,7 +23,7 @@ Each activity has a database-generated `referenceId` — a stable integer identi
 
 ## API Contract
 
-All endpoints are under `/api/v1/activities` and require a valid JWT. Responses are wrapped in a standard `ApiResponse` envelope:
+All endpoints are under `/api/v1/activities`. The `GET` endpoints (list and by ID) are **public** (no JWT required, rate-limited); `POST`, `PUT`, and `DELETE` require a valid JWT. Responses are wrapped in a standard `ApiResponse` envelope:
 
 ```json
 {
@@ -199,7 +199,7 @@ No response body.
 
 ### Skill levels for an activity
 
-Skill levels are served by a dedicated module — see [`GET /api/v1/skill-levels?activity_id=...`](/docs/modules/skill-levels).
+Skill levels are served by a dedicated module — see [`GET /api/v1/skill-levels?activityId=...`](/docs/modules/skill-levels).
 
 ## Error Handling
 

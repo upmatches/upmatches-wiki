@@ -69,13 +69,12 @@ All endpoints are under `/api/v1/venues`. Responses are wrapped in the standard 
 
 ### `GET /api/v1/venues`
 
-Offset-paginated listing of venues with their associated stations and transit lines. Sorted by `name` ascending.
+**Public** (no JWT required, rate-limited via `PublicReadRateLimitFilter`). Offset-paginated listing of venues with their associated stations and transit lines. Sorted by `name` ascending.
 
 **cURL**
 
 ```bash
-curl -X GET "http://localhost:8080/api/v1/venues?page=0&size=20" \
-  -H "Authorization: Bearer <TOKEN>"
+curl -X GET "http://localhost:8080/api/v1/venues?page=0&size=20"
 ```
 
 **Query parameters**

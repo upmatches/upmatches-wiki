@@ -9,7 +9,7 @@ All notable changes to this documentation are listed here, ordered by most recen
 
 | Date | Commit | Description |
 |------|--------|-------------|
-| 2026-04-14 | [`ebdbe6c`](https://github.com/weehong/upmatches-wiki/commit/ebdbe6c) | docs(rules): add game participation rules |
+| 2026-04-17 | [`6ff9ad3`](https://github.com/weehong/upmatches-wiki/commit/6ff9ad3) | docs(rules): add game participation rules |
 | 2026-04-06 | [`3aa8470`](https://github.com/weehong/upmatches-wiki/commit/3aa8470) | docs: add activity module and update onboarding venue docs |
 | 2026-04-05 | [`ee6592e`](https://github.com/weehong/upmatches-wiki/commit/ee6592e) | docs: add venue module documentation |
 | 2026-04-05 | [`13fb79a`](https://github.com/weehong/upmatches-wiki/commit/13fb79a) | docs: add changelog and update claude.md |
@@ -18,8 +18,8 @@ All notable changes to this documentation are listed here, ordered by most recen
 | 2026-04-05 | [`0615031`](https://github.com/weehong/upmatches-wiki/commit/0615031) | docs: add algorithms sports rules and setup docs |
 | 2026-04-04 | [`55fe410`](https://github.com/weehong/upmatches-wiki/commit/55fe410) | docs: reorganize sidebar and fix broken links |
 | 2026-04-04 | [`0d4c78a`](https://github.com/weehong/upmatches-wiki/commit/0d4c78a) | docs(onboarding): rewrite user onboarding documentation |
-| 2026-04-04 | [`3ddaf56`](https://github.com/weehong/upmatches-wiki/commit/3ddaf56) | docs(auth): add authentication module documentation |
 | 2026-04-04 | [`6e35f4f`](https://github.com/weehong/upmatches-wiki/commit/6e35f4f) | docs(rules): add game rules section |
+| 2026-04-04 | [`3ddaf56`](https://github.com/weehong/upmatches-wiki/commit/3ddaf56) | docs(auth): add authentication module documentation |
 | 2026-04-04 | [`33ab8cf`](https://github.com/weehong/upmatches-wiki/commit/33ab8cf) | docs(sports): add sports section with badminton levels |
 | 2026-04-04 | [`cbc5acd`](https://github.com/weehong/upmatches-wiki/commit/cbc5acd) | style(css): add attention class for highlighting |
 | 2026-04-04 | [`fdf5dae`](https://github.com/weehong/upmatches-wiki/commit/fdf5dae) | chore: add ai agent configuration files |

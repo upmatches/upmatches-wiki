@@ -84,14 +84,14 @@ curl -X POST http://localhost:8080/api/v1/share-links \
 curl -X GET http://localhost:8080/api/v1/share-links/aB3xY9kQ
 ```
 
-**Response `200 OK`**
+**Response `200 OK`** — `data` is a `PublicShareLinkResponse`, intentionally limited to fields safe to expose without auth:
 
 ```json
 {
   "success": true,
   "data": {
     "resourceType": "GAME",
-    "webUrl": "https://app.upmatches.com/games/7a9a3b1a-...",
+    "webUrl": "https://api.upmatches.dev/games/7a9a3b1a-...",
     "mobileUrl": "upmatches://games/7a9a3b1a-..."
   },
   "message": "Share link resolved successfully.",
@@ -100,7 +100,7 @@ curl -X GET http://localhost:8080/api/v1/share-links/aB3xY9kQ
 }
 ```
 
-The public response intentionally omits `resourceId`, `clickCount`, and other internal fields — clients follow `webUrl` or `mobileUrl` to reach the resource through the authenticated flow.
+The public response omits `resourceId`, `code`, `clickCount`, and any user-identifying fields — clients follow `webUrl` or `mobileUrl` to reach the resource through the authenticated flow.
 
 ## Error Handling
 

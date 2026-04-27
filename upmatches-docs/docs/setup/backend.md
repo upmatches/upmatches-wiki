@@ -182,43 +182,58 @@ Multiple origins can be separated with a semicolon (`;`).
 
 ### Available endpoints
 
-| Method   | Route                         | Auth required | Description                        |
-|----------|-------------------------------|:-------------:|------------------------------------|
-| `GET`    | `/actuator/health`            |      No       | Health check                       |
-| `GET`    | `/api/v1/auth/login/singpass` |      No       | Start Singpass login flow          |
-| `GET`    | `/api/v1/auth/login/auth0`    |      No       | Start Auth0 login flow             |
-| `GET`    | `/callback/singpass`          |      No       | Singpass OAuth callback            |
-| `GET`    | `/callback/auth0`             |      No       | Auth0 OAuth callback               |
-| `POST`   | `/api/v1/auth/refresh`        |      No       | Refresh access token               |
-| `POST`   | `/api/v1/auth/logout`         |      No       | Logout (clears cookies)            |
-| `GET`    | `/api/v1/me`                  |      Yes      | Get current user profile           |
-| `POST`   | `/api/v1/me`                  |      Yes      | Complete user profile (onboarding) |
-| `PUT`    | `/api/v1/me`                  |      Yes      | Update user profile                |
-| `DELETE` | `/api/v1/me`                  |      Yes      | Delete user account                |
-| `GET`    | `/api/v1/activities`                    |      Yes      | Get all activities                          |
-| `GET`    | `/api/v1/activities/{id}`               |      Yes      | Get activity by ID                          |
-| `POST`   | `/api/v1/activities`                    |      Yes      | Create activity                             |
-| `PUT`    | `/api/v1/activities/{id}`               |      Yes      | Update activity                             |
-| `DELETE` | `/api/v1/activities/{id}`               |      Yes      | Delete activity                             |
-| `GET`    | `/api/v1/activities/{id}/skill-levels`  |      Yes      | Get skill levels for activity               |
-| `GET`    | `/api/v1/venues`                        |      Yes      | Get all venues                              |
-| `POST`   | `/api/v1/venues/imports`                |   Yes (admin) | Bulk import venues from JSON file           |
-| `GET`    | `/api/v1/skill-levels?activity_id=...`  |      Yes      | Get skill levels for an activity            |
-| `GET`    | `/api/v1/games`                         |      Yes      | List games (paginated)                      |
-| `POST`   | `/api/v1/games`                         |      Yes      | Create a game                               |
-| `GET`    | `/api/v1/games/{id}`                    |      Yes      | Get a game                                  |
-| `PUT`    | `/api/v1/games/{id}`                    |      Yes      | Update a game (organiser only)              |
-| `DELETE` | `/api/v1/games/{id}`                    |      Yes      | Soft-delete a game (organiser only)         |
-| `DELETE` | `/api/v1/games/{id}/hard`               |      Yes      | Hard-delete a game (organiser only)         |
-| `POST`   | `/api/v1/games/{id}/participants`       |      Yes      | Join a game                                 |
-| `DELETE` | `/api/v1/games/{id}/participants/me`    |      Yes      | Leave a game                                |
-| `GET`    | `/api/v1/game-bookmarks`                |      Yes      | List the caller's bookmarks                 |
-| `POST`   | `/api/v1/game-bookmarks`                |      Yes      | Bookmark a game                             |
-| `DELETE` | `/api/v1/game-bookmarks/{gameId}`       |      Yes      | Remove a bookmark                           |
-| `POST`   | `/api/v1/share-links`                   |      Yes      | Create a share link                         |
-| `GET`    | `/api/v1/share-links/{code}`            |      No       | Resolve a share link (rate-limited)         |
-| `GET`    | `/api/v1/public/health`                 |      No       | Public health check                         |
-| `GET`    | `/.well-known/jwks.json`                |      No       | Public signing keys (JWKS)                  |
+| Method   | Route                                                | Auth required | Description                        |
+|----------|------------------------------------------------------|:-------------:|------------------------------------|
+| `GET`    | `/actuator/health`                                   |      No       | Spring health check                |
+| `GET`    | `/api/v1/public/health`                              |      No       | Application health check           |
+| `GET`    | `/.well-known/jwks.json`                             |      No       | Public signing keys (JWKS)         |
+| `GET`    | `/api/v1/auth/login/singpass`                        |      No       | Start Singpass login flow          |
+| `GET`    | `/api/v1/auth/login/auth0`                           |      No       | Start Auth0 login flow             |
+| `GET`    | `/callback/singpass`                                 |      No       | Singpass OAuth callback            |
+| `GET`    | `/callback/auth0`                                    |      No       | Auth0 OAuth callback               |
+| `POST`   | `/api/v1/auth/refresh`                               |      No       | Refresh access token               |
+| `POST`   | `/api/v1/auth/logout`                                |      No       | Logout (clears cookies)            |
+| `POST`   | `/api/v1/auth/dev/tokens`                            |      No*      | Mint test JWT (dev profiles only)  |
+| `GET`    | `/api/v1/me`                                         |      Yes      | Get current user profile           |
+| `POST`   | `/api/v1/me`                                         |      Yes      | Complete user profile (onboarding) |
+| `PUT`    | `/api/v1/me`                                         |      Yes      | Update user profile                |
+| `DELETE` | `/api/v1/me`                                         |      Yes      | Delete user account                |
+| `GET`    | `/api/v1/me/games/joined`                            |      Yes      | List games the caller has joined   |
+| `GET`    | `/api/v1/me/games/hosted`                            |      Yes      | List games the caller has hosted   |
+| `GET`    | `/api/v1/activities`                                 |      No       | List activities (rate-limited)     |
+| `GET`    | `/api/v1/activities/{id}`                            |      No       | Get activity by ID (rate-limited)  |
+| `POST`   | `/api/v1/activities`                                 |      Yes      | Create activity                    |
+| `PUT`    | `/api/v1/activities/{id}`                            |      Yes      | Update activity                    |
+| `DELETE` | `/api/v1/activities/{id}`                            |      Yes      | Delete activity                    |
+| `GET`    | `/api/v1/skill-levels?activityId=...`                |      Yes      | Get skill levels for an activity   |
+| `GET`    | `/api/v1/venues`                                     |      No       | List venues (rate-limited)         |
+| `POST`   | `/api/v1/venues/imports`                             |   Yes (admin) | Bulk import venues (multipart)     |
+| `GET`    | `/api/v1/games`                                      |      No       | List games (cursor, rate-limited)  |
+| `GET`    | `/api/v1/games/filter-options`                       |      No       | Filter options for a date range    |
+| `GET`    | `/api/v1/games/{id}`                                 |      No       | Get a game (rate-limited)          |
+| `POST`   | `/api/v1/games`                                      |      Yes      | Create a game                      |
+| `PUT`    | `/api/v1/games/{id}`                                 |      Yes      | Update a game (organiser only)     |
+| `DELETE` | `/api/v1/games/{id}`                                 |      Yes      | Soft-delete a game (organiser)     |
+| `POST`   | `/api/v1/games/{id}/participants`                    |      Yes      | Join a game                        |
+| `DELETE` | `/api/v1/games/{id}/participants/me`                 |      Yes      | Leave a game                       |
+| `GET`    | `/api/v1/games/{id}/participants`                    |      Yes      | List participants                  |
+| `DELETE` | `/api/v1/games/{gameId}/participants/{participantId}`|      Yes      | Expel participant (organiser)      |
+| `DELETE` | `/api/v1/admin/games/{id}`                           |   Yes (admin) | Hard-delete a game                 |
+| `GET`    | `/api/v1/game-bookmarks`                             |      Yes      | List the caller's bookmarks       |
+| `POST`   | `/api/v1/game-bookmarks`                             |      Yes      | Bookmark a game                    |
+| `DELETE` | `/api/v1/game-bookmarks/{gameId}`                    |      Yes      | Remove a bookmark                  |
+| `POST`   | `/api/v1/share-links`                                |      Yes      | Create a share link                |
+| `GET`    | `/api/v1/share-links/{code}`                         |      No       | Resolve a share link (rate-limited)|
+| `GET`    | `/games/{code}`                                      |      No       | Web fallback HTML page             |
+| `GET`    | `/api/v1/notifications`                              |      Yes      | List the caller's notifications    |
+| `GET`    | `/api/v1/notifications/unread-count`                 |      Yes      | Unread notification count          |
+| `PUT`    | `/api/v1/notifications/{id}/read`                    |      Yes      | Mark a notification as read        |
+| `PUT`    | `/api/v1/notifications/read-all`                     |      Yes      | Mark all notifications as read     |
+| `DELETE` | `/api/v1/notifications/{id}`                         |      Yes      | Delete a notification              |
+| `POST`   | `/api/v1/device-tokens`                              |      Yes      | Register a push device token       |
+| `DELETE` | `/api/v1/device-tokens?deviceToken=...`              |      Yes      | Unregister a push device token     |
+
+\* `/api/v1/auth/dev/tokens` is gated by `DEV_MINT_ENDPOINT_ENABLED=true`, requires a non-`prod` profile, and only accepts requests originating from `localhost`.
 
 ### Auth flow (how login works)
 

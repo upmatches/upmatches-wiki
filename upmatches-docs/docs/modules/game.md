@@ -19,18 +19,21 @@ Every response envelope conforms to the [API overview](/docs/api/overview).
 |-------|------|-------------|
 | `id` | `UUID` | Auto-generated primary key |
 | `activity` | `ActivitySummary` | `{ id, name }` — immutable after creation |
-| `organizer` | `OrganizerSummary` | `{ id, name }` — the authenticated creator |
-| `venue` | `VenueSummary` | `{ id, name, address, latitude, longitude, nearest: [{ stationCode, color }] }` |
+| `organizer` | `OrganizerSummary` | `{ id, name, contactMethods }` — `name` is `Anonymous` if the organiser hasn't set one; `contactMethods` is the organiser's `whatsapp` / `telegram` / `messenger` list |
+| `venue` | `VenueSummary` | `{ id, name, address, latitude, longitude }` |
 | `skillLevel` | `{ from, to }` | Allowed range — both must belong to the game's activity and `to.sortOrder >= from.sortOrder` |
 | `currency` | `string` | ISO-4217 3-letter code (e.g. `SGD`) |
 | `price` | `decimal` | Per-player cost, `>= 0.00`, up to 8 integer digits + 2 decimals |
-| `slots` | `integer` | Total seats, `1..100` — immutable after participants join |
+| `slots` | `integer` | Total seats, `1..100` — cannot be reduced below the current active participant count |
 | `numberOfPlayerJoined` | `long` | Active participant count (derived) |
 | `startTime` / `endTime` | `Instant` | `endTime` must be after `startTime` |
 | `visibility` | `GameVisibility` | `PUBLIC` or `PRIVATE` — immutable after creation |
 | `gameType` | `GameType` | `SINGLE` or `DOUBLE` |
 | `status` | `GameStatus` | `SCHEDULED`, `STARTED`, `EXPIRED`, or `CANCELLED` |
-| `shareLink` | `ShareLinkResponse?` | Auto-generated on create (see [Share Link](/docs/modules/share-link)) |
+| `remark` | `string?` | Free-form note from the organiser, up to 500 chars |
+| `shareLink` | `ShareLinkResponse?` | Generated on create for `PUBLIC` games (see [Share Link](/docs/modules/share-link)) |
+| `viewerJoinability` | `ViewerJoinabilityResponse?` | Whether the calling user can join, plus warnings — populated only for authenticated viewers on detail / participant endpoints |
+| `viewerIsOrganizer` | `boolean?` | `true` when the calling user is the organiser; `null` for anonymous viewers |
 | `createdAt` / `updatedAt` | `Instant` | Audit timestamps |
 
 ### Enums
@@ -40,19 +43,27 @@ Every response envelope conforms to the [API overview](/docs/api/overview).
 | `GameStatus` | `SCHEDULED`, `STARTED`, `EXPIRED`, `CANCELLED` |
 | `GameVisibility` | `PUBLIC`, `PRIVATE` |
 | `GameType` | `SINGLE`, `DOUBLE` |
-| `ParticipantStatus` | `ACTIVE`, `LEFT` |
+| `ParticipantStatus` | `ACTIVE`, `LEFT`, `EXPELLED` |
+| `JoinabilityReason` | `ALREADY_JOINED`, `GAME_FULL`, `GAME_NOT_JOINABLE`, `SKILL_OUT_OF_RANGE`, `OVERLAPS_WITH_EXISTING_GAME`, … |
+| `JoinabilityWarning` | `SKILL_MISMATCH`, `PARTICIPANT_PENALTY_RECORD`, … |
 
 ### Scheduler
 
-A background job transitions games from `SCHEDULED` to `STARTED` once `startTime` has passed, and from `STARTED` to `EXPIRED` once `endTime` has passed. `CANCELLED` is reserved for explicit organiser action (future endpoint).
+Background jobs transition games from `SCHEDULED` to `STARTED` once `startTime` has passed, and from `STARTED` to `EXPIRED` once `endTime` has passed. `CANCELLED` is reserved for explicit organiser action (future endpoint).
 
 ## API Contract
 
-All game endpoints are under `/api/v1/games` and require a valid JWT. Bookmark endpoints live under `/api/v1/game-bookmarks`. Per-user listings live under `/api/v1/me/games`. See the [API overview](/docs/api/overview) for the envelope and error shapes.
+Game endpoints are split between three controllers:
+
+- `/api/v1/games` — read endpoints (`GET`) are **public** and rate-limited via `PublicReadRateLimitFilter`; write endpoints require a JWT.
+- `/api/v1/game-bookmarks` — per-user bookmarks; require a JWT.
+- `/api/v1/admin/games` — destructive admin operations; require the `ADMIN` role.
+
+See the [API overview](/docs/api/overview) for the envelope and error shapes. My-games listings live under [`/api/v1/me/games`](/docs/modules/new-user-onboarding#me-games).
 
 ### `POST /api/v1/games`
 
-Creates a game. The organiser is the authenticated user. A share link is generated in the same transaction.
+Creates a game. The organiser is the authenticated user. A share link is generated in the same transaction for `PUBLIC` games.
 
 **cURL**
 
@@ -72,7 +83,8 @@ curl -X POST http://localhost:8080/api/v1/games \
     "endTime": "2026-05-01T21:00:00Z",
     "visibility": "PUBLIC",
     "gameType": "DOUBLE",
-    "joinAsOrganizer": true
+    "joinAsOrganizer": true,
+    "remark": "Bring your own shuttles"
   }'
 ```
 
@@ -91,6 +103,7 @@ curl -X POST http://localhost:8080/api/v1/games \
 | `visibility` | `GameVisibility` | <span class="attention">Required</span> |
 | `gameType` | `GameType` | <span class="attention">Required</span>, `SINGLE` or `DOUBLE` |
 | `joinAsOrganizer` | `boolean?` | If `true`, organiser is added as an `ACTIVE` participant |
+| `remark` | `string?` | Optional note, max 500 chars |
 
 **Response `201 Created`**
 
@@ -100,18 +113,23 @@ curl -X POST http://localhost:8080/api/v1/games \
   "data": {
     "id": "7a9a3b1a-0000-0000-0000-000000000001",
     "activity": { "id": "550e8400-...", "name": "Badminton" },
-    "organizer": { "id": "d290f1ee-...", "name": "Jane Doe" },
+    "organizer": {
+      "id": "d290f1ee-...",
+      "name": "Jane Doe",
+      "contactMethods": [
+        { "name": "whatsapp", "value": "+6591234567" }
+      ]
+    },
     "venue": {
       "id": 12,
       "name": "Clementi Sports Hall",
       "address": "518 Clementi Ave 1",
       "latitude": 1.3150,
-      "longitude": 103.7651,
-      "nearest": [ { "stationCode": "EW23", "color": "#0066CC" } ]
+      "longitude": 103.7651
     },
     "skillLevel": {
-      "from": { "id": 3, "name": "High Beginner", "sortOrder": 3 },
-      "to":   { "id": 5, "name": "Middle Intermediate", "sortOrder": 5 }
+      "from": { "id": 3, "name": "High Beginner",        "sortOrder": 3 },
+      "to":   { "id": 5, "name": "Middle Intermediate",  "sortOrder": 5 }
     },
     "currency": "SGD",
     "price": 8.50,
@@ -122,11 +140,20 @@ curl -X POST http://localhost:8080/api/v1/games \
     "visibility": "PUBLIC",
     "gameType": "DOUBLE",
     "status": "SCHEDULED",
+    "remark": "Bring your own shuttles",
     "shareLink": {
-      "id": "...", "code": "aB3xY9kQ", "resourceType": "GAME",
-      "resourceId": "7a9a3b1a-...", "shareUrl": "http://localhost:8080/api/v1/share-links/aB3xY9kQ",
-      "webUrl": "...", "mobileUrl": "...", "clickCount": 0, "createdAt": "..."
+      "id": "...",
+      "code": "aB3xY9kQ",
+      "resourceType": "GAME",
+      "resourceId": "7a9a3b1a-...",
+      "shareUrl": "http://localhost:8080/api/v1/share-links/aB3xY9kQ",
+      "webUrl": "...",
+      "mobileUrl": "...",
+      "clickCount": 0,
+      "createdAt": "..."
     },
+    "viewerJoinability": null,
+    "viewerIsOrganizer": true,
     "createdAt": "2026-04-15T12:00:00Z",
     "updatedAt": "2026-04-15T12:00:00Z"
   },
@@ -140,26 +167,12 @@ The creator must have completed onboarding; otherwise the request is rejected wi
 
 ### `GET /api/v1/games`
 
-Offset-paginated listing, sorted by `startTime` ascending. Private games are excluded unless the caller is the organiser or an active participant.
+**Public** (no JWT required, rate-limited). Cursor-based listing with optional filters. Sorted by `startTime` then `id` ascending. `PRIVATE` games are excluded unless the caller is authenticated and is the organiser or an active participant.
 
 **cURL**
 
 ```bash
-curl -X GET "http://localhost:8080/api/v1/games?page=0&size=20" \
-  -H "Authorization: Bearer <TOKEN>"
-```
-
-**Response `200 OK`** — `data` is a `PagedResponse<GameResponse>` (see [overview](/docs/api/overview)).
-
-### `GET /api/v1/games/cursor`
-
-Cursor-based listing with filters. Sorted by `startTime` then `id` ascending. Private games are excluded unless the caller is the organiser or an active participant.
-
-**cURL**
-
-```bash
-curl -X GET "http://localhost:8080/api/v1/games/cursor?size=20&from_date=2026-05-01&to_date=2026-05-31&venue_ids=12&latitude=1.3150&longitude=103.7651&radius_km=3" \
-  -H "Authorization: Bearer <TOKEN>"
+curl -X GET "http://localhost:8080/api/v1/games?size=20&fromDate=2026-05-01&toDate=2026-05-31&venueIds=12&latitude=1.3150&longitude=103.7651&radiusKm=3"
 ```
 
 **Query parameters**
@@ -168,17 +181,17 @@ curl -X GET "http://localhost:8080/api/v1/games/cursor?size=20&from_date=2026-05
 |---|---|---|
 | `cursor` | `string` | Opaque Base64 cursor returned by a previous response. Omit for the first page. |
 | `size` | `integer` | `1..1000`, default `20` |
-| `venue_ids` | `long[]` | Optional, max 20 entries |
-| `skill_level_ids` | `long[]` | Optional, max 20 entries |
-| `from_date` | `LocalDate` | Optional. Interpreted in SGT |
-| `to_date` | `LocalDate` | Optional, must be `>= from_date` |
-| `from_time` | `LocalTime` | Optional |
-| `to_time` | `LocalTime` | Optional |
+| `venueIds` | `long[]` | Optional, max 20 entries |
+| `skillLevelIds` | `long[]` | Optional, max 20 entries |
+| `fromDate` | `LocalDate` | Optional. Interpreted in SGT |
+| `toDate` | `LocalDate` | Optional, must be `>= fromDate` |
+| `fromTime` | `LocalTime` | Optional |
+| `toTime` | `LocalTime` | Optional |
 | `latitude` | `decimal` | Optional, `-90.0..90.0` |
 | `longitude` | `decimal` | Optional, `-180.0..180.0` |
-| `radius_km` | `integer` | Optional, `1..5` |
+| `radiusKm` | `integer` | Optional, `1..5` |
 
-If any of `latitude`, `longitude`, or `radius_km` is supplied, **all three must be supplied together**.
+If any of `latitude`, `longitude`, or `radiusKm` is supplied, **all three must be supplied together**.
 
 **Response `200 OK`** — `data` is a `CursorPagedResponse<GameResponse>`:
 
@@ -191,36 +204,33 @@ If any of `latitude`, `longitude`, or `radius_km` is supplied, **all three must 
   },
   "message": "Games retrieved successfully.",
   "timestamp": "2026-04-15T12:00:00Z",
-  "path": "/api/v1/games/cursor"
+  "path": "/api/v1/games"
 }
 ```
 
-`nextCursor` is `null` when there are no further pages. A malformed cursor returns `400 Bad Request`.
+`nextCursor` is `null` when there are no further pages. A malformed cursor returns `400 Bad Request`. Anonymous callers are rate-limited at 60 req/min per IP; authenticated callers at 240 req/min per user.
 
 ### `GET /api/v1/games/filter-options`
 
-Returns the distinct venues, skill levels, start-times, and game types present in the filtered result set. Intended to back progressive filter UIs.
+**Public.** Returns the distinct venues, skill levels, start-times, and game types present in the filtered result set. Intended to back progressive filter UIs. Samples up to 500 games from the filtered range.
 
 **cURL**
 
 ```bash
-curl -X GET "http://localhost:8080/api/v1/games/filter-options?from_date=2026-05-01&to_date=2026-05-31" \
-  -H "Authorization: Bearer <TOKEN>"
+curl -X GET "http://localhost:8080/api/v1/games/filter-options?fromDate=2026-05-01&toDate=2026-05-31"
 ```
 
 **Query parameters**
 
 | Parameter | Type | Validation |
 |---|---|---|
-| `from_date` | `LocalDate` | <span class="attention">Required</span> |
-| `to_date` | `LocalDate` | <span class="attention">Required</span>, `>= from_date`, range `<= 90 days` |
-| `venue_ids` | `long[]` | Optional, max 20 |
-| `skill_level_ids` | `long[]` | Optional, max 20 |
-| `from_time` / `to_time` | `LocalTime` | Optional |
-| `game_type` | `GameType` | Optional, `SINGLE` or `DOUBLE` |
-| `latitude` / `longitude` / `radius_km` | — | Optional, all three must be supplied together; same bounds as above |
-
-Samples up to 500 games from the filtered range.
+| `fromDate` | `LocalDate` | <span class="attention">Required</span> |
+| `toDate` | `LocalDate` | <span class="attention">Required</span>, `>= fromDate`, range `<= 90 days` |
+| `venueIds` | `long[]` | Optional, max 20 |
+| `skillLevelIds` | `long[]` | Optional, max 20 |
+| `fromTime` / `toTime` | `LocalTime` | Optional |
+| `gameType` | `GameType` | Optional, `SINGLE` or `DOUBLE` |
+| `latitude` / `longitude` / `radiusKm` | — | Optional, all three must be supplied together; same bounds as above |
 
 **Response `200 OK`**
 
@@ -243,18 +253,17 @@ Samples up to 500 games from the filtered range.
 
 ### `GET /api/v1/games/{id}`
 
-Returns a single game. Private games are returned only to the organiser, active participants, or callers presenting a valid share access.
+**Public.** Returns a single game. `PRIVATE` games are returned only to the organiser, active participants, or callers presenting a valid share access.
 
 **cURL**
 
 ```bash
-curl -X GET http://localhost:8080/api/v1/games/7a9a3b1a-... \
-  -H "Authorization: Bearer <TOKEN>"
+curl -X GET http://localhost:8080/api/v1/games/7a9a3b1a-...
 ```
 
 ### `PUT /api/v1/games/{id}`
 
-Updates a game. Only the organiser may update. The following fields are **immutable** and ignored if present: `activityId`, `visibility`, and `slots` (once any participant has joined). Everything else follows the same validation as creation.
+Updates a game. Only the organiser may update. The following fields are **immutable** and ignored if present: `activityId` and `visibility`. `slots` may be raised but not reduced below the current `ACTIVE` participant count. Everything else follows the same validation as creation.
 
 **cURL**
 
@@ -276,13 +285,7 @@ curl -X PUT http://localhost:8080/api/v1/games/7a9a3b1a-... \
 
 ### `DELETE /api/v1/games/{id}`
 
-Soft-deletes the game (sets `deletedAt`). Organiser only. Soft-deleted games are excluded from listings.
-
-**Response `204 No Content`**
-
-### `DELETE /api/v1/games/{id}/hard`
-
-Hard-deletes the game (row removed). Organiser only. Use with care — this cascades to participants, bookmarks, and share accesses.
+Soft-deletes the game (sets `deletedAt`). Organiser only. Soft-deleted games are excluded from listings. Active participants and the organiser are notified.
 
 **Response `204 No Content`**
 
@@ -316,40 +319,54 @@ Leaves the game. The participant row is not removed — its `status` becomes `LE
 
 **Response `204 No Content`**
 
-## My Games
+### `GET /api/v1/games/{id}/participants`
 
-Cursor-based listings scoped to the authenticated user. Both endpoints return `CursorPagedResponse<GameResponse>`, sorted by `startTime` ascending.
+Lists every participant on the game (status `ACTIVE`, `LEFT`, and `EXPELLED`). Available to any authenticated caller able to read the game.
 
-### `GET /api/v1/me/games/joined`
+**Response `200 OK`**
 
-Games where the caller is an `ACTIVE` participant (excludes games they organise).
-
-**cURL**
-
-```bash
-curl -X GET "http://localhost:8080/api/v1/me/games/joined?size=20" \
-  -H "Authorization: Bearer <TOKEN>"
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "e1...",
+      "gameId": "7a9a3b1a-...",
+      "userId": "d290f1ee-...",
+      "userName": "Jane Doe",
+      "status": "ACTIVE",
+      "skillLevel": { "id": 4, "name": "Low Intermediate", "sortOrder": 4 },
+      "joinedAt": "2026-04-15T12:05:00Z",
+      "leftAt": null
+    }
+  ],
+  "message": "Game participants retrieved successfully.",
+  "timestamp": "2026-04-15T12:05:00Z",
+  "path": "/api/v1/games/7a9a3b1a-.../participants"
+}
 ```
 
-**Query parameters**
+### `DELETE /api/v1/games/{gameId}/participants/{participantId}`
 
-| Parameter | Type | Validation |
-|---|---|---|
-| `cursor` | `string` | Opaque cursor from a previous response |
-| `size` | `integer` | `1..1000`, default `20` |
+Organiser-only. Expels a participant from the game with an optional reason. The participant row is preserved with `status = EXPELLED`, `leftAt = now()`, and `expelReason` is stored. The expelled user receives a `PLAYER_REMOVED_FROM_GAME` notification.
 
-### `GET /api/v1/me/games/hosted`
+**Request** (optional body)
 
-Games where the caller is the organiser.
-
-**cURL**
-
-```bash
-curl -X GET "http://localhost:8080/api/v1/me/games/hosted?size=20" \
-  -H "Authorization: Bearer <TOKEN>"
+```json
+{ "reason": "Repeated no-shows." }
 ```
 
-Same query parameters as `/joined`.
+| Field | Type | Validation |
+|-------|------|------------|
+| `reason` | `string?` | Optional, max 500 chars |
+
+**Response `204 No Content`**
+
+### `DELETE /api/v1/admin/games/{id}`
+
+**Admin only.** Hard-deletes the game (row removed). Cascades to participants, bookmarks, and share accesses. Use only for moderation — prefer `DELETE /api/v1/games/{id}` (soft-delete) for normal organiser flows.
+
+**Response `204 No Content`**
 
 ## Game Bookmarks
 
@@ -367,7 +384,12 @@ Bookmarks are per-user pointers to games the user wants to revisit. They do **no
 
 ### `GET /api/v1/game-bookmarks`
 
-Offset-paginated listing of the caller's bookmarks.
+Cursor-paginated listing of the caller's bookmarks.
+
+| Parameter | Type | Validation |
+|---|---|---|
+| `cursor` | `string` | Opaque cursor from a previous response |
+| `size` | `integer` | `1..1000`, default `20` |
 
 ### `DELETE /api/v1/game-bookmarks/{gameId}`
 
@@ -384,6 +406,8 @@ Removes the caller's bookmark for the given game. Returns `204 No Content` wheth
 | Join attempt on full game | `409` | `GameFullException` |
 | Join attempt on past / cancelled game | `409` | `GameNotJoinableException` |
 | Organiser tries to leave own game | `409` | `GameNotJoinableException` |
-| Non-organiser tries to update/delete | `404` | Returned as 404, not 403, to avoid enumeration |
-| Private game accessed without share context | `404` | Present share link first |
-| Malformed cursor, incomplete location filter, `to_date < from_date`, or filter-options date range > 90 days | `400` | Validation error |
+| Non-organiser tries to update / delete / expel | `404` | Returned as 404, not 403, to avoid enumeration |
+| `PRIVATE` game accessed without share context | `404` | Present share link first |
+| Non-admin calls `DELETE /api/v1/admin/games/{id}` | `403` | `AccessDeniedException` |
+| Malformed cursor, incomplete location filter, `toDate < fromDate`, or filter-options date range > 90 days | `400` | Validation error |
+| Public read rate limit exceeded | `429` | Retry after the `Retry-After` window |

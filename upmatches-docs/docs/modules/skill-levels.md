@@ -28,7 +28,7 @@ Returns all skill levels for a given activity, ordered by `sortOrder` ascending.
 **cURL**
 
 ```bash
-curl -X GET "http://localhost:8080/api/v1/skill-levels?activity_id=550e8400-e29b-41d4-a716-446655440000" \
+curl -X GET "http://localhost:8080/api/v1/skill-levels?activityId=550e8400-e29b-41d4-a716-446655440000" \
   -H "Authorization: Bearer <TOKEN>"
 ```
 
@@ -36,7 +36,7 @@ curl -X GET "http://localhost:8080/api/v1/skill-levels?activity_id=550e8400-e29b
 
 | Name | Type | Validation |
 |---|---|---|
-| `activity_id` | `UUID` | <span class="attention">Required</span> |
+| `activityId` | `UUID` | <span class="attention">Required</span> |
 
 **Response `200 OK`**
 
@@ -62,6 +62,6 @@ curl -X GET "http://localhost:8080/api/v1/skill-levels?activity_id=550e8400-e29b
 
 | Scenario | HTTP Status | Notes |
 |---|---|---|
-| `activity_id` missing | `400` | Validation error |
+| `activityId` missing | `400` | Validation error |
 | Activity not found | `404` | |
 | Auth token expired / missing | `401` | Redirect to login |

@@ -13,11 +13,11 @@ New users must complete a one-time profile completion step before accessing the 
 
 | Field          | Type                              | Validation                                                                 | Remarks |
 |----------------|-----------------------------------|----------------------------------------------------------------------------|---------|
-| `name`         | `string`                          | <span class="attention">Required</span>, non-blank, max 200 characters                                    | |
-| `contactMethod`| `array` of `ContactMethodDto`     | <span class="attention">At least one</span> valid contact method (`whatsapp`, `telegram`, or `messenger`), max 10 entries | |
-| `skillLevels`  | `array` of `SkillLevelSelection`  | <span class="attention">Required</span>, non-null, max 50 entries; at most one entry per activity         | Each entry pairs an activity with the user's skill level for that activity |
+| `name`           | `string`                          | <span class="attention">Required</span>, non-blank, max 200 characters                                    | |
+| `contactMethods` | `array` of `ContactMethod`        | <span class="attention">At least one</span> valid contact method (`whatsapp`, `telegram`, or `messenger`), max 10 entries | |
+| `skillLevels`    | `array` of `SkillLevelSelection`  | <span class="attention">Required</span>, non-null, max 50 entries; at most one entry per activity         | Each entry pairs an activity with the user's skill level for that activity |
 
-### ContactMethodDto
+### ContactMethod
 
 | Field   | Type     | Description                                           |
 |---------|----------|-------------------------------------------------------|
@@ -29,7 +29,7 @@ New users must complete a one-time profile completion step before accessing the 
 | Field          | Type   | Description                                                                                   |
 |----------------|--------|-----------------------------------------------------------------------------------------------|
 | `activityId`   | `UUID` | The activity this selection applies to (see [Activity](/docs/modules/activity))               |
-| `skillLevelId` | `long` | A skill level from [`GET /api/v1/skill-levels?activity_id=...`](/docs/modules/skill-levels) that belongs to `activityId` |
+| `skillLevelId` | `long` | A skill level from [`GET /api/v1/skill-levels?activityId=...`](/docs/modules/skill-levels) that belongs to `activityId` |
 
 Only one skill level per activity is allowed. Listing the same `activityId` twice returns `409 Conflict` with error code `DUPLICATE_SKILL_LEVEL_ACTIVITY`.
 
@@ -68,9 +68,12 @@ curl -X GET http://localhost:8080/api/v1/me \
     "authProvider": "auth0",
     "providerUuid": "auth0|abc123",
     "name": null,
-    "contactMethod": [],
+    "contactMethods": [],
     "skillLevels": [],
-    "hasCompletedOnboarding": false
+    "hasCompletedOnboarding": false,
+    "totalGamesJoined": 0,
+    "totalGamesHosted": 0,
+    "penaltyPoints": 0
   },
   "message": "User profile retrieved successfully.",
   "timestamp": "2026-04-04T12:00:00Z",
@@ -93,7 +96,7 @@ curl -X POST http://localhost:8080/api/v1/me \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Jane Doe",
-    "contactMethod": [
+    "contactMethods": [
       { "name": "whatsapp", "value": "+6591234567" },
       { "name": "telegram", "value": "@janedoe" }
     ],
@@ -108,7 +111,7 @@ curl -X POST http://localhost:8080/api/v1/me \
 ```json
 {
   "name": "Jane Doe",
-  "contactMethod": [
+  "contactMethods": [
     { "name": "whatsapp", "value": "+6591234567" },
     { "name": "telegram", "value": "@janedoe" }
   ],
@@ -128,14 +131,17 @@ curl -X POST http://localhost:8080/api/v1/me \
     "authProvider": "auth0",
     "providerUuid": "auth0|abc123",
     "name": "Jane Doe",
-    "contactMethod": [
+    "contactMethods": [
       { "name": "whatsapp", "value": "+6591234567" },
       { "name": "telegram", "value": "@janedoe" }
     ],
     "skillLevels": [
       { "id": 3, "name": "High Beginner", "sortOrder": 3 }
     ],
-    "hasCompletedOnboarding": true
+    "hasCompletedOnboarding": true,
+    "totalGamesJoined": 0,
+    "totalGamesHosted": 0,
+    "penaltyPoints": 0
   },
   "message": "User profile completed successfully.",
   "timestamp": "2026-04-04T12:00:00Z",
@@ -155,7 +161,7 @@ curl -X PUT http://localhost:8080/api/v1/me \
   -H "Content-Type: application/json" \
   -d '{
     "name": "John Updated",
-    "contactMethod": [
+    "contactMethods": [
       { "name": "whatsapp", "value": "+6587654321" }
     ],
     "skillLevels": [
@@ -169,7 +175,7 @@ curl -X PUT http://localhost:8080/api/v1/me \
 ```json
 {
   "name": "John Updated",
-  "contactMethod": [
+  "contactMethods": [
     { "name": "whatsapp", "value": "+6587654321" }
   ],
   "skillLevels": [
@@ -183,7 +189,7 @@ All fields are optional — only include the fields you want to update.
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | `string` | Updated display name (max 200 chars) |
-| `contactMethod` | `array` of `ContactMethodDto` | Replaces all contact methods (max 10 entries) |
+| `contactMethods` | `array` of `ContactMethod` | Replaces all contact methods (max 10 entries) |
 | `skillLevels` | `array` of `SkillLevelSelection` | Replaces all skill levels (max 50 entries; one per activity) |
 
 **Response `200 OK`**
@@ -196,13 +202,16 @@ All fields are optional — only include the fields you want to update.
     "authProvider": "auth0",
     "providerUuid": "auth0|abc123",
     "name": "John Updated",
-    "contactMethod": [
+    "contactMethods": [
       { "name": "whatsapp", "value": "+6587654321" }
     ],
     "skillLevels": [
       { "id": 5, "name": "Middle Intermediate", "sortOrder": 5 }
     ],
-    "hasCompletedOnboarding": true
+    "hasCompletedOnboarding": true,
+    "totalGamesJoined": 4,
+    "totalGamesHosted": 1,
+    "penaltyPoints": 0
   },
   "message": "User profile updated successfully.",
   "timestamp": "2026-04-06T12:00:00Z",
@@ -225,6 +234,35 @@ curl -X DELETE http://localhost:8080/api/v1/me \
 
 No response body.
 
+## Me Games
+
+Cursor-based listings scoped to the authenticated user. Both endpoints return `CursorPagedResponse<GameResponse>`, sorted by `startTime` ascending. See [Game](/docs/modules/game) for the response shape.
+
+### `GET /api/v1/me/games/joined`
+
+Games where the caller is an `ACTIVE` participant (excludes games they organise).
+
+```bash
+curl -X GET "http://localhost:8080/api/v1/me/games/joined?size=20" \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+### `GET /api/v1/me/games/hosted`
+
+Games where the caller is the organiser.
+
+```bash
+curl -X GET "http://localhost:8080/api/v1/me/games/hosted?size=20" \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+**Query parameters** (both endpoints)
+
+| Parameter | Type | Validation |
+|---|---|---|
+| `cursor` | `string` | Opaque cursor from a previous response |
+| `size` | `integer` | `1..1000`, default `20` |
+
 ## Sequence Diagram
 
 ### Happy Path
@@ -238,7 +276,7 @@ sequenceDiagram
     API-->>Client: 200 { hasCompletedOnboarding: false }
 
     Note over Client: Show onboarding screen
-    Client->>API: POST /api/v1/me { name, contactMethod, skillLevels }
+    Client->>API: POST /api/v1/me { name, contactMethods, skillLevels }
     API-->>Client: 200 { hasCompletedOnboarding: true }
 
     Note over Client: Redirect to main app
@@ -264,7 +302,7 @@ sequenceDiagram
     participant Client
     participant API as API Server
 
-    Client->>API: POST /api/v1/me { name, contactMethod, skillLevels }
+    Client->>API: POST /api/v1/me { name, contactMethods, skillLevels }
     API-->>Client: 409 { PROFILE_ALREADY_COMPLETED }
 
     Note over Client: Show error or redirect to main app
@@ -285,7 +323,7 @@ sequenceDiagram
 ## Implementation Notes
 
 - The client must call `GET /api/v1/me` on every cold start — never cache onboarding state locally, as it may be reset server-side.
-- Profile completion is a single atomic operation, not a multi-step flow. All required fields (`name`, `contactMethod`, `skillLevels`) must be submitted together.
+- Profile completion is a single atomic operation, not a multi-step flow. All required fields (`name`, `contactMethods`, `skillLevels`) must be submitted together.
 - Skill level selections are scoped per activity: each entry in `skillLevels` must pair an `activityId` with a `skillLevelId` that belongs to that activity, and each activity may appear at most once.
 - At least one contact method with a valid name (`whatsapp`, `telegram`, or `messenger`) and a non-blank value is required.
 - After completion, profile updates are done via `PUT /api/v1/me` (see API contract above). Only non-null fields are updated.

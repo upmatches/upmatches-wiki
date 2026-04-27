@@ -33,7 +33,7 @@ Clients register a device token on login/app-launch so push notifications can re
 |-------|------|-------------|
 | `id` | `UUID` | Auto-generated primary key |
 | `deviceToken` | `string` | FCM registration token (max 512 chars) |
-| `platform` | `DevicePlatform` | `ANDROID` or `WEB` |
+| `platform` | `DevicePlatform` | `ANDROID`, `IOS`, or `WEB` |
 | `createdAt` / `updatedAt` | `Instant` | Audit timestamps |
 
 A `(user_id, device_token)` pair is unique — re-registering the same token is idempotent.
@@ -43,7 +43,7 @@ A `(user_id, device_token)` pair is unique — re-registering the same token is 
 | Enum | Values |
 |---|---|
 | `NotificationType` | `PLAYER_JOINED`, `PLAYER_LEFT`, `PLAYER_WARNING_MISMATCH`, `GAME_FULL`, `GAME_REMINDER_3_DAYS`, `GAME_REMINDER_1_DAY`, `GAME_UPDATED`, `GAME_REMOVED`, `PLAYER_REMOVED_FROM_GAME` |
-| `DevicePlatform` | `ANDROID`, `WEB` |
+| `DevicePlatform` | `ANDROID`, `IOS`, `WEB` |
 
 ## API Contract
 
@@ -189,7 +189,7 @@ curl -X POST http://localhost:8080/api/v1/device-tokens \
 | Field | Type | Validation |
 |---|---|---|
 | `deviceToken` | `string` | <span class="attention">Required</span>, non-blank, max 512 chars |
-| `platform` | `DevicePlatform` | <span class="attention">Required</span>, `ANDROID` or `WEB` |
+| `platform` | `DevicePlatform` | <span class="attention">Required</span>, `ANDROID`, `IOS`, or `WEB` |
 
 **Response `201 Created`** — empty `data`:
 
@@ -210,7 +210,7 @@ Unregisters a device token. Call this on logout, or when the FCM SDK rotates the
 **cURL**
 
 ```bash
-curl -X DELETE "http://localhost:8080/api/v1/device-tokens?device_token=fcm-registration-token-abc123" \
+curl -X DELETE "http://localhost:8080/api/v1/device-tokens?deviceToken=fcm-registration-token-abc123" \
   -H "Authorization: Bearer <TOKEN>"
 ```
 
@@ -218,7 +218,7 @@ curl -X DELETE "http://localhost:8080/api/v1/device-tokens?device_token=fcm-regi
 
 | Parameter | Type | Validation |
 |---|---|---|
-| `device_token` | `string` | <span class="attention">Required</span>, non-blank, max 512 chars |
+| `deviceToken` | `string` | <span class="attention">Required</span>, non-blank, max 512 chars |
 
 **Response `204 No Content`** — returns `204` whether or not the token was registered.
 

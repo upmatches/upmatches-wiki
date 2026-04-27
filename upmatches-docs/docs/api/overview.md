@@ -40,7 +40,11 @@ Endpoints that return `204 No Content` (soft/hard deletes, leave game, delete bo
 
 ## Pagination
 
-Endpoints that return lists accept `page` and `size` query parameters (defaults `0` and `20`). The `data` field is a `PagedResponse<T>`:
+Two pagination styles are used depending on the endpoint.
+
+### Offset-based (`PagedResponse<T>`)
+
+Used by `GET /api/v1/venues`, `GET /api/v1/notifications`, `GET /api/v1/activities`, `GET /api/v1/game-bookmarks`, etc. Accepts `page` and `size` query parameters (defaults `0` and `20`).
 
 ```json
 {
@@ -59,6 +63,25 @@ Endpoints that return lists accept `page` and `size` query parameters (defaults 
   "path": "/api/v1/..."
 }
 ```
+
+### Cursor-based (`CursorPagedResponse<T>`)
+
+Used by `GET /api/v1/games`, `GET /api/v1/me/games/joined`, and `GET /api/v1/me/games/hosted` for keyset pagination on large, time-ordered datasets. Accepts an opaque `cursor` and `size` (default `20`, max `1000`).
+
+```json
+{
+  "success": true,
+  "data": {
+    "content": [ { "...": "item" } ],
+    "nextCursor": "eyJzdGFydFRpbWUiOiIyMDI2LTA1LTAxVDE5OjAwOjAwWiIsImlkIjoiN2E5YTNiMWEtLi4uIn0"
+  },
+  "message": "...",
+  "timestamp": "2026-04-15T12:00:00Z",
+  "path": "/api/v1/..."
+}
+```
+
+`nextCursor` is `null` when there are no further pages. Pass it back as `?cursor=...` to fetch the next page. A malformed cursor returns `400`.
 
 ## Error Responses (RFC 7807)
 
@@ -109,7 +132,16 @@ No JWT required:
 - `GET /callback/singpass`, `GET /callback/auth0`
 - `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`
 - `GET /.well-known/jwks.json`
+- `GET /.well-known/apple-app-site-association`
 - `GET /api/v1/share-links/{code}` (rate-limited; 8-char alphanumeric code)
+- `GET /games/{code}` (web fallback for share links — returns HTML)
+- `GET /api/v1/games`, `GET /api/v1/games/{id}`, `GET /api/v1/games/filter-options` (rate-limited via `PublicReadRateLimitFilter`)
+- `GET /api/v1/venues` (rate-limited)
+- `GET /api/v1/activities`, `GET /api/v1/activities/{id}` (rate-limited)
 - `/v3/api-docs/**`, `/swagger-ui/**`, `/actuator/**`
 
-All other endpoints require authentication. Admin-only endpoints additionally require the `ADMIN` role.
+The public read rate limiter applies to anonymous callers at **60 req/min per IP** and to authenticated callers at **240 req/min per user**. Resolve calls to `GET /api/v1/share-links/{code}` are rate-limited separately. Exceeding either limit returns `429 Too Many Requests` with a `Retry-After` header.
+
+All other endpoints require authentication. Admin-only endpoints (`/api/v1/admin/**`) additionally require the `ADMIN` role.
+
+Server-to-server endpoints under `/api/v1/internal/**` are not protected by JWT but require the shared `X-Internal-Secret` header — they are not callable from clients.

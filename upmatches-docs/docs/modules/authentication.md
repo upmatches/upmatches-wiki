@@ -207,8 +207,8 @@ curl -X POST http://localhost:8080/api/v1/auth/dev/tokens \
 | Claim | Description |
 |-------|-------------|
 | `sub` | User UUID |
-| `iss` | `upmatches` |
-| `aud` | `upmatches` |
+| `iss` | `upmatches` (configurable via `JWT_ISSUER`) |
+| `aud` | `upmatches` (configurable via `JWT_AUDIENCE`). The resource server accepts any of `upmatches:web`, `upmatches:mobile`, or the legacy `upmatches`. |
 | `iat` | Issued at timestamp |
 | `nbf` | Not before timestamp |
 | `exp` | Expiration timestamp |
