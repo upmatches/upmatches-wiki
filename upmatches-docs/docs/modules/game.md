@@ -251,6 +251,37 @@ curl -X GET "http://localhost:8080/api/v1/games/filter-options?fromDate=2026-05-
 
 `availableStartTimes` are formatted `HH:mm` in SGT.
 
+### `GET /api/v1/games/date-availability`
+
+**Public.** Returns whether at least one non-deleted game exists on the given date. The date is interpreted in `Asia/Singapore`; the service queries games whose `startTime` falls within `[date 00:00 SGT, next-day 00:00 SGT)`.
+
+**cURL**
+
+```bash
+curl -X GET "http://localhost:8080/api/v1/games/date-availability?date=2026-04-28"
+```
+
+**Query parameters**
+
+| Parameter | Type | Validation |
+|---|---|---|
+| `date` | `LocalDate` | <span class="attention">Required</span>, ISO format `yyyy-MM-dd` |
+
+**Response `200 OK`**
+
+```json
+{
+  "success": true,
+  "data": {
+    "date": "2026-04-28",
+    "hasGame": true
+  },
+  "message": "Game date availability retrieved successfully.",
+  "timestamp": "2026-04-28T12:00:00Z",
+  "path": "/api/v1/games/date-availability"
+}
+```
+
 ### `GET /api/v1/games/{id}`
 
 **Public.** Returns a single game. `PRIVATE` games are returned only to the organiser, active participants, or callers presenting a valid share access.
