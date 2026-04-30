@@ -1,0 +1,25 @@
+---
+id: icreatesharelinkservice
+title: ICreateShareLinkService Interface
+sidebar_label: ICreateShareLinkService
+---
+
+## Purpose
+
+The `ICreateShareLinkService` interface defines a contract for creating share links within the application. It is a part of the `com.upmatches.app.features.sharelink.services` package and is designed to be implemented by classes that handle the creation of share links. This interface ensures that any implementing class provides a specific method to execute the creation of a share link based on a given request.
+
+## Public Methods
+
+### `execute`
+
+Executes the creation of a share link based on the provided request.
+
+| Parameter | Type                                      | Description                                      |
+|-----------|-------------------------------------------|--------------------------------------------------|
+| request   | `CreateShareLinkRequest`                  | The request object containing necessary data to create a share link. |
+
+| Return Type          | Description                                      |
+|----------------------|--------------------------------------------------|
+| `ShareLinkResponse`  | The response object containing the result of the share link creation process. |
+
+This interface is sealed, permitting only the `CreateShareLinkService` class to implement it, ensuring controlled and predictable implementations.

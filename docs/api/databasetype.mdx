@@ -1,0 +1,47 @@
+---
+id: database-type
+title: DatabaseType Enum
+sidebar_label: DatabaseType
+---
+
+## Purpose
+
+The `DatabaseType` enum is designed to represent different types of databases supported by the application. It provides a structured way to handle database-specific configurations such as JDBC URL prefixes and driver class names. This enum helps in determining the database type from a given JDBC URL and retrieving associated properties like the driver class name.
+
+## Public Methods
+
+### fromJdbcUrl
+
+Determines the `DatabaseType` based on the provided JDBC URL.
+
+| Parameter | Type   | Description                      |
+|-----------|--------|----------------------------------|
+| jdbcUrl   | String | The JDBC URL to be evaluated.    |
+
+| Return Type | Description                                      |
+|-------------|--------------------------------------------------|
+| DatabaseType | Returns the matching `DatabaseType` or `null` if no match is found. |
+
+### getPrefix
+
+Retrieves the JDBC URL prefix associated with the `DatabaseType`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      |      |             |
+
+| Return Type | Description                      |
+|-------------|----------------------------------|
+| String      | The JDBC URL prefix.             |
+
+### getDriverClassName
+
+Retrieves the driver class name associated with the `DatabaseType`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      |      |             |
+
+| Return Type | Description                      |
+|-------------|----------------------------------|
+| String      | The driver class name.           |

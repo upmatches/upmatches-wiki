@@ -1,0 +1,41 @@
+---
+id: public-share-link-response
+title: PublicShareLinkResponse Class
+sidebar_label: PublicShareLinkResponse
+---
+
+## Overview
+
+The `PublicShareLinkResponse` class is a part of the `com.upmatches.app.features.sharelink.responses` package. It is designed to encapsulate the response data for a public share link, providing a structured way to represent the resource type, resource ID, and the URLs for web and mobile access.
+
+## Purpose
+
+The primary purpose of the `PublicShareLinkResponse` class is to serve as a data transfer object (DTO) that holds information about a shared link. This includes the type of resource being shared, its unique identifier, and the URLs that can be used to access the resource on web and mobile platforms.
+
+## Public Methods
+
+The class provides a static method to create an instance of `PublicShareLinkResponse` from a `ShortLink` object. Below is a detailed explanation of the public method available in this class:
+
+### `fromShortLink`
+
+This static method constructs a `PublicShareLinkResponse` object using a `ShortLink` entity and specified URLs for web and mobile access.
+
+| Method Signature | Description |
+|------------------|-------------|
+| `public static PublicShareLinkResponse fromShortLink(ShortLink link, String webUrl, String mobileUrl)` | Creates a `PublicShareLinkResponse` from a `ShortLink` object. |
+
+#### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `link` | `ShortLink` | The `ShortLink` entity containing the resource type and ID. |
+| `webUrl` | `String` | The URL for accessing the resource via a web browser. |
+| `mobileUrl` | `String` | The URL for accessing the resource via a mobile device. |
+
+#### Return Type
+
+| Type | Description |
+|------|-------------|
+| `PublicShareLinkResponse` | Returns a new instance of `PublicShareLinkResponse` initialized with the provided `ShortLink` data and URLs. |
+
+This method is useful for converting a `ShortLink` entity into a format suitable for sharing with external clients or services, ensuring that all necessary information is included in a consistent manner.

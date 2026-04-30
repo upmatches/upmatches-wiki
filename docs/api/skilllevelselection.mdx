@@ -1,0 +1,38 @@
+---
+id: skill-level-selection
+title: SkillLevelSelection Class
+sidebar_label: SkillLevelSelection
+---
+
+import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
+
+## Purpose
+
+The `SkillLevelSelection` class is a Java record that represents a request to select a skill level for a specific activity. This class is part of the `com.upmatches.app.features.user.requests` package and is used to encapsulate the data required for selecting a skill level associated with a particular activity. The use of Java records simplifies the creation of immutable data carriers with minimal boilerplate code.
+
+## Public Methods
+
+The `SkillLevelSelection` class is a record, which means it automatically provides a constructor, accessor methods, `equals()`, `hashCode()`, and `toString()` methods. Below are the details of the public methods available:
+
+### Constructor
+
+The constructor for the `SkillLevelSelection` record is automatically generated and takes the following parameters:
+
+| Parameter    | Type   | Description                                      |
+|--------------|--------|--------------------------------------------------|
+| `activityId` | `UUID` | The unique identifier of the activity. Must not be null. |
+| `skillLevelId` | `Long` | The identifier of the skill level. Must not be null. |
+
+### Accessor Methods
+
+The record provides accessor methods for each field:
+
+| Method                  | Return Type | Description                                      |
+|-------------------------|-------------|--------------------------------------------------|
+| `activityId()`          | `UUID`      | Returns the unique identifier of the activity.   |
+| `skillLevelId()`        | `Long`      | Returns the identifier of the skill level.       |
+
+## Annotations
+
+- `@NotNull`: This annotation is used to indicate that the `activityId` and `skillLevelId` fields must not be null, ensuring that valid data is always provided when creating an instance of `SkillLevelSelection`.

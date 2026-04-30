@@ -1,0 +1,32 @@
+---
+id: transit-line
+title: TransitLine Class
+sidebar_label: TransitLine
+---
+
+## Purpose of the TransitLine Class
+
+The `TransitLine` class is an entity representation of a transit line in a transportation system. It is mapped to the `transit_lines` table in a database using JPA (Java Persistence API) annotations. This class is part of the `com.upmatches.app.features.venue.entities` package and is designed to encapsulate the details of a transit line, including its code, name, and color.
+
+## Public Methods
+
+The `TransitLine` class provides the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `public static TransitLine create(String code, String name, String color)` | Creates a new instance of `TransitLine` with the specified code, name, and color. |
+
+### Method Details
+
+#### `create`
+
+- **Description**: This static method is used to create a new instance of the `TransitLine` class. It initializes the `code`, `name`, and `color` fields with the provided values.
+- **Parameters**:
+
+  | Name   | Type   | Description                   |
+  |--------|--------|-------------------------------|
+  | `code` | String | The unique code of the transit line. |
+  | `name` | String | The name of the transit line. |
+  | `color`| String | The color associated with the transit line, represented as a hex code. |
+
+- **Return Type**: `TransitLine` - Returns a new instance of the `TransitLine` class initialized with the specified values.

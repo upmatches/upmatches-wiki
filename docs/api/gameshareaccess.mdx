@@ -1,0 +1,43 @@
+---
+id: game-share-access
+title: GameShareAccess Class
+sidebar_label: GameShareAccess
+---
+
+## Overview
+
+The `GameShareAccess` class is an entity that represents the access relationship between a game and a user within the application. It is part of the `com.upmatches.app.features.game.entities` package and is mapped to the `game_share_accesses` table in the database. This class is designed to manage and track when a user has access to a particular game, including the timestamp when this access was resolved.
+
+## Class Details
+
+The `GameShareAccess` class is annotated with JPA annotations to define its mapping to a database table. It includes fields for a unique identifier, a reference to a game, a reference to a user, and a timestamp indicating when the access was resolved.
+
+### Public Methods
+
+The class provides the following public methods:
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `static GameShareAccess create(Game game, User user)` | Creates a new instance of `GameShareAccess` for the specified game and user. |
+
+#### Method Details
+
+- **`create(Game game, User user)`**
+
+  | Parameter | Type | Description |
+  | --------- | ---- | ----------- |
+  | `game`    | `Game` | The game for which access is being granted. |
+  | `user`    | `User` | The user who is being granted access to the game. |
+
+  **Returns:** A new instance of `GameShareAccess` with the specified game and user.
+
+### Entity Fields
+
+- **`id`**: A unique identifier for each `GameShareAccess` instance, automatically generated using the UUID strategy.
+- **`game`**: A reference to the `Game` entity, representing the game to which access is being granted.
+- **`user`**: A reference to the `User` entity, representing the user who is granted access.
+- **`resolvedAt`**: A timestamp indicating when the access was resolved. This field is automatically set to the current time when the entity is persisted.
+
+### Lifecycle Callback
+
+- **`onCreate()`**: A method annotated with `@PrePersist` that sets the `resolvedAt` field to the current timestamp when a new `GameShareAccess` entity is created. This ensures that the access resolution time is recorded accurately.

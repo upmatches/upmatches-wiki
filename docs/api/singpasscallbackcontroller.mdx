@@ -1,0 +1,44 @@
+---
+id: singpass-callback-controller
+title: Singpass Callback Controller
+sidebar_label: Singpass Callback Controller
+---
+
+## Overview
+
+The `SingpassCallbackController` class is a Spring Boot REST controller designed to handle callbacks from Singpass, a digital identity platform. This controller processes authentication responses, manages user sessions, and issues JWT tokens for authenticated users.
+
+## Public Methods
+
+### `callbackSingpass`
+
+Handles the Singpass callback request, processes the authentication code, and returns a response based on the authentication result.
+
+| Parameter | Type                  | Description                                                                 |
+|-----------|-----------------------|-----------------------------------------------------------------------------|
+| `code`    | `String`              | The authorization code returned by Singpass.                                |
+| `state`   | `String`              | The state parameter to validate the request.                                |
+| `request` | `HttpServletRequest`  | The HTTP request object.                                                    |
+| `response`| `HttpServletResponse` | The HTTP response object.                                                   |
+
+**Returns**: `ResponseEntity<Object>` - A response entity containing the result of the authentication process.
+
+## Key Functionalities
+
+- **Error Handling**: The method `rejectIfProviderError` checks for errors returned by Singpass and throws an `AuthenticationException` if any are found.
+- **Code Exchange**: The method `exchangeCode` exchanges the authorization code for a Singpass UUID.
+- **User Management**: The method `findOrCreateUser` checks if a user exists with the given Singpass UUID and creates a new user if not.
+- **Response Building**: The method `buildResponse` constructs the appropriate HTTP response, setting cookies or redirecting based on the platform (mobile or web).
+
+## Dependencies
+
+The controller relies on several services and repositories:
+
+- `ISingpassAuthService`: Handles communication with Singpass for code exchange.
+- `IAuthSessionStore`: Manages authentication sessions.
+- `UserRepository`: Interacts with the user database.
+- `IJwtTokenService`: Generates JWT tokens.
+- `IRefreshTokenStore`: Stores refresh tokens.
+- `ICookieHelper`: Manages authentication cookies.
+- `IDevTokenPageRenderer`: Renders token pages for development purposes.
+- `JwtProperties`: Provides JWT configuration properties.

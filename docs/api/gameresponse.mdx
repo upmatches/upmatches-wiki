@@ -1,0 +1,35 @@
+---
+id: game-response
+title: GameResponse Class
+sidebar_label: GameResponse
+---
+
+## Overview
+
+The `GameResponse` class is a Java record that encapsulates the response details of a game in the application. It provides a structured way to represent game-related data, including activity, organizer, venue, skill level, and other game attributes. This class is designed to be immutable and is used to transfer data between different layers of the application.
+
+## Public Methods
+
+The `GameResponse` class provides several static factory methods to create instances of `GameResponse` from a `Game` entity. These methods offer flexibility in constructing a `GameResponse` with varying levels of detail based on the viewer's context and the availability of additional information like share links and viewer joinability.
+
+| Method Name                      | Parameters                                                                                                                                         | Return Type  | Description                                                                                       |
+|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|--------------|---------------------------------------------------------------------------------------------------|
+| `fromGame`                       | `Game game`, `long participantCount`, `ShareLinkResponse shareLink`, `ViewerJoinabilityResponse viewerJoinability`, `Boolean viewerIsOrganizer`     | `GameResponse` | Creates a `GameResponse` with full details including share link and viewer joinability.           |
+| `fromGame`                       | `Game game`, `long participantCount`, `ShareLinkResponse shareLink`, `ViewerJoinabilityResponse viewerJoinability`                                  | `GameResponse` | Creates a `GameResponse` with share link and viewer joinability, without specifying organizer.    |
+| `fromGame`                       | `Game game`, `long participantCount`, `ShareLinkResponse shareLink`                                                                                | `GameResponse` | Creates a `GameResponse` with share link, without viewer joinability or organizer details.        |
+| `fromGame`                       | `Game game`, `long participantCount`, `ViewerJoinabilityResponse viewerJoinability`                                                                | `GameResponse` | Creates a `GameResponse` with viewer joinability, without share link or organizer details.        |
+| `fromGame`                       | `Game game`, `long participantCount`                                                                                                               | `GameResponse` | Creates a basic `GameResponse` without share link, viewer joinability, or organizer details.      |
+| `fromGameForViewer`              | `Game game`, `long participantCount`, `ViewerJoinabilityResponse viewerJoinability`, `UUID viewerUserId`                                           | `GameResponse` | Creates a `GameResponse` for a specific viewer, including viewer joinability and organizer check. |
+| `fromGameForViewer`              | `Game game`, `long participantCount`, `ShareLinkResponse shareLink`, `UUID viewerUserId`                                                           | `GameResponse` | Creates a `GameResponse` for a specific viewer, including share link and organizer check.         |
+| `fromGameForViewer`              | `Game game`, `long participantCount`, `UUID viewerUserId`                                                                                          | `GameResponse` | Creates a `GameResponse` for a specific viewer, checking if the viewer is the organizer.          |
+| `fromGameAnonymous`              | `Game game`, `long participantCount`                                                                                                               | `GameResponse` | Creates an anonymous `GameResponse` without organizer details.                                    |
+
+## Private Helper Methods
+
+The class also includes private helper methods to assist in constructing `GameResponse` objects:
+
+- `isViewerOrganizer(Game game, UUID viewerUserId)`: Determines if the viewer is the organizer of the game.
+- `contactMethodsFor(User user)`: Retrieves a list of contact methods for a given user.
+- `safeOrganizerName(Game game)`: Safely retrieves the organizer's name, defaulting to "Anonymous" if missing.
+
+These methods are used internally to ensure the `GameResponse` is constructed with accurate and complete data.

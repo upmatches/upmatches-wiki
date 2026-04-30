@@ -1,0 +1,38 @@
+---
+id: open-api-configuration
+title: OpenApiConfiguration Class
+sidebar_label: OpenApiConfiguration
+---
+
+## Overview
+
+The `OpenApiConfiguration` class is a Spring configuration class responsible for setting up the OpenAPI documentation for the Upmatches API. It defines the API's metadata, such as title, version, description, contact information, and server details. This configuration is essential for generating API documentation that can be used with tools like Swagger UI.
+
+## Public Methods
+
+The class provides the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `OpenAPI openApi()` | Configures and returns an `OpenAPI` instance with predefined metadata and server information. |
+
+### Method Details
+
+#### `OpenAPI openApi()`
+
+This method is annotated with `@Bean`, indicating that it returns a Spring bean of type `OpenAPI`. It configures the API's metadata and server details using the OpenAPI 3.0 specification.
+
+- **Parameters**: None
+- **Returns**: `OpenAPI` - An instance of the `OpenAPI` class configured with the API's metadata and server information.
+
+The method sets up the following details:
+
+- **Title**: "Upmatches API"
+- **Version**: "0.0.1"
+- **Description**: "Upmatches API"
+- **Contact Name**: "Upmatches"
+- **License Name**: "All Rights Reserved"
+- **Server URL**: Constructs the server URL using a prefix (`http://localhost:`) and the server port, which defaults to `8080` if not specified.
+- **Server Description**: "Local"
+
+This configuration is crucial for generating comprehensive API documentation, facilitating easier integration and understanding of the API's capabilities.

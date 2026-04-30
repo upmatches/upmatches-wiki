@@ -1,0 +1,35 @@
+---
+id: resend-properties
+title: ResendProperties Class
+sidebar_label: ResendProperties
+---
+
+## Overview
+
+The `ResendProperties` class is a configuration properties holder used in a Spring Boot application. It is designed to encapsulate properties related to resending notifications, specifically handling API keys and sender information. The class is annotated with `@ConfigurationProperties`, which allows it to be automatically populated with values from the application's configuration files, using the prefix `app.resend`.
+
+## Public Methods
+
+The `ResendProperties` class provides the following public methods:
+
+| Method Name   | Parameters | Return Type | Description |
+|---------------|------------|-------------|-------------|
+| `hasApiKey`   | None       | `boolean`   | Checks if the `apiKey` property is set (i.e., not `null`). |
+
+## Constructor
+
+The class uses a compact constructor to initialize its fields. During initialization, it converts any blank strings to `null` using the private `blankToNull` method, ensuring that properties are either populated with meaningful values or set to `null`.
+
+## Parameters
+
+The `ResendProperties` record takes the following parameters:
+
+| Parameter    | Type     | Description |
+|--------------|----------|-------------|
+| `apiKey`     | `String` | The API key used for authentication in resending notifications. |
+| `fromAddress`| `String` | The email address from which notifications are sent. |
+| `fromName`   | `String` | The name associated with the `fromAddress`. |
+
+## Usage
+
+This class is typically used in a Spring Boot application to manage configuration related to notification resending. By using the `@ConfigurationProperties` annotation, it allows for easy and type-safe access to configuration properties defined in external configuration files, such as `application.yml` or `application.properties`.

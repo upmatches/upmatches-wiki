@@ -1,0 +1,17 @@
+---
+id: imark-started-games-service
+title: IMarkStartedGamesService Interface
+sidebar_label: IMarkStartedGamesService
+---
+
+## Purpose
+
+The `IMarkStartedGamesService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for marking games as started within the application. This interface is designed to be implemented by classes that provide the actual logic for marking games as started. The interface is sealed, meaning it restricts which classes can implement it, ensuring that only specified classes can provide implementations.
+
+## Public Methods
+
+| Method Signature | Description | Parameters | Return Type |
+|------------------|-------------|------------|-------------|
+| `int execute()`  | Executes the logic to mark games as started. | None | `int` - Returns an integer indicating the result of the execution, typically the number of games marked as started. |
+
+This interface is crucial for ensuring that the game-starting logic is consistently applied across the application, allowing for a clear separation of concerns and easier maintenance.

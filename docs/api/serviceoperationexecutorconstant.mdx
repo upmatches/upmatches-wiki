@@ -1,0 +1,75 @@
+---
+id: service-operation-executor-constant
+title: ServiceOperationExecutorConstant
+sidebar_label: ServiceOperationExecutorConstant
+---
+
+## Overview
+
+The `ServiceOperationExecutorConstant` class is a utility class that provides a collection of constant values used throughout the application for logging and error handling. These constants are primarily used to standardize log messages and error descriptions related to service operations, database interactions, and external service communications. The class is designed to be non-instantiable and serves as a centralized repository for these constant values.
+
+## Public Constants
+
+The following table documents the public constants available in the `ServiceOperationExecutorConstant` class:
+
+| Constant Name                          | Type   | Description                                                                 |
+|----------------------------------------|--------|-----------------------------------------------------------------------------|
+| `TRUNCATION_INDICATOR`                 | String | Indicates that a response has been truncated due to size limitations.       |
+| `MDC_REQUEST_ID_KEY`                   | String | Key used for storing request IDs in the MDC (Mapped Diagnostic Context).    |
+| `MAX_RESPONSE_BODY_SIZE`               | int    | Maximum size (in bytes) for a response body before truncation occurs.       |
+| `OPERATION_SUPPLIER_NOT_NULL`          | String | Error message indicating a null operation supplier.                         |
+| `OPERATION_TYPE_NOT_NULL`              | String | Error message indicating a null operation type.                             |
+| `EXCEPTION_FACTORY_NOT_NULL`           | String | Error message indicating a null exception factory.                          |
+| `LOG_EXECUTING_OPERATION`              | String | Log message template for executing an operation.                            |
+| `LOG_OPERATION_COMPLETED`              | String | Log message template for a successfully completed operation.                |
+| `LOG_ILLEGAL_ARGUMENT`                 | String | Log message template for an operation failure due to an illegal argument.   |
+| `LOG_DATABASE_EXCEPTION`               | String | Log message template for an operation failure due to a database exception.  |
+| `LOG_REST_CLIENT_EXCEPTION`            | String | Log message template for an operation failure due to a RestClient exception.|
+| `LOG_INVALID_FILE`                     | String | Log message template for an operation failure due to an invalid file.       |
+| `LOG_RESOURCE_NOT_FOUND`               | String | Log message template for an operation failure due to a missing resource.    |
+| `LOG_PROGRAMMER_ERROR`                 | String | Log message template for an operation failure due to a programmer error.    |
+| `LOG_UNEXPECTED_EXCEPTION`             | String | Log message template for an operation failure due to an unexpected exception.|
+| `UNEXPECTED_ERROR_DURING`              | String | Message prefix for unexpected errors during operations.                     |
+| `LOG_HANDLING_DATABASE_EXCEPTION`      | String | Log message template for handling a database exception.                     |
+| `LOG_UNHANDLED_DATABASE_EXCEPTION`     | String | Log message template for an unhandled database exception type.              |
+| `UNEXPECTED_DATABASE_ERROR_DURING`     | String | Message prefix for unexpected database errors during operations.            |
+| `CONCURRENT_MODIFICATION_DETECTED`     | String | Message indicating a concurrent modification was detected.                  |
+| `DATABASE_DEADLOCK_DETECTED`           | String | Message indicating a database deadlock was detected.                        |
+| `CANNOT_ACQUIRE_DATABASE_LOCK`         | String | Message indicating a failure to acquire a database lock.                    |
+| `RESOURCE_LOCKED_BY_ANOTHER_TRANSACTION`| String | Message indicating a resource is locked by another transaction.             |
+| `ENTITY_ALREADY_EXISTS`                | String | Message indicating an entity already exists.                                |
+| `JPA_SYSTEM_ERROR`                     | String | Message indicating a JPA system error occurred.                             |
+| `INVALID_DATA_ACCESS_API_USAGE`        | String | Message indicating invalid usage of the Data Access API.                    |
+| `PERSISTENCE_ERROR`                    | String | Message indicating a persistence error occurred.                            |
+| `TABLE_KEYWORD`                        | String | Keyword for identifying table-related errors.                               |
+| `TABLE_DOESNT_EXIST_KEYWORD`           | String | Keyword for identifying non-existent table errors.                          |
+| `TABLE_DOES_NOT_EXIST_MESSAGE`         | String | Message indicating a database table does not exist.                         |
+| `COLUMN_KEYWORD`                       | String | Keyword for identifying column-related errors.                              |
+| `COLUMN_DOES_NOT_EXIST_KEYWORD`        | String | Keyword for identifying non-existent column errors.                         |
+| `COLUMN_DOES_NOT_EXIST_MESSAGE`        | String | Message indicating a database column does not exist.                        |
+| `UNKNOWN_COLUMN_KEYWORD`               | String | Keyword for identifying unknown column errors.                              |
+| `COLUMN_MISMATCH_MESSAGE`              | String | Message indicating a database column mismatch.                              |
+| `SYNTAX_ERROR_KEYWORD`                 | String | Keyword for identifying SQL syntax errors.                                  |
+| `INVALID_SQL_SYNTAX_MESSAGE`           | String | Message indicating invalid SQL query syntax.                                |
+| `UNABLE_TO_ACCESS_DATABASE_RESOURCE`   | String | Message indicating an inability to access a database resource.              |
+| `ENTITY_NOT_FOUND_MESSAGE`             | String | Message indicating an entity was not found.                                 |
+| `ENTITY_CANNOT_UPDATE`                 | String | Message indicating an entity cannot be updated.                             |
+| `ENTITY_ALREADY_DELETED`               | String | Message indicating an entity was already deleted.                           |
+| `INTEGRITY_DUPLICATE_ENTRY`            | String | Message indicating a duplicate entry or constraint failure.                 |
+| `INTEGRITY_UPDATE_VIOLATES`            | String | Message indicating an update violates constraints.                          |
+| `INTEGRITY_FOREIGN_KEY`                | String | Message indicating a foreign key constraint violation.                      |
+| `INTEGRITY_DEFAULT`                    | String | Default message for constraint violations.                                  |
+| `DATA_INTEGRITY_VIOLATION_PREFIX`      | String | Prefix for data integrity violation messages.                               |
+| `CONSTRAINT_ENTITY_FAILS`              | String | Message indicating an entity fails validation rules.                        |
+| `CONSTRAINT_UPDATE_FAILS`              | String | Message indicating an update fails validation rules.                        |
+| `CONSTRAINT_DELETE_PREVENTED`          | String | Message indicating a delete operation was prevented.                        |
+| `CONSTRAINT_DEFAULT`                   | String | Default message for validation rule violations.                             |
+| `CONSTRAINT_VIOLATION_PREFIX`          | String | Prefix for constraint violation messages.                                   |
+| `EXTERNAL_SERVICE_ERROR_FORMAT`        | String | Format string for external service error messages.                          |
+| `EXTERNAL_SERVICE_UNAVAILABLE_FORMAT`  | String | Format string for external service unavailability messages.                 |
+| `LOG_RESPONSE_BODY_TRUNCATED`          | String | Log message template for truncated RestClient response bodies.              |
+| `HTTP_PREFIX`                          | String | Prefix for HTTP-related messages.                                           |
+
+## Constructor
+
+The `ServiceOperationExecutorConstant` class has a private constructor to prevent instantiation, as it is intended to be used solely for its static constants.

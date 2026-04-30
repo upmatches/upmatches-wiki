@@ -1,0 +1,21 @@
+---
+id: at-least-one-contact-method
+title: AtLeastOneContactMethod Annotation
+sidebar_label: AtLeastOneContactMethod
+---
+
+## Purpose of the Class
+
+The `AtLeastOneContactMethod` annotation is a custom validation annotation used in Java applications to ensure that at least one contact method is provided. It is typically applied to fields within a class to enforce the presence of contact information, such as an email or phone number, during validation processes. This annotation is part of the Jakarta Bean Validation framework and is validated by the `AtLeastOneContactMethodValidator` class.
+
+## Public Methods
+
+The `AtLeastOneContactMethod` annotation provides the following public methods:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `String message() default AtLeastOneContactMethodValidator.DEFAULT_VALIDATION_MESSAGE;` | Returns the default validation message that will be used if the constraint is violated. |
+| `Class<?>[] groups() default { };` | Allows the specification of validation groups to which this constraint belongs. This can be used to apply different validation rules in different contexts. |
+| `Class<? extends Payload>[] payload() default { };` | Can be used by clients of the Jakarta Bean Validation API to assign custom payload objects to a constraint. |
+
+This annotation is used in conjunction with a validator class (`AtLeastOneContactMethodValidator`) that contains the logic to check if at least one contact method is provided. The annotation can be applied to fields of a class, and it will enforce the validation rule at runtime.

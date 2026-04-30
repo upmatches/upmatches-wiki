@@ -1,0 +1,38 @@
+---
+id: create-activity-request
+title: CreateActivityRequest
+sidebar_label: CreateActivityRequest
+---
+
+## Overview
+
+The `CreateActivityRequest` class is a Java record used in the `com.upmatches.app.features.activity.requests` package. It represents a request to create a new activity, encapsulating the necessary data required for this operation. This class leverages Java's record feature to provide an immutable data structure with minimal boilerplate code.
+
+## Purpose
+
+The primary purpose of the `CreateActivityRequest` class is to serve as a data transfer object (DTO) for creating activities. It ensures that the activity name is provided and adheres to specified validation constraints.
+
+## Validation Constraints
+
+- **@NotBlank**: Ensures that the `name` field is not null or empty.
+- **@Size(max = 100)**: Restricts the length of the `name` field to a maximum of 100 characters.
+
+## Public Methods
+
+Since `CreateActivityRequest` is a record, it automatically provides the following methods:
+
+### Constructor
+
+| Parameter | Type   | Description                    |
+|-----------|--------|--------------------------------|
+| `name`    | String | The name of the activity. Must not be blank and must not exceed 100 characters. |
+
+### Accessor Method
+
+| Method     | Return Type | Description                    |
+|------------|-------------|--------------------------------|
+| `name()`   | String      | Returns the name of the activity. |
+
+## Usage
+
+The `CreateActivityRequest` record is typically used in scenarios where an activity needs to be created, and the input data must be validated against predefined constraints. This ensures that the application logic receives valid and well-formed data.

@@ -1,0 +1,68 @@
+---
+id: user-service
+title: UserService Class Documentation
+sidebar_label: UserService
+---
+
+## Overview
+
+The `UserService` class is a part of the `com.upmatches.app.features.user.services` package and is responsible for managing user profiles within the application. It provides functionalities to retrieve, complete, update, and delete user profiles. The class interacts with various repositories to perform operations on user data and ensures that the operations are executed within transactional boundaries.
+
+## Public Methods
+
+### `getProfile`
+
+Retrieves the profile of the authenticated user.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      |      |             |
+
+| Return Type          | Description                           |
+|----------------------|---------------------------------------|
+| `UserProfileResponse`| The profile data of the authenticated user. |
+
+### `completeProfile`
+
+Completes the profile of the authenticated user using the provided request data.
+
+| Parameter | Type                      | Description                    |
+|-----------|---------------------------|--------------------------------|
+| `request` | `CompleteProfileRequest`  | The request containing profile completion data. |
+
+| Return Type          | Description                           |
+|----------------------|---------------------------------------|
+| `UserProfileResponse`| The updated profile data after completion. |
+
+### `updateProfile`
+
+Updates the profile of the authenticated user with the provided request data.
+
+| Parameter | Type                    | Description                    |
+|-----------|-------------------------|--------------------------------|
+| `request` | `UpdateProfileRequest`  | The request containing profile update data. |
+
+| Return Type          | Description                           |
+|----------------------|---------------------------------------|
+| `UserProfileResponse`| The updated profile data after the update. |
+
+### `deleteUser`
+
+Deletes the profile of the authenticated user.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      |      |             |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      |             |
+
+## Key Concepts
+
+- **Transactional Operations**: The class uses Spring's `@Transactional` annotation to ensure that database operations are executed within a transaction, providing consistency and rollback capabilities in case of errors.
+- **Auditing**: The class is annotated with `@Auditable` to log actions performed on user profiles, such as completion, update, and deletion.
+- **Exception Handling**: Custom exceptions like `ProfileAlreadyCompletedException`, `ResourceNotFoundException`, and `UnauthorizedException` are used to handle specific error scenarios.
+- **Security**: The class retrieves the authenticated user's ID from the security context to ensure that operations are performed on the correct user profile.
+
+This documentation provides a concise overview of the `UserService` class, detailing its purpose, public methods, and key concepts.

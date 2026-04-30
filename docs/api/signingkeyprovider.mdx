@@ -1,0 +1,30 @@
+---
+id: signing-key-provider
+title: SigningKeyProvider Interface
+sidebar_label: SigningKeyProvider
+---
+
+import ECKey from 'com.nimbusds.jose.jwk.ECKey';
+
+## Overview
+
+The `SigningKeyProvider` interface is part of the `com.upmatches.app.features.auth.services` package. It defines a contract for classes that provide cryptographic signing keys, specifically Elliptic Curve keys, which are used in authentication processes. This interface is crucial for ensuring secure communication by enabling the signing and verification of tokens or messages.
+
+## Public Methods
+
+| Method Name       | Description                                                                 | Parameters | Return Type |
+|-------------------|-----------------------------------------------------------------------------|------------|-------------|
+| `getSigningKey`   | Retrieves the current signing key, which is an instance of `ECKey`.         | None       | `ECKey`     |
+| `getSigningKeyId` | Returns the identifier for the current signing key, typically a string ID.  | None       | `String`    |
+
+## Method Details
+
+### `getSigningKey`
+
+- **Description**: This method is responsible for providing the current signing key used for cryptographic operations. The key is an instance of `ECKey`, which is part of the Nimbus JOSE+JWT library, and represents an Elliptic Curve JSON Web Key (JWK).
+- **Return Type**: `ECKey` - The elliptic curve key used for signing.
+
+### `getSigningKeyId`
+
+- **Description**: This method returns the identifier associated with the current signing key. This ID is typically used to reference the key in a key management system or during key rotation processes.
+- **Return Type**: `String` - The identifier of the signing key.

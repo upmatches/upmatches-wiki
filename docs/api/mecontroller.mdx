@@ -1,0 +1,61 @@
+---
+id: me-controller
+title: MeController
+sidebar_label: MeController
+---
+
+## Purpose
+
+The `MeController` class is a REST controller in a Spring Boot application that manages user profile operations. It provides endpoints for retrieving, completing, updating, and deleting the current user's profile. This controller interacts with the `IUserService` to perform these operations and returns responses encapsulated in `ApiResponse` objects.
+
+## Public Methods
+
+### `getMe`
+
+Retrieves the current user's profile.
+
+| Parameter | Type                  | Description                     |
+|-----------|-----------------------|---------------------------------|
+| request   | `HttpServletRequest`  | The HTTP request object.        |
+
+| Return Type                                | Description                             |
+|--------------------------------------------|-----------------------------------------|
+| `ResponseEntity<ApiResponse<UserProfileResponse>>` | Response containing the user profile data. |
+
+### `completeProfile`
+
+Completes the current user's profile with the provided data.
+
+| Parameter | Type                          | Description                     |
+|-----------|-------------------------------|---------------------------------|
+| body      | `CompleteProfileRequest`      | The request body containing profile completion data. |
+| request   | `HttpServletRequest`          | The HTTP request object.        |
+
+| Return Type                                | Description                             |
+|--------------------------------------------|-----------------------------------------|
+| `ResponseEntity<ApiResponse<UserProfileResponse>>` | Response containing the completed user profile data. |
+
+### `updateProfile`
+
+Updates the current user's profile with the provided data.
+
+| Parameter | Type                          | Description                     |
+|-----------|-------------------------------|---------------------------------|
+| body      | `UpdateProfileRequest`        | The request body containing profile update data. |
+| request   | `HttpServletRequest`          | The HTTP request object.        |
+
+| Return Type                                | Description                             |
+|--------------------------------------------|-----------------------------------------|
+| `ResponseEntity<ApiResponse<UserProfileResponse>>` | Response containing the updated user profile data. |
+
+### `deleteMe`
+
+Deletes the current user's profile.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      |      |             |
+
+| Return Type               | Description                             |
+|---------------------------|-----------------------------------------|
+| `ResponseEntity<Void>`    | Response indicating successful deletion with no content. |

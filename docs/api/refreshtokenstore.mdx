@@ -1,0 +1,55 @@
+---
+id: refresh-token-store
+title: RefreshTokenStore Class
+sidebar_label: RefreshTokenStore
+---
+
+## Purpose
+
+The `RefreshTokenStore` class is a service component responsible for managing refresh tokens in a Redis data store. It provides functionality to store, validate, rotate, and revoke refresh tokens associated with user sessions. This class is designed to work within a Spring Boot application and relies on Redis for token storage and Jackson for JSON serialization and deserialization.
+
+## Public Methods
+
+### `store`
+
+Stores a refresh token for a specific user.
+
+| Parameter    | Type   | Description                   |
+|--------------|--------|-------------------------------|
+| `userId`     | `UUID` | The unique identifier of the user. |
+| `refreshToken` | `String` | The refresh token to be stored. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return a value. |
+
+### `validateAndRotate`
+
+Validates a refresh token and rotates it by generating a new one.
+
+| Parameter      | Type     | Description                       |
+|----------------|----------|-----------------------------------|
+| `refreshToken` | `String` | The refresh token to be validated and rotated. |
+
+| Return Type       | Description |
+|-------------------|-------------|
+| `ValidationResult` | Returns a `ValidationResult` object containing the user ID and new refresh token if validation is successful; otherwise, returns `null`. |
+
+### `revokeAllForUser`
+
+Revokes all refresh tokens associated with a specific user.
+
+| Parameter | Type   | Description                   |
+|-----------|--------|-------------------------------|
+| `userId`  | `UUID` | The unique identifier of the user whose tokens are to be revoked. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return a value. |
+
+## Additional Information
+
+- The class uses SHA-256 hashing to securely store token identifiers.
+- It leverages Redis for efficient token storage and retrieval.
+- The `ValidationResult` and `RefreshTokenEntry` are implemented as Java records for simplicity and immutability.
+- The class is conditional on the presence of a `SigningKeyProvider` bean, ensuring that it only initializes when the necessary components for JWT signing are available.

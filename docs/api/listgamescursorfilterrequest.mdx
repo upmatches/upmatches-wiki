@@ -1,0 +1,38 @@
+---
+id: list-games-cursor-filter-request
+title: ListGamesCursorFilterRequest
+sidebar_label: ListGamesCursorFilterRequest
+---
+
+import { useBaseUrl } from '@docusaurus/core';
+
+## Purpose
+
+The `ListGamesCursorFilterRequest` class is a Java record used to encapsulate the filtering criteria for listing games. It includes various fields that allow users to specify parameters such as venue IDs, skill level IDs, date and time ranges, and geographical location. This class is designed to facilitate the querying of game listings based on these criteria.
+
+## Public Methods
+
+The `ListGamesCursorFilterRequest` class provides several public methods to check the presence of specific filtering criteria. Below is a detailed description of each method, including parameters and return types:
+
+| Method Name          | Description                                                                 | Parameters | Return Type |
+|----------------------|-----------------------------------------------------------------------------|------------|-------------|
+| `hasLocation`        | Checks if all location-related fields (`latitude`, `longitude`, `radiusKm`) are set. | None       | `boolean`   |
+| `hasAnyLocationField`| Checks if any of the location-related fields (`latitude`, `longitude`, `radiusKm`) are set. | None       | `boolean`   |
+| `hasSkillLevels`     | Checks if the `skillLevelIds` list is not null and not empty.               | None       | `boolean`   |
+| `hasVenues`          | Checks if the `venueIds` list is not null and not empty.                    | None       | `boolean`   |
+
+## Fields
+
+The following fields are part of the `ListGamesCursorFilterRequest` record:
+
+- **venueIds**: A list of venue IDs with a maximum size of 20.
+- **skillLevelIds**: A list of skill level IDs with a maximum size of 20.
+- **fromDate**: The start date for filtering games.
+- **toDate**: The end date for filtering games.
+- **fromTime**: The start time for filtering games.
+- **toTime**: The end time for filtering games.
+- **latitude**: The latitude for geographical filtering, constrained between -90.0 and 90.0.
+- **longitude**: The longitude for geographical filtering, constrained between -180.0 and 180.0.
+- **radiusKm**: The radius in kilometers for geographical filtering, constrained between 1 and 5.
+
+These fields allow for comprehensive filtering of game listings based on both temporal and spatial criteria.

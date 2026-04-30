@@ -1,0 +1,29 @@
+---
+id: imintdevtokenservice
+title: IMintDevTokenService Interface
+sidebar_label: IMintDevTokenService
+---
+
+import com.upmatches.app.features.auth.responses.TokenResponse;
+
+import java.util.UUID;
+
+## Purpose
+
+The `IMintDevTokenService` interface is part of the authentication services in the `com.upmatches.app.features.auth.services` package. It defines a contract for generating development tokens, which are typically used for authentication and authorization purposes within the application. This interface ensures that any implementing class provides a specific method to mint a token for a given user.
+
+## Public Methods
+
+| Method Signature                | Description                                                                 |
+|---------------------------------|-----------------------------------------------------------------------------|
+| `TokenResponse execute(UUID userId)` | Generates a development token for the specified user. |
+
+### Method Details
+
+#### `execute(UUID userId)`
+
+- **Description**: This method is responsible for generating a development token for a user identified by the provided `UUID`. The token is encapsulated within a `TokenResponse` object.
+- **Parameters**:
+  - `UUID userId`: The unique identifier of the user for whom the token is to be generated.
+- **Returns**: 
+  - `TokenResponse`: An object containing the generated token and any additional relevant information.

@@ -1,0 +1,25 @@
+---
+id: mark-expired-games-service
+title: MarkExpiredGamesService
+sidebar_label: MarkExpiredGamesService
+---
+
+## Overview
+
+The `MarkExpiredGamesService` class is a service component in a Java application that is responsible for marking games as expired. It interacts with the `GameRepository` to update the status of games that are scheduled or started but have passed their expiration time. This service is part of the application's game management feature and ensures that outdated game statuses are correctly updated in the system.
+
+## Public Methods
+
+### `execute`
+
+This method is the primary operation of the `MarkExpiredGamesService`. It marks games as expired if they are scheduled or started but have passed the current time.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      | N/A  | This method does not take any parameters. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `int`       | Returns the number of games that were marked as expired. |
+
+The `execute` method uses the `ServiceOperationExecutor` to perform the operation within a transactional context, ensuring that the database updates are atomic and consistent. If no games are found to update, a `ResourceNotFoundException` is thrown.

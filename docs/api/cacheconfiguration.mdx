@@ -1,0 +1,59 @@
+---
+id: cache-configuration
+title: CacheConfiguration Class
+sidebar_label: CacheConfiguration
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+## Overview
+
+The `CacheConfiguration` class is a Spring configuration class responsible for setting up Redis as the caching provider. It leverages Spring's caching abstraction and is conditionally enabled based on the application's properties. This configuration ensures that the application uses Redis for caching when the `spring.cache.type` property is set to `redis`.
+
+## Class Details
+
+### Annotations
+
+- `@Configuration`: Indicates that the class declares one or more `@Bean` methods and may be processed by the Spring container to generate bean definitions and service requests.
+- `@EnableCaching`: Enables Spring's annotation-driven cache management capability.
+- `@ConditionalOnProperty`: Configures the class to be loaded only if the specified property (`spring.cache.type`) has the value `redis`.
+
+## Public Methods
+
+### `cacheManager`
+
+Creates and configures a `RedisCacheManager` bean.
+
+<Tabs>
+<TabItem value="Method Signature" label="Method Signature">
+
+```java
+public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory)
+```
+
+</TabItem>
+<TabItem value="Parameters" label="Parameters">
+
+| Parameter         | Type                   | Description                                      |
+|-------------------|------------------------|--------------------------------------------------|
+| `connectionFactory` | `RedisConnectionFactory` | Provides the connection to the Redis data store. |
+
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+
+| Return Type         | Description                                      |
+|---------------------|--------------------------------------------------|
+| `RedisCacheManager` | A manager that handles caching with Redis.       |
+
+</TabItem>
+</Tabs>
+
+### Method Details
+
+- **Purpose**: Configures the `RedisCacheManager` with a default time-to-live (TTL) of 30 minutes for cache entries. It also specifies the serialization strategy for cache keys using `StringRedisSerializer` and disables caching of `null` values.
+- **Default TTL**: The default time-to-live for cache entries is set to 30 minutes, which can be adjusted as needed by modifying the `DEFAULT_TTL` constant.
+
+## Usage
+
+This configuration class is automatically picked up by Spring when the application is configured to use Redis for caching. Ensure that the `spring.cache.type` property is set to `redis` in your application properties to activate this configuration.

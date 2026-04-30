@@ -1,0 +1,24 @@
+---
+id: audit-category
+title: AuditCategory Enum
+sidebar_label: AuditCategory
+---
+
+## Purpose
+
+The `AuditCategory` enum is part of the `com.upmatches.app.features.audit.enums` package. It defines a set of constants that represent different categories of audit actions within an application. These categories can be used to classify and manage audit logs, helping developers and system administrators to track and analyze various types of operations performed in the system.
+
+## Enum Constants
+
+The `AuditCategory` enum includes the following constants:
+
+| Constant        | Description                                                                 |
+|-----------------|-----------------------------------------------------------------------------|
+| `WRITE`         | Represents audit actions related to write operations.                       |
+| `AUTH`          | Represents audit actions related to authentication processes.               |
+| `AUTHZ`         | Represents audit actions related to authorization processes.                |
+| `SENSITIVE_READ`| Represents audit actions related to reading sensitive information.          |
+
+## Usage
+
+Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like final variables). The `AuditCategory` enum can be used to specify the category of an audit log entry, which can then be used for filtering, reporting, or triggering specific actions based on the type of operation being audited.

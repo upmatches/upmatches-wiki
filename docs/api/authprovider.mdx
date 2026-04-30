@@ -1,0 +1,47 @@
+---
+id: auth-provider
+title: AuthProvider Enum
+sidebar_label: AuthProvider
+---
+
+## Overview
+
+The `AuthProvider` enum is part of the `com.upmatches.app.features.auth.enums` package. It defines a set of constants representing different authentication providers that can be used within the application. Enums in Java are a special type of class used to define collections of constants. This enum helps in managing and referencing the supported authentication providers in a type-safe manner.
+
+## Enum Constants
+
+The `AuthProvider` enum includes the following constants:
+
+| Constant | Description |
+|----------|-------------|
+| `SINGPASS` | Represents the SingPass authentication provider. |
+| `AUTH0`    | Represents the Auth0 authentication provider. |
+| `APPLE`    | Represents the Apple authentication provider. |
+
+## Usage
+
+Enums are typically used in switch statements or for controlling logic based on the specific constant value. The `AuthProvider` enum can be used to determine which authentication provider is being utilized and to execute provider-specific logic accordingly.
+
+## Example
+
+Here's a simple example of how you might use the `AuthProvider` enum in a switch statement:
+
+```java
+AuthProvider provider = AuthProvider.AUTH0;
+
+switch (provider) {
+    case SINGPASS:
+        // Handle SingPass authentication logic
+        break;
+    case AUTH0:
+        // Handle Auth0 authentication logic
+        break;
+    case APPLE:
+        // Handle Apple authentication logic
+        break;
+    default:
+        throw new IllegalArgumentException("Unknown authentication provider: " + provider);
+}
+```
+
+This structure allows for clean and maintainable code when dealing with multiple authentication providers.

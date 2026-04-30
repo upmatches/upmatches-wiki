@@ -1,0 +1,33 @@
+---
+id: user-repository
+title: UserRepository Interface
+sidebar_label: UserRepository
+---
+
+## Overview
+
+The `UserRepository` interface is a part of the `com.upmatches.app.features.user.repositories` package and extends the `JpaRepository` interface provided by Spring Data JPA. It is designed to manage `User` entities, which are identified by a `UUID`. This interface provides several methods for retrieving `User` entities based on different unique identifiers and supports locking mechanisms for concurrent data access.
+
+## Public Methods
+
+The `UserRepository` interface includes the following public methods:
+
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `findBySingpassUuid` | `String singpassUuid` | `Optional<User>` | Retrieves a `User` entity by its Singpass UUID. |
+| `findByAuth0Uuid` | `String auth0UserId` | `Optional<User>` | Retrieves a `User` entity by its Auth0 UUID. |
+| `findByAppleUuid` | `String appleUuid` | `Optional<User>` | Retrieves a `User` entity by its Apple UUID. |
+| `findFirstByEmail` | `String email` | `Optional<User>` | Retrieves the first `User` entity found with the specified email. |
+| `findForUpdateById` | `UUID id` | `Optional<User>` | Retrieves a `User` entity by its ID with a pessimistic write lock to prevent concurrent modifications. |
+
+## Method Details
+
+- **findBySingpassUuid**: This method is used to find a `User` entity using the Singpass UUID, which is a unique identifier associated with the Singpass authentication system.
+
+- **findByAuth0Uuid**: This method allows retrieval of a `User` entity using the Auth0 UUID, which is a unique identifier associated with the Auth0 authentication system.
+
+- **findByAppleUuid**: This method is used to find a `User` entity using the Apple UUID, which is a unique identifier associated with Apple's authentication system.
+
+- **findFirstByEmail**: This method retrieves the first `User` entity that matches the specified email address. It is useful for cases where email addresses are expected to be unique.
+
+- **findForUpdateById**: This method retrieves a `User` entity by its ID and applies a pessimistic write lock. This ensures that the entity cannot be modified by other transactions until the current transaction is completed, which is useful for maintaining data integrity in concurrent environments.

@@ -1,0 +1,51 @@
+---
+id: game-bookmark-response
+title: GameBookmarkResponse Class
+sidebar_label: GameBookmarkResponse
+---
+
+import com.upmatches.app.features.game.entities.Game;
+import com.upmatches.app.features.game.entities.GameBookmark;
+import com.upmatches.app.features.game.enums.GameStatus;
+
+import java.time.Instant;
+import java.util.UUID;
+
+## GameBookmarkResponse Class
+
+The `GameBookmarkResponse` class is a record in the `com.upmatches.app.features.game.responses` package. It serves as a data transfer object (DTO) that encapsulates information about a bookmarked game, including its status and the time it was bookmarked. This class provides a structured response format for game bookmark-related operations.
+
+### Purpose
+
+The primary purpose of the `GameBookmarkResponse` class is to provide a convenient and consistent way to represent game bookmark data when interacting with other parts of the application or when sending responses to clients. It includes details about the game, its status, and the timestamp of when it was bookmarked.
+
+### Public Methods
+
+The `GameBookmarkResponse` class provides the following public static methods:
+
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `fromBookmark` | `GameBookmark bookmark`, `long participantCount` | `GameBookmarkResponse` | Creates a `GameBookmarkResponse` instance from a `GameBookmark` object and participant count. |
+| `fromGame` | `Game game`, `long participantCount` | `GameBookmarkResponse` | Creates a `GameBookmarkResponse` instance from a `Game` object and participant count. |
+
+### Method Details
+
+#### `fromBookmark`
+
+- **Parameters:**
+  - `GameBookmark bookmark`: The game bookmark entity from which to create the response.
+  - `long participantCount`: The number of participants in the game.
+
+- **Return Type:** `GameBookmarkResponse`
+
+- **Description:** This method constructs a `GameBookmarkResponse` using the provided `GameBookmark` object. It extracts the game details and the bookmark timestamp to populate the response.
+
+#### `fromGame`
+
+- **Parameters:**
+  - `Game game`: The game entity from which to create the response.
+  - `long participantCount`: The number of participants in the game.
+
+- **Return Type:** `GameBookmarkResponse`
+
+- **Description:** This method constructs a `GameBookmarkResponse` using the provided `Game` object. It does not include bookmark-specific information, such as the bookmark timestamp, as it is intended for scenarios where only game information is available.

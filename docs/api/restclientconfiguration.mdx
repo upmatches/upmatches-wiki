@@ -1,0 +1,57 @@
+---
+id: rest-client-configuration
+title: RestClientConfiguration
+sidebar_label: RestClientConfiguration
+---
+
+## Overview
+
+The `RestClientConfiguration` class is a Spring configuration class responsible for setting up and providing `RestClient` beans for different authentication services. It configures HTTP clients with specific settings such as timeouts and headers, and ensures that necessary properties are provided for each service.
+
+## Public Methods
+
+The class provides the following public methods:
+
+### `singpassRestClient`
+
+This method creates and configures a `RestClient` bean for Singpass with default headers and a request factory.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      | N/A  | This method does not take any parameters. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `RestClient` | A configured `RestClient` instance for Singpass. |
+
+### `auth0RestClient`
+
+This method creates and configures a `RestClient` bean for Auth0, using the domain specified in `Auth0Properties`.
+
+| Parameter       | Type             | Description |
+|-----------------|------------------|-------------|
+| `auth0Properties` | `Auth0Properties` | Contains configuration properties for Auth0, including the domain. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `RestClient` | A configured `RestClient` instance for Auth0. |
+
+**Exceptions:**
+
+- Throws `IllegalStateException` if the Auth0 domain is not configured.
+
+### `appleRestClient`
+
+This method creates and configures a `RestClient` bean for Apple, using the JWKS URI specified in `AppleProperties`.
+
+| Parameter       | Type              | Description |
+|-----------------|-------------------|-------------|
+| `appleProperties` | `AppleProperties` | Contains configuration properties for Apple, including the JWKS URI. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `RestClient` | A configured `RestClient` instance for Apple. |
+
+**Exceptions:**
+
+- Throws `IllegalStateException` if the Apple JWKS URI is not configured.

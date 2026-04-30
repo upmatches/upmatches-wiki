@@ -1,0 +1,20 @@
+---
+id: iauthenticateduserresolver
+title: IAuthenticatedUserResolver Interface
+sidebar_label: IAuthenticatedUserResolver
+---
+
+## Purpose
+
+The `IAuthenticatedUserResolver` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for resolving authenticated user information, specifically focusing on retrieving user IDs. This interface is designed to be implemented by classes that handle user authentication and identification within the application.
+
+## Public Methods
+
+The interface provides the following public methods:
+
+| Method Name       | Parameters | Return Type          | Description                                                                 |
+|-------------------|------------|----------------------|-----------------------------------------------------------------------------|
+| `requireUserId`   | None       | `UUID`               | Retrieves the user ID of the authenticated user. Throws an exception if the user is not authenticated. |
+| `optionalUserId`  | None       | `Optional<UUID>`     | Attempts to retrieve the user ID of the authenticated user. Returns an `Optional` that is empty if the user is not authenticated. |
+
+This interface is a sealed interface, permitting only the `AuthenticatedUserResolver` class to implement it, ensuring controlled extension and implementation within the application.

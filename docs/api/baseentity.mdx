@@ -1,0 +1,49 @@
+---
+id: base-entity
+title: BaseEntity Class
+sidebar_label: BaseEntity
+---
+
+import { useBaseUrl } from '@docusaurus/core';
+
+## Purpose
+
+The `BaseEntity` class is an abstract superclass designed to be extended by other entity classes within a Java application. It provides common fields and functionality for entity auditing and lifecycle management, such as automatic generation of unique identifiers, timestamps for creation and modification, and tracking of who created or last modified the entity. This class is annotated with JPA and Spring Data annotations to facilitate integration with a database and support for auditing.
+
+## Public Methods
+
+### onCreate
+
+This method is automatically invoked before the entity is persisted. It ensures that a unique UUID is assigned to the entity if it has not already been set.
+
+| Method Name | Parameters | Return Type | Description |
+|-------------|------------|-------------|-------------|
+| `onCreate`  | None       | `void`      | Ensures a UUID is generated before the entity is persisted. |
+
+### isDeleted
+
+Determines whether the entity has been marked as deleted.
+
+| Method Name | Parameters | Return Type | Description |
+|-------------|------------|-------------|-------------|
+| `isDeleted` | None       | `boolean`   | Returns `true` if the entity is marked as deleted, otherwise `false`. |
+
+### markDeleted
+
+Marks the entity as deleted by setting the `deletedAt` timestamp to the current time.
+
+| Method Name  | Parameters | Return Type | Description |
+|--------------|------------|-------------|-------------|
+| `markDeleted`| None       | `void`      | Sets the `deletedAt` timestamp to the current time, marking the entity as deleted. |
+
+## Fields
+
+The `BaseEntity` class includes several fields that are automatically managed:
+
+- **id**: A unique identifier for the entity, automatically generated.
+- **uuid**: A universally unique identifier for the entity, generated if not set before persistence.
+- **createdAt**: The timestamp when the entity was created, set automatically.
+- **updatedAt**: The timestamp when the entity was last modified, updated automatically.
+- **createdBy**: The identifier of the user who created the entity, set automatically.
+- **updatedBy**: The identifier of the user who last modified the entity, updated automatically.
+- **deletedAt**: The timestamp indicating when the entity was marked as deleted.

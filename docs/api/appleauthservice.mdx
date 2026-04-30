@@ -1,0 +1,31 @@
+---
+id: apple-auth-service
+title: AppleAuthService
+sidebar_label: AppleAuthService
+---
+
+## Overview
+
+The `AppleAuthService` class is a part of the authentication services in the `com.upmatches.app.features.auth.services` package. It is responsible for verifying Apple ID tokens using the JSON Web Key Set (JWKS) provided by Apple. This service ensures that the tokens are valid and have the correct issuer and audience claims. It also caches the JWKS to optimize performance by reducing the number of network requests.
+
+## Public Methods
+
+The `AppleAuthService` class implements the `IAppleAuthService` interface and provides the following public method:
+
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `verifyIdentityToken` | `identityToken` (String) | `AppleVerifiedClaims` | Verifies the provided Apple ID token and returns the claims if the token is valid. Throws an `IllegalStateException` if verification fails. |
+
+### Method Details
+
+#### `verifyIdentityToken`
+
+- **Parameters:**
+
+  | Name | Type | Description |
+  |------|------|-------------|
+  | `identityToken` | `String` | The Apple ID token to be verified. |
+
+- **Return Type:** `AppleVerifiedClaims`
+
+- **Description:** This method verifies the provided Apple ID token by checking its claims against the expected issuer and audience. It uses the JWKS fetched from Apple to validate the token's signature. If the token is valid, it returns an `AppleVerifiedClaims` object containing the subject and email claims. If the token is invalid, it throws an `IllegalStateException` with an appropriate error message.

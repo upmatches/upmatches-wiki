@@ -1,0 +1,30 @@
+---
+id: IListGameBookmarksService
+title: IListGameBookmarksService Interface
+sidebar_label: IListGameBookmarksService
+---
+
+## Purpose
+
+The `IListGameBookmarksService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that handle the retrieval of game bookmarks in a paginated manner. This interface is designed to be implemented by classes that provide specific logic for listing game bookmarks, ensuring a consistent method signature for executing the retrieval process.
+
+## Public Methods
+
+### `execute`
+
+This method is responsible for retrieving a paginated list of game bookmarks. It uses a cursor-based pagination approach, which is useful for efficiently navigating through large sets of data.
+
+| Method Signature                                                                 | Description                                                                 |
+|----------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `CursorPagedResponse<GameBookmarkResponse> execute(String cursor, int size)`     | Retrieves a paginated list of game bookmarks starting from the given cursor. |
+
+#### Parameters
+
+| Parameter | Type   | Description                                                                 |
+|-----------|--------|-----------------------------------------------------------------------------|
+| `cursor`  | String | The cursor indicating the starting point for the pagination.                |
+| `size`    | int    | The number of game bookmarks to retrieve in this page.                      |
+
+#### Return Type
+
+- **`CursorPagedResponse<GameBookmarkResponse>`**: This return type encapsulates the paginated response, including the list of `GameBookmarkResponse` objects and any additional pagination metadata.

@@ -1,0 +1,35 @@
+---
+id: irecord-audit-event-service
+title: IRecordAuditEventService Interface
+sidebar_label: IRecordAuditEventService
+---
+
+## Overview
+
+The `IRecordAuditEventService` interface is part of the `com.upmatches.app.features.audit.services` package. It defines a contract for recording audit events within the application. This interface is designed to be implemented by classes that handle the recording of audit events, ensuring a consistent method signature across different implementations.
+
+## Public Methods
+
+The `IRecordAuditEventService` interface declares the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `void record(AuditEventRequest request)` | Records an audit event using the provided `AuditEventRequest` object. |
+
+### Method Details
+
+#### `record`
+
+- **Parameters:**
+
+  | Name    | Type                          | Description                                    |
+  |---------|-------------------------------|------------------------------------------------|
+  | request | `AuditEventRequest`           | An object containing the details of the audit event to be recorded. |
+
+- **Return Type:** `void`
+
+  This method does not return any value. It performs the action of recording the audit event based on the information provided in the `AuditEventRequest` object.
+
+## Implementation Notes
+
+The `IRecordAuditEventService` interface is a sealed interface, which means it restricts which classes can implement it. In this case, the only permitted implementation is `RecordAuditEventService`. This design choice helps maintain control over the implementations and ensures that all audit event recording follows a consistent pattern.

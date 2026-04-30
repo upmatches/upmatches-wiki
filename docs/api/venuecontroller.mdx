@@ -1,0 +1,36 @@
+---
+id: venue-controller
+title: VenueController
+sidebar_label: VenueController
+---
+
+## Purpose
+
+The `VenueController` class is a REST controller in a Spring Boot application that manages venue-related operations. It provides endpoints for listing venues and importing venue data. The controller ensures that only authorized users can perform certain actions, such as importing venues.
+
+## Public Methods
+
+### listVenues
+
+Retrieves a paginated list of venues.
+
+| Parameter | Type                | Description                                  |
+|-----------|---------------------|----------------------------------------------|
+| page      | Integer (optional)  | The page number to retrieve (default is 0).  |
+| size      | Integer (optional)  | The number of venues per page (default is 20). |
+| request   | HttpServletRequest  | The HTTP request object.                     |
+
+**Returns:** `ResponseEntity<ApiResponse<PagedResponse<VenueResponse>>>`  
+A response entity containing the paginated list of venues and a success message.
+
+### createVenueImport
+
+Imports venue data from a file. This operation is restricted to users with the 'ADMIN' role.
+
+| Parameter | Type             | Description                      |
+|-----------|------------------|----------------------------------|
+| file      | MultipartFile    | The file containing venue data.  |
+| request   | HttpServletRequest | The HTTP request object.         |
+
+**Returns:** `ResponseEntity<ApiResponse<VenueImportResponse>>`  
+A response entity containing the result of the import operation and a success message.

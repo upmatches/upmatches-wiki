@@ -1,0 +1,32 @@
+---
+id: firebase-properties
+title: FirebaseProperties Class
+sidebar_label: FirebaseProperties
+---
+
+## Overview
+
+The `FirebaseProperties` class is a configuration properties holder for Firebase-related settings in a Spring Boot application. It is designed to map properties prefixed with `app.firebase` from the application's configuration files (e.g., `application.yml` or `application.properties`) to Java objects. This class uses the `@ConfigurationProperties` annotation to facilitate this mapping.
+
+## Purpose
+
+The primary purpose of the `FirebaseProperties` class is to encapsulate Firebase configuration details, such as the service account path and JSON content, and provide utility methods to check their availability. This is useful for applications that need to interact with Firebase services and require these configurations to be set up correctly.
+
+## Public Methods
+
+The `FirebaseProperties` class provides the following public methods:
+
+| Method Name | Description | Parameters | Return Type |
+|-------------|-------------|------------|-------------|
+| `hasJson()` | Checks if the `serviceAccountJson` property is set. | None | `boolean` |
+| `hasPath()` | Checks if the `serviceAccountPath` property is set. | None | `boolean` |
+
+### Method Details
+
+- **`hasJson()`**: This method returns `true` if the `serviceAccountJson` property is not `null`, indicating that the JSON content for the Firebase service account is available.
+
+- **`hasPath()`**: This method returns `true` if the `serviceAccountPath` property is not `null`, indicating that the path to the Firebase service account file is available.
+
+## Usage
+
+To use the `FirebaseProperties` class, ensure that your Spring Boot application's configuration files contain the necessary `app.firebase` properties. The class will automatically map these properties to its fields, allowing you to access them through the provided methods.

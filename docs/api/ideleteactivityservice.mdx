@@ -1,0 +1,29 @@
+---
+id: IDeleteActivityService
+title: IDeleteActivityService Interface
+sidebar_label: IDeleteActivityService
+---
+
+## Overview
+
+The `IDeleteActivityService` is a sealed interface in the `com.upmatches.app.features.activity.services` package. It defines a contract for deleting activities identified by a unique identifier. This interface is part of a service layer that handles activity-related operations, ensuring that any implementing class provides the necessary functionality to delete an activity.
+
+## Public Methods
+
+The `IDeleteActivityService` interface declares the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `void execute(UUID id)` | Deletes an activity identified by the provided UUID. |
+
+### Method Details
+
+#### `void execute(UUID id)`
+
+- **Parameters:**
+  - `UUID id`: The unique identifier of the activity to be deleted. This parameter is crucial as it specifies which activity should be removed from the system.
+
+- **Return Type:**
+  - `void`: This method does not return any value. It performs the deletion operation as a side effect.
+
+The `execute` method is the core functionality of the `IDeleteActivityService` interface, ensuring that any implementing class provides a mechanism to delete an activity using its unique identifier.

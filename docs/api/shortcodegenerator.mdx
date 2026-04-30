@@ -1,0 +1,27 @@
+---
+id: shortcode-generator
+title: ShortCodeGenerator
+sidebar_label: ShortCodeGenerator
+---
+
+## Overview
+
+The `ShortCodeGenerator` class is a utility designed to generate random short codes. These codes are composed of alphanumeric characters and have a fixed length. This class is particularly useful in scenarios where unique identifiers are needed, such as generating shareable links or short URLs.
+
+## Public Methods
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `public static String generate()` | Generates a random alphanumeric short code of a fixed length. |
+
+### Method Details
+
+#### `generate`
+
+- **Description**: This method generates a random short code consisting of alphanumeric characters. The length of the code is fixed at 8 characters.
+- **Parameters**: None
+- **Returns**: 
+  - **Type**: `String`
+  - **Description**: A randomly generated alphanumeric string of length 8.
+
+The `generate` method utilizes a `SecureRandom` instance to ensure that the generated codes are unpredictable and suitable for security-sensitive applications. The method constructs the code by randomly selecting characters from a predefined alphabet that includes digits, uppercase, and lowercase letters.

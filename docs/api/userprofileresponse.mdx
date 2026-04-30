@@ -1,0 +1,44 @@
+---
+id: user-profile-response
+title: UserProfileResponse Class
+sidebar_label: UserProfileResponse
+---
+
+## Purpose
+
+The `UserProfileResponse` class is a Java record designed to encapsulate user profile information in a structured format. It is primarily used to generate a response object containing user details, contact methods, skill levels, and other relevant attributes. This class is particularly useful in scenarios where user data needs to be transferred between different layers of an application, such as from the backend to the frontend.
+
+## Public Methods
+
+### fromUser
+
+The `fromUser` method is a static factory method that constructs a `UserProfileResponse` object from a `User` entity. It aggregates various user attributes and transforms them into a format suitable for client consumption.
+
+| Parameter         | Type          | Description                                                                 |
+|-------------------|---------------|-----------------------------------------------------------------------------|
+| `user`            | `User`        | The user entity from which to extract profile information.                  |
+| `totalGamesJoined`| `long`        | The total number of games the user has joined.                              |
+| `totalGamesHosted`| `long`        | The total number of games the user has hosted.                              |
+
+#### Return Type
+
+- **`UserProfileResponse`**: Returns a new instance of `UserProfileResponse` populated with data extracted from the provided `User` entity.
+
+## Attributes
+
+The `UserProfileResponse` record contains the following attributes:
+
+| Attribute                | Type                        | Description                                                                 |
+|--------------------------|-----------------------------|-----------------------------------------------------------------------------|
+| `userId`                 | `UUID`                      | Unique identifier for the user.                                             |
+| `authProvider`           | `String`                    | The authentication provider used by the user (e.g., Singpass, Apple, Auth0).|
+| `providerUuid`           | `String`                    | The unique identifier provided by the authentication provider.              |
+| `name`                   | `String`                    | The name of the user.                                                       |
+| `contactMethods`         | `List<ContactMethod>`       | A list of contact methods associated with the user (e.g., WhatsApp, Telegram).|
+| `skillLevels`            | `List<SkillLevelResponse>`  | A list of skill levels associated with the user.                            |
+| `hasCompletedOnboarding` | `Boolean`                   | Indicates whether the user has completed the onboarding process.            |
+| `totalGamesJoined`       | `Long`                      | The total number of games the user has joined.                              |
+| `totalGamesHosted`       | `Long`                      | The total number of games the user has hosted.                              |
+| `penaltyPoints`          | `Integer`                   | The number of penalty points the user has accumulated.                      |
+| `avatarUrl`              | `String`                    | URL to the user's avatar image.                                             |
+| `canCreateGame`          | `Boolean`                   | Indicates whether the user has the permission to create a game.             |

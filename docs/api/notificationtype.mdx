@@ -1,0 +1,43 @@
+---
+id: notification-type
+title: NotificationType Enum
+sidebar_label: NotificationType
+---
+
+## Overview
+
+The `NotificationType` enum is part of the `com.upmatches.app.features.notification.enums` package. It defines a set of constants representing different types of notifications that can be used within the application. Enums in Java are a special type of class that represent a group of constants (unchangeable variables, like final variables).
+
+## Enum Constants
+
+The `NotificationType` enum includes the following constants:
+
+- **PLAYER_JOINED**: Indicates that a player has joined.
+- **PLAYER_LEFT**: Indicates that a player has left.
+- **PLAYER_WARNING_MISMATCH**: Indicates a warning due to a mismatch involving a player.
+- **GAME_FULL**: Indicates that a game is full.
+- **GAME_REMINDER_3_DAYS**: A reminder notification for a game scheduled in 3 days.
+- **GAME_REMINDER_1_DAY**: A reminder notification for a game scheduled in 1 day.
+- **GAME_UPDATED**: Indicates that a game has been updated.
+- **GAME_REMOVED**: Indicates that a game has been removed.
+- **PLAYER_REMOVED_FROM_GAME**: Indicates that a player has been removed from a game.
+
+## Public Methods
+
+Enums in Java inherently provide some public methods, but since this enum does not define any additional methods beyond the default ones provided by Java, we will focus on the constants themselves.
+
+### Enum Constants
+
+| Constant                  | Description                                         |
+|---------------------------|-----------------------------------------------------|
+| `PLAYER_JOINED`           | Notification for when a player joins.               |
+| `PLAYER_LEFT`             | Notification for when a player leaves.              |
+| `PLAYER_WARNING_MISMATCH` | Notification for a player mismatch warning.         |
+| `GAME_FULL`               | Notification for when a game is full.               |
+| `GAME_REMINDER_3_DAYS`    | Reminder for a game scheduled in 3 days.            |
+| `GAME_REMINDER_1_DAY`     | Reminder for a game scheduled in 1 day.             |
+| `GAME_UPDATED`            | Notification for when a game is updated.            |
+| `GAME_REMOVED`            | Notification for when a game is removed.            |
+| `PLAYER_REMOVED_FROM_GAME`| Notification for when a player is removed from a game.|
+
+This enum can be used throughout the application to handle different notification scenarios consistently and efficiently.

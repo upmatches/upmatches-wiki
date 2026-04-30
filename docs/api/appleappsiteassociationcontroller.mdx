@@ -1,0 +1,26 @@
+---
+id: apple-app-site-association-controller
+title: AppleAppSiteAssociationController
+sidebar_label: AppleAppSiteAssociationController
+---
+
+## Purpose
+
+The `AppleAppSiteAssociationController` class is a Spring Boot REST controller designed to serve the `apple-app-site-association.json` file. This file is crucial for enabling Universal Links on iOS devices, allowing apps to open specific content directly. The controller handles HTTP GET requests to the `/.well-known/apple-app-site-association` endpoint and returns the JSON file with appropriate caching headers.
+
+## Public Methods
+
+### appleAppSiteAssociation
+
+This method handles GET requests to the `/.well-known/apple-app-site-association` endpoint. It serves the `apple-app-site-association.json` file from the classpath with a JSON content type and sets caching headers to cache the response for one hour.
+
+| Method Name                | Parameters | Return Type                      | Description                                                                 |
+|----------------------------|------------|----------------------------------|-----------------------------------------------------------------------------|
+| `appleAppSiteAssociation`  | None       | `ResponseEntity<Resource>`       | Serves the `apple-app-site-association.json` file with caching headers.     |
+
+- **Parameters**: This method does not take any parameters.
+- **Return Type**: Returns a `ResponseEntity<Resource>` containing the JSON file and HTTP headers for content type and caching.
+
+## Asset Routing
+
+No images or additional assets are used in this documentation. If needed, assets should be placed in the `/static` directory and referenced with absolute paths.

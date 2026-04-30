@@ -1,0 +1,43 @@
+---
+id: list-my-joined-games-cursor-service
+title: ListMyJoinedGamesCursorService
+sidebar_label: List My Joined Games Cursor Service
+---
+
+## Overview
+
+The `ListMyJoinedGamesCursorService` class is a service component in a Java application that manages the retrieval of games a user has joined. It leverages cursor-based pagination to efficiently handle large datasets. This service is part of the application's game feature and interacts with repositories to fetch game data and participant counts.
+
+## Public Methods
+
+### `execute`
+
+Executes the service operation to retrieve a paginated list of games that the authenticated user has joined.
+
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `cursor`  | String | The cursor string for pagination.                |
+| `size`    | int    | The number of records to retrieve per page.      |
+
+| Return Type                          | Description                                                  |
+|--------------------------------------|--------------------------------------------------------------|
+| `CursorPagedResponse<GameResponse>`  | A paginated response containing game data and the next cursor. |
+
+## Method Details
+
+### `execute`
+
+- **Purpose**: Retrieves a list of games joined by the authenticated user, using cursor-based pagination.
+- **Parameters**:
+  - `cursor`: A string representing the current position in the dataset for pagination.
+  - `size`: An integer specifying the number of games to retrieve.
+- **Returns**: A `CursorPagedResponse` object containing a list of `GameResponse` objects and a cursor for the next page of results.
+- **Operation**:
+  - Resolves the authenticated user's ID.
+  - Decodes the cursor to determine the starting point for retrieval.
+  - Fetches the list of games the user has joined from the `GameRepository`.
+  - Counts active participants for each game using the `GameParticipantRepository`.
+  - Constructs a list of `GameResponse` objects for the retrieved games.
+  - Encodes a new cursor if there are more games to fetch.
+
+The `ListMyJoinedGamesCursorService` class is designed to be used within a Spring application, marked with the `@Service` annotation, and supports transactional operations with read-only settings to ensure data consistency during retrieval.

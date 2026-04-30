@@ -1,0 +1,37 @@
+---
+id: create-game-service
+title: CreateGameService
+sidebar_label: CreateGameService
+---
+
+## Purpose
+
+The `CreateGameService` class is responsible for handling the creation of a new game within the application. It ensures that all necessary validations are performed, such as checking user authentication, onboarding completion, and potential scheduling conflicts. The service also manages the creation of share links for the newly created game.
+
+## Public Methods
+
+### `execute`
+
+Executes the process of creating a new game based on the provided request.
+
+| Parameter | Type                  | Description                                                                 |
+|-----------|-----------------------|-----------------------------------------------------------------------------|
+| `request` | `CreateGameRequest`   | The request object containing all necessary information to create a new game.|
+
+| Return Type  | Description                                                                                   |
+|--------------|-----------------------------------------------------------------------------------------------|
+| `GameResponse` | Returns a `GameResponse` object containing details of the newly created game and share link. |
+
+## Method Details
+
+### `execute(CreateGameRequest request)`
+
+- **Purpose**: This method orchestrates the creation of a new game. It performs various checks to ensure the user is eligible to create a game, such as verifying Singpass authentication and onboarding completion. It also checks for overlapping game schedules if the user wishes to join as an organizer. Upon successful validation, it creates a new game, saves it to the repository, and generates a share link.
+
+- **Exceptions**:
+  - `SingpassRequiredException`: Thrown if the user is not authenticated via Singpass.
+  - `OnboardingRequiredException`: Thrown if the user has not completed onboarding.
+  - `OverlappingGameException`: Thrown if there is a scheduling conflict with another game.
+  - `ResourceNotFoundException`: Thrown if any required resource is not found during the operation.
+
+This service is a critical component in the game management feature, ensuring that games are created with proper validation and that users have the necessary permissions and availability.

@@ -1,0 +1,92 @@
+---
+id: audit-aspect
+title: AuditAspect Class Documentation
+sidebar_label: AuditAspect
+---
+
+## Purpose of the `AuditAspect` Class
+
+The `AuditAspect` class is an Aspect-Oriented Programming (AOP) component designed to intercept and audit method calls annotated with the `@Auditable` annotation. It captures details about the execution, such as the actor, action, outcome, and any exceptions that occur, and records these details using the `IRecordAuditEventService`. This class is particularly useful for logging and monitoring user actions within an application, providing insights into user behavior and system performance.
+
+## Public Methods
+
+### `audit`
+
+The `audit` method is the primary entry point for the aspect. It wraps the execution of methods annotated with `@Auditable`, capturing execution details and recording them as audit events.
+
+| Parameter     | Type                      | Description                                                                 |
+|---------------|---------------------------|-----------------------------------------------------------------------------|
+| `joinPoint`   | `ProceedingJoinPoint`     | The join point representing the method execution being intercepted.         |
+
+| Return Type   | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `Object`      | The result of the method execution, or rethrows any exception encountered.  |
+
+### `resolveAnnotation`
+
+Resolves the `@Auditable` annotation from the intercepted method.
+
+| Parameter     | Type                      | Description                                                                 |
+|---------------|---------------------------|-----------------------------------------------------------------------------|
+| `joinPoint`   | `ProceedingJoinPoint`     | The join point representing the method execution being intercepted.         |
+
+| Return Type   | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `Auditable`   | The `Auditable` annotation instance if present, otherwise `null`.           |
+
+### `buildRequest`
+
+Constructs an `AuditEventRequest` object containing details of the audit event.
+
+| Parameter     | Type                      | Description                                                                 |
+|---------------|---------------------------|-----------------------------------------------------------------------------|
+| `annotation`  | `Auditable`               | The `Auditable` annotation instance.                                        |
+| `args`        | `Object[]`                | The arguments passed to the intercepted method.                             |
+| `result`      | `Object`                  | The result of the method execution.                                         |
+| `failure`     | `Throwable`               | Any exception thrown during method execution.                               |
+
+| Return Type   | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `AuditEventRequest` | The constructed audit event request object.                           |
+
+### `resolveActorId`
+
+Attempts to resolve the ID of the authenticated user.
+
+| Return Type   | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `UUID`        | The UUID of the authenticated user, or `null` if not authenticated.         |
+
+### `resolveResourceId`
+
+Evaluates the resource ID expression defined in the `@Auditable` annotation.
+
+| Parameter     | Type                      | Description                                                                 |
+|---------------|---------------------------|-----------------------------------------------------------------------------|
+| `annotation`  | `Auditable`               | The `Auditable` annotation instance.                                        |
+| `args`        | `Object[]`                | The arguments passed to the intercepted method.                             |
+| `result`      | `Object`                  | The result of the method execution.                                         |
+
+| Return Type   | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `String`      | The evaluated resource ID, or `null` if evaluation fails.                   |
+
+### `resolveHttpContext`
+
+Retrieves HTTP context information such as IP address and User-Agent.
+
+| Return Type   | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `HttpContext` | An object containing the IP address and User-Agent of the request.          |
+
+### `emptyToNull`
+
+Converts an empty or blank string to `null`.
+
+| Parameter     | Type                      | Description                                                                 |
+|---------------|---------------------------|-----------------------------------------------------------------------------|
+| `value`       | `String`                  | The string value to check.                                                  |
+
+| Return Type   | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `String`      | `null` if the input is empty or blank, otherwise the original string.       |

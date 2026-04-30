@@ -1,0 +1,34 @@
+---
+id: iupdategameservice
+title: IUpdateGameService Interface
+sidebar_label: IUpdateGameService
+---
+
+## Overview
+
+The `IUpdateGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for updating game information within the application. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting only the `UpdateGameService` class.
+
+## Public Methods
+
+The `IUpdateGameService` interface declares the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `GameResponse execute(UUID id, UpdateGameRequest request)` | Updates the game information based on the provided `UUID` and `UpdateGameRequest`. |
+
+### Method Details
+
+#### `execute`
+
+- **Description**: This method is responsible for updating the game details. It takes a unique identifier for the game and a request object containing the updated game information.
+- **Parameters**:
+  | Name     | Type                          | Description                           |
+  |----------|-------------------------------|---------------------------------------|
+  | `id`     | `UUID`                        | The unique identifier of the game to be updated. |
+  | `request`| `UpdateGameRequest`           | An object containing the new game data to be applied. |
+- **Returns**: 
+  | Type          | Description |
+  |---------------|-------------|
+  | `GameResponse`| An object containing the updated game information after the operation is completed. |
+
+This interface is crucial for ensuring that any implementation adheres to the contract of updating game details consistently across the application.

@@ -1,0 +1,24 @@
+---
+id: dev-fcm-test-notification-controller
+title: DevFcmTestNotificationController
+sidebar_label: Dev FCM Test Notification Controller
+---
+
+## Purpose
+
+The `DevFcmTestNotificationController` class is a Spring Boot REST controller designed for development environments. It handles HTTP POST requests to send test Firebase Cloud Messaging (FCM) notifications. This controller is part of the internal API and is only active when the application is running with the "dev" profile.
+
+## Public Methods
+
+### `sendTestNotification`
+
+Handles the sending of test FCM notifications.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `body`    | `SendFcmTestNotificationRequest` | The request body containing the necessary data to send a test FCM notification. |
+| `request` | `HttpServletRequest` | The HTTP request object, used to retrieve request metadata such as the URI. |
+
+#### Returns
+
+- `ResponseEntity<ApiResponse<FcmTestNotificationResponse>>`: A response entity containing an API response with the result of the FCM test notification operation. The response includes a success message and the request URI.

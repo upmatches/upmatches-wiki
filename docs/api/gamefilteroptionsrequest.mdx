@@ -1,0 +1,59 @@
+---
+id: game-filter-options-request
+title: GameFilterOptionsRequest
+sidebar_label: GameFilterOptionsRequest
+---
+
+import com.upmatches.app.features.game.enums.GameType;
+import jakarta.validation.constraints.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
+## Purpose
+
+The `GameFilterOptionsRequest` class is a record used to encapsulate various filtering options for querying game data. It includes fields for date ranges, venue and skill level identifiers, time ranges, game type, and geographical location parameters. This class is designed to facilitate the creation of structured requests for filtering game-related data based on specific criteria.
+
+## Public Methods
+
+### hasLocation
+
+Checks if all location-related fields (`latitude`, `longitude`, and `radiusKm`) are non-null.
+
+| Parameter | Type    | Description |
+|-----------|---------|-------------|
+| None      |         |             |
+
+**Returns:** `boolean` - `true` if all location fields are non-null, otherwise `false`.
+
+### hasAnyLocationField
+
+Checks if any of the location-related fields (`latitude`, `longitude`, or `radiusKm`) are non-null.
+
+| Parameter | Type    | Description |
+|-----------|---------|-------------|
+| None      |         |             |
+
+**Returns:** `boolean` - `true` if any location field is non-null, otherwise `false`.
+
+### hasSkillLevels
+
+Checks if the `skillLevelIds` list is non-null and not empty.
+
+| Parameter | Type    | Description |
+|-----------|---------|-------------|
+| None      |         |             |
+
+**Returns:** `boolean` - `true` if `skillLevelIds` is non-null and not empty, otherwise `false`.
+
+### hasVenues
+
+Checks if the `venueIds` list is non-null and not empty.
+
+| Parameter | Type    | Description |
+|-----------|---------|-------------|
+| None      |         |             |
+
+**Returns:** `boolean` - `true` if `venueIds` is non-null and not empty, otherwise `false`.

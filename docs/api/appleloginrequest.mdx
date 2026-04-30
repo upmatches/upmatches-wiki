@@ -1,0 +1,35 @@
+---
+id: apple-login-request
+title: AppleLoginRequest Class
+sidebar_label: AppleLoginRequest
+---
+
+## Purpose
+
+The `AppleLoginRequest` class is a Java record used to encapsulate the data required for an Apple login request. It is part of the `com.upmatches.app.features.auth.requests` package and is designed to handle authentication data securely by masking sensitive information in its `toString` method.
+
+## Public Methods
+
+The `AppleLoginRequest` class provides the following public methods:
+
+### `toString`
+
+The `toString` method is overridden to provide a masked representation of the `AppleLoginRequest` object, ensuring that sensitive information such as the `identityToken` and `userIdentifier` are not exposed in logs or other outputs.
+
+| Method Signature | Description |
+|------------------|-------------|
+| `public String toString()` | Returns a masked string representation of the `AppleLoginRequest` object. |
+
+## Parameters
+
+The `AppleLoginRequest` record includes the following parameters:
+
+| Parameter Name   | Type   | Annotations | Description |
+|------------------|--------|-------------|-------------|
+| `identityToken`  | String | `@NotBlank`, `@Size(max = 4096)` | The identity token provided by Apple, must not be blank and can have a maximum length of 4096 characters. |
+| `authorizationCode` | String | `@Size(max = 1024)` | The authorization code provided by Apple, can have a maximum length of 1024 characters. |
+| `userIdentifier` | String | `@NotBlank`, `@Size(max = 256)` | A unique identifier for the user, must not be blank and can have a maximum length of 256 characters. |
+| `displayName`    | String | `@Size(max = 200)` | The display name of the user, can have a maximum length of 200 characters. |
+| `email`          | String | `@Size(max = 320)` | The email address of the user, can have a maximum length of 320 characters. |
+
+This class ensures that the data encapsulated within is validated according to the constraints specified by the annotations, providing a robust structure for handling Apple login requests.

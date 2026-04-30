@@ -1,0 +1,58 @@
+---
+id: game-cursor
+title: GameCursor Class
+sidebar_label: GameCursor
+---
+
+import { useBaseUrl } from '@docusaurus/core';
+
+## Purpose
+
+The `GameCursor` class is a Spring component designed to handle the encoding and decoding of game-related data into a Base64 URL-safe string format. This functionality is useful for creating cursors that can be used to paginate through game data or to maintain state across requests.
+
+## Public Methods
+
+### `encode`
+
+Encodes the provided `Instant` and `UUID` into a Base64 URL-safe string.
+
+| Parameter   | Type    | Description                      |
+|-------------|---------|----------------------------------|
+| `startTime` | `Instant` | The start time of the game session. |
+| `id`        | `UUID`  | The unique identifier for the game session. |
+
+**Returns**: `String` - A Base64 URL-safe encoded string representing the game session data.
+
+### `decode`
+
+Decodes a Base64 URL-safe string back into a `Value` object containing the `Instant` and `UUID`.
+
+| Parameter | Type     | Description                      |
+|-----------|----------|----------------------------------|
+| `cursor`  | `String` | The Base64 URL-safe encoded string to decode. |
+
+**Returns**: `Optional<Value>` - An `Optional` containing the decoded `Value` object if successful, or an empty `Optional` if the input is invalid.
+
+## Value Record
+
+The `Value` record is a simple data structure that holds the decoded game session data.
+
+| Field      | Type    | Description                      |
+|------------|---------|----------------------------------|
+| `startTime`| `Instant` | The start time of the game session. |
+| `id`       | `UUID`  | The unique identifier for the game session. |
+
+## Usage Example
+
+```java
+GameCursor gameCursor = new GameCursor(new ObjectMapper());
+String encodedCursor = gameCursor.encode(Instant.now(), UUID.randomUUID());
+Optional<GameCursor.Value> decodedValue = gameCursor.decode(encodedCursor);
+
+decodedValue.ifPresent(value -> {
+    System.out.println("Start Time: " + value.startTime());
+    System.out.println("ID: " + value.id());
+});
+```
+
+This example demonstrates how to create an instance of `GameCursor`, encode a game session's start time and ID, and then decode the cursor back into its original components.

@@ -1,0 +1,31 @@
+---
+id: game-notification-event
+title: GameNotificationEvent Class
+sidebar_label: GameNotificationEvent
+---
+
+import com.upmatches.app.features.notification.enums.NotificationType;
+
+## Purpose
+
+The `GameNotificationEvent` class is a record in the `com.upmatches.app.features.notification.events` package. It is designed to encapsulate the details of a notification event related to a game. This class is immutable and provides a concise way to store and access notification event data, such as the game ID, actor ID, notification type, and game title.
+
+## Public Methods
+
+Since `GameNotificationEvent` is a record, it automatically provides the following public methods for accessing its fields:
+
+| Method Name       | Parameters | Return Type     | Description                                      |
+|-------------------|------------|-----------------|--------------------------------------------------|
+| `gameId()`        | None       | `UUID`          | Returns the unique identifier of the game.       |
+| `actorId()`       | None       | `UUID`          | Returns the unique identifier of the actor.      |
+| `type()`          | None       | `NotificationType` | Returns the type of the notification.            |
+| `gameTitle()`     | None       | `String`        | Returns the title of the game.                   |
+
+## Fields
+
+The `GameNotificationEvent` record consists of the following fields:
+
+- **gameId**: A `UUID` representing the unique identifier of the game.
+- **actorId**: A `UUID` representing the unique identifier of the actor involved in the event.
+- **type**: A `NotificationType` enum indicating the type of notification.
+- **gameTitle**: A `String` containing the title of the game.

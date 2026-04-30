@@ -1,0 +1,39 @@
+---
+id: aspect-constant
+title: AspectConstant Class
+sidebar_label: AspectConstant
+---
+
+## Purpose of the AspectConstant Class
+
+The `AspectConstant` class is a utility class that defines a collection of constants used for logging and monitoring method execution within an application. These constants are primarily used to standardize the logging of method execution times, request identifiers, and status tags across different components of the application. The class is designed to be non-instantiable by making its constructor private and throwing an `AssertionError` if instantiation is attempted.
+
+## Public Fields
+
+The `AspectConstant` class contains several public static final fields, which are constants that can be used throughout the application. Below is a table documenting these fields:
+
+| Constant Name                  | Type    | Description                                                                 |
+|--------------------------------|---------|-----------------------------------------------------------------------------|
+| `SLOW_EXECUTION_THRESHOLD_MS`  | `long`  | Threshold in milliseconds for determining slow method execution.            |
+| `MDC_REQUEST_ID`               | `String`| Key for storing the request ID in the Mapped Diagnostic Context (MDC).      |
+| `MDC_METHOD`                   | `String`| Key for storing the method name in the MDC.                                 |
+| `MDC_HTTP_METHOD`              | `String`| Key for storing the HTTP method in the MDC.                                 |
+| `MDC_ENDPOINT`                 | `String`| Key for storing the endpoint information in the MDC.                        |
+| `STATUS_TAG`                   | `String`| Key for tagging the status of a method execution.                           |
+| `COMPONENT_CONTROLLER`         | `String`| Tag value representing the controller component.                            |
+| `COMPONENT_SERVICE`            | `String`| Tag value representing the service component.                               |
+| `METRIC_NAME`                  | `String`| Name of the metric for method execution.                                    |
+| `METRIC_TAG_COMPONENT`         | `String`| Tag for specifying the component in metrics.                                |
+| `STATUS_FAILURE`               | `String`| Tag value representing a failure status.                                    |
+| `STATUS_SUCCESS`               | `String`| Tag value representing a success status.                                    |
+| `REQUEST_ID_SEPARATOR`         | `String`| Separator used in request IDs.                                              |
+| `LOG_METHOD_SLOW`              | `String`| Log message template for slow method execution.                             |
+| `LOG_METHOD_SUCCESS`           | `String`| Log message template for successful method execution.                       |
+| `LOG_METHOD_FAILURE`           | `String`| Log message template for failed method execution.                           |
+
+## Constructor
+
+The `AspectConstant` class has a private constructor to prevent instantiation:
+
+- **Constructor**: `private AspectConstant()`
+  - **Description**: Throws an `AssertionError` to prevent instantiation of the class. This enforces the utility class pattern, ensuring that the class is used only for its constants.

@@ -1,0 +1,35 @@
+---
+id: venue-response
+title: VenueResponse Class
+sidebar_label: VenueResponse
+---
+
+## Purpose of the VenueResponse Class
+
+The `VenueResponse` class is a Java record used to encapsulate the response data for a venue entity within the application. It is part of the `com.upmatches.app.features.venue.responses` package and is designed to provide a structured way to transfer venue-related data, including its associated activity and stations, in a read-only format. This class is particularly useful for creating a consistent and immutable data transfer object (DTO) that can be easily serialized and deserialized in API communications.
+
+## Public Methods
+
+The `VenueResponse` class includes the following public method:
+
+### `fromVenue`
+
+This static method is used to create an instance of `VenueResponse` from a `Venue` entity. It converts the data from the `Venue` object into a `VenueResponse` object, including transforming associated entities like activities and stations into their respective response types.
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `public static VenueResponse fromVenue(Venue venue)` | Converts a `Venue` entity into a `VenueResponse` object. |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `venue`   | `Venue` | The venue entity to be converted into a `VenueResponse`. |
+
+#### Return Type
+
+| Type | Description |
+| ---- | ----------- |
+| `VenueResponse` | Returns a new instance of `VenueResponse` containing data from the provided `Venue` entity. |
+
+This method is essential for transforming domain entities into a format suitable for API responses, ensuring that only the necessary data is exposed and that it is presented in a consistent manner.

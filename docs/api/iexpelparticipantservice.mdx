@@ -1,0 +1,34 @@
+---
+id: iexpelparticipantservice
+title: IExpelParticipantService Interface
+sidebar_label: IExpelParticipantService
+---
+
+import com.upmatches.app.features.game.requests.ExpelParticipantRequest;
+
+import java.util.UUID;
+
+## Purpose
+
+The `IExpelParticipantService` interface defines a contract for expelling a participant from a game. It is a part of the `com.upmatches.app.features.game.services` package and is designed to be implemented by classes that handle the logic for removing participants from a game session. This interface ensures that any implementing class provides a specific method to execute the expulsion process.
+
+## Public Methods
+
+| Method Signature                                                                 | Description                                                                                       |
+|----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| `void execute(UUID gameId, UUID participantId, ExpelParticipantRequest request)` | Executes the process of expelling a participant from a game.                                      |
+
+### Method Details
+
+#### `execute`
+
+- **Description**: This method is responsible for executing the expulsion of a participant from a game. It requires the game identifier, the participant identifier, and a request object containing additional details about the expulsion.
+  
+- **Parameters**:
+  | Name             | Type                          | Description                                     |
+  |------------------|-------------------------------|-------------------------------------------------|
+  | `gameId`         | `UUID`                        | The unique identifier of the game.              |
+  | `participantId`  | `UUID`                        | The unique identifier of the participant.       |
+  | `request`        | `ExpelParticipantRequest`     | The request object containing expulsion details.|
+
+- **Return Type**: `void` - This method does not return any value.

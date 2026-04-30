@@ -1,0 +1,28 @@
+---
+id: ideletegamebookmarkservice
+title: IDeleteGameBookmarkService Interface
+sidebar_label: IDeleteGameBookmarkService
+---
+
+## Overview
+
+The `IDeleteGameBookmarkService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that handle the deletion of game bookmarks. This interface is designed to be implemented by classes that provide the actual logic for removing a bookmark associated with a game, identified by its unique identifier.
+
+## Public Methods
+
+The `IDeleteGameBookmarkService` interface declares the following method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `void execute(UUID gameId)` | Executes the deletion process for a game bookmark identified by the given `UUID`. |
+
+### Method Details
+
+#### `execute`
+
+- **Purpose**: This method is responsible for executing the deletion of a game bookmark.
+- **Parameters**:
+  - `UUID gameId`: The unique identifier of the game whose bookmark is to be deleted.
+- **Return Type**: `void` - This method does not return any value.
+
+This interface is sealed and permits only the `DeleteGameBookmarkService` class to implement it, ensuring a controlled and specific implementation of the bookmark deletion functionality.

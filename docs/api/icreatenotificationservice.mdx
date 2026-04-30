@@ -1,0 +1,28 @@
+---
+id: icreate-notification-service
+title: ICreateNotificationService Interface
+sidebar_label: ICreateNotificationService
+---
+
+## Purpose
+
+The `ICreateNotificationService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for creating notifications within the application. This interface is designed to be implemented by classes that handle the creation of notifications, ensuring a consistent method signature for generating notifications based on various parameters.
+
+## Public Methods
+
+### `execute`
+
+The `execute` method is responsible for creating a notification. It takes several parameters that define the recipient, type, content, and associated resource of the notification.
+
+| Parameter     | Type                        | Description                                                  |
+|---------------|-----------------------------|--------------------------------------------------------------|
+| `recipientId` | `UUID`                      | The unique identifier of the notification recipient.         |
+| `type`        | `NotificationType`          | The type of notification to be created.                      |
+| `title`       | `String`                    | The title of the notification.                               |
+| `message`     | `String`                    | The message content of the notification.                     |
+| `resourceType`| `String`                    | The type of resource associated with the notification.       |
+| `resourceId`  | `UUID`                      | The unique identifier of the associated resource.            |
+
+#### Return Type
+
+- **`Notification`**: The method returns a `Notification` object representing the newly created notification.

@@ -1,0 +1,107 @@
+---
+id: game-lookup-service
+title: GameLookupService
+sidebar_label: GameLookupService
+---
+
+## Purpose
+
+The `GameLookupService` class is a service component in a Java application that provides methods to retrieve various entities such as `Game`, `Activity`, `Venue`, `User`, and `SkillLevel` from their respective repositories. It ensures that if an entity is not found, a specific exception is thrown, providing a clear error message. This service is part of the application's backend logic, typically used to manage and access game-related data.
+
+## Public Methods
+
+### `findGameOrThrow`
+
+Retrieves a `Game` entity by its ID, ensuring it is not marked as deleted.
+
+| Parameter | Type   | Description          |
+|-----------|--------|----------------------|
+| `id`      | `UUID` | The ID of the game.  |
+
+| Return Type |
+|-------------|
+| `Game`      |
+
+### `findGameForUpdateOrThrow`
+
+Retrieves a `Game` entity by its ID for update purposes.
+
+| Parameter | Type   | Description          |
+|-----------|--------|----------------------|
+| `id`      | `UUID` | The ID of the game.  |
+
+| Return Type |
+|-------------|
+| `Game`      |
+
+### `findGameIgnoringDeletedOrThrow`
+
+Retrieves a `Game` entity by its ID, ignoring its deletion status.
+
+| Parameter | Type   | Description          |
+|-----------|--------|----------------------|
+| `id`      | `UUID` | The ID of the game.  |
+
+| Return Type |
+|-------------|
+| `Game`      |
+
+### `findActivityOrThrow`
+
+Retrieves an `Activity` entity by its ID.
+
+| Parameter | Type   | Description             |
+|-----------|--------|-------------------------|
+| `id`      | `UUID` | The ID of the activity. |
+
+| Return Type |
+|-------------|
+| `Activity`  |
+
+### `findVenueOrThrow`
+
+Retrieves a `Venue` entity by its ID.
+
+| Parameter | Type   | Description          |
+|-----------|--------|----------------------|
+| `id`      | `Long` | The ID of the venue. |
+
+| Return Type |
+|-------------|
+| `Venue`     |
+
+### `findUserOrThrow`
+
+Retrieves a `User` entity by its ID.
+
+| Parameter | Type   | Description         |
+|-----------|--------|---------------------|
+| `id`      | `UUID` | The ID of the user. |
+
+| Return Type |
+|-------------|
+| `User`      |
+
+### `findUserForUpdateOrThrow`
+
+Retrieves a `User` entity by its ID for update purposes.
+
+| Parameter | Type   | Description         |
+|-----------|--------|---------------------|
+| `id`      | `UUID` | The ID of the user. |
+
+| Return Type |
+|-------------|
+| `User`      |
+
+### `findSkillLevelOrThrow`
+
+Retrieves a `SkillLevel` entity by its ID.
+
+| Parameter | Type   | Description               |
+|-----------|--------|---------------------------|
+| `id`      | `Long` | The ID of the skill level.|
+
+| Return Type |
+|-------------|
+| `SkillLevel`|

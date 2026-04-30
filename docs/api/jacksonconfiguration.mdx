@@ -1,0 +1,34 @@
+---
+id: jackson-configuration
+title: JacksonConfiguration Class
+sidebar_label: JacksonConfiguration
+---
+
+## Overview
+
+The `JacksonConfiguration` class is a Spring configuration class that provides a customized `ObjectMapper` bean. This configuration is essential for handling JSON serialization and deserialization in a Spring application, particularly when dealing with Java 8 date and time types.
+
+## Purpose
+
+The primary purpose of the `JacksonConfiguration` class is to configure the Jackson `ObjectMapper` to handle specific serialization and deserialization features. This includes support for Java 8 date and time types and specific behaviors for handling unknown properties and empty strings during deserialization.
+
+## Public Methods
+
+The class provides the following public method:
+
+### `objectMapper`
+
+This method creates and configures an `ObjectMapper` bean with specific serialization and deserialization features.
+
+| Method Name   | Parameters | Return Type | Description                                                                 |
+|---------------|------------|-------------|-----------------------------------------------------------------------------|
+| `objectMapper` | None       | `ObjectMapper` | Configures and returns an `ObjectMapper` with custom serialization and deserialization settings. |
+
+#### Configuration Details
+
+- **JavaTimeModule**: The `JavaTimeModule` is registered to handle Java 8 date and time types.
+- **SerializationFeature.WRITE_DATES_AS_TIMESTAMPS**: This feature is disabled to prevent dates from being serialized as timestamps.
+- **DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES**: This feature is disabled to ignore unknown properties during deserialization.
+- **DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT**: This feature is enabled to treat empty strings as `null` during deserialization.
+
+By providing this configuration, the `JacksonConfiguration` class ensures that JSON processing in the application is consistent with these specified behaviors, improving the robustness and flexibility of JSON data handling.

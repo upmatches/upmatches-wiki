@@ -1,0 +1,32 @@
+---
+id: iupdate-activity-service
+title: IUpdateActivityService Interface
+sidebar_label: IUpdateActivityService
+---
+
+## Overview
+
+The `IUpdateActivityService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for updating activities within the application. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `UpdateActivityService` class. The primary purpose of this interface is to ensure that any implementing class provides a method to update an activity based on a unique identifier and a request object containing the update details.
+
+## Public Methods
+
+### `execute`
+
+The `execute` method is the core function of the `IUpdateActivityService` interface. It is responsible for processing an update request for a specific activity identified by a UUID.
+
+| Method Signature | Description |
+|------------------|-------------|
+| `ActivityResponse execute(UUID id, UpdateActivityRequest request)` | Updates an activity with the given ID using the details provided in the `UpdateActivityRequest`. |
+
+#### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the activity to be updated. |
+| `request` | `UpdateActivityRequest` | An object containing the details of the update to be applied to the activity. |
+
+#### Return Type
+
+| Type | Description |
+|------|-------------|
+| `ActivityResponse` | Returns an `ActivityResponse` object that contains the updated details of the activity after the execution of the update. |

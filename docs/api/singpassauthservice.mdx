@@ -1,0 +1,55 @@
+---
+id: singpass-auth-service
+title: SingpassAuthService
+sidebar_label: SingpassAuthService
+---
+
+## Purpose
+
+The `SingpassAuthService` class is a service component in a Spring application that facilitates authentication with Singpass, a digital identity platform. It handles the creation and exchange of authorization codes, the generation of client assertions and DPoP proofs, and the verification of ID tokens. This service is crucial for integrating Singpass authentication into applications, ensuring secure and verified user identity management.
+
+## Public Methods
+
+### `generateCodeVerifier`
+
+Generates a secure random code verifier for PKCE (Proof Key for Code Exchange).
+
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| None      | N/A    | N/A         |
+
+| Return Type | Description                      |
+|-------------|----------------------------------|
+| `String`    | A base64 URL-encoded code verifier. |
+
+### `sendPushedAuthorizationRequest`
+
+Sends a Pushed Authorization Request (PAR) to the Singpass server.
+
+| Parameter      | Type     | Description                        |
+|----------------|----------|------------------------------------|
+| `state`        | `String` | The state parameter for the request. |
+| `nonce`        | `String` | A unique nonce for the request.    |
+| `codeVerifier` | `String` | The code verifier for PKCE.        |
+
+| Return Type | Description                      |
+|-------------|----------------------------------|
+| `String`    | The authorization URL with the request URI. |
+
+### `exchangeAuthorizationCode`
+
+Exchanges an authorization code for an ID token.
+
+| Parameter         | Type     | Description                        |
+|-------------------|----------|------------------------------------|
+| `authorizationCode` | `String` | The authorization code received from Singpass. |
+| `codeVerifier`    | `String` | The code verifier for PKCE.        |
+| `nonce`           | `String` | The nonce used in the initial request. |
+
+| Return Type | Description                      |
+|-------------|----------------------------------|
+| `String`    | The subject (user identifier) from the verified ID token. |
+
+## Additional Information
+
+The `SingpassAuthService` class relies on several external dependencies, including Nimbus JOSE+JWT for handling JWT operations and Spring's `RestClient` for HTTP requests. It also uses an `ObjectMapper` for JSON parsing and a `SingpassKeyProvider` for key management. The service is designed to be thread-safe and efficiently caches JSON Web Key Sets (JWKS) to minimize network calls.

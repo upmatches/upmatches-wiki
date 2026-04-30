@@ -1,0 +1,45 @@
+---
+id: audit-actor-type
+title: AuditActorType Enum
+sidebar_label: AuditActorType
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+## Purpose
+
+The `AuditActorType` enum is part of the `com.upmatches.app.features.audit.enums` package. It is used to define the different types of actors that can be involved in an audit event within the application. This enum helps in categorizing the source of actions or events for auditing purposes, which can be crucial for tracking, logging, and security analysis.
+
+## Enum Constants
+
+The `AuditActorType` enum defines the following constants:
+
+<Tabs>
+<TabItem value="USER" label="USER" default>
+
+Represents an actor that is a user of the system. This type is used when the action is performed by an authenticated user.
+
+</TabItem>
+<TabItem value="SYSTEM" label="SYSTEM">
+
+Represents an actor that is the system itself. This type is used when the action is performed automatically by the system without direct user intervention.
+
+</TabItem>
+<TabItem value="ANONYMOUS" label="ANONYMOUS">
+
+Represents an actor that is not authenticated or identified. This type is used when the action is performed by an unknown or unauthenticated entity.
+
+</TabItem>
+</Tabs>
+
+## Public Methods
+
+The `AuditActorType` enum inherits methods from the `java.lang.Enum` class. Below is a table documenting the commonly used public methods available to all enum types:
+
+| Method Signature                  | Description                                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| `static AuditActorType[] values()`| Returns an array containing all of the values of the enum in the order they are declared. |
+| `static AuditActorType valueOf(String name)` | Returns the enum constant of this type with the specified name. Throws IllegalArgumentException if the specified enum type has no constant with the specified name. |
+
+These methods are standard for all Java enums and provide functionality to iterate over enum constants and retrieve enum constants by name.

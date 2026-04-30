@@ -1,0 +1,31 @@
+---
+id: station-import-request
+title: StationImportRequest
+sidebar_label: StationImportRequest
+---
+
+import { useColorMode } from '@docusaurus/theme-common';
+
+## Purpose of the Class
+
+The `StationImportRequest` class is a Java record used to encapsulate data for importing station information. It is part of the `com.upmatches.app.features.venue.requests` package. This record is designed to hold essential details about a station, including its code, name, color, latitude, and longitude. The class utilizes Jakarta Bean Validation annotations to enforce constraints on the fields, ensuring data integrity and validity.
+
+## Public Methods
+
+Since `StationImportRequest` is a record, it implicitly provides a constructor, accessor methods, and implementations of `equals()`, `hashCode()`, and `toString()`. Below is a table documenting the parameters of the record's constructor:
+
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `StationImportRequest` | `String code`, `String name`, `String color`, `BigDecimal latitude`, `BigDecimal longitude` | `StationImportRequest` | Constructs a new `StationImportRequest` record with the specified code, name, color, latitude, and longitude. |
+
+### Parameters
+
+- **code**: A `String` representing the station code. It must not be blank and can have a maximum length of 50 characters.
+- **name**: A `String` representing the station name. It must not be blank and can have a maximum length of 150 characters.
+- **color**: A `String` representing the station color. It must not be blank and can have a maximum length of 7 characters.
+- **latitude**: A `BigDecimal` representing the latitude of the station. It must not be null.
+- **longitude**: A `BigDecimal` representing the longitude of the station. It must not be null.
+
+### Return Type
+
+The constructor returns an instance of `StationImportRequest` initialized with the provided parameters.

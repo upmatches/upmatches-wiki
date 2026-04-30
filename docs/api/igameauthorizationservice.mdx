@@ -1,0 +1,26 @@
+---
+id: igame-authorization-service
+title: IGameAuthorizationService Interface
+sidebar_label: IGameAuthorizationService
+---
+
+## Overview
+
+The `IGameAuthorizationService` interface is a part of the `com.upmatches.app.features.game.services` package. It defines a set of methods to enforce authorization rules related to game operations. This interface is sealed, meaning it can only be implemented by the specified class `GameAuthorizationService`. The primary purpose of this interface is to ensure that various game-related actions are performed by authorized users and under valid conditions.
+
+## Public Methods
+
+The following table documents the public methods available in the `IGameAuthorizationService` interface:
+
+| Method Name | Parameters | Return Type | Description |
+|-------------|------------|-------------|-------------|
+| `assertCanViewGame` | `Game game`, `UUID userId` | `void` | Ensures that the specified user has permission to view the given game. |
+| `assertIsOrganizer` | `Game game`, `UUID userId` | `void` | Verifies that the specified user is the organizer of the given game. |
+| `assertGameJoinable` | `UUID id`, `Game game` | `void` | Checks if the game is currently joinable. |
+| `assertPrivateAccess` | `UUID id`, `UUID userId`, `Game game` | `void` | Confirms that the user has private access to the specified game. |
+| `assertNotAlreadyJoined` | `UUID id`, `UUID userId` | `void` | Ensures that the user has not already joined the game. |
+| `assertVisibilityUnchanged` | `UUID id`, `Game game`, `UpdateGameRequest request` | `void` | Validates that the visibility of the game remains unchanged after an update request. |
+| `assertSlotsAboveActive` | `UUID id`, `Integer newSlots`, `long activeCount` | `void` | Ensures that the new slot count is greater than the current active count. |
+| `assertImmutableFields` | `UUID id`, `Game game`, `UpdateGameRequest request`, `long activeCount` | `void` | Checks that certain fields of the game remain immutable during updates. |
+
+Each method in this interface is designed to throw an exception if the authorization check fails, thereby preventing unauthorized or invalid operations on game entities.

@@ -1,0 +1,35 @@
+---
+id: IListGameParticipantsService
+title: IListGameParticipantsService Interface
+sidebar_label: IListGameParticipantsService
+---
+
+## Purpose
+
+The `IListGameParticipantsService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that list participants in a game. This interface is designed to be implemented by classes that provide the functionality to retrieve a list of game participants based on a unique game identifier.
+
+## Public Methods
+
+The interface declares the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `List<GameParticipantResponse> execute(UUID id)` | Retrieves a list of game participants for the specified game identified by the `UUID`. |
+
+### Method Details
+
+#### `execute`
+
+- **Parameters:**
+
+  | Name | Type | Description |
+  |------|------|-------------|
+  | `id` | `UUID` | The unique identifier of the game for which participants are to be listed. |
+
+- **Returns:** 
+
+  | Type | Description |
+  |------|-------------|
+  | `List<GameParticipantResponse>` | A list of `GameParticipantResponse` objects representing the participants of the specified game. |
+
+This interface is sealed, meaning it restricts which classes can implement it. The permitted implementation is `ListGameParticipantsService`.

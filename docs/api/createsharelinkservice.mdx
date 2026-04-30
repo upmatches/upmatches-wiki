@@ -1,0 +1,39 @@
+---
+id: create-share-link-service
+title: CreateShareLinkService
+sidebar_label: Create Share Link Service
+---
+
+## Purpose
+
+The `CreateShareLinkService` class is a Spring service responsible for creating shareable short links for resources. It ensures that each link is unique and associated with an authenticated user. The service handles the generation of short codes, checks for existing links, and manages potential code collisions.
+
+## Public Methods
+
+### `execute`
+
+Executes the process of creating a share link for a given request. It checks if a link already exists for the specified resource and user, and if not, it generates a new link with a unique short code.
+
+| Parameter | Type                          | Description                                   |
+|-----------|-------------------------------|-----------------------------------------------|
+| request   | `CreateShareLinkRequest`      | The request containing resource details.      |
+
+| Return Type          | Description                                       |
+|----------------------|---------------------------------------------------|
+| `ShareLinkResponse`  | The response containing the created share link.   |
+
+## Method Details
+
+- **`execute(CreateShareLinkRequest request)`**: This method is the main entry point for creating a share link. It retrieves the authenticated user's ID, checks for existing links, and either returns the existing link or creates a new one with a unique short code. The method is transactional and auditable, ensuring that operations are logged and can be rolled back in case of failure.
+
+## Key Concepts
+
+- **Authentication**: The service retrieves the authenticated user's ID from the security context to associate the link with the correct user.
+- **Short Code Generation**: The service attempts to generate a unique short code for the link, retrying up to a maximum number of attempts to avoid collisions.
+- **Error Handling**: The service throws specific exceptions for authentication failures, user not found scenarios, and short code collisions, ensuring that errors are handled gracefully and informatively.
+
+## Dependencies
+
+- **Repositories**: The service relies on `ShortLinkRepository` and `UserRepository` for database operations related to short links and users.
+- **Utilities**: It uses `ShortCodeGenerator` for generating short codes and `ServiceOperationExecutor` for executing repository operations with error handling.
+- **Security**: The service uses Spring Security's `SecurityContextHolder` to access authentication details.

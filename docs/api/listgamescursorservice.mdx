@@ -1,0 +1,41 @@
+---
+id: list-games-cursor-service
+title: ListGamesCursorService
+sidebar_label: ListGamesCursorService
+---
+
+## Purpose
+
+The `ListGamesCursorService` class is a Spring service designed to handle the retrieval of game data with cursor-based pagination. It provides a mechanism to filter games based on various criteria such as location, date, time, skill levels, and venues. This service is part of a larger application that manages game-related data and interactions.
+
+## Public Methods
+
+### `execute`
+
+Executes the service operation to retrieve a paginated list of games based on the provided filter and cursor.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `filter`  | `ListGamesCursorFilterRequest` | The filter criteria for querying games. |
+| `cursor`  | `String` | The pagination cursor to determine the starting point of the query. |
+| `size`    | `int` | The maximum number of games to retrieve. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `CursorPagedResponse<GameResponse>` | A paginated response containing the list of games and the next cursor. |
+
+## Key Concepts
+
+- **Cursor-Based Pagination**: This service uses a cursor-based approach to paginate through game data, which is efficient for large datasets.
+- **Filtering**: The service supports filtering games by location, date, time, skill levels, and venues.
+- **Bounding Box Calculation**: For location-based filtering, a bounding box is computed to determine the geographical area of interest.
+- **Transactional Read-Only**: The `execute` method is annotated with `@Transactional(readOnly = true)`, ensuring that the database operations are read-only and do not modify data.
+
+## Internal Logic
+
+- **Bounding Box Calculation**: The `computeBoundingBox` method calculates the geographical bounding box based on the provided latitude, longitude, and radius.
+- **Cross-Field Validation**: The `validateCrossFields` method ensures that related fields are provided together and checks for logical consistency, such as date ranges.
+- **Query Execution**: The `runQuery` method performs the actual database query to retrieve games based on the filter criteria and cursor.
+- **Participant Counting**: The `countParticipants` method counts active participants for each game, aiding in determining joinability and other metrics.
+
+This service is a critical component for efficiently retrieving and displaying game data to users, supporting both authenticated and anonymous access patterns.

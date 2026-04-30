@@ -1,0 +1,34 @@
+---
+id: user-agent-classifier
+title: UserAgentClassifier
+sidebar_label: UserAgentClassifier
+---
+
+import { useBaseUrl } from '@docusaurus/core';
+
+## Purpose
+
+The `UserAgentClassifier` class is a utility component designed to classify user agents into specific client platforms. It is part of the `com.upmatches.app.features.sharelink.utils` package and utilizes the Spring Framework's `@Component` annotation, indicating that it is a Spring-managed bean. The primary function of this class is to determine whether a user agent string corresponds to an Android device, an iOS device, or a web client.
+
+## Public Methods
+
+### classify
+
+The `classify` method analyzes a given user agent string and returns the corresponding `ClientPlatform` enumeration value. This method helps in identifying the platform type based on the user agent string provided.
+
+| Method Signature | `public ClientPlatform classify(String userAgent)` |
+|------------------|---------------------------------------------------|
+| **Parameters**   | `userAgent` (String): The user agent string to classify. |
+| **Returns**      | `ClientPlatform`: An enumeration value indicating the platform type (`IOS`, `ANDROID`, or `WEB`). |
+
+## Usage
+
+The `classify` method can be used to determine the platform type of a user agent string, which is useful for tailoring application behavior based on the client's platform. For example, it can help in redirecting users to platform-specific pages or in logging platform usage statistics.
+
+## ClientPlatform Enum
+
+The `ClientPlatform` enum defines the possible platform types that can be identified by the `UserAgentClassifier`:
+
+- **IOS**: Represents iOS devices such as iPhone, iPad, and iPod.
+- **ANDROID**: Represents Android devices.
+- **WEB**: Represents web clients or any other platform not specifically identified as iOS or Android.

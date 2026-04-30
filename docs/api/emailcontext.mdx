@@ -1,0 +1,35 @@
+---
+id: email-context
+title: EmailContext Class
+sidebar_label: EmailContext
+---
+
+## Purpose
+
+The `EmailContext` class is a Java record designed to encapsulate the context required for sending email notifications related to games. It includes details such as the game title, venue, date, start and end times, skill level, court count, and a URL to the game. This class provides utility methods to create instances from game data or for aggregate reminders.
+
+## Public Methods
+
+### `empty`
+
+Returns an empty `EmailContext` instance with all fields set to `null`.
+
+| Method Signature | Return Type   |
+|------------------|---------------|
+| `public static EmailContext empty()` | `EmailContext` |
+
+### `fromGame`
+
+Creates an `EmailContext` instance from a `Game` object, a game title, and a game URL. It extracts relevant information from the `Game` object and formats it according to the Singapore timezone.
+
+| Method Signature | Parameters                                                                 | Return Type   |
+|------------------|----------------------------------------------------------------------------|---------------|
+| `public static EmailContext fromGame(Game game, String gameTitle, String gameUrl)` | `game`: The `Game` object to extract information from. <br> `gameTitle`: The title of the game. <br> `gameUrl`: The URL to the game. | `EmailContext` |
+
+### `aggregateReminder`
+
+Creates an `EmailContext` instance for aggregate reminders, setting only the date and court count.
+
+| Method Signature | Parameters                                                                 | Return Type   |
+|------------------|----------------------------------------------------------------------------|---------------|
+| `public static EmailContext aggregateReminder(LocalDate date, Integer courtCount)` | `date`: The date for the reminder. <br> `courtCount`: The number of courts. | `EmailContext` |

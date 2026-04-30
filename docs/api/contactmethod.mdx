@@ -1,0 +1,33 @@
+---
+id: contact-method
+title: ContactMethod Class
+sidebar_label: ContactMethod
+---
+
+## Overview
+
+The `ContactMethod` class is a Java record that is part of the `com.upmatches.app.features.user.requests` package. It is designed to encapsulate a contact method with a name and a corresponding value. This class leverages the Java record feature to provide a concise way to model immutable data.
+
+## Public Methods
+
+The `ContactMethod` record automatically provides the following public methods:
+
+| Method Signature          | Description                                                                 |
+|---------------------------|-----------------------------------------------------------------------------|
+| `String name()`           | Returns the name of the contact method. This is one of the two components of the record. |
+| `String value()`          | Returns the value associated with the contact method. This is the second component of the record. |
+
+## Parameters
+
+The `ContactMethod` record takes the following parameters in its canonical constructor:
+
+| Parameter | Type   | Description                            |
+|-----------|--------|----------------------------------------|
+| `name`    | String | The name of the contact method.        |
+| `value`   | String | The value associated with the contact method. |
+
+## Return Types
+
+The methods provided by the `ContactMethod` record return the following types:
+
+- `String`: Both `name()` and `value()` methods return a `String` representing the respective components of the record.

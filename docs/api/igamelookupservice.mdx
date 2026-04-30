@@ -1,0 +1,26 @@
+---
+id: igamelookupservice
+title: IGameLookupService Interface
+sidebar_label: IGameLookupService
+---
+
+## Overview
+
+The `IGameLookupService` interface is a part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide lookup functionalities for various entities such as `Game`, `Activity`, `Venue`, `User`, and `SkillLevel`. This interface ensures that any implementing class, such as `GameLookupService`, provides concrete implementations for these lookup methods, which are essential for retrieving entities by their identifiers and handling scenarios where entities might not be found.
+
+## Public Methods
+
+The following table documents the public methods available in the `IGameLookupService` interface:
+
+| Method Name                   | Parameters          | Return Type | Description                                                                 |
+|-------------------------------|---------------------|-------------|-----------------------------------------------------------------------------|
+| `findGameOrThrow`             | `UUID id`           | `Game`      | Finds a `Game` by its UUID or throws an exception if not found.             |
+| `findGameForUpdateOrThrow`    | `UUID id`           | `Game`      | Finds a `Game` for update by its UUID or throws an exception if not found.  |
+| `findGameIgnoringDeletedOrThrow` | `UUID id`       | `Game`      | Finds a `Game` ignoring its deleted status by its UUID or throws an exception if not found. |
+| `findActivityOrThrow`         | `UUID id`           | `Activity`  | Finds an `Activity` by its UUID or throws an exception if not found.        |
+| `findVenueOrThrow`            | `Long id`           | `Venue`     | Finds a `Venue` by its ID or throws an exception if not found.              |
+| `findUserOrThrow`             | `UUID id`           | `User`      | Finds a `User` by its UUID or throws an exception if not found.             |
+| `findUserForUpdateOrThrow`    | `UUID id`           | `User`      | Finds a `User` for update by its UUID or throws an exception if not found.  |
+| `findSkillLevelOrThrow`       | `Long id`           | `SkillLevel`| Finds a `SkillLevel` by its ID or throws an exception if not found.         |
+
+This interface is designed to facilitate robust and reliable entity retrieval operations, ensuring that the application can handle missing entities gracefully by throwing exceptions when entities are not found.

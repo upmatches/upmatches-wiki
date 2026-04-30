@@ -1,0 +1,33 @@
+---
+id: game-reminder-event
+title: GameReminderEvent Class
+sidebar_label: GameReminderEvent
+---
+
+import com.upmatches.app.features.notification.enums.NotificationType;
+
+## Purpose
+
+The `GameReminderEvent` class is a Java record that represents an event for reminding users about a game. It is part of the `com.upmatches.app.features.notification.events` package. This class is designed to encapsulate the details of a game reminder notification, including the unique identifier of the game and the type of notification.
+
+## Public Methods
+
+Since `GameReminderEvent` is a record, it automatically provides a concise way to define a data-carrying class. The primary purpose of this record is to store data, and it inherently provides the following methods:
+
+| Method Signature | Parameters | Return Type | Description |
+|------------------|------------|-------------|-------------|
+| `UUID gameId()`  | None       | `UUID`      | Returns the unique identifier of the game associated with this reminder event. |
+| `NotificationType type()` | None | `NotificationType` | Returns the type of notification for this reminder event. |
+
+## Parameters
+
+The `GameReminderEvent` record takes the following parameters:
+
+| Parameter Name | Type | Description |
+|----------------|------|-------------|
+| `gameId`       | `UUID` | The unique identifier of the game for which the reminder is being created. |
+| `type`         | `NotificationType` | The type of notification to be sent for the game reminder. |
+
+## Usage
+
+The `GameReminderEvent` record is typically used in scenarios where you need to create and handle events related to game reminders within the notification system of the application. It leverages Java's record feature to provide an immutable and concise representation of the event data.

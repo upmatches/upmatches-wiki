@@ -1,0 +1,33 @@
+---
+id: leave-game-service
+title: LeaveGameService
+sidebar_label: LeaveGameService
+---
+
+## Overview
+
+The `LeaveGameService` class is a Spring service that handles the logic for a user to leave a game. It ensures that the user is an active participant in the game before allowing them to leave, updates the participant's status, and publishes a notification event to inform other components of the change.
+
+## Public Methods
+
+### `execute`
+
+This method allows a user to leave a game by updating their participant status and notifying other components of the change.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id`      | `UUID` | The unique identifier of the game from which the user wants to leave. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return a value. |
+
+## Method Details
+
+- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operations within the method are executed within a transaction. This guarantees that all changes are committed to the database only if all operations succeed.
+  
+- **Auditable**: The method is also annotated with `@Auditable`, which logs the action of leaving a game for auditing purposes. The `resourceIdExpression` is used to dynamically capture the game ID involved in the operation.
+
+- **Exception Handling**: If the user is not an active participant in the specified game, a `ResourceNotFoundException` is thrown with a message indicating the user and game IDs.
+
+- **Event Publishing**: After successfully updating the participant's status, a `GameNotificationEvent` is published to notify other components that a player has left the game. The event includes details such as the game ID, user ID, notification type, and game title (if available).

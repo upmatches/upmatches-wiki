@@ -1,0 +1,31 @@
+---
+id: mark-all-read-service
+title: MarkAllReadService
+sidebar_label: MarkAllReadService
+---
+
+## Purpose of the Class
+
+The `MarkAllReadService` class is a service component in a Java application that handles the operation of marking all notifications as read for a specific user. This service interacts with the `NotificationRepository` to update the read status of notifications in the database. It utilizes the `IAuthenticatedUserResolver` to determine the current authenticated user and ensures that the operation is executed within a transactional context to maintain data integrity.
+
+## Public Methods
+
+### `execute`
+
+This method is responsible for marking all notifications as read for the authenticated user. It retrieves the user ID from the `IAuthenticatedUserResolver` and uses the `NotificationRepository` to update the notifications' status.
+
+| Method   | Description |
+|----------|-------------|
+| `execute` | Marks all notifications as read for the authenticated user. |
+
+#### Parameters
+
+The `execute` method does not take any parameters.
+
+#### Return Type
+
+| Type    | Description |
+|---------|-------------|
+| `Integer` | Returns the number of notifications that were marked as read. |
+
+The `execute` method uses the `ServiceOperationExecutor` to perform the operation and handle any exceptions, such as `ResourceNotFoundException`, that may occur if the user or notifications are not found.

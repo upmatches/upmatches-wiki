@@ -1,0 +1,37 @@
+---
+id: mint-dev-token-request
+title: MintDevTokenRequest Class
+sidebar_label: MintDevTokenRequest
+---
+
+## Purpose
+
+The `MintDevTokenRequest` class is a part of the `com.upmatches.app.features.auth.requests` package. It is designed to encapsulate the data required to request the minting of a development token. This class is implemented as a Java Record, which provides a compact syntax for declaring immutable data carriers.
+
+## Public Methods
+
+The `MintDevTokenRequest` class does not explicitly declare any public methods, as it is a Java Record. However, it implicitly provides the following methods:
+
+### Constructor
+
+| Method Signature | Description |
+|------------------|-------------|
+| `MintDevTokenRequest(UUID userId)` | Constructs a new `MintDevTokenRequest` with the specified `userId`. |
+
+### Accessor Methods
+
+| Method | Description | Return Type |
+|--------|-------------|-------------|
+| `userId()` | Returns the `userId` associated with this request. | `UUID` |
+
+## Parameters
+
+The `MintDevTokenRequest` class has the following parameter:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId`  | `UUID` | A non-null universally unique identifier representing the user for whom the development token is being requested. |
+
+## Annotations
+
+- `@NotNull`: This annotation is used to indicate that the `userId` parameter must not be null, ensuring that a valid UUID is always provided when creating an instance of `MintDevTokenRequest`.

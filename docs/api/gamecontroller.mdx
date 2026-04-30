@@ -1,0 +1,152 @@
+---
+id: game-controller
+title: GameController
+sidebar_label: GameController
+---
+
+## Purpose
+
+The `GameController` class is a REST controller in a Spring Boot application that manages game-related operations. It provides endpoints for creating, retrieving, updating, and deleting games, as well as managing game participants and filter options.
+
+## Public Methods
+
+### createGame
+
+Creates a new game.
+
+| Parameter | Type                   | Description                   |
+|-----------|------------------------|-------------------------------|
+| body      | `CreateGameRequest`    | The request body containing game details. |
+| request   | `HttpServletRequest`   | The HTTP request object.      |
+
+**Returns:** `ResponseEntity<ApiResponse<GameResponse>>` - The response entity containing the created game details.
+
+### listGames
+
+Lists games with optional filtering and pagination.
+
+| Parameter     | Type                   | Description                                |
+|---------------|------------------------|--------------------------------------------|
+| cursor        | `String`               | The pagination cursor.                     |
+| size          | `Integer`              | The number of games to retrieve. Default is 20. |
+| venueIds      | `List<Long>`           | The list of venue IDs to filter by.        |
+| skillLevelIds | `List<Long>`           | The list of skill level IDs to filter by.  |
+| fromDate      | `LocalDate`            | The start date for filtering.              |
+| toDate        | `LocalDate`            | The end date for filtering.                |
+| fromTime      | `LocalTime`            | The start time for filtering.              |
+| toTime        | `LocalTime`            | The end time for filtering.                |
+| latitude      | `BigDecimal`           | The latitude for location-based filtering. |
+| longitude     | `BigDecimal`           | The longitude for location-based filtering.|
+| radiusKm      | `Integer`              | The radius in kilometers for location-based filtering. |
+| request       | `HttpServletRequest`   | The HTTP request object.                   |
+
+**Returns:** `ResponseEntity<ApiResponse<CursorPagedResponse<GameResponse>>>` - The response entity containing the list of games.
+
+### getGameFilterOptions
+
+Retrieves available game filter options.
+
+| Parameter     | Type                   | Description                                |
+|---------------|------------------------|--------------------------------------------|
+| fromDate      | `LocalDate`            | The start date for filtering options.      |
+| toDate        | `LocalDate`            | The end date for filtering options.        |
+| venueIds      | `List<Long>`           | The list of venue IDs to filter by.        |
+| skillLevelIds | `List<Long>`           | The list of skill level IDs to filter by.  |
+| fromTime      | `LocalTime`            | The start time for filtering options.      |
+| toTime        | `LocalTime`            | The end time for filtering options.        |
+| gameType      | `GameType`             | The type of game to filter by.             |
+| latitude      | `BigDecimal`           | The latitude for location-based filtering. |
+| longitude     | `BigDecimal`           | The longitude for location-based filtering.|
+| radiusKm      | `Integer`              | The radius in kilometers for location-based filtering. |
+| request       | `HttpServletRequest`   | The HTTP request object.                   |
+
+**Returns:** `ResponseEntity<ApiResponse<GameFilterOptionsResponse>>` - The response entity containing the filter options.
+
+### getGameDateAvailability
+
+Checks the availability of game dates.
+
+| Parameter | Type                 | Description                   |
+|-----------|----------------------|-------------------------------|
+| fromDate  | `LocalDate`          | The start date for availability check. |
+| toDate    | `LocalDate`          | The end date for availability check.   |
+| request   | `HttpServletRequest` | The HTTP request object.      |
+
+**Returns:** `ResponseEntity<ApiResponse<List<GameDateAvailabilityResponse>>>` - The response entity containing date availability information.
+
+### getGame
+
+Retrieves details of a specific game.
+
+| Parameter | Type                 | Description                   |
+|-----------|----------------------|-------------------------------|
+| id        | `UUID`               | The unique identifier of the game. |
+| request   | `HttpServletRequest` | The HTTP request object.      |
+
+**Returns:** `ResponseEntity<ApiResponse<GameResponse>>` - The response entity containing the game details.
+
+### updateGame
+
+Updates an existing game.
+
+| Parameter | Type                   | Description                   |
+|-----------|------------------------|-------------------------------|
+| id        | `UUID`                 | The unique identifier of the game. |
+| body      | `UpdateGameRequest`    | The request body containing updated game details. |
+| request   | `HttpServletRequest`   | The HTTP request object.      |
+
+**Returns:** `ResponseEntity<ApiResponse<GameResponse>>` - The response entity containing the updated game details.
+
+### softDeleteGame
+
+Soft deletes a game.
+
+| Parameter | Type   | Description                   |
+|-----------|--------|-------------------------------|
+| id        | `UUID` | The unique identifier of the game. |
+
+**Returns:** `ResponseEntity<Void>` - The response entity indicating the operation result.
+
+### joinGame
+
+Joins a participant to a game.
+
+| Parameter | Type                 | Description                   |
+|-----------|----------------------|-------------------------------|
+| id        | `UUID`               | The unique identifier of the game. |
+| request   | `HttpServletRequest` | The HTTP request object.      |
+
+**Returns:** `ResponseEntity<ApiResponse<GameParticipantResponse>>` - The response entity containing the participant details.
+
+### leaveGame
+
+Removes the current participant from a game.
+
+| Parameter | Type   | Description                   |
+|-----------|--------|-------------------------------|
+| id        | `UUID` | The unique identifier of the game. |
+
+**Returns:** `ResponseEntity<Void>` - The response entity indicating the operation result.
+
+### listGameParticipants
+
+Lists participants of a specific game.
+
+| Parameter | Type                 | Description                   |
+|-----------|----------------------|-------------------------------|
+| id        | `UUID`               | The unique identifier of the game. |
+| request   | `HttpServletRequest` | The HTTP request object.      |
+
+**Returns:** `ResponseEntity<ApiResponse<List<GameParticipantResponse>>>` - The response entity containing the list of participants.
+
+### expelParticipant
+
+Expels a participant from a game.
+
+| Parameter     | Type                   | Description                   |
+|---------------|------------------------|-------------------------------|
+| gameId        | `UUID`                 | The unique identifier of the game. |
+| participantId | `UUID`                 | The unique identifier of the participant. |
+| body          | `ExpelParticipantRequest` | The request body containing expulsion details. |
+
+**Returns:** `ResponseEntity<Void>` - The response entity indicating the operation result.

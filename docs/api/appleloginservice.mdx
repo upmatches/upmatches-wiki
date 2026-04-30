@@ -1,0 +1,35 @@
+---
+id: apple-login-service
+title: AppleLoginService
+sidebar_label: AppleLoginService
+---
+
+## Overview
+
+The `AppleLoginService` class is a part of the authentication feature in the application. It handles the login process using Apple as an identity provider. The service verifies the identity token provided by Apple, checks the user identifier, and either finds an existing user or creates a new one in the system. It then generates access and refresh tokens for the authenticated user.
+
+## Public Methods
+
+### `execute`
+
+Executes the login process using the provided Apple login request.
+
+| Parameter | Type                  | Description                                      |
+|-----------|-----------------------|--------------------------------------------------|
+| request   | `AppleLoginRequest`   | The request containing the identity token and user identifier. |
+
+| Return Type            | Description                                      |
+|------------------------|--------------------------------------------------|
+| `AppleLoginResponse`   | The response containing access and refresh tokens, expiration time, and a flag indicating if the user is new. |
+
+## Method Details
+
+### `execute`
+
+- **Purpose**: This method is responsible for executing the Apple login process. It verifies the identity token, checks the user identifier, and manages user creation or retrieval. It also generates access and refresh tokens for the user.
+- **Parameters**:
+  - `AppleLoginRequest request`: Contains the identity token and user identifier necessary for authentication.
+- **Returns**: An `AppleLoginResponse` object containing the access token, refresh token, token expiration time, and a boolean indicating if the user is newly created.
+- **Exceptions**: Throws `AuthenticationException` if the token verification fails or if the user identifier does not match.
+
+This service is critical for integrating Apple authentication into the application, ensuring secure and seamless user login experiences.

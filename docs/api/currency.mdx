@@ -1,0 +1,54 @@
+---
+id: currency
+title: Currency Class
+sidebar_label: Currency
+---
+
+import { useBaseUrl } from '@docusaurus/core';
+
+## Overview
+
+The `Currency` class is a value object that represents a currency using its ISO-4217 code. It ensures that the currency code is valid by enforcing a three-letter uppercase format. This class is part of the `com.upmatches.app.features.game.valueobjects` package.
+
+## Purpose
+
+The primary purpose of the `Currency` class is to encapsulate a currency code and validate it against the ISO-4217 standard. This ensures that only valid currency codes are used within the application, preventing errors related to invalid currency representations.
+
+## Public Methods
+
+The `Currency` class provides the following public method:
+
+### `create`
+
+Creates a new instance of the `Currency` class.
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `public static Currency create(String value)` | Constructs a new `Currency` object with the specified currency code. |
+
+#### Parameters
+
+| Parameter | Type   | Description                          |
+| --------- | ------ | ------------------------------------ |
+| `value`   | String | The currency code to be validated and encapsulated. Must be a non-null, three-letter uppercase string conforming to ISO-4217 standards. |
+
+#### Return Type
+
+| Type     | Description                     |
+| -------- | ------------------------------- |
+| `Currency` | A new instance of the `Currency` class with the validated currency code. |
+
+## Validation
+
+The `Currency` class performs the following validations:
+
+- **Null Check**: Throws an `IllegalArgumentException` if the provided currency code is `null`.
+- **Format Check**: Ensures that the currency code matches the ISO-4217 format, which is a three-letter uppercase string. If the format is invalid, an `IllegalArgumentException` is thrown with a descriptive error message.
+
+## Example Usage
+
+```java
+Currency usd = Currency.create("USD");
+```
+
+In this example, a new `Currency` object representing the US Dollar is created using the `create` method. The code "USD" is validated against the ISO-4217 standard before the object is instantiated.

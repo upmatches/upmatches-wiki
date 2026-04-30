@@ -1,0 +1,33 @@
+---
+id: list-venues-service
+title: ListVenuesService
+sidebar_label: List Venues Service
+---
+
+import { PagedResponse, VenueResponse, ResourceNotFoundException } from '/path/to/your/models';
+
+## Overview
+
+The `ListVenuesService` class is a Spring service responsible for retrieving a paginated list of venues from the database. It leverages the `VenueRepository` to perform the database operations and returns the results wrapped in a `PagedResponse` object. This service is designed to be used in a read-only transactional context to ensure data consistency and integrity.
+
+## Public Methods
+
+### `execute`
+
+The `execute` method retrieves a paginated list of venues from the database.
+
+| Parameter | Type      | Description                                     |
+|-----------|-----------|-------------------------------------------------|
+| pageable  | `Pageable`| The pagination information for the query.       |
+
+| Return Type                      | Description                                           |
+|----------------------------------|-------------------------------------------------------|
+| `PagedResponse<VenueResponse>`   | A paginated response containing the venue data.       |
+
+#### Exceptions
+
+- `ResourceNotFoundException`: Thrown if no venues are found during the retrieval operation.
+
+## Usage
+
+To use the `ListVenuesService`, you need to inject it into your component and call the `execute` method with the appropriate `Pageable` parameter to get the paginated list of venues. This service ensures that all operations are performed within a read-only transaction, optimizing for performance and data integrity.

@@ -1,0 +1,61 @@
+---
+id: audit-outcome
+title: AuditOutcome Enum
+sidebar_label: AuditOutcome
+---
+
+## Overview
+
+The `AuditOutcome` enum is part of the `com.upmatches.app.features.audit.enums` package. It is used to represent the possible outcomes of an audit operation within the application. Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like `final` variables).
+
+## Enum Constants
+
+The `AuditOutcome` enum defines three constants:
+
+- **SUCCESS**: Indicates that the audit operation was completed successfully.
+- **FAILURE**: Indicates that the audit operation failed.
+- **DENIED**: Indicates that the audit operation was denied.
+
+## Usage
+
+Enums are used to define a set of named values. In the context of `AuditOutcome`, these values represent the possible results of an audit process. This can be particularly useful for controlling the flow of an application based on the outcome of an audit.
+
+## Public Methods
+
+Enums in Java inherently provide several useful methods. Here are some of the key methods available for the `AuditOutcome` enum:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `static AuditOutcome valueOf(String name)` | Returns the enum constant of this type with the specified name. The string must match exactly an identifier used to declare an enum constant in this type. |
+| `static AuditOutcome[] values()` | Returns an array containing all of the values of the enum in the order they are declared. This method can be used to iterate over the constants. |
+
+## Example
+
+Here is a simple example of how you might use the `AuditOutcome` enum in a Java application:
+
+```java
+public class AuditExample {
+    public static void main(String[] args) {
+        AuditOutcome outcome = performAudit();
+
+        switch (outcome) {
+            case SUCCESS:
+                System.out.println("Audit completed successfully.");
+                break;
+            case FAILURE:
+                System.out.println("Audit failed.");
+                break;
+            case DENIED:
+                System.out.println("Audit was denied.");
+                break;
+        }
+    }
+
+    private static AuditOutcome performAudit() {
+        // Simulate an audit process
+        return AuditOutcome.SUCCESS; // This would be determined by the audit logic
+    }
+}
+```
+
+In this example, the `performAudit` method simulates an audit process and returns an `AuditOutcome`. The outcome is then used in a switch statement to determine the appropriate action based on the result of the audit.

@@ -1,0 +1,31 @@
+---
+id: imark-notification-read-service
+title: IMarkNotificationReadService Interface
+sidebar_label: IMarkNotificationReadService
+---
+
+## Overview
+
+The `IMarkNotificationReadService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for marking notifications as read within the application. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `MarkNotificationReadService` class.
+
+## Public Methods
+
+The interface declares the following public method:
+
+| Method Signature                        | Description                                      |
+|-----------------------------------------|--------------------------------------------------|
+| `NotificationResponse execute(UUID id)` | Marks the notification identified by the given UUID as read and returns a `NotificationResponse` object. |
+
+### Method Details
+
+#### `execute`
+
+- **Description**: Marks a notification as read based on the provided UUID and returns a response object encapsulating the result.
+- **Parameters**:
+  | Name | Type | Description |
+  |------|------|-------------|
+  | `id` | `UUID` | The unique identifier of the notification to be marked as read. |
+  
+- **Returns**: 
+  - **Type**: `NotificationResponse`
+  - **Description**: An object containing the details of the notification after being marked as read.

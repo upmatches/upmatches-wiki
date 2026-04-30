@@ -1,0 +1,29 @@
+---
+id: database-properties
+title: DatabaseProperties Class
+sidebar_label: DatabaseProperties
+---
+
+import { useBaseUrl } from '@docusaurus/core';
+
+## Overview
+
+The `DatabaseProperties` class is a configuration properties holder used in Spring Boot applications to manage database connection settings. It leverages the `@ConfigurationProperties` annotation to map properties prefixed with `spring.datasource` from configuration files (e.g., `application.properties` or `application.yml`) to this class's fields. This class is implemented as a Java record, providing an immutable and concise way to define data-carrying classes.
+
+## Public Methods
+
+The `DatabaseProperties` class is a record and does not explicitly define methods beyond those automatically provided by the record construct (e.g., accessors for each field). Below is a table documenting the fields, which are accessible as methods due to the nature of Java records:
+
+| Method Name       | Parameter Type | Return Type | Description                                      |
+|-------------------|----------------|-------------|--------------------------------------------------|
+| `url()`           | -              | `String`    | Returns the database connection URL.             |
+| `username()`      | -              | `String`    | Returns the username for the database connection.|
+| `password()`      | -              | `String`    | Returns the password for the database connection.|
+| `driverClassName()` | -            | `String`    | Returns the fully qualified name of the JDBC driver class. |
+| `hikari()`        | -              | `HikariProperties` | Returns the nested HikariCP configuration properties. |
+
+## Nested Configuration
+
+The `DatabaseProperties` class includes a nested configuration property of type `HikariProperties`, which is annotated with `@NestedConfigurationProperty`. This allows for further customization of the HikariCP connection pool settings within the same configuration namespace.
+
+For more details on configuring HikariCP properties, refer to the [HikariCP documentation](https://github.com/brettwooldridge/HikariCP).

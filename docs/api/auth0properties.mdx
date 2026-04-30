@@ -1,0 +1,25 @@
+---
+id: auth0-properties
+title: Auth0Properties Class
+sidebar_label: Auth0Properties
+---
+
+## Purpose
+
+The `Auth0Properties` class is a configuration properties holder designed for use with Spring Boot applications. It is annotated with `@ConfigurationProperties`, which allows it to bind external configuration properties prefixed with `app.auth0` to the fields of this class. This class is specifically tailored for managing Auth0 authentication settings, including domain, client ID, client secret, redirect URI, and scopes.
+
+## Public Methods
+
+The `Auth0Properties` class is a Java record, which means it primarily serves as a data carrier with automatically generated methods for its fields. Below is a documentation of its public methods:
+
+| Method Name      | Parameters | Return Type | Description                                                                                  |
+|------------------|------------|-------------|----------------------------------------------------------------------------------------------|
+| `domain()`       | None       | `String`    | Returns the Auth0 domain configured for the application.                                     |
+| `clientId()`     | None       | `String`    | Returns the client ID used for Auth0 authentication.                                         |
+| `clientSecret()` | None       | `String`    | Returns the client secret associated with the Auth0 client ID.                               |
+| `redirectUri()`  | None       | `String`    | Returns the redirect URI used in the OAuth2 authentication flow.                             |
+| `scopes()`       | None       | `String`    | Returns the scopes for the Auth0 authentication. Defaults to `openid profile email` if blank.|
+
+## Constructor
+
+The constructor of the `Auth0Properties` record ensures that the `scopes` field is never null or blank by defaulting it to `openid profile email` if no value is provided. This behavior is crucial for maintaining a valid set of scopes for authentication purposes.

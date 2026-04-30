@@ -1,0 +1,49 @@
+---
+id: isharelinkurlbuilder
+title: IShareLinkUrlBuilder Interface
+sidebar_label: IShareLinkUrlBuilder
+---
+
+## Overview
+
+The `IShareLinkUrlBuilder` interface is part of the `com.upmatches.app.features.sharelink.services` package. It defines a contract for building different types of shareable URLs within the application. This interface is designed to be implemented by classes that generate URLs for sharing resources in various formats, such as web and mobile URLs.
+
+## Public Methods
+
+### buildShareUrl
+
+Builds a shareable URL using a provided code.
+
+| Parameter | Type   | Description                  |
+|-----------|--------|------------------------------|
+| `code`    | String | The code used to generate the shareable URL. |
+
+| Return Type | Description                        |
+|-------------|------------------------------------|
+| `String`    | Returns the constructed shareable URL as a string. |
+
+### buildWebUrl
+
+Constructs a web URL for a given resource type and resource ID.
+
+| Parameter      | Type                      | Description                                      |
+|----------------|---------------------------|--------------------------------------------------|
+| `resourceType` | `ResourceType`            | The type of resource for which the URL is built. |
+| `resourceId`   | String                    | The unique identifier of the resource.           |
+
+| Return Type | Description                        |
+|-------------|------------------------------------|
+| `String`    | Returns the constructed web URL as a string. |
+
+### buildMobileUrl
+
+Generates a mobile-specific URL for a given resource type and resource ID.
+
+| Parameter      | Type                      | Description                                      |
+|----------------|---------------------------|--------------------------------------------------|
+| `resourceType` | `ResourceType`            | The type of resource for which the URL is built. |
+| `resourceId`   | String                    | The unique identifier of the resource.           |
+
+| Return Type | Description                        |
+|-------------|------------------------------------|
+| `String`    | Returns the constructed mobile URL as a string. |

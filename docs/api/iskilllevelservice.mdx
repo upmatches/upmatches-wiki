@@ -1,0 +1,23 @@
+---
+id: i-skill-level-service
+title: ISkillLevelService Interface
+sidebar_label: ISkillLevelService
+---
+
+## Purpose
+
+The `ISkillLevelService` interface defines the contract for services that manage skill levels associated with specific activities. It is a part of the `com.upmatches.app.features.skilllevels.services` package and is designed to be implemented by classes that provide concrete functionality for handling skill level data. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `SkillLevelService` class.
+
+## Public Methods
+
+### `getSkillLevelsByActivity`
+
+Retrieves a list of skill levels associated with a given activity.
+
+| Parameter   | Type   | Description                          |
+|-------------|--------|--------------------------------------|
+| `activityId`| `UUID` | The unique identifier of the activity|
+
+| Return Type                          | Description                                   |
+|--------------------------------------|-----------------------------------------------|
+| `List<SkillLevelResponse>`           | A list of skill level responses for the activity|

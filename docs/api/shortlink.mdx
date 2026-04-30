@@ -1,0 +1,37 @@
+---
+id: short-link
+title: ShortLink Class
+sidebar_label: ShortLink
+---
+
+## Overview
+
+The `ShortLink` class is an entity representing a shortened link in the application. It is used to map a short code to a specific resource type and resource ID, allowing users to share links easily. The class is annotated with JPA annotations to facilitate ORM (Object-Relational Mapping) with a database.
+
+## Public Methods
+
+The `ShortLink` class provides the following public method:
+
+### `create`
+
+Creates a new instance of `ShortLink`.
+
+| Parameter    | Type          | Description                                      |
+|--------------|---------------|--------------------------------------------------|
+| `code`       | `String`      | The unique code representing the short link.     |
+| `resourceType` | `ResourceType` | The type of resource the link points to.       |
+| `resourceId` | `String`      | The ID of the resource the link points to.       |
+| `createdBy`  | `User`        | The user who created the short link.             |
+
+**Returns**: `ShortLink` - A new instance of the `ShortLink` class.
+
+## Annotations and Lifecycle Methods
+
+- **`@Entity`**: Specifies that the class is an entity and is mapped to a database table.
+- **`@Table(name = "short_links")`**: Specifies the table name in the database.
+- **`@Id`** and **`@GeneratedValue(strategy = GenerationType.UUID)`**: Marks the `id` field as the primary key with a generated UUID.
+- **`@Column`**: Specifies the column details for each field in the database.
+- **`@Enumerated(EnumType.STRING)`**: Specifies that the `resourceType` field should be persisted as a string.
+- **`@ManyToOne`** and **`@JoinColumn(name = "created_by")`**: Defines a many-to-one relationship with the `User` entity.
+- **`@PrePersist`**: Lifecycle method that sets `createdAt` and `updatedAt` timestamps before the entity is persisted.
+- **`@PreUpdate`**: Lifecycle method that updates the `updatedAt` timestamp before the entity is updated.

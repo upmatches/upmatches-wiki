@@ -1,0 +1,57 @@
+---
+id: device-token
+title: DeviceToken Class
+sidebar_label: DeviceToken
+---
+
+## Overview
+
+The `DeviceToken` class is an entity representing a device token associated with a user for notification purposes. It is part of the notification feature in the application and is mapped to the `notification_device_tokens` table in the database. This class uses JPA annotations for ORM (Object-Relational Mapping) and Lombok annotations to reduce boilerplate code.
+
+## Public Methods
+
+The `DeviceToken` class provides the following public methods:
+
+### `create`
+
+Creates a new instance of `DeviceToken`.
+
+| Parameter    | Type            | Description                       |
+|--------------|-----------------|-----------------------------------|
+| `user`       | `User`          | The user associated with the device token. |
+| `deviceToken`| `String`        | The device token string.          |
+| `platform`   | `DevicePlatform`| The platform of the device.       |
+
+| Return Type  | Description                       |
+|--------------|-----------------------------------|
+| `DeviceToken`| A new instance of `DeviceToken`.  |
+
+### `touch`
+
+Updates the platform of the device token.
+
+| Parameter    | Type            | Description                       |
+|--------------|-----------------|-----------------------------------|
+| `platform`   | `DevicePlatform`| The new platform of the device.   |
+
+| Return Type  | Description                       |
+|--------------|-----------------------------------|
+| `void`       | This method does not return a value. |
+
+## Annotations
+
+- **Entity**: Specifies that the class is an entity and is mapped to a database table.
+- **Table**: Specifies the primary table for the annotated entity.
+- **Id**: Specifies the primary key of an entity.
+- **GeneratedValue**: Provides for the specification of generation strategies for the values of primary keys.
+- **ManyToOne**: Defines a single-valued association to another entity class that has many-to-one multiplicity.
+- **JoinColumn**: Specifies a column for joining an entity association or element collection.
+- **Column**: Used to specify the mapped column for a persistent property or field.
+- **Enumerated**: Specifies that a persistent property or field should be persisted as an enumerated type.
+- **PrePersist**: Specifies a callback method for the corresponding lifecycle event.
+- **PreUpdate**: Specifies a callback method for the corresponding lifecycle event.
+
+## Lombok Annotations
+
+- **Getter**: Generates getters for all fields.
+- **NoArgsConstructor**: Generates a no-arguments constructor. The `access` parameter is set to `PROTECTED` to restrict instantiation.

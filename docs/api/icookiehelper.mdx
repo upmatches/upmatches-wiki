@@ -1,0 +1,50 @@
+---
+id: icookiehelper
+title: ICookieHelper Interface
+sidebar_label: ICookieHelper
+---
+
+## Overview
+
+The `ICookieHelper` interface is part of the `com.upmatches.app.features.auth.services` package. It defines a contract for managing authentication-related cookies within a web application. This interface is sealed, allowing only the `CookieHelper` class to implement it. The primary purpose of this interface is to provide methods for setting, clearing, and retrieving authentication cookies, specifically focusing on handling tokens.
+
+## Public Methods
+
+### `setAuthCookies`
+
+Sets authentication cookies in the HTTP response based on the provided token data.
+
+| Parameter     | Type                      | Description                                      |
+|---------------|---------------------------|--------------------------------------------------|
+| `response`    | `HttpServletResponse`     | The HTTP response object where cookies are set.  |
+| `request`     | `HttpServletRequest`      | The HTTP request object for additional context.  |
+| `tokenData`   | `TokenData`               | The token data used to create authentication cookies. |
+
+| Return Type   | Description               |
+|---------------|---------------------------|
+| `void`        | This method does not return a value. |
+
+### `clearAuthCookies`
+
+Clears authentication cookies from the HTTP response.
+
+| Parameter     | Type                      | Description                                      |
+|---------------|---------------------------|--------------------------------------------------|
+| `response`    | `HttpServletResponse`     | The HTTP response object where cookies are cleared. |
+| `request`     | `HttpServletRequest`      | The HTTP request object for additional context.  |
+
+| Return Type   | Description               |
+|---------------|---------------------------|
+| `void`        | This method does not return a value. |
+
+### `getRefreshTokenFromCookie`
+
+Retrieves the refresh token from the cookies in the HTTP request.
+
+| Parameter     | Type                      | Description                                      |
+|---------------|---------------------------|--------------------------------------------------|
+| `request`     | `HttpServletRequest`      | The HTTP request object containing cookies.      |
+
+| Return Type   | Description               |
+|---------------|---------------------------|
+| `String`      | Returns the refresh token as a string, or `null` if not found. |

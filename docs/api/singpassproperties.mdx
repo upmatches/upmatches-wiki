@@ -1,0 +1,40 @@
+---
+id: singpass-properties
+title: SingpassProperties Class
+sidebar_label: SingpassProperties
+---
+
+## Purpose of the SingpassProperties Class
+
+The `SingpassProperties` class is a configuration properties holder for Singpass authentication settings in a Spring Boot application. It is annotated with `@ConfigurationProperties`, allowing it to be automatically populated with values from the application's configuration files (e.g., `application.yml` or `application.properties`) using the prefix `app.singpass`.
+
+This class is implemented as a Java record, which provides a concise way to define immutable data carriers. The `SingpassProperties` class holds various properties required for Singpass authentication, such as client ID, redirect URI, and endpoints for authorization, token, and user information.
+
+## Public Methods
+
+The `SingpassProperties` class does not explicitly define public methods beyond the automatically generated accessors for its fields. However, it includes a compact constructor that ensures default values for certain fields if they are not provided.
+
+### Constructor
+
+The constructor of the `SingpassProperties` class is used to initialize the properties with default values if necessary.
+
+| Parameter                  | Type   | Description                                                                 |
+|----------------------------|--------|-----------------------------------------------------------------------------|
+| `clientId`                 | String | The client ID for the Singpass application.                                 |
+| `redirectUri`              | String | The URI to redirect to after authentication.                                |
+| `issuer`                   | String | The issuer identifier for the Singpass authentication.                      |
+| `authorizationEndpoint`    | String | The endpoint for authorization requests.                                    |
+| `parEndpoint`              | String | The endpoint for Pushed Authorization Requests (PAR).                       |
+| `tokenEndpoint`            | String | The endpoint for token requests.                                            |
+| `jwksEndpoint`             | String | The endpoint to retrieve JSON Web Key Sets (JWKS).                          |
+| `userinfoEndpoint`         | String | The endpoint to retrieve user information.                                  |
+| `scopes`                   | String | The scopes requested during authentication. Defaults to `"openid"` if blank.|
+| `authContextType`          | String | The authentication context type. Defaults to `"APP_AUTHENTICATION_DEFAULT"` if blank. |
+| `authContextMessage`       | String | A message related to the authentication context.                            |
+| `privateSigningKeyPath`    | String | The file path to the private signing key.                                   |
+| `privateEncryptionKeyPath` | String | The file path to the private encryption key.                                |
+
+### Default Values
+
+- **Scopes**: If the `scopes` parameter is `null` or blank, it defaults to `"openid"`.
+- **Auth Context Type**: If the `authContextType` parameter is `null` or blank, it defaults to `"APP_AUTHENTICATION_DEFAULT"`.

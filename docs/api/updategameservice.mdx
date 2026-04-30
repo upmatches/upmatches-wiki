@@ -1,0 +1,38 @@
+---
+id: update-game-service
+title: UpdateGameService
+sidebar_label: UpdateGameService
+---
+
+## Overview
+
+The `UpdateGameService` class is a part of the game management feature in the application. It is responsible for handling the update operations on game entities. This service ensures that the game updates are performed securely and correctly by enforcing authorization checks and validating the update requests. It also publishes events for notifications when a game is updated.
+
+## Public Methods
+
+### `execute`
+
+The `execute` method is the primary method of the `UpdateGameService` class. It updates a game entity based on the provided request and performs necessary validations and authorizations.
+
+| Parameter | Type                      | Description                                                                 |
+|-----------|---------------------------|-----------------------------------------------------------------------------|
+| `id`      | `UUID`                    | The unique identifier of the game to be updated.                            |
+| `request` | `UpdateGameRequest`       | The request object containing the details for updating the game.            |
+
+| Return Type    | Description                                                                 |
+|----------------|-----------------------------------------------------------------------------|
+| `GameResponse` | A response object representing the updated state of the game for the viewer. |
+
+## Detailed Explanation
+
+- **Purpose**: The `UpdateGameService` class is designed to handle the update operations for game entities. It ensures that only authorized users can update a game and that the updates adhere to the business rules defined in the application.
+
+- **Authorization and Validation**: The service uses several helper services to perform authorization checks and validate the update requests. It ensures that the user is the organizer of the game and that certain immutable fields are not changed when there are active participants.
+
+- **Transactional Operation**: The `execute` method is annotated with `@Transactional`, ensuring that the update operation is atomic and consistent.
+
+- **Event Publishing**: After a successful update, the service publishes a `GameNotificationEvent` to notify other parts of the system about the update.
+
+- **Helper Methods**: The class contains private helper methods such as `resolveVenue`, `resolveSkillLevelFrom`, `resolveSkillLevelTo`, and `resolveCurrency` to handle the resolution of related entities and value objects from the update request.
+
+This service is a critical component in maintaining the integrity and consistency of game data within the application, ensuring that updates are performed correctly and efficiently.

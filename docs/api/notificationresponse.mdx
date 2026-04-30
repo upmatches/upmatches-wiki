@@ -1,0 +1,49 @@
+---
+id: notification-response
+title: NotificationResponse Class
+sidebar_label: NotificationResponse
+---
+
+## Overview
+
+The `NotificationResponse` class is a Java record that represents a response object for notifications within the application. It encapsulates various details about a notification, such as its ID, type, title, message, and timestamps related to its creation and read status. This class is designed to provide a structured way to convey notification data, typically for API responses or UI rendering.
+
+## Public Methods
+
+The `NotificationResponse` class provides the following public method:
+
+### `fromNotification`
+
+Converts a `Notification` entity into a `NotificationResponse` object.
+
+| Method Signature | Description |
+|------------------|-------------|
+| `public static NotificationResponse fromNotification(Notification notification)` | Creates a `NotificationResponse` from a given `Notification` entity. |
+
+#### Parameters
+
+| Parameter   | Type         | Description                        |
+|-------------|--------------|------------------------------------|
+| notification | `Notification` | The notification entity to be converted into a response object. |
+
+#### Return Type
+
+| Type                 | Description                                      |
+|----------------------|--------------------------------------------------|
+| `NotificationResponse` | A new instance of `NotificationResponse` containing the data from the provided `Notification` entity. |
+
+## Fields
+
+The `NotificationResponse` record includes the following fields:
+
+| Field Name   | Type         | Description                                      |
+|--------------|--------------|--------------------------------------------------|
+| `id`         | `UUID`       | The unique identifier of the notification.       |
+| `type`       | `String`     | The type of the notification.                    |
+| `title`      | `String`     | The title of the notification.                   |
+| `message`    | `String`     | The message content of the notification.         |
+| `resourceType` | `String`   | The type of resource associated with the notification. |
+| `resourceId` | `UUID`       | The unique identifier of the associated resource. |
+| `isRead`     | `Boolean`    | Indicates whether the notification has been read. |
+| `readAt`     | `Instant`    | The timestamp when the notification was read.    |
+| `createdAt`  | `Instant`    | The timestamp when the notification was created. |

@@ -1,0 +1,68 @@
+---
+id: auth-controller
+title: AuthController
+sidebar_label: AuthController
+---
+
+## Overview
+
+The `AuthController` class is a REST controller in a Spring Boot application that manages authentication-related endpoints. It provides methods for handling login requests via Singpass, Auth0, and Apple, as well as refreshing tokens and logging out users. The controller integrates with various authentication services and manages sessions and tokens.
+
+## Public Methods
+
+### `loginSingpass`
+
+Handles login requests via Singpass.
+
+| Parameter | Type                  | Description                          |
+|-----------|-----------------------|--------------------------------------|
+| platform  | `String` (optional)   | The platform from which the request is made (e.g., mobile). |
+| request   | `HttpServletRequest`  | The HTTP request object.             |
+
+**Returns:** `ResponseEntity<Object>` - The response entity containing the authorization URL or an error message.
+
+### `loginAuth0`
+
+Handles login requests via Auth0.
+
+| Parameter | Type                  | Description                          |
+|-----------|-----------------------|--------------------------------------|
+| platform  | `String` (optional)   | The platform from which the request is made (e.g., mobile). |
+| provider  | `String` (optional)   | The provider for Auth0 login.        |
+| request   | `HttpServletRequest`  | The HTTP request object.             |
+
+**Returns:** `ResponseEntity<Object>` - The response entity containing the authorization URL or an error message.
+
+### `loginApple`
+
+Handles login requests via Apple.
+
+| Parameter | Type                  | Description                          |
+|-----------|-----------------------|--------------------------------------|
+| body      | `AppleLoginRequest`   | The request body containing login details. |
+| request   | `HttpServletRequest`  | The HTTP request object.             |
+
+**Returns:** `ResponseEntity<Object>` - The response entity containing the login response or an error message.
+
+### `refresh`
+
+Handles token refresh requests.
+
+| Parameter | Type                  | Description                          |
+|-----------|-----------------------|--------------------------------------|
+| body      | `RefreshRequest` (optional) | The request body containing refresh token details. |
+| request   | `HttpServletRequest`  | The HTTP request object.             |
+| response  | `HttpServletResponse` | The HTTP response object.            |
+
+**Returns:** `ResponseEntity<Object>` - The response entity containing the new token or an error message.
+
+### `logout`
+
+Handles logout requests.
+
+| Parameter | Type                  | Description                          |
+|-----------|-----------------------|--------------------------------------|
+| request   | `HttpServletRequest`  | The HTTP request object.             |
+| response  | `HttpServletResponse` | The HTTP response object.            |
+
+**Returns:** `ResponseEntity<Object>` - The response entity confirming the logout or an error message.

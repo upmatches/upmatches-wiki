@@ -1,0 +1,37 @@
+---
+id: get-game-service
+title: GetGameService
+sidebar_label: GetGameService
+---
+
+## Overview
+
+The `GetGameService` class is a part of the `com.upmatches.app.features.game.services` package and is responsible for handling the retrieval of game information. It integrates with various services and repositories to fetch game details, check user permissions, and determine the joinability of a game for a viewer. This service ensures that only authorized users can view game details and provides appropriate responses based on the user's authentication status.
+
+## Public Methods
+
+### `execute`
+
+This method retrieves game details based on the provided game ID. It checks if the user is authorized to view the game and computes the joinability status for the viewer.
+
+| Parameter | Type   | Description                      |
+|-----------|--------|----------------------------------|
+| `id`      | `UUID` | The unique identifier of the game |
+
+| Return Type   | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `GameResponse`| Returns a `GameResponse` object containing game details and viewer-specific information. |
+
+## Detailed Description
+
+- **Game Retrieval**: The `execute` method uses the `IGameLookupService` to find the game by its ID. If the game is not found, a `ResourceNotFoundException` is thrown.
+  
+- **Authorization**: The method utilizes `IGameAuthorizationService` to ensure that the user has permission to view the game. If the user is not authorized, an exception is thrown.
+
+- **Participant Count**: It calculates the number of active participants in the game using the `GameParticipantRepository`.
+
+- **Response Generation**: 
+  - If the user is not authenticated, it returns a response using `GameResponse.fromGameAnonymous`.
+  - If the user is authenticated, it computes the joinability status using `IGameJoinabilityService` and returns a response using `GameResponse.fromGameForViewer`.
+
+This service is crucial for maintaining the integrity and security of game data access within the application, ensuring that only authorized users can view sensitive game information.

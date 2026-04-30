@@ -1,0 +1,44 @@
+---
+id: dev-auth-controller
+title: DevAuthController
+sidebar_label: DevAuthController
+---
+
+## Overview
+
+The `DevAuthController` class is a Spring Boot REST controller designed for development environments. It provides an endpoint for minting development tokens, which are used for authentication purposes during development. This controller is conditionally enabled based on application properties and is restricted to be accessed only from localhost.
+
+## Public Methods
+
+### mintToken
+
+Mint a development token for a specified user. This method is accessible via a POST request to the `/api/v1/auth/dev/tokens` endpoint.
+
+| Parameter | Type                          | Description                                      |
+|-----------|-------------------------------|--------------------------------------------------|
+| `body`    | `MintDevTokenRequest`         | The request body containing the user ID.         |
+| `request` | `HttpServletRequest`          | The HTTP request object.                         |
+
+| Return Type               | Description                                      |
+|---------------------------|--------------------------------------------------|
+| `ResponseEntity<Object>`  | A response entity containing the token response. |
+
+## Method Details
+
+### mintToken
+
+- **Purpose**: To mint a development token for a user.
+- **HTTP Method**: POST
+- **Endpoint**: `/api/v1/auth/dev/tokens`
+- **Parameters**:
+  - `@Valid @RequestBody MintDevTokenRequest body`: The request body containing the user ID for whom the token is to be minted.
+  - `HttpServletRequest request`: The HTTP request object, used to verify the host.
+- **Return**: A `ResponseEntity` containing an `ApiResponse` with the minted token and a success message.
+- **Exceptions**: Throws `AuthenticationException` if the request is not from an allowed host.
+
+### assertLocalHost
+
+- **Purpose**: To ensure that the request is coming from a local host.
+- **Parameters**:
+  - `HttpServletRequest request`: The HTTP request object.
+- **Exceptions**: Throws `AuthenticationException` if the host is not in the allowed list (`localhost`, `127.0.0.1`, `[::1]`, `0:0:0:0:0:0:0:1`).

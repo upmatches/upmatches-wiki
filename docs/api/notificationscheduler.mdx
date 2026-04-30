@@ -1,0 +1,32 @@
+---
+id: notification-scheduler
+title: NotificationScheduler Class
+sidebar_label: NotificationScheduler
+---
+
+## Purpose
+
+The `NotificationScheduler` class is a Spring component responsible for scheduling and sending game reminder notifications. It utilizes the `ISendGameRemindersService` to execute the sending of reminders based on predefined time intervals. The class is configured to run at a specific time using a cron expression, ensuring that reminders are sent out regularly.
+
+## Public Methods
+
+| Method Name   | Description                                                                 | Parameters                                                                                                                                                                                                                      | Return Type |
+|---------------|-----------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| sendReminders | Schedules and sends game reminders for 3 days and 1 day before the event.   | None                                                                                                                                                                                                                            | void        |
+
+### Method Details
+
+#### sendReminders
+
+- **Description**: This method is annotated with `@Scheduled` to run at a specific time defined by the `REMINDER_CRON` expression. It sends out two types of game reminders: one for 3 days before the event and another for 1 day before the event. The method logs the number of reminders sent for each type.
+- **Parameters**: None
+- **Return Type**: `void`
+
+The `sendReminders` method uses the following constants for its operations:
+
+- **REMINDER_CRON**: A cron expression that determines when the reminders are sent. The default value is set to run at 9 AM every day.
+- **HOURS_3_DAYS_MIN** and **HOURS_3_DAYS_MAX**: Define the range of hours (71 to 73) for sending 3-day reminders.
+- **HOURS_1_DAY_MIN** and **HOURS_1_DAY_MAX**: Define the range of hours (23 to 25) for sending 1-day reminders.
+- **LOG_REMINDERS**: A log message template used to log the number of reminders sent.
+
+The method interacts with the `ISendGameRemindersService` to execute the sending of reminders based on the `NotificationType` and the specified hour ranges.

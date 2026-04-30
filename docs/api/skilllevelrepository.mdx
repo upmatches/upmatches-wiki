@@ -1,0 +1,31 @@
+---
+id: skill-level-repository
+title: SkillLevelRepository
+sidebar_label: SkillLevelRepository
+---
+
+## Purpose of the Class
+
+The `SkillLevelRepository` interface is a part of the repository layer in a Spring application, specifically designed to manage `SkillLevel` entities. It extends the `JpaRepository` interface, which provides standard CRUD (Create, Read, Update, Delete) operations for the `SkillLevel` entity. This repository interface is crucial for interacting with the database in a Spring Data JPA context, allowing for seamless data access and manipulation.
+
+## Public Methods
+
+The `SkillLevelRepository` interface includes the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `List<SkillLevel> findByActivityIdOrderBySortOrder(UUID activityId)` | Retrieves a list of `SkillLevel` entities associated with a specific `activityId`, ordered by their `sortOrder`. |
+
+### Method Details
+
+#### `findByActivityIdOrderBySortOrder`
+
+- **Parameters:**
+
+  | Name        | Type   | Description                                      |
+  |-------------|--------|--------------------------------------------------|
+  | `activityId`| `UUID` | The unique identifier of the activity to filter the skill levels. |
+
+- **Return Type:** `List<SkillLevel>`
+
+  Returns a list of `SkillLevel` entities that are associated with the given `activityId`, sorted by the `sortOrder` attribute. This method is useful for obtaining skill levels in a specific order related to a particular activity.

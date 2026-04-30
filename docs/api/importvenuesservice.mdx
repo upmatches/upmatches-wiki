@@ -1,0 +1,37 @@
+---
+id: import-venues-service
+title: ImportVenuesService
+sidebar_label: ImportVenuesService
+---
+
+## Overview
+
+The `ImportVenuesService` class is a part of the `com.upmatches.app.features.venue.services` package. It is responsible for importing venue data from a JSON file and saving it into the database. This service handles the parsing of the JSON file, validation of data, and the creation of `Venue`, `Activity`, `Station`, and `TransitLine` entities. It uses repositories to interact with the database and ensures that the import process is auditable and transactional.
+
+## Public Methods
+
+### `execute`
+
+This method is the main entry point for importing venues. It takes a JSON file as input, parses it, and processes the import of venue data.
+
+| Parameter | Type            | Description                  |
+|-----------|-----------------|------------------------------|
+| `file`    | `MultipartFile` | The JSON file containing venue data to be imported. |
+
+| Return Type          | Description                                      |
+|----------------------|--------------------------------------------------|
+| `VenueImportResponse` | A response object containing the count of successfully imported venues. |
+
+## Detailed Description
+
+- **Purpose**: The `ImportVenuesService` class is designed to handle the import of venue data from a JSON file. It ensures that the data is correctly parsed, validated, and stored in the database. The service is transactional, meaning that it will roll back any changes if an error occurs during the import process.
+
+- **Dependencies**: The service relies on several repositories (`VenueRepository`, `ActivityRepository`, `StationRepository`, `TransitLineRepository`) to interact with the database. It also uses `ObjectMapper` for JSON parsing.
+
+- **Error Handling**: The service throws an `InvalidFileException` if the JSON file cannot be parsed or if the station code format is invalid. It throws a `ResourceNotFoundException` if an activity referenced in the JSON file does not exist in the database.
+
+- **Auditing**: The `execute` method is annotated with `@Auditable`, indicating that the import operation is logged for auditing purposes.
+
+- **Transactional**: The `@Transactional` annotation ensures that the entire import process is atomic. If any part of the process fails, all changes are rolled back to maintain data integrity.
+
+This service is a critical component for managing venue data within the application, ensuring that new venues can be efficiently and accurately imported from external sources.

@@ -1,0 +1,34 @@
+---
+id: token-response
+title: TokenResponse Class
+sidebar_label: TokenResponse
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+## Overview
+
+The `TokenResponse` class is a Java record that encapsulates the response details for authentication tokens. It is part of the `com.upmatches.app.features.auth.responses` package. This class is designed to hold information about an access token, a refresh token, and the expiration time of the access token. It provides a static factory method to create instances of `TokenResponse`.
+
+## Public Methods
+
+<Tabs>
+<TabItem value="java" label="Java" default>
+
+### `of`
+
+The `of` method is a static factory method that creates a new instance of the `TokenResponse` record.
+
+| Parameter    | Type   | Description                           |
+|--------------|--------|---------------------------------------|
+| accessToken  | String | The access token for authentication.  |
+| refreshToken | String | The refresh token for obtaining a new access token. |
+| expiresAt    | Long   | The expiration time of the access token in milliseconds since epoch. |
+
+| Return Type  | Description                                      |
+|--------------|--------------------------------------------------|
+| TokenResponse| A new instance of the `TokenResponse` record.    |
+
+</TabItem>
+</Tabs>

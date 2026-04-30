@@ -1,0 +1,29 @@
+---
+id: iregisterdevicetokenservice
+title: IRegisterDeviceTokenService Interface
+sidebar_label: IRegisterDeviceTokenService
+---
+
+## Purpose
+
+The `IRegisterDeviceTokenService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that handle the registration of device tokens, which are typically used for sending push notifications to devices. This interface ensures that any implementing class provides the necessary functionality to process a device token registration request.
+
+## Public Methods
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `void execute(RegisterDeviceTokenRequest request)` | This method processes the registration of a device token. |
+
+### Method Details
+
+#### `execute`
+
+- **Parameters:**
+
+  | Name    | Type                                      | Description                                    |
+  | ------- | ----------------------------------------- | ---------------------------------------------- |
+  | request | `RegisterDeviceTokenRequest`              | An object containing the details required to register a device token. |
+
+- **Return Type:** `void`
+
+  This method does not return any value. It performs the operation of registering a device token based on the provided request.

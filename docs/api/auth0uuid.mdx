@@ -1,0 +1,55 @@
+---
+id: auth0-uuid
+title: Auth0Uuid Class
+sidebar_label: Auth0Uuid
+---
+
+## Overview
+
+The `Auth0Uuid` class is a value object designed to encapsulate and validate UUIDs used within the Auth0 authentication system. It ensures that the UUIDs conform to a specific format and provides a convenient way to create and manage these identifiers.
+
+## Class Definition
+
+The `Auth0Uuid` class is defined as a Java record, which provides a compact syntax for declaring immutable data objects. This class includes a single field, `value`, which represents the UUID string.
+
+## Public Methods
+
+The `Auth0Uuid` class provides the following public methods:
+
+### `create`
+
+This static method is used to create a new instance of the `Auth0Uuid` class.
+
+| Method Signature                   | Description                                      |
+|------------------------------------|--------------------------------------------------|
+| `public static Auth0Uuid create(final String uuid)` | Creates a new `Auth0Uuid` instance with the specified UUID string. |
+
+#### Parameters
+
+| Parameter | Type   | Description                     |
+|-----------|--------|---------------------------------|
+| `uuid`    | String | The UUID string to be encapsulated and validated. |
+
+#### Return Type
+
+| Type      | Description                           |
+|-----------|---------------------------------------|
+| `Auth0Uuid` | Returns a new instance of the `Auth0Uuid` class. |
+
+### `toString`
+
+Overrides the `toString` method to provide a string representation of the `Auth0Uuid` instance.
+
+| Method Signature       | Description                                      |
+|------------------------|--------------------------------------------------|
+| `public String toString()` | Returns the UUID string encapsulated by this instance. |
+
+#### Return Type
+
+| Type   | Description                           |
+|--------|---------------------------------------|
+| String | The UUID string encapsulated by this instance. |
+
+## Validation
+
+The `Auth0Uuid` class performs validation on the UUID string during instantiation. The string must not be null or blank, and it must match the expected format defined by the regular expression pattern `^[a-zA-Z0-9\\-]+\\|[a-zA-Z0-9@._\\-]+$`. If these conditions are not met, an `IllegalArgumentException` is thrown.

@@ -1,0 +1,37 @@
+---
+id: uuid-repository
+title: UuidRepository Interface
+sidebar_label: UuidRepository
+---
+
+import { useBaseUrl } from '@docusaurus/core';
+
+## Purpose
+
+The `UuidRepository` interface is a specialized extension of the Spring Data `JpaRepository` designed to provide a repository interface for entities identified by a UUID. This interface is marked with `@NoRepositoryBean`, indicating that Spring should not create an instance of it directly. Instead, it serves as a base interface for other repository interfaces that require UUID-based entity retrieval.
+
+## Public Methods
+
+The `UuidRepository` interface defines the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `Optional<T> findByUuid(UUID uuid)` | Retrieves an entity by its UUID. |
+
+### Method Details
+
+#### `findByUuid`
+
+- **Parameters:**
+
+  | Name | Type | Description |
+  |------|------|-------------|
+  | `uuid` | `UUID` | The UUID of the entity to be retrieved. |
+
+- **Returns:** 
+
+  | Type | Description |
+  |------|-------------|
+  | `Optional<T>` | An `Optional` containing the entity if found, or empty if no entity with the given UUID exists. |
+
+This method allows for efficient retrieval of entities using their UUID, which is particularly useful in systems where UUIDs are used as primary identifiers for entities.

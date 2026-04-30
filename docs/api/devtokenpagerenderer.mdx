@@ -1,0 +1,39 @@
+---
+id: dev-token-page-renderer
+title: DevTokenPageRenderer Class
+sidebar_label: DevTokenPageRenderer
+---
+
+## Purpose
+
+The `DevTokenPageRenderer` class is a service component in a Spring application that generates an HTML page for displaying development tokens. It is primarily used in development environments to facilitate testing by rendering access and refresh tokens, along with other relevant information, in a user-friendly HTML format. This class implements the `IDevTokenPageRenderer` interface and provides methods to check if the token page is enabled for a given request and to render the HTML page with the provided token details.
+
+## Public Methods
+
+### `isEnabledFor`
+
+Determines if the token page is enabled for a given HTTP request based on the host and configuration properties.
+
+| Parameter | Type                  | Description                           |
+|-----------|-----------------------|---------------------------------------|
+| request   | `HttpServletRequest`  | The HTTP request to evaluate.         |
+
+| Return Type | Description                                         |
+|-------------|-----------------------------------------------------|
+| `boolean`   | `true` if the token page is enabled for the request; otherwise, `false`. |
+
+### `render`
+
+Renders an HTML page displaying the access token, refresh token, expiration time, and a mobile deep link.
+
+| Parameter         | Type      | Description                                         |
+|-------------------|-----------|-----------------------------------------------------|
+| accessToken       | `String`  | The access token to display.                        |
+| refreshToken      | `String`  | The refresh token to display.                       |
+| expiresAtUtc      | `Long`    | The expiration time in UTC epoch seconds.           |
+| isNewUser         | `Boolean` | Indicates if the user is new.                       |
+| mobileRedirectUrl | `String`  | The URL for mobile redirection.                     |
+
+| Return Type          | Description                                      |
+|----------------------|--------------------------------------------------|
+| `ResponseEntity<String>` | A response entity containing the rendered HTML page. |

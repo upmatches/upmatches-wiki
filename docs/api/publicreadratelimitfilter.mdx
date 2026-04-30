@@ -1,0 +1,102 @@
+---
+id: public-read-rate-limit-filter
+title: PublicReadRateLimitFilter
+sidebar_label: Public Read Rate Limit Filter
+---
+
+## Purpose
+
+The `PublicReadRateLimitFilter` class is a Spring component designed to enforce rate limiting on public API endpoints. It extends `OncePerRequestFilter` to ensure that the filter is executed once per request within a single request thread. The filter checks the request method and URI to determine if rate limiting should be applied. It uses Redis to track request counts and enforce limits, distinguishing between anonymous and authenticated users.
+
+## Public Methods
+
+### Constructor
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `PublicReadRateLimitFilter(StringRedisTemplate redisTemplate)` | Constructs a new instance of `PublicReadRateLimitFilter` with the provided `StringRedisTemplate` for Redis operations. |
+
+### Overridden Methods
+
+#### `shouldNotFilter`
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `request` | `HttpServletRequest` | The HTTP request to be checked. |
+
+| Return Type | Description |
+| ----------- | ----------- |
+| `boolean`   | Returns `true` if the request should not be filtered (i.e., not a GET request or not targeting specific API paths), otherwise `false`. |
+
+#### `doFilterInternal`
+
+| Parameter    | Type                  | Description |
+| ------------ | --------------------- | ----------- |
+| `request`    | `HttpServletRequest`  | The HTTP request to be filtered. |
+| `response`   | `HttpServletResponse` | The HTTP response to be sent. |
+| `filterChain`| `FilterChain`         | The filter chain to pass the request and response to the next filter. |
+
+| Return Type | Description |
+| ----------- | ----------- |
+| `void`      | Processes the request and applies rate limiting logic. |
+
+### Private Methods
+
+#### `resolveBucket`
+
+| Parameter | Type   | Description |
+| --------- | ------ | ----------- |
+| `uri`     | `String` | The request URI to determine the bucket. |
+
+| Return Type | Description |
+| ----------- | ----------- |
+| `Bucket`    | Returns the appropriate `Bucket` based on the URI, or `null` if no bucket is applicable. |
+
+#### `isRateLimited`
+
+| Parameter | Type   | Description |
+| --------- | ------ | ----------- |
+| `key`     | `String` | The Redis key for tracking request counts. |
+| `limit`   | `int`   | The maximum allowed requests within the time window. |
+
+| Return Type | Description |
+| ----------- | ----------- |
+| `boolean`   | Returns `true` if the request count exceeds the limit, otherwise `false`. |
+
+#### `resolveClientIp`
+
+| Parameter | Type                  | Description |
+| --------- | --------------------- | ----------- |
+| `request` | `HttpServletRequest`  | The HTTP request to extract the client IP from. |
+
+| Return Type | Description |
+| ----------- | ----------- |
+| `String`    | Returns the resolved client IP address. |
+
+#### `resolveSubject`
+
+| Parameter | Type                  | Description |
+| --------- | --------------------- | ----------- |
+| `request` | `HttpServletRequest`  | The HTTP request to determine the subject from. |
+
+| Return Type | Description |
+| ----------- | ----------- |
+| `String`    | Returns the subject identifier, either the authenticated user's subject or the client IP address. |
+
+#### `isAuthenticated`
+
+| Return Type | Description |
+| ----------- | ----------- |
+| `boolean`   | Returns `true` if the current user is authenticated, otherwise `false`. |
+
+#### `writeRateLimitResponse`
+
+| Parameter  | Type                  | Description |
+| ---------- | --------------------- | ----------- |
+| `response` | `HttpServletResponse` | The HTTP response to write the rate limit error to. |
+| `bucket`   | `String`              | The name of the bucket that exceeded the rate limit. |
+| `instance` | `String`              | The URI instance of the request. |
+
+| Return Type | Description |
+| ----------- | ----------- |
+| `void`      | Writes a rate limit exceeded response to the client. |

@@ -1,0 +1,37 @@
+---
+id: postal-code
+title: PostalCode Class
+sidebar_label: PostalCode
+---
+
+## Purpose of the PostalCode Class
+
+The `PostalCode` class is a value object that encapsulates a postal code as a string. It ensures that the postal code adheres to a specific format, which is a 6-digit number. This class is part of the `com.upmatches.app.features.venue.valueobjects` package and provides a robust way to handle postal codes by validating the input upon creation.
+
+## Public Methods
+
+The `PostalCode` class provides the following public methods:
+
+| Method Signature                | Description                                                                 |
+|---------------------------------|-----------------------------------------------------------------------------|
+| `public static PostalCode create(String postalCode)` | A factory method to create a new `PostalCode` instance. It validates the input and returns a `PostalCode` object if the input is valid. |
+| `public String toString()`      | Overrides the default `toString` method to return the postal code value as a string. |
+
+### Method Details
+
+#### `create`
+
+- **Description**: This static method is a factory method that creates a new instance of the `PostalCode` class. It takes a string input, validates it, and returns a `PostalCode` object if the input is a valid 6-digit number.
+- **Parameters**:
+
+  | Name        | Type   | Description                    |
+  |-------------|--------|--------------------------------|
+  | `postalCode`| String | The postal code to be validated and encapsulated. |
+
+- **Return Type**: `PostalCode` - Returns a new instance of the `PostalCode` class.
+
+#### `toString`
+
+- **Description**: This method overrides the default `toString` method to provide a string representation of the `PostalCode` object, which is the encapsulated postal code value.
+- **Parameters**: None
+- **Return Type**: `String` - Returns the postal code value as a string.

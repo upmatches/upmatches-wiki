@@ -1,0 +1,92 @@
+---
+id: repository-helper
+title: RepositoryHelper Utility Class
+sidebar_label: RepositoryHelper
+---
+
+## Purpose
+
+The `RepositoryHelper` class is a utility class designed to facilitate common operations on repositories in a Spring application. It provides static methods for finding, deleting, and soft-deleting entities by their ID or UUID. This class helps streamline repository interactions by handling exceptions and pagination, ensuring that operations are performed safely and efficiently.
+
+## Public Methods
+
+### `findByIdOrThrow`
+
+Finds an entity by its ID or throws a `ResourceNotFoundException` if not found.
+
+| Parameter     | Type                      | Description                           |
+|---------------|---------------------------|---------------------------------------|
+| `repository`  | `JpaRepository<T, I>`     | The repository to search in.          |
+| `id`          | `I`                       | The ID of the entity to find.         |
+| `entityClass` | `Class<T>`                | The class of the entity.              |
+
+**Returns:** `T` - The found entity.
+
+### `findByUuidOrThrow`
+
+Finds an entity by its UUID or throws a `ResourceNotFoundException` if not found.
+
+| Parameter     | Type                  | Description                           |
+|---------------|-----------------------|---------------------------------------|
+| `repository`  | `UuidRepository<T>`   | The repository to search in.          |
+| `uuid`        | `UUID`                | The UUID of the entity to find.       |
+| `entityClass` | `Class<T>`            | The class of the entity.              |
+
+**Returns:** `T` - The found entity.
+
+### `findAllPaged`
+
+Finds all entities in a paginated format.
+
+| Parameter      | Type                           | Description                           |
+|----------------|--------------------------------|---------------------------------------|
+| `repository`   | `JpaRepository<T, ?>`          | The repository to search in.          |
+| `page`         | `int`                          | The page number to retrieve.          |
+| `size`         | `int`                          | The number of items per page.         |
+| `sortBy`       | `String`                       | The field to sort by.                 |
+| `sortDirection`| `String`                       | The direction of sorting (asc/desc).  |
+| `mapper`       | `Function<T, R>`               | A function to map entities to a response type. |
+
+**Returns:** `PagedResponse<R>` - The paginated response.
+
+### `deleteByIdOrThrow`
+
+Deletes an entity by its ID or throws a `ResourceNotFoundException` if not found.
+
+| Parameter     | Type                      | Description                           |
+|---------------|---------------------------|---------------------------------------|
+| `repository`  | `JpaRepository<T, I>`     | The repository to delete from.        |
+| `id`          | `I`                       | The ID of the entity to delete.       |
+| `entityClass` | `Class<T>`                | The class of the entity.              |
+
+### `deleteByUuidOrThrow`
+
+Deletes an entity by its UUID or throws a `ResourceNotFoundException` if not found.
+
+| Parameter     | Type                  | Description                           |
+|---------------|-----------------------|---------------------------------------|
+| `repository`  | `UuidRepository<T>`   | The repository to delete from.        |
+| `uuid`        | `UUID`                | The UUID of the entity to delete.     |
+| `entityClass` | `Class<T>`            | The class of the entity.              |
+
+### `softDeleteByIdOrThrow`
+
+Soft deletes an entity by its ID by marking it as deleted and saving it back to the repository.
+
+| Parameter     | Type                      | Description                           |
+|---------------|---------------------------|---------------------------------------|
+| `repository`  | `JpaRepository<T, Long>`  | The repository to update.             |
+| `id`          | `Long`                    | The ID of the entity to soft delete.  |
+| `entityClass` | `Class<T>`                | The class of the entity.              |
+| `markDeleted` | `Consumer<T>`             | A consumer to mark the entity as deleted. |
+
+### `softDeleteByUuidOrThrow`
+
+Soft deletes an entity by its UUID by marking it as deleted and saving it back to the repository.
+
+| Parameter     | Type                  | Description                           |
+|---------------|-----------------------|---------------------------------------|
+| `repository`  | `UuidRepository<T>`   | The repository to update.             |
+| `uuid`        | `UUID`                | The UUID of the entity to soft delete.|
+| `entityClass` | `Class<T>`            | The class of the entity.              |
+| `markDeleted` | `Consumer<T>`         | A consumer to mark the entity as deleted. |

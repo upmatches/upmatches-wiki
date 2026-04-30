@@ -1,0 +1,29 @@
+---
+id: resend-configuration
+title: ResendConfiguration Class
+sidebar_label: ResendConfiguration
+---
+
+## Overview
+
+The `ResendConfiguration` class is a Spring configuration class responsible for setting up the `Resend` client used for email notifications. It leverages the `ResendProperties` to obtain necessary configuration details such as the API key. This class ensures that the `Resend` client is only initialized if a valid API key is provided, thus enabling or disabling email notifications accordingly.
+
+## Public Methods
+
+The `ResendConfiguration` class provides the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `Resend resend()` | Configures and returns a `Resend` client instance if a valid API key is present. Returns `null` if the API key is not configured. |
+
+### Method Details
+
+#### `Resend resend()`
+
+- **Purpose**: Initializes the `Resend` client for sending email notifications.
+- **Parameters**: None
+- **Returns**: 
+  - `Resend`: An instance of the `Resend` client if the API key is configured.
+  - `null`: If the API key is not configured, indicating that email notifications are disabled.
+
+This method checks if the `ResendProperties` contains a valid API key. If the API key is present, it logs a message indicating that the `Resend` client has been initialized and returns a new `Resend` instance. If the API key is absent, it logs a message indicating that email notifications are disabled and returns `null`.

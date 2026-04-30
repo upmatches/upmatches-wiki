@@ -1,0 +1,45 @@
+---
+id: audit-event-repository
+title: AuditEventRepository
+sidebar_label: AuditEventRepository
+---
+
+## Purpose of the Class
+
+The `AuditEventRepository` interface is a part of the `com.upmatches.app.features.audit.repositories` package and serves as a data access layer for `AuditEvent` entities. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers CRUD operations and additional query methods for managing `AuditEvent` entities in the database. This repository is annotated with `@Repository`, indicating that it is a Spring-managed component responsible for data access.
+
+## Public Methods
+
+The `AuditEventRepository` interface defines custom query methods to retrieve audit events based on specific criteria. Below is a detailed description of the public methods available in this interface:
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `List<AuditEvent> findByActorIdOrderByOccurredAtDesc(UUID actorId)` | Retrieves a list of `AuditEvent` objects associated with a specific actor, identified by `actorId`. The results are ordered by the `occurredAt` timestamp in descending order. |
+| `List<AuditEvent> findByResourceTypeAndResourceIdOrderByOccurredAtDesc(String resourceType, String resourceId)` | Retrieves a list of `AuditEvent` objects based on the `resourceType` and `resourceId`. The results are ordered by the `occurredAt` timestamp in descending order. |
+
+### Method Details
+
+#### `findByActorIdOrderByOccurredAtDesc`
+
+- **Parameters:**
+
+  | Name     | Type  | Description                             |
+  | -------- | ----- | --------------------------------------- |
+  | actorId  | `UUID`| The unique identifier of the actor.     |
+
+- **Return Type:** `List<AuditEvent>`
+
+  Returns a list of `AuditEvent` entities associated with the specified actor, ordered by the occurrence time in descending order.
+
+#### `findByResourceTypeAndResourceIdOrderByOccurredAtDesc`
+
+- **Parameters:**
+
+  | Name         | Type    | Description                             |
+  | ------------ | ------- | --------------------------------------- |
+  | resourceType | `String`| The type of the resource involved.      |
+  | resourceId   | `String`| The unique identifier of the resource.  |
+
+- **Return Type:** `List<AuditEvent>`
+
+  Returns a list of `AuditEvent` entities filtered by the specified resource type and resource ID, ordered by the occurrence time in descending order.

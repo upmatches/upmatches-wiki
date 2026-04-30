@@ -1,0 +1,112 @@
+---
+id: database-configuration
+title: DatabaseConfiguration Class
+sidebar_label: DatabaseConfiguration
+---
+
+## Overview
+
+The `DatabaseConfiguration` class is a Spring configuration class responsible for setting up the data source for the application. It leverages HikariCP for connection pooling and supports different database types such as PostgreSQL and H2. The class also integrates with Micrometer for monitoring database metrics.
+
+## Public Methods
+
+### `dataSource`
+
+The `dataSource` method is a Spring Bean that provides a configured `DataSource` object. It applies various configurations based on the database type and properties.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      |      |             |
+
+| Return Type | Description                       |
+|-------------|-----------------------------------|
+| `DataSource`| A configured HikariCP data source |
+
+## Method Details
+
+### `dataSource`
+
+- **Purpose**: Configures and returns a `DataSource` bean using HikariCP.
+- **Configuration Steps**:
+  - Validates the JDBC URL.
+  - Resolves the driver class name based on the JDBC URL.
+  - Sets up HikariCP configurations such as pool sizing, timeouts, and optimizations specific to PostgreSQL or H2.
+  - Applies monitoring configurations if a `MeterRegistry` is available.
+  - Logs a summary of the configuration.
+
+### `resolveDriverClassName`
+
+- **Purpose**: Determines the driver class name for the database connection.
+- **Parameters**:
+  - `jdbcUrl`: The JDBC URL of the database.
+- **Return Type**: `String` - The resolved driver class name.
+
+### `getDriverClassName`
+
+- **Purpose**: Retrieves the driver class name based on the database type.
+- **Parameters**:
+  - `jdbcUrl`: The JDBC URL of the database.
+- **Return Type**: `String` - The driver class name.
+
+### `getDatabaseType`
+
+- **Purpose**: Identifies the type of database from the JDBC URL.
+- **Parameters**:
+  - `jdbcUrl`: The JDBC URL of the database.
+- **Return Type**: `String` - The name of the database type.
+
+### `resolvePoolName`
+
+- **Purpose**: Constructs the pool name using active profiles.
+- **Return Type**: `String` - The resolved pool name.
+
+### `applyPoolSizing`
+
+- **Purpose**: Configures the pool size settings for HikariCP.
+- **Parameters**:
+  - `config`: The HikariConfig object to be configured.
+
+### `applyTimeouts`
+
+- **Purpose**: Sets various timeout configurations for HikariCP.
+- **Parameters**:
+  - `hikariConfig`: The HikariConfig object to be configured.
+
+### `applyPostgreSQLOptimizations`
+
+- **Purpose**: Applies PostgreSQL-specific optimizations to the HikariConfig.
+- **Parameters**:
+  - `hikariConfig`: The HikariConfig object to be configured.
+  - `applicationName`: The name of the application.
+
+### `resolveApplicationName`
+
+- **Purpose**: Determines the application name, incorporating active profiles if available.
+- **Return Type**: `String` - The resolved application name.
+
+### `applyH2Optimizations`
+
+- **Purpose**: Applies H2-specific optimizations to the HikariConfig.
+- **Parameters**:
+  - `hikariConfig`: The HikariConfig object to be configured.
+
+### `applyMonitoring`
+
+- **Purpose**: Configures monitoring for the data source using Micrometer.
+- **Parameters**:
+  - `config`: The HikariConfig object to be configured.
+
+### `logConfigurationSummary`
+
+- **Purpose**: Logs a summary of the HikariCP configuration.
+- **Parameters**:
+  - `config`: The HikariConfig object.
+  - `driver`: The driver class name.
+  - `applicationName`: The application name.
+
+### `maskSensitiveUrl`
+
+- **Purpose**: Masks sensitive information in the database URL for logging.
+- **Parameters**:
+  - `url`: The database URL.
+- **Return Type**: `String` - The masked URL.

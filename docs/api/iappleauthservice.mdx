@@ -1,0 +1,32 @@
+---
+id: iappleauthservice
+title: IAppleAuthService Interface
+sidebar_label: IAppleAuthService
+---
+
+## Purpose
+
+The `IAppleAuthService` interface is part of the `com.upmatches.app.features.auth.services` package and serves as a contract for implementing Apple authentication services. It defines the necessary method for verifying Apple identity tokens, ensuring that any class implementing this interface provides a concrete implementation for this functionality. This interface is sealed, meaning it restricts which classes can implement it, specifically allowing only the `AppleAuthService` class.
+
+## Public Methods
+
+### `verifyIdentityToken`
+
+Verifies the provided Apple identity token and returns the verified claims.
+
+| Parameter     | Type   | Description                          |
+|---------------|--------|--------------------------------------|
+| identityToken | String | The identity token to be verified.   |
+
+| Return Type           | Description                                      |
+|-----------------------|--------------------------------------------------|
+| `AppleVerifiedClaims` | A record containing the subject and email claims.|
+
+## AppleVerifiedClaims Record
+
+The `AppleVerifiedClaims` record is a simple data structure used to hold the claims extracted from a verified Apple identity token.
+
+| Field | Type   | Description                      |
+|-------|--------|----------------------------------|
+| sub   | String | The subject claim from the token.|
+| email | String | The email claim from the token.  |

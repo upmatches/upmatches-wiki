@@ -1,0 +1,27 @@
+---
+id: iunregisterdevicetokenservice
+title: IUnregisterDeviceTokenService Interface
+sidebar_label: IUnregisterDeviceTokenService
+---
+
+## Overview
+
+The `IUnregisterDeviceTokenService` interface is a part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that handle the unregistration of device tokens. This is typically used in notification systems where a device token needs to be removed from the server's records, ensuring that notifications are no longer sent to that device.
+
+This interface is a sealed interface, meaning it restricts which classes can implement it. In this case, it permits the `UnregisterDeviceTokenService` class to implement its methods.
+
+## Public Methods
+
+### `execute`
+
+This method is responsible for executing the unregistration process for a given device token.
+
+| Parameter   | Type   | Description                           |
+|-------------|--------|---------------------------------------|
+| `deviceToken` | `String` | The device token to be unregistered. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return any value. |
+
+The `execute` method takes a single parameter, `deviceToken`, which is a `String` representing the token to be unregistered. It does not return any value, indicating that its primary purpose is to perform an action rather than compute a result.

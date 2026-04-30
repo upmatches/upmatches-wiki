@@ -1,0 +1,28 @@
+---
+id: fcm-test-notification-response
+title: FcmTestNotificationResponse
+sidebar_label: FcmTestNotificationResponse
+---
+
+## Overview
+
+The `FcmTestNotificationResponse` class is a Java record that encapsulates the response details of a Firebase Cloud Messaging (FCM) test notification. This class is part of the `com.upmatches.app.features.notification.responses` package and is designed to store information about a notification, such as its message ID, email ID, type, title, body, and badge count.
+
+## Public Methods
+
+### `of`
+
+The `of` method is a static factory method that creates a new instance of the `FcmTestNotificationResponse` record. This method provides a convenient way to instantiate the record with the specified parameters.
+
+| Parameter    | Type                              | Description                                      |
+|--------------|-----------------------------------|--------------------------------------------------|
+| `messageId`  | `String`                          | The unique identifier for the message.           |
+| `emailId`    | `String`                          | The email identifier associated with the message.|
+| `type`       | `NotificationType`                | The type of notification being sent.             |
+| `title`      | `String`                          | The title of the notification.                   |
+| `body`       | `String`                          | The body content of the notification.            |
+| `badge`      | `Integer`                         | The badge count associated with the notification.|
+
+| Return Type  | Description                                      |
+|--------------|--------------------------------------------------|
+| `FcmTestNotificationResponse` | A new instance of the `FcmTestNotificationResponse` record initialized with the provided parameters. |

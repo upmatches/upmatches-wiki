@@ -1,0 +1,37 @@
+---
+id: metrics-configuration
+title: MetricsConfiguration Class
+sidebar_label: MetricsConfiguration
+---
+
+## Overview
+
+The `MetricsConfiguration` class is a Spring configuration class that sets up metrics for the application using Micrometer. It customizes the `MeterRegistry` to include common tags and registers Logback metrics for monitoring application logs.
+
+## Public Methods
+
+The class provides two public methods, each annotated with `@Bean`, which are used to configure and expose beans in the Spring application context.
+
+| Method | Description | Parameters | Return Type |
+|--------|-------------|------------|-------------|
+| `metricsCommonTags(Environment environment)` | Configures the `MeterRegistry` to include common tags, such as the application name, which is retrieved from the environment properties. | `Environment environment`: The Spring `Environment` object used to access application properties. | `MeterRegistryCustomizer<MeterRegistry>` |
+| `logbackMetrics()` | Creates and returns a `LogbackMetrics` bean, which is used to monitor Logback logging metrics. | None | `LogbackMetrics` |
+
+## Detailed Method Descriptions
+
+### `metricsCommonTags(Environment environment)`
+
+This method customizes the `MeterRegistry` by adding common tags that are useful for identifying metrics related to the application. It retrieves the application name from the environment properties using the key `spring.application.name`. If the property is not set, it defaults to "Upmatches".
+
+- **Parameters:**
+  - `Environment environment`: Provides access to the application's environment properties.
+
+- **Returns:** 
+  - A `MeterRegistryCustomizer<MeterRegistry>` that applies the common tags to the `MeterRegistry`.
+
+### `logbackMetrics()`
+
+This method registers a `LogbackMetrics` bean, which is responsible for collecting metrics related to Logback logging. This can be useful for monitoring the performance and behavior of the application's logging system.
+
+- **Returns:**
+  - A `LogbackMetrics` instance that can be used to collect and report Logback-related metrics.

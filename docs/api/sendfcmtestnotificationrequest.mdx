@@ -1,0 +1,44 @@
+---
+id: send-fcm-test-notification-request
+title: SendFcmTestNotificationRequest
+sidebar_label: SendFcmTestNotificationRequest
+---
+
+## Overview
+
+The `SendFcmTestNotificationRequest` class is a Java record used to encapsulate the data required to send a Firebase Cloud Messaging (FCM) test notification. This class is part of the `com.upmatches.app.features.notification.requests` package and is designed to validate the input data for sending notifications, ensuring that either a device token or an email address is provided.
+
+## Class Details
+
+The class uses several annotations from the `jakarta.validation.constraints` package to enforce constraints on the fields, ensuring data integrity and validity. It also includes a custom validation method to check that at least one of the `deviceToken` or `email` fields is provided.
+
+## Public Methods
+
+### `isTargetProvided`
+
+This method checks whether a target for the notification is provided by ensuring that either the `deviceToken` or `email` is not null or blank.
+
+| Method Name       | Description                                                                 | Return Type |
+|-------------------|-----------------------------------------------------------------------------|-------------|
+| `isTargetProvided` | Validates that either `deviceToken` or `email` is provided. Returns `true` if at least one is present. | `boolean`   |
+
+## Parameters
+
+The `SendFcmTestNotificationRequest` record includes the following fields:
+
+| Parameter     | Type              | Constraints                                                                 | Description                                                                 |
+|---------------|-------------------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `deviceToken` | `String`          | `@Size(max = 512)`                                                          | The device token for FCM.                                                   |
+| `email`       | `String`          | `@Email`, `@Size(max = 254)`                                                | The email address to send the notification to.                              |
+| `type`        | `NotificationType`| `@NotNull`                                                                  | The type of notification.                                                   |
+| `gameTitle`   | `String`          | `@NotBlank`, `@Size(max = 120)`                                             | The title of the game.                                                      |
+| `venue`       | `String`          | `@Size(max = 120)`                                                          | The venue of the game.                                                      |
+| `courtCount`  | `Integer`         | `@Min(1)`, `@Max(20)`                                                       | The number of courts available.                                             |
+| `date`        | `LocalDate`       |                                                                             | The date of the game.                                                       |
+| `startTime`   | `LocalTime`       |                                                                             | The start time of the game.                                                 |
+| `endTime`     | `LocalTime`       |                                                                             | The end time of the game.                                                   |
+| `skillLevel`  | `String`          | `@Size(max = 60)`                                                           | The skill level required for the game.                                      |
+| `gameUrl`     | `String`          | `@Size(max = 2048)`                                                         | The URL for more information about the game.                                |
+| `badge`       | `Integer`         | `@Min(0)`, `@Max(999)`                                                      | The badge number associated with the notification.                          |
+
+This record is designed to ensure that all necessary information is provided and validated before a test notification is sent via FCM.

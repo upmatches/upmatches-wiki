@@ -1,0 +1,33 @@
+---
+id: IDeleteNotificationService
+title: IDeleteNotificationService Interface
+sidebar_label: IDeleteNotificationService
+---
+
+## Overview
+
+The `IDeleteNotificationService` is a sealed interface in the `com.upmatches.app.features.notification.services` package. It defines the contract for deleting notifications within the application. This interface is designed to be implemented by specific classes that handle the deletion logic, ensuring a consistent method signature across different implementations.
+
+## Purpose
+
+The primary purpose of the `IDeleteNotificationService` interface is to provide a standardized way to execute the deletion of notifications identified by a unique identifier (`UUID`). By using a sealed interface, it restricts the implementation to specific classes, enhancing maintainability and control over the deletion process.
+
+## Public Methods
+
+The interface defines the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `void execute(UUID id)` | Executes the deletion of a notification identified by the given `UUID`. |
+
+### Method Details
+
+#### `execute(UUID id)`
+
+- **Parameters:**
+  - `UUID id`: The unique identifier of the notification to be deleted.
+
+- **Return Type:**
+  - `void`: This method does not return any value.
+
+This method is intended to be implemented by classes that will provide the actual logic for deleting a notification from the system. The use of `UUID` ensures that each notification can be uniquely identified and managed.

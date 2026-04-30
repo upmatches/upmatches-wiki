@@ -1,0 +1,44 @@
+---
+id: resolve-share-link-service
+title: ResolveShareLinkService
+sidebar_label: ResolveShareLinkService
+---
+
+## Purpose
+
+The `ResolveShareLinkService` class is a service component in a Java application that handles the resolution of share links. It is responsible for retrieving and processing share links, incrementing their click count, and granting access to private games if applicable. This service ensures that share links are resolved correctly and that the appropriate actions are taken based on the link's resource type and associated data.
+
+## Public Methods
+
+### `execute`
+
+The `execute` method is the primary public method of the `ResolveShareLinkService` class. It resolves a share link based on the provided code, increments the link's click count, and returns a response containing the web and mobile URLs for the resource.
+
+| Parameter | Type   | Description                      |
+|-----------|--------|----------------------------------|
+| `code`    | String | The code of the share link to resolve. |
+
+| Return Type                  | Description                                                                 |
+|------------------------------|-----------------------------------------------------------------------------|
+| `PublicShareLinkResponse`    | A response object containing the resolved share link information, including web and mobile URLs. |
+
+## Detailed Method Descriptions
+
+### `execute(String code)`
+
+- **Purpose**: Resolves a share link by its code, increments its click count, and returns a response with the web and mobile URLs.
+- **Transactional**: This method is annotated with `@Transactional`, ensuring that database operations are executed within a transaction.
+- **Auditable**: The method is annotated with `@Auditable`, indicating that the action is logged for auditing purposes with the category `SENSITIVE_READ`.
+- **Exception Handling**: Throws a `ResourceNotFoundException` if the share link is not found.
+
+### Private Methods
+
+#### `grantPrivateGameAccessIfApplicable(ShortLink link)`
+
+- **Purpose**: Grants access to a private game if the share link is associated with a game resource and the game is private.
+- **Logic**: Checks if the resource type is a game, retrieves the authenticated user, and grants access if the game is private and the user does not already have access.
+
+#### `getAuthenticatedUserIdOrNull()`
+
+- **Purpose**: Retrieves the authenticated user's ID from the security context.
+- **Return Type**: `UUID` - Returns the user's ID as a UUID, or `null` if the user is not authenticated or the ID is invalid.

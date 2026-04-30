@@ -1,0 +1,25 @@
+---
+id: ijoingameservice
+title: IJoinGameService Interface
+sidebar_label: IJoinGameService
+---
+
+## Purpose
+
+The `IJoinGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines the contract for services that handle the logic for joining a game. This interface is designed to be implemented by classes that provide the actual functionality for a participant to join a game, ensuring a consistent method signature across different implementations.
+
+## Public Methods
+
+| Method Signature                  | Description                                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| `GameParticipantResponse execute(UUID id)` | Executes the join game operation for a participant identified by the given UUID. |
+
+### Method Details
+
+#### `execute`
+
+- **Parameters:**
+  - `UUID id`: The unique identifier of the participant who wants to join the game.
+
+- **Returns:**
+  - `GameParticipantResponse`: An object containing the response details of the participant joining the game. This typically includes information about the participant and the status of the join operation.

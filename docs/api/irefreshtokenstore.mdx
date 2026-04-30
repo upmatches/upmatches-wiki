@@ -1,0 +1,19 @@
+---
+id: i-refresh-token-store
+title: IRefreshTokenStore Interface
+sidebar_label: IRefreshTokenStore
+---
+
+## Purpose
+
+The `IRefreshTokenStore` interface is part of the authentication services in the `com.upmatches.app.features.auth.services` package. This interface defines the contract for managing refresh tokens associated with user authentication. It ensures that any implementing class provides mechanisms to store, validate, rotate, and revoke refresh tokens.
+
+## Public Methods
+
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `store` | `UUID userId`, `String refreshToken` | `void` | Stores a refresh token for a specific user identified by `userId`. |
+| `validateAndRotate` | `String refreshToken` | `ValidationResult` | Validates the provided refresh token and rotates it if valid, returning a `ValidationResult`. |
+| `revokeAllForUser` | `UUID userId` | `void` | Revokes all refresh tokens associated with the specified `userId`. |
+
+This interface is sealed, allowing only the `RefreshTokenStore` class to implement it, ensuring controlled and secure handling of refresh tokens within the application.

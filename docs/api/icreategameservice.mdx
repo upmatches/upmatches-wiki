@@ -1,0 +1,34 @@
+---
+id: icreategameservice
+title: ICreateGameService Interface
+sidebar_label: ICreateGameService
+---
+
+## Overview
+
+The `ICreateGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for creating a game within the application. This interface is designed to be implemented by classes that provide the actual logic for game creation. The use of a sealed interface ensures that only specific classes, such as `CreateGameService`, are permitted to implement it, providing a controlled and secure extension mechanism.
+
+## Public Methods
+
+The `ICreateGameService` interface declares the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `GameResponse execute(CreateGameRequest request)` | Executes the game creation process using the provided `CreateGameRequest` and returns a `GameResponse`. |
+
+### Method Details
+
+#### `execute`
+
+- **Description**: This method is responsible for executing the game creation logic. It takes a `CreateGameRequest` object as input and returns a `GameResponse` object.
+- **Parameters**:
+  | Name    | Type                        | Description                          |
+  |---------|-----------------------------|--------------------------------------|
+  | request | `CreateGameRequest`         | The request object containing the necessary details to create a game. |
+
+- **Returns**: 
+  | Type            | Description                          |
+  |-----------------|--------------------------------------|
+  | `GameResponse`  | The response object containing the details of the created game. |
+
+This interface is crucial for defining the structure and behavior of game creation services within the application, ensuring consistency and reliability in how games are created and managed.

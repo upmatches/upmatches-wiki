@@ -1,0 +1,25 @@
+---
+id: auditable-annotation
+title: Auditable Annotation
+sidebar_label: Auditable
+---
+
+import com.upmatches.app.features.audit.enums.AuditCategory;
+
+## Purpose
+
+The `Auditable` annotation is designed to be used on methods to indicate that they should be audited. This annotation provides metadata about the action being performed, the category of the audit, and additional details about the resource involved. It is particularly useful in applications where tracking and logging of method executions are required for security, compliance, or monitoring purposes.
+
+## Public Methods
+
+The `Auditable` annotation includes several elements that can be configured to specify the details of the audit. Below is a table documenting these elements:
+
+| Method                  | Parameters | Return Type | Description                                                                 |
+|-------------------------|------------|-------------|-----------------------------------------------------------------------------|
+| `action()`              | None       | `String`    | Specifies the action being audited. This is a required element.             |
+| `category()`            | None       | `AuditCategory` | Defines the category of the audit. Defaults to `AuditCategory.WRITE`.       |
+| `resourceType()`        | None       | `String`    | Indicates the type of resource being acted upon. Defaults to an empty string.|
+| `resourceIdExpression()`| None       | `String`    | Provides an expression to determine the resource ID. Defaults to an empty string.|
+| `sensitive()`           | None       | `boolean`   | Flags whether the action involves sensitive information. Defaults to `false`.|
+
+This annotation is retained at runtime, allowing for dynamic processing by the application or auditing framework. It targets method-level declarations, making it flexible for use across various application components.

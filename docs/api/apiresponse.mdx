@@ -1,0 +1,38 @@
+---
+id: api-response
+title: ApiResponse Class
+sidebar_label: ApiResponse
+---
+
+## Purpose of the ApiResponse Class
+
+The `ApiResponse` class is a generic Java record designed to standardize the structure of API responses in an application. It provides a consistent format for both successful and error responses, encapsulating details such as the success status, data payload, message, timestamp, and the request path. The class leverages Java's record feature to simplify the creation of immutable data objects and uses Jackson annotations to handle JSON serialization.
+
+## Public Methods
+
+The `ApiResponse` class provides two static factory methods to create instances of the response for success and error scenarios.
+
+### `success`
+
+Creates a successful `ApiResponse` instance.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `data`    | `T`  | The data payload of the response. |
+| `message` | `String` | A message providing additional context about the response. |
+| `path`    | `String` | The request path associated with the response. |
+
+**Returns:**  
+`ApiResponse<T>` - An instance of `ApiResponse` indicating a successful operation.
+
+### `error`
+
+Creates an error `ApiResponse` instance.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `message` | `String` | A message describing the error. |
+| `path`    | `String` | The request path associated with the error. |
+
+**Returns:**  
+`ApiResponse<T>` - An instance of `ApiResponse` indicating an error occurred.

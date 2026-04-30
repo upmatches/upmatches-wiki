@@ -1,0 +1,35 @@
+---
+id: create-activity-service
+title: CreateActivityService
+sidebar_label: Create Activity Service
+---
+
+## Overview
+
+The `CreateActivityService` class is a part of the `com.upmatches.app.features.activity.services` package. It is responsible for handling the creation of new activities within the application. This service ensures that activities are not duplicated by checking if an activity with the same name already exists. If the activity does not exist, it creates and saves a new activity, returning a response object representing the newly created activity.
+
+## Public Methods
+
+### `execute`
+
+Executes the creation of a new activity based on the provided request. This method is transactional and auditable, ensuring that the creation process is logged and can be rolled back in case of failure.
+
+| Parameter | Type                        | Description                                      |
+|-----------|-----------------------------|--------------------------------------------------|
+| request   | `CreateActivityRequest`     | The request object containing the activity name. |
+
+| Return Type      | Description                                                  |
+|------------------|--------------------------------------------------------------|
+| `ActivityResponse` | Returns a response object representing the created activity.|
+
+### Method Details
+
+- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operation is atomic. If any part of the process fails, the transaction will be rolled back.
+  
+- **Auditable**: The method is also annotated with `@Auditable`, which logs the action of creating an activity. The `resourceIdExpression` is used to capture the ID of the created activity for auditing purposes.
+
+- **Exception Handling**: 
+  - Throws `ActivityAlreadyExistsException` if an activity with the same name already exists.
+  - Uses `ResourceNotFoundException` as a fallback exception during the execution process.
+
+This service leverages the `ServiceOperationExecutor` utility to encapsulate the operation logic, ensuring consistent handling of service operations across the application.

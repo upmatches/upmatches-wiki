@@ -1,0 +1,33 @@
+---
+id: apple-properties
+title: AppleProperties Class
+sidebar_label: AppleProperties
+---
+
+## Overview
+
+The `AppleProperties` class is a configuration properties holder for Apple authentication settings in a Spring Boot application. It is designed to manage and provide default values for critical Apple authentication parameters such as the issuer, audience, and JSON Web Key Set (JWKS) URI. By using the `@ConfigurationProperties` annotation, this class allows for easy configuration and binding of properties prefixed with `app.apple` in the application's configuration files.
+
+## Public Methods
+
+The `AppleProperties` class is a Java record, which inherently provides a concise way to define immutable data carriers. It automatically generates a constructor, accessors, `equals()`, `hashCode()`, and `toString()` methods. Below is a table documenting the public methods available in this class:
+
+| Method Signature | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `String issuer()` | Returns the issuer URL for Apple authentication. If not provided, defaults to `https://appleid.apple.com`. |
+| `String audience()` | Returns the audience for Apple authentication. This value is expected to be provided by the user. |
+| `String jwksUri()` | Returns the JWKS URI for Apple authentication. If not provided, defaults to `https://appleid.apple.com/auth/keys`. |
+
+## Constructor
+
+The constructor of the `AppleProperties` class ensures that the `issuer` and `jwksUri` fields are set to their default values if they are not provided or are blank. This ensures that the application has valid default configurations for Apple authentication, reducing the risk of misconfiguration.
+
+### Parameters
+
+| Parameter | Type   | Description                                                                 |
+|-----------|--------|-----------------------------------------------------------------------------|
+| `issuer`  | String | The issuer URL for Apple authentication. Defaults to `https://appleid.apple.com` if not provided. |
+| `audience`| String | The audience for Apple authentication. This value is expected to be provided by the user. |
+| `jwksUri` | String | The JWKS URI for Apple authentication. Defaults to `https://appleid.apple.com/auth/keys` if not provided. |
+
+The `AppleProperties` class is a simple yet effective way to manage Apple authentication settings in a Spring Boot application, providing both flexibility and sensible defaults.

@@ -1,0 +1,33 @@
+---
+id: health-check-controller
+title: HealthCheckController
+sidebar_label: HealthCheckController
+---
+
+## Overview
+
+The `HealthCheckController` class is a REST controller in a Spring Boot application that provides a health check endpoint. This endpoint is used to verify that the service is running and accessible. It responds with a status message indicating the health of the service.
+
+## Public Methods
+
+### healthCheck
+
+The `healthCheck` method is a GET endpoint that returns the health status of the service.
+
+| Method      | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `healthCheck(HttpServletRequest request)` | Returns the health status of the service. |
+
+#### Parameters
+
+| Parameter | Type                  | Description                              |
+|-----------|-----------------------|------------------------------------------|
+| `request` | `HttpServletRequest`  | The HTTP request object containing request details. |
+
+#### Return Type
+
+| Type                                      | Description                                      |
+|-------------------------------------------|--------------------------------------------------|
+| `ResponseEntity<ApiResponse<String>>`     | A response entity containing the health status.  |
+
+The method returns a `ResponseEntity` with an `ApiResponse` object that includes a status message and the request URI. The status message indicates that the service is running, and the URI provides the endpoint that was accessed.

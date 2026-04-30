@@ -1,0 +1,126 @@
+---
+id: log-aspect
+title: LogAspect Class Documentation
+sidebar_label: LogAspect
+---
+
+## Purpose of the LogAspect Class
+
+The `LogAspect` class is an Aspect-Oriented Programming (AOP) component designed to intercept and log the execution of service and controller methods within a Spring application. It provides detailed logging of method execution times, success, and failure statuses, and integrates with Micrometer for performance metrics. This class is conditionally enabled based on application properties and is configured to work with Spring's `@RestController` and `@Controller` annotations.
+
+## Public Methods
+
+### `logExecution`
+
+The `logExecution` method is an around advice that wraps the execution of service and controller methods. It logs the method execution time and status, and records metrics using Micrometer.
+
+| Parameter    | Type                      | Description                                                                 |
+|--------------|---------------------------|-----------------------------------------------------------------------------|
+| `joinPoint`  | `ProceedingJoinPoint`     | The join point representing the method being intercepted.                   |
+
+| Return Type  | Description                                                                 |
+|--------------|-----------------------------------------------------------------------------|
+| `Object`     | The result of the method execution, or throws an exception if an error occurs. |
+
+### `serviceMethods`
+
+The `serviceMethods` pointcut targets all public methods within the `com.upmatches.app..services..` package.
+
+| Parameter    | Type   | Description                        |
+|--------------|--------|------------------------------------|
+| N/A          | N/A    | This is a pointcut definition.     |
+
+| Return Type  | Description                        |
+|--------------|------------------------------------|
+| `void`       | Defines a pointcut for service methods. |
+
+### `controllerMethods`
+
+The `controllerMethods` pointcut targets all classes annotated with `@RestController` or `@Controller`.
+
+| Parameter    | Type   | Description                        |
+|--------------|--------|------------------------------------|
+| N/A          | N/A    | This is a pointcut definition.     |
+
+| Return Type  | Description                        |
+|--------------|------------------------------------|
+| `void`       | Defines a pointcut for controller methods. |
+
+## Private Methods
+
+### `initRequestId`
+
+Generates a unique request ID for logging purposes.
+
+| Parameter    | Type   | Description                        |
+|--------------|--------|------------------------------------|
+| N/A          | N/A    | This is a private method.          |
+
+| Return Type  | Description                        |
+|--------------|------------------------------------|
+| `String`     | A unique request ID.               |
+
+### `currentHttpRequest`
+
+Retrieves the current HTTP request from the request context.
+
+| Parameter    | Type   | Description                        |
+|--------------|--------|------------------------------------|
+| N/A          | N/A    | This is a private method.          |
+
+| Return Type  | Description                        |
+|--------------|------------------------------------|
+| `HttpServletRequest` | The current HTTP request, or `null` if not available. |
+
+### `resolveComponent`
+
+Determines the component type (controller or service) based on the join point's declaring type.
+
+| Parameter    | Type                      | Description                                                                 |
+|--------------|---------------------------|-----------------------------------------------------------------------------|
+| `joinPoint`  | `ProceedingJoinPoint`     | The join point representing the method being intercepted.                   |
+
+| Return Type  | Description                        |
+|--------------|------------------------------------|
+| `String`     | The component type (`COMPONENT_CONTROLLER` or `COMPONENT_SERVICE`). |
+
+### `recordMetrics`
+
+Records execution metrics using Micrometer.
+
+| Parameter    | Type     | Description                                                                 |
+|--------------|----------|-----------------------------------------------------------------------------|
+| `component`  | `String` | The component type (controller or service).                                 |
+| `durationMs` | `Long`   | The execution duration in milliseconds.                                     |
+| `failed`     | `boolean`| Indicates whether the method execution failed.                              |
+
+| Return Type  | Description                        |
+|--------------|------------------------------------|
+| `void`       | Records metrics for the method execution. |
+
+### `logSuccess`
+
+Logs a successful method execution.
+
+| Parameter    | Type     | Description                                                                 |
+|--------------|----------|-----------------------------------------------------------------------------|
+| `method`     | `String` | The method signature.                                                       |
+| `durationMs` | `Long`   | The execution duration in milliseconds.                                     |
+
+| Return Type  | Description                        |
+|--------------|------------------------------------|
+| `void`       | Logs the success of the method execution. |
+
+### `logFailure`
+
+Logs a failed method execution.
+
+| Parameter    | Type       | Description                                                                 |
+|--------------|------------|-----------------------------------------------------------------------------|
+| `method`     | `String`   | The method signature.                                                       |
+| `durationMs` | `Long`     | The execution duration in milliseconds.                                     |
+| `t`          | `Throwable`| The exception thrown during method execution.                               |
+
+| Return Type  | Description                        |
+|--------------|------------------------------------|
+| `void`       | Logs the failure of the method execution. |

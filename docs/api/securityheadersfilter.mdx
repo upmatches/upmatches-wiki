@@ -1,0 +1,39 @@
+---
+id: security-headers-filter
+title: SecurityHeadersFilter
+sidebar_label: Security Headers Filter
+---
+
+## Overview
+
+The `SecurityHeadersFilter` class is a custom servlet filter designed to enhance the security of web applications by adding specific HTTP headers to responses. This filter is implemented as a Spring component and is executed once per request. By setting these headers, the filter helps mitigate various security risks such as clickjacking, MIME type sniffing, and cross-origin information leakage.
+
+## Public Methods
+
+The `SecurityHeadersFilter` class contains the following public method:
+
+### `doFilterInternal`
+
+This method is overridden from the `OncePerRequestFilter` class and is responsible for adding security headers to the HTTP response.
+
+| Parameter   | Type                      | Description                                      |
+|-------------|---------------------------|--------------------------------------------------|
+| `request`   | `HttpServletRequest`      | The HTTP request object.                         |
+| `response`  | `HttpServletResponse`     | The HTTP response object to which headers are added. |
+| `filterChain` | `FilterChain`           | The filter chain to pass the request and response to the next filter. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return any value. |
+
+## Security Headers
+
+The following security headers are set by the `SecurityHeadersFilter`:
+
+- **X-Content-Type-Options**: Set to `nosniff` to prevent browsers from MIME-sniffing a response away from the declared content type.
+- **X-Frame-Options**: Set to `DENY` to prevent the page from being displayed in a frame, which protects against clickjacking attacks.
+- **Referrer-Policy**: Set to `strict-origin-when-cross-origin` to control the amount of referrer information sent with requests.
+- **X-Permitted-Cross-Domain-Policies**: Set to `none` to prevent Flash and other plugins from loading data across domains.
+- **Permissions-Policy**: Configured to disable access to features like camera, microphone, and geolocation.
+- **Content-Security-Policy**: Set to `default-src 'none'; frame-ancestors 'none'` to restrict resources the browser is allowed to load and prevent the page from being embedded in a frame.
+- **Server** and **X-Powered-By**: Set to empty strings to obscure server information from HTTP responses.

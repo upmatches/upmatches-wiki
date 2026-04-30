@@ -1,0 +1,36 @@
+---
+id: create-game-request
+title: CreateGameRequest Class
+sidebar_label: CreateGameRequest
+---
+
+## Overview
+
+The `CreateGameRequest` class is a Java record used to encapsulate the data required to create a new game request in the application. This class ensures that all necessary information is provided and validated before a game is created. It uses various validation annotations to enforce constraints on the data fields.
+
+## Public Methods
+
+Since `CreateGameRequest` is a record, it automatically provides the following methods:
+
+- **Constructor**: Initializes a new instance of the `CreateGameRequest` record with the specified parameters.
+- **Accessors**: For each field, a corresponding accessor method is provided to retrieve the field's value.
+
+Below is a detailed description of the fields, their types, and validation constraints:
+
+| Field Name        | Type          | Description                                                                 | Validation Constraints                                                                 |
+|-------------------|---------------|-----------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| `activityId`      | `UUID`        | The unique identifier for the activity.                                     | Must not be null.                                                                      |
+| `venueId`         | `Long`        | The unique identifier for the venue.                                        | Must not be null.                                                                      |
+| `skillLevelFromId`| `Long`        | The starting skill level identifier.                                        | Must not be null.                                                                      |
+| `skillLevelToId`  | `Long`        | The ending skill level identifier.                                          | Must not be null.                                                                      |
+| `currency`        | `String`      | The currency code in ISO-4217 format.                                       | Must not be null. Must be a 3-letter ISO-4217 code.                                    |
+| `price`           | `BigDecimal`  | The price for the game.                                                     | Must not be null. Must be >= 0.00. Max 8 integer digits and 2 decimal places.          |
+| `slots`           | `Integer`     | The number of slots available for the game.                                 | Must not be null. Must be between 1 and 100 inclusive.                                 |
+| `startTime`       | `Instant`     | The start time of the game.                                                 | Must not be null.                                                                      |
+| `endTime`         | `Instant`     | The end time of the game.                                                   | Must not be null.                                                                      |
+| `visibility`      | `GameVisibility` | The visibility status of the game.                                       | Must not be null.                                                                      |
+| `gameType`        | `GameType`    | The type of game being created.                                             | Must not be null.                                                                      |
+| `joinAsOrganizer` | `Boolean`     | Indicates if the user joins as an organizer.                                | Optional.                                                                              |
+| `remark`          | `String`      | Additional remarks or comments about the game.                              | Optional. Must be at most 500 characters.                                              |
+
+This class is part of the `com.upmatches.app.features.game.requests` package and relies on validation annotations from the `jakarta.validation.constraints` package to ensure data integrity.

@@ -1,0 +1,18 @@
+---
+id: isingpasskeyprovider
+title: ISingpassKeyProvider Interface
+sidebar_label: ISingpassKeyProvider
+---
+
+## Overview
+
+The `ISingpassKeyProvider` interface is part of the `com.upmatches.app.features.auth.services` package. It defines a contract for classes that provide signing keys specifically for Singpass authentication. This interface is sealed, meaning it restricts which classes can implement it, and in this case, it is only permitted to be implemented by the `SingpassKeyProvider` class.
+
+## Public Methods
+
+The `ISingpassKeyProvider` interface declares the following public methods:
+
+| Method Name          | Parameters | Return Type | Description                                                                 |
+|----------------------|------------|-------------|-----------------------------------------------------------------------------|
+| `getEncryptionKey`   | None       | `ECKey`     | Retrieves the encryption key used for securing communications.              |
+| `getPublicJwksJson`  | None       | `String`    | Returns the public JSON Web Key Set (JWKS) as a JSON string. This is used to expose the public keys for verification purposes. |

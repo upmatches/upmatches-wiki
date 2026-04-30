@@ -1,0 +1,26 @@
+---
+id: IListGamesCursorService
+title: IListGamesCursorService Interface
+sidebar_label: IListGamesCursorService
+---
+
+## Purpose
+
+The `IListGamesCursorService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide paginated lists of games using a cursor-based pagination approach. This interface is designed to be implemented by classes that need to offer game listing functionality with filtering and pagination capabilities.
+
+## Public Methods
+
+The interface declares the following public method:
+
+### `execute`
+
+Executes a query to retrieve a paginated list of games based on the provided filter, cursor, and size.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `filter`  | `ListGamesCursorFilterRequest` | The filter criteria for listing games. |
+| `cursor`  | `String` | The cursor indicating the starting point for the page of results. |
+| `size`    | `int` | The number of game records to retrieve in the page. |
+
+**Returns:**  
+`CursorPagedResponse<GameResponse>` - A paginated response containing a list of `GameResponse` objects and pagination metadata.

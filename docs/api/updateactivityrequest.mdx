@@ -1,0 +1,30 @@
+---
+id: update-activity-request
+title: UpdateActivityRequest Class
+sidebar_label: UpdateActivityRequest
+---
+
+## Purpose
+
+The `UpdateActivityRequest` class is a Java record used to encapsulate the data required to update an activity within the application. It ensures that the activity name adheres to specific validation constraints, making it a crucial part of the application's request handling for activity updates.
+
+## Public Methods
+
+The `UpdateActivityRequest` class is a record, which means it automatically provides a concise way to define immutable data objects. Below is the documentation for its components:
+
+### Constructor
+
+The primary constructor for the `UpdateActivityRequest` record is automatically generated and is used to create instances of the record with the specified parameters.
+
+| Parameter | Type   | Description                           |
+|-----------|--------|---------------------------------------|
+| `name`    | String | The name of the activity to be updated. Must not be blank and can have a maximum length of 100 characters. |
+
+### Validation Constraints
+
+- **`@NotBlank`**: Ensures that the `name` field is not null or empty.
+- **`@Size(max = 100)`**: Restricts the length of the `name` field to a maximum of 100 characters.
+
+## Usage
+
+The `UpdateActivityRequest` record is typically used in scenarios where an activity's details need to be updated, and it provides built-in validation to ensure data integrity.

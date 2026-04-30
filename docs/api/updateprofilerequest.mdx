@@ -1,0 +1,41 @@
+---
+id: update-profile-request
+title: UpdateProfileRequest Class
+sidebar_label: UpdateProfileRequest
+---
+
+## Overview
+
+The `UpdateProfileRequest` class is a Java record used to encapsulate data for updating a user's profile in the application. It is part of the `com.upmatches.app.features.user.requests` package. This class leverages Java's record feature to provide an immutable data structure with built-in validation constraints.
+
+## Purpose
+
+The primary purpose of the `UpdateProfileRequest` class is to serve as a data transfer object (DTO) for user profile updates. It ensures that the data provided for updating a profile adheres to specified constraints, such as maximum lengths for name and lists of contact methods and skill levels.
+
+## Public Methods
+
+The `UpdateProfileRequest` class does not explicitly define public methods beyond those automatically provided by the Java record feature. However, it includes the following components:
+
+### Parameters
+
+| Parameter       | Type                                | Description                                                                                     |
+|-----------------|-------------------------------------|-------------------------------------------------------------------------------------------------|
+| `name`          | `String`                            | The name of the user. It must not exceed 200 characters.                                        |
+| `contactMethods`| `List<ContactMethod>`               | A list of contact methods for the user. The list must not contain more than 10 items.           |
+| `skillLevels`   | `List<SkillLevelSelection>`         | A list of skill level selections for the user. The list must not contain more than 50 items.    |
+
+### Return Types
+
+As a record, `UpdateProfileRequest` inherently provides accessor methods for each of its components:
+
+- `String name()`: Returns the name of the user.
+- `List<ContactMethod> contactMethods()`: Returns the list of contact methods.
+- `List<SkillLevelSelection> skillLevels()`: Returns the list of skill level selections.
+
+## Validation Constraints
+
+The class uses annotations from the `jakarta.validation` package to enforce constraints:
+
+- `@Size(max = UpdateProfileRequest.MAX_NAME_LENGTH)`: Ensures the `name` does not exceed 200 characters.
+- `@Size(max = UpdateProfileRequest.MAX_CONTACT_METHODS)`: Ensures the `contactMethods` list does not exceed 10 items.
+- `@Valid @Size(max = UpdateProfileRequest.MAX_SKILL_LEVELS)`: Ensures the `skillLevels` list is valid and does not exceed 50 items.

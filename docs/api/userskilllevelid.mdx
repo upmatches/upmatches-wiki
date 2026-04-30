@@ -1,0 +1,59 @@
+---
+id: user-skill-level-id
+title: UserSkillLevelId Class
+sidebar_label: UserSkillLevelId
+---
+
+## Purpose of the Class
+
+The `UserSkillLevelId` class is a Java entity used to represent a composite key for a user's skill level in a database. It is marked with the `@Embeddable` annotation, indicating that it can be embedded in other entities. This class implements the `Serializable` interface, which is necessary for any class that is intended to be persisted by JPA (Java Persistence API). The composite key consists of a `UUID` for the user and a `Long` for the skill level.
+
+## Public Methods
+
+The `UserSkillLevelId` class provides the following public methods:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `UserSkillLevelId()` | Default constructor for creating an instance of `UserSkillLevelId` without setting any fields. |
+| `UserSkillLevelId(UUID userId, Long skillLevelId)` | Constructor that initializes the `userId` and `skillLevelId` fields. |
+| `UUID getUserId()` | Returns the `UUID` of the user. |
+| `Long getSkillLevelId()` | Returns the `Long` representing the skill level ID. |
+| `boolean equals(Object o)` | Compares this object to the specified object. Returns `true` if the objects are equal, otherwise `false`. |
+| `int hashCode()` | Returns a hash code value for the object, which is used in hashing based collections like `HashMap`. |
+
+## Parameters and Return Types
+
+### Constructor: `UserSkillLevelId(UUID userId, Long skillLevelId)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | `UUID` | The unique identifier for the user. |
+| `skillLevelId` | `Long` | The identifier for the skill level. |
+
+### Method: `UUID getUserId()`
+
+| Return Type | Description |
+|-------------|-------------|
+| `UUID` | The unique identifier for the user. |
+
+### Method: `Long getSkillLevelId()`
+
+| Return Type | Description |
+|-------------|-------------|
+| `Long` | The identifier for the skill level. |
+
+### Method: `boolean equals(Object o)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `o` | `Object` | The object to be compared for equality with this instance. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `boolean` | `true` if the specified object is equal to this instance; `false` otherwise. |
+
+### Method: `int hashCode()`
+
+| Return Type | Description |
+|-------------|-------------|
+| `int` | A hash code value for this object. |

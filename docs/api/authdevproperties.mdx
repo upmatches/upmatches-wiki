@@ -1,0 +1,25 @@
+---
+id: auth-dev-properties
+title: AuthDevProperties Class
+sidebar_label: AuthDevProperties
+---
+
+## Overview
+
+The `AuthDevProperties` class is a configuration properties holder used in a Spring Boot application. It is designed to manage development-specific authentication settings by binding properties prefixed with `app.auth.dev` from external configuration sources, such as application properties or YAML files.
+
+This class is implemented as a Java Record, which provides a concise way to define immutable data carriers. It ensures that the properties are initialized with default values if they are not explicitly set.
+
+## Public Methods
+
+The `AuthDevProperties` class does not define traditional methods but relies on the implicit methods provided by the Java Record for accessing its fields. Below is a table documenting the parameters and their intended use:
+
+| Method Name               | Parameter Name          | Type          | Description                                                                 |
+|---------------------------|-------------------------|---------------|-----------------------------------------------------------------------------|
+| `AuthDevProperties`       | `tokenPageEnabled`      | `Boolean`     | Indicates if the token page is enabled. Defaults to `false` if not specified. |
+|                           | `mintEndpointEnabled`   | `Boolean`     | Indicates if the mint endpoint is enabled. Defaults to `false` if not specified. |
+|                           | `tokenPageAllowedHosts` | `List<String>`| A list of allowed hosts for the token page. Defaults to an empty list if not specified. |
+
+## Usage
+
+The `AuthDevProperties` class is typically used in a Spring Boot application to configure authentication-related properties for development environments. By using the `@ConfigurationProperties` annotation, it allows for easy externalization and management of configuration values, promoting flexibility and maintainability.

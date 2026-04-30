@@ -1,0 +1,29 @@
+---
+id: mark-notification-read-service
+title: MarkNotificationReadService
+sidebar_label: MarkNotificationReadService
+---
+
+## Purpose
+
+The `MarkNotificationReadService` class is a service component in a Java application that handles the operation of marking a notification as read for an authenticated user. It interacts with the `NotificationRepository` to fetch and update notification entities and uses `IAuthenticatedUserResolver` to ensure operations are performed for the correct user.
+
+## Public Methods
+
+### `execute`
+
+Marks a notification as read for the authenticated user.
+
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `id`      | `UUID` | The unique identifier of the notification to mark as read. |
+
+| Return Type          | Description                                                  |
+|----------------------|--------------------------------------------------------------|
+| `NotificationResponse` | A response object representing the updated notification.   |
+
+**Method Details:**
+
+- **Transactional:** The method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction context.
+- **Exception Handling:** Throws `NotificationNotFoundException` if the notification is not found for the user, ensuring that only existing notifications can be marked as read.
+- **Operation Execution:** Utilizes `ServiceOperationExecutor` to perform the save operation, handling potential `ResourceNotFoundException` scenarios.

@@ -1,0 +1,37 @@
+---
+id: share-link-controller
+title: ShareLinkController
+sidebar_label: ShareLinkController
+---
+
+## Purpose of the ShareLinkController Class
+
+The `ShareLinkController` class is a Spring Boot REST controller responsible for handling HTTP requests related to share links. It provides endpoints to create new share links and resolve existing ones. The controller leverages services to perform the business logic and returns structured API responses.
+
+## Public Methods
+
+### createShareLink
+
+Handles the creation of a new share link.
+
+| Parameter | Type                              | Description                                      |
+|-----------|-----------------------------------|--------------------------------------------------|
+| body      | `CreateShareLinkRequest`          | The request body containing share link details.  |
+| request   | `HttpServletRequest`              | The HTTP request object.                         |
+
+| Return Type                                | Description                                      |
+|--------------------------------------------|--------------------------------------------------|
+| `ResponseEntity<ApiResponse<ShareLinkResponse>>` | A response entity containing the created share link and a success message. |
+
+### resolveShareLink
+
+Handles the resolution of an existing share link using a unique code.
+
+| Parameter | Type     | Description                                                   |
+|-----------|----------|---------------------------------------------------------------|
+| code      | `String` | The unique code of the share link, must be 8 alphanumeric characters. |
+| request   | `HttpServletRequest` | The HTTP request object.                         |
+
+| Return Type                                        | Description                                      |
+|----------------------------------------------------|--------------------------------------------------|
+| `ResponseEntity<ApiResponse<PublicShareLinkResponse>>` | A response entity containing the resolved share link and a success message. |

@@ -1,0 +1,42 @@
+---
+id: unregister-device-token-service
+title: UnregisterDeviceTokenService
+sidebar_label: UnregisterDeviceTokenService
+---
+
+## Overview
+
+The `UnregisterDeviceTokenService` class is a service component in a Java application that handles the unregistration of device tokens associated with a user. This service is part of the notification feature and is responsible for removing a device token from the repository, ensuring that notifications are no longer sent to that device.
+
+## Class Details
+
+The class is annotated with `@Service`, indicating that it is a Spring service component. It implements the `IUnregisterDeviceTokenService` interface, which likely defines the contract for unregistering device tokens.
+
+### Dependencies
+
+- `DeviceTokenRepository`: A repository interface for managing device tokens in the data store.
+- `IAuthenticatedUserResolver`: A service used to resolve the authenticated user's ID.
+- `ServiceOperationExecutor`: A utility class used to execute service operations with a specified operation status.
+- `ResourceNotFoundException`: An exception thrown when a resource is not found during the operation.
+
+## Public Methods
+
+### `execute`
+
+The `execute` method is the primary public method of the `UnregisterDeviceTokenService` class. It is responsible for unregistering a device token for the authenticated user.
+
+| Parameter   | Type   | Description                                      |
+|-------------|--------|--------------------------------------------------|
+| deviceToken | String | The device token to be unregistered.             |
+
+| Return Type | Description |
+|-------------|-------------|
+| void        | This method does not return a value. |
+
+#### Method Details
+
+- **Transactional**: The method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction. This guarantees that the changes are committed only if the entire operation is successful.
+- **Operation Execution**: The method uses `ServiceOperationExecutor.executeVoid` to perform the deletion operation. This utility handles the execution and throws a `ResourceNotFoundException` if the device token is not found for the user.
+- **User Resolution**: The method retrieves the user ID of the authenticated user using `userResolver.requireUserId()`, ensuring that the operation is performed for the correct user.
+
+This service is crucial for maintaining the integrity of the notification system by allowing users to manage their registered devices effectively.

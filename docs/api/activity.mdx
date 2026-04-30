@@ -1,0 +1,40 @@
+---
+id: activity-entity
+title: Activity Entity
+sidebar_label: Activity
+---
+
+## Purpose of the `Activity` Class
+
+The `Activity` class is a JPA entity representing an activity record in the database. It is mapped to the `activities` table and includes fields such as `id`, `referenceId`, `name`, `createdAt`, and `updatedAt`. This class provides functionality to create and update activity records, automatically managing timestamps for creation and updates.
+
+## Public Methods
+
+### `create`
+
+Creates a new instance of the `Activity` class with the specified name.
+
+| Parameter | Type   | Description                  |
+|-----------|--------|------------------------------|
+| `name`    | String | The name of the activity.    |
+
+| Return Type | Description                        |
+|-------------|------------------------------------|
+| `Activity`  | A new instance of the `Activity`.  |
+
+### `updateName`
+
+Updates the name of the activity.
+
+| Parameter | Type   | Description                  |
+|-----------|--------|------------------------------|
+| `name`    | String | The new name of the activity.|
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | None        |
+
+## Entity Lifecycle Callbacks
+
+- **`onCreate`**: Sets the `createdAt` and `updatedAt` timestamps to the current time when the entity is persisted.
+- **`onUpdate`**: Updates the `updatedAt` timestamp to the current time when the entity is updated.

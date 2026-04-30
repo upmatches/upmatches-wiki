@@ -1,0 +1,33 @@
+---
+id: hikari-properties
+title: HikariProperties Class
+sidebar_label: HikariProperties
+---
+
+## Overview
+
+The `HikariProperties` class is a Java record that encapsulates configuration properties for a HikariCP connection pool. HikariCP is a popular high-performance JDBC connection pool. This class provides a structured way to manage and access various settings related to the connection pool's behavior and performance.
+
+## Public Methods
+
+Since `HikariProperties` is a record, it automatically provides a constructor and accessor methods for each of its components. Below is a table documenting these methods, their parameters, and return types.
+
+### Constructor
+
+| Method Signature                                                                 | Description                                                                                      |
+|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| `HikariProperties(Integer maximumPoolSize, Integer minimumIdle, Long idleTimeout, Long maxLifetime, Long connectionTimeout, Long leakDetectionThreshold, Long initializationFailTimeout)` | Constructs a new `HikariProperties` instance with the specified configuration values. |
+
+### Accessor Methods
+
+| Method                      | Parameters | Return Type | Description                                                                                      |
+|-----------------------------|------------|-------------|--------------------------------------------------------------------------------------------------|
+| `maximumPoolSize()`         | None       | `Integer`   | Returns the maximum number of connections in the pool.                                           |
+| `minimumIdle()`             | None       | `Integer`   | Returns the minimum number of idle connections that the pool maintains.                          |
+| `idleTimeout()`             | None       | `Long`      | Returns the maximum amount of time that a connection is allowed to sit idle in the pool.         |
+| `maxLifetime()`             | None       | `Long`      | Returns the maximum lifetime of a connection in the pool.                                        |
+| `connectionTimeout()`       | None       | `Long`      | Returns the maximum number of milliseconds that a client will wait for a connection from the pool.|
+| `leakDetectionThreshold()`  | None       | `Long`      | Returns the amount of time in milliseconds before a connection leak is reported.                 |
+| `initializationFailTimeout()`| None      | `Long`      | Returns the time in milliseconds before a connection initialization failure is reported.         |
+
+This class is designed to be immutable and thread-safe, leveraging the features of Java records to provide a clean and efficient way to manage database connection pool settings.

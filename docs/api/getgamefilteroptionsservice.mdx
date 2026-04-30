@@ -1,0 +1,35 @@
+---
+id: get-game-filter-options-service
+title: GetGameFilterOptionsService
+sidebar_label: GetGameFilterOptionsService
+---
+
+## Purpose
+
+The `GetGameFilterOptionsService` class is a service component in a Java application designed to retrieve filter options for games. It processes a request to filter games based on various criteria such as date range, time, skill levels, venues, and location. The service ensures that the filtering criteria are valid and then queries the game repository to fetch distinct options for venues, skill levels, start times, and game types.
+
+## Public Methods
+
+### `execute`
+
+Executes the service to retrieve game filter options based on the provided filter criteria.
+
+| Parameter | Type                          | Description                                    |
+|-----------|-------------------------------|------------------------------------------------|
+| `filter`  | `GameFilterOptionsRequest`    | The request object containing filter criteria. |
+
+| Return Type                      | Description                                      |
+|----------------------------------|--------------------------------------------------|
+| `GameFilterOptionsResponse`      | A response object containing distinct filter options for venues, skill levels, start times, and game types. |
+
+## Method Details
+
+### `execute(GameFilterOptionsRequest filter)`
+
+- **Purpose**: Retrieves distinct filter options for games based on the provided filter criteria.
+- **Parameters**:
+  - `filter`: An instance of `GameFilterOptionsRequest` containing the criteria for filtering games.
+- **Returns**: An instance of `GameFilterOptionsResponse` containing the distinct filter options.
+- **Transactional**: This method is marked as `@Transactional(readOnly = true)`, indicating that it performs read-only operations within a transaction.
+
+The `execute` method validates the filter criteria and then uses the `runQuery` method to fetch games from the repository. It processes the games to extract distinct options for venues, skill levels, start times, and game types, which are then returned in a `GameFilterOptionsResponse` object.

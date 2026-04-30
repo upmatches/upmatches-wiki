@@ -1,0 +1,42 @@
+---
+id: user-skill-level
+title: UserSkillLevel Class
+sidebar_label: UserSkillLevel
+---
+
+import com.upmatches.app.features.activity.entities.Activity;
+import com.upmatches.app.features.skilllevels.entities.SkillLevel;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
+import lombok.Getter;
+
+## Purpose of the UserSkillLevel Class
+
+The `UserSkillLevel` class is an entity that represents the association between a user and their skill level in a particular activity. It is part of a system that tracks user skills and their proficiency levels in various activities. This class is mapped to the `user_skill_levels` table in the database and uses a composite key to uniquely identify each record.
+
+## Public Methods
+
+The `UserSkillLevel` class provides the following public method:
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `public static UserSkillLevel create(User user, SkillLevel skillLevel)` | Creates a new instance of `UserSkillLevel` by associating a user with a skill level. |
+
+### Method Details
+
+#### `create(User user, SkillLevel skillLevel)`
+
+- **Parameters:**
+
+  | Parameter | Type     | Description                          |
+  | --------- | -------- | ------------------------------------ |
+  | `user`    | `User`   | The user to be associated with a skill level. |
+  | `skillLevel` | `SkillLevel` | The skill level to be associated with the user. |
+
+- **Return Type:** `UserSkillLevel`
+
+- **Description:** This static method creates a new `UserSkillLevel` instance by setting the composite key, associating the user and skill level, and linking the activity from the skill level. It is used to establish the relationship between a user and their skill level in a specific activity.

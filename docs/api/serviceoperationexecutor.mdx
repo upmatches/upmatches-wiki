@@ -1,0 +1,43 @@
+---
+id: service-operation-executor
+title: ServiceOperationExecutor
+sidebar_label: ServiceOperationExecutor
+---
+
+## Purpose
+
+The `ServiceOperationExecutor` class is a utility class designed to execute service operations with robust exception handling and logging. It ensures that operations are executed with proper traceability and error management, particularly focusing on database and external service interactions. This class is not meant to be instantiated and provides static methods to execute operations that return a result or perform void operations.
+
+## Public Methods
+
+### `execute`
+
+Executes a given operation with specified operation type and exception factory, handling exceptions and logging as necessary.
+
+| Parameter        | Type                        | Description                                                                 |
+|------------------|-----------------------------|-----------------------------------------------------------------------------|
+| `operation`      | `Supplier<T>`               | The operation to be executed.                                               |
+| `operationType`  | `OperationStatus`           | The type of operation being executed.                                       |
+| `exceptionFactory` | `ExceptionFactory`        | Factory to create exceptions when handling errors.                          |
+
+| Return Type | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `<T>`       | The result of the executed operation.                                        |
+
+### `executeVoid`
+
+Executes a given void operation with specified operation type and exception factory, handling exceptions and logging as necessary.
+
+| Parameter        | Type                        | Description                                                                 |
+|------------------|-----------------------------|-----------------------------------------------------------------------------|
+| `operation`      | `Runnable`                  | The void operation to be executed.                                          |
+| `operationType`  | `OperationStatus`           | The type of operation being executed.                                       |
+| `exceptionFactory` | `ExceptionFactory`        | Factory to create exceptions when handling errors.                          |
+
+| Return Type | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `void`      | This method does not return a value.                                         |
+
+## Usage
+
+The `ServiceOperationExecutor` class is used to wrap service operations that may involve database access or external service calls. It provides a consistent way to handle exceptions and log operations, ensuring that all necessary information is captured for debugging and monitoring purposes. The class uses a trace ID to track operations, which is particularly useful in distributed systems for correlating logs across different services.

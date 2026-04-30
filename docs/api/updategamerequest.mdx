@@ -1,0 +1,31 @@
+---
+id: update-game-request
+title: UpdateGameRequest Class
+sidebar_label: UpdateGameRequest
+---
+
+## Overview
+
+The `UpdateGameRequest` class is a Java record used to encapsulate the data required to update a game in the application. It includes various fields such as venue ID, skill levels, currency, price, slots, start and end times, visibility, game type, and remarks. This class leverages Java's record feature to provide a concise and immutable data structure.
+
+## Public Methods
+
+The `UpdateGameRequest` record does not explicitly define methods beyond those automatically provided by the Java record, such as accessors for each field. Below is a table documenting the fields, their types, and any constraints applied to them:
+
+| Field Name        | Type            | Constraints                                                                                     |
+|-------------------|-----------------|-------------------------------------------------------------------------------------------------|
+| `venueId`         | `Long`          | None                                                                                            |
+| `skillLevelFromId`| `Long`          | None                                                                                            |
+| `skillLevelToId`  | `Long`          | None                                                                                            |
+| `currency`        | `String`        | Must match the pattern `^[A-Z]{3}$` (3-letter ISO-4217 code)                                    |
+| `price`           | `BigDecimal`    | Must be >= 0, with at most 8 digits and 2 decimals                                              |
+| `slots`           | `Integer`       | Must be between 1 and 100                                                                       |
+| `startTime`       | `Instant`       | None                                                                                            |
+| `endTime`         | `Instant`       | None                                                                                            |
+| `visibility`      | `GameVisibility`| None                                                                                            |
+| `gameType`        | `GameType`      | None                                                                                            |
+| `remark`          | `String`        | Maximum length of 500 characters                                                                |
+
+## Usage
+
+The `UpdateGameRequest` record is typically used in scenarios where a game needs to be updated with new details. It ensures that the data provided adheres to specified constraints, such as valid currency codes and appropriate slot numbers, enhancing data integrity and consistency within the application.

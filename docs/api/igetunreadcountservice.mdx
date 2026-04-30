@@ -1,0 +1,27 @@
+---
+id: igetunreadcountservice
+title: IGetUnreadCountService Interface
+sidebar_label: IGetUnreadCountService
+---
+
+## Overview
+
+The `IGetUnreadCountService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that are responsible for retrieving the count of unread notifications. This interface is designed to be implemented by classes that provide the actual logic for fetching unread notification counts.
+
+## Public Methods
+
+The `IGetUnreadCountService` interface declares the following public method:
+
+| Method Signature                | Description                                                                 |
+|---------------------------------|-----------------------------------------------------------------------------|
+| `UnreadCountResponse execute()` | Executes the service to retrieve the unread notification count.             |
+
+### Method Details
+
+#### `execute`
+
+- **Description**: Executes the service to retrieve the unread notification count.
+- **Parameters**: None
+- **Returns**: 
+  - **Type**: `UnreadCountResponse`
+  - **Description**: An object containing the count of unread notifications.

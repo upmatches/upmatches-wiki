@@ -1,0 +1,50 @@
+---
+id: station-line-id
+title: StationLineId Class
+sidebar_label: StationLineId
+---
+
+import { useBaseUrl } from '@docusaurus/core';
+
+## Overview
+
+The `StationLineId` class is a part of the `com.upmatches.app.features.venue.entities` package. It is an embeddable entity used to represent a composite key for a station line in a transit system. This class is designed to be used with JPA (Java Persistence API) for database operations, specifically as a composite key in an entity relationship.
+
+The class implements the `Serializable` interface, ensuring that instances of `StationLineId` can be serialized, which is a requirement for entities used in JPA.
+
+## Public Methods
+
+The `StationLineId` class provides the following public methods:
+
+### Constructor
+
+| Method Signature | Description |
+|------------------|-------------|
+| `StationLineId(Long stationId, String transitLineCode)` | Constructs a new `StationLineId` with the specified `stationId` and `transitLineCode`. |
+
+### equals
+
+| Method Signature | Description |
+|------------------|-------------|
+| `boolean equals(Object o)` | Compares this `StationLineId` to the specified object. Returns `true` if the objects are equal, otherwise returns `false`. |
+
+### hashCode
+
+| Method Signature | Description |
+|------------------|-------------|
+| `int hashCode()` | Returns a hash code value for the object, which is used in hashing based collections like `HashMap`. |
+
+## Fields
+
+The class contains the following fields:
+
+| Field Name | Type   | Description |
+|------------|--------|-------------|
+| `stationId` | `Long` | Represents the unique identifier for a station. |
+| `transitLineCode` | `String` | Represents the code for the transit line, with a maximum length of 10 characters. |
+
+## Usage
+
+The `StationLineId` class is typically used as a composite key in a JPA entity. It is marked with the `@Embeddable` annotation, indicating that it can be embedded in other entities. The fields `stationId` and `transitLineCode` are annotated with `@Column` to specify the column mapping in the database.
+
+This class also provides `equals` and `hashCode` methods to ensure that instances can be compared and used effectively in collections.

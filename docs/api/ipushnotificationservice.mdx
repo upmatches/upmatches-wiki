@@ -1,0 +1,31 @@
+---
+id: ipushnotificationservice
+title: IPushNotificationService Interface
+sidebar_label: IPushNotificationService
+---
+
+## Overview
+
+The `IPushNotificationService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for sending push notifications within the application. This interface is designed to be implemented by classes that handle the delivery of notifications to users, ensuring a standardized method of sending notifications across different implementations.
+
+## Public Methods
+
+### `send`
+
+The `send` method is responsible for delivering a notification to the intended recipient. It takes a `Notification` object as a parameter and returns a `PushDeliveryResult` indicating the outcome of the delivery attempt.
+
+| Method Signature | Description |
+|------------------|-------------|
+| `PushDeliveryResult send(Notification notification)` | Sends a notification and returns the result of the delivery attempt. |
+
+#### Parameters
+
+| Parameter   | Type        | Description                      |
+|-------------|-------------|----------------------------------|
+| notification | `Notification` | The notification to be sent. |
+
+#### Return Type
+
+| Type                | Description                                      |
+|---------------------|--------------------------------------------------|
+| `PushDeliveryResult` | The result of the push notification delivery attempt, indicating success or failure. |

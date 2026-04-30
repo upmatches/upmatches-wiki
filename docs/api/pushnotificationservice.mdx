@@ -1,0 +1,50 @@
+---
+id: push-notification-service
+title: PushNotificationService Class
+sidebar_label: PushNotificationService
+---
+
+## Overview
+
+The `PushNotificationService` class is a Spring service responsible for sending push notifications to users via Firebase Cloud Messaging (FCM). It integrates with Firebase to deliver notifications to Android and iOS devices. The service handles the retrieval of device tokens, constructs the notification message, and manages the response from Firebase, including error handling and token pruning.
+
+## Public Methods
+
+### `send`
+
+The `send` method is responsible for sending a notification to a user's devices. It retrieves device tokens, constructs the notification message, and sends it using Firebase Cloud Messaging. The method also handles errors and prunes invalid tokens.
+
+| Parameter    | Type          | Description                                      |
+|--------------|---------------|--------------------------------------------------|
+| notification | `Notification`| The notification object containing details such as recipient, message, and type. |
+
+| Return Type          | Description                                                                 |
+|----------------------|-----------------------------------------------------------------------------|
+| `PushDeliveryResult` | The result of the push delivery attempt, indicating success, failure, or unavailability. |
+
+## Private Methods
+
+### `resolveBadge`
+
+The `resolveBadge` method calculates the badge count for iOS notifications based on the number of unread notifications for a recipient.
+
+| Parameter   | Type   | Description                                      |
+|-------------|--------|--------------------------------------------------|
+| recipientId | `UUID` | The unique identifier of the notification recipient. |
+
+| Return Type | Description                                     |
+|-------------|-------------------------------------------------|
+| `int`       | The badge count for the recipient's notifications. |
+
+### `pruneInvalidTokens`
+
+The `pruneInvalidTokens` method removes invalid device tokens from the repository based on the response from Firebase.
+
+| Parameter    | Type              | Description                                      |
+|--------------|-------------------|--------------------------------------------------|
+| response     | `BatchResponse`   | The response from Firebase after sending messages. |
+| tokenStrings | `List<String>`    | The list of device tokens used in the message.    |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | None        |

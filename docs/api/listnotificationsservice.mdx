@@ -1,0 +1,27 @@
+---
+id: list-notifications-service
+title: ListNotificationsService
+sidebar_label: ListNotificationsService
+---
+
+## Purpose
+
+The `ListNotificationsService` class is a Spring service designed to retrieve a paginated list of notifications for an authenticated user. It interacts with the `NotificationRepository` to fetch notifications and utilizes the `IAuthenticatedUserResolver` to determine the current user's identity. The service ensures that notifications are fetched in a read-only transactional context, maintaining data integrity and consistency.
+
+## Public Methods
+
+### `execute`
+
+Retrieves a paginated list of notifications for the authenticated user.
+
+| Parameter | Type      | Description                                      |
+|-----------|-----------|--------------------------------------------------|
+| `pageable`| `Pageable`| The pagination information for the query.        |
+
+| Return Type                          | Description                                                  |
+|--------------------------------------|--------------------------------------------------------------|
+| `PagedResponse<NotificationResponse>`| A paginated response containing the user's notifications.    |
+
+## Usage
+
+The `execute` method is the primary entry point for fetching notifications. It requires a `Pageable` object to specify pagination details and returns a `PagedResponse` containing `NotificationResponse` objects. This method ensures that only notifications belonging to the authenticated user are retrieved, ordered by their creation date in descending order.

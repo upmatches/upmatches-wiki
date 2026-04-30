@@ -1,0 +1,31 @@
+---
+id: isoftwaredeletegameservice
+title: ISoftDeleteGameService Interface
+sidebar_label: ISoftDeleteGameService
+---
+
+import java.util.UUID;
+
+## Purpose
+
+The `ISoftDeleteGameService` interface defines a contract for implementing a soft delete operation on game entities. This interface is part of the `com.upmatches.app.features.game.services` package and is designed to be implemented by classes that handle the logic for marking game entities as deleted without permanently removing them from the database. The interface is sealed, meaning it restricts which classes can implement it, specifically allowing only the `SoftDeleteGameService` class.
+
+## Public Methods
+
+### `execute`
+
+This method is responsible for executing the soft delete operation on a game entity identified by its unique identifier.
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `void execute(UUID id)` | Executes the soft delete operation for a game entity with the specified UUID. |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `id`      | `UUID` | The unique identifier of the game entity to be soft deleted. |
+
+#### Return Type
+
+This method does not return any value (`void`).

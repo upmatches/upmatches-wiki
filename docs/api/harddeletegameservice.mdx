@@ -1,0 +1,32 @@
+---
+id: hard-delete-game-service
+title: HardDeleteGameService
+sidebar_label: HardDeleteGameService
+---
+
+## Overview
+
+The `HardDeleteGameService` class is a part of the `com.upmatches.app.features.game.services` package. It provides functionality to permanently delete a game from the database. This service is designed to be used by administrators and ensures that the deletion operation is auditable and secure.
+
+## Purpose
+
+The primary purpose of the `HardDeleteGameService` class is to handle the hard deletion of game entities. It interacts with the `GameRepository` to remove game records and uses the `IGameLookupService` to verify the existence of the game before deletion. The service is secured with role-based access control, allowing only users with the 'ADMIN' authority to execute the deletion.
+
+## Public Methods
+
+### `execute(UUID id)`
+
+The `execute` method is responsible for performing the hard deletion of a game. It first retrieves the game using the `IGameLookupService` and then deletes it using the `GameRepository`. The operation is wrapped in a transaction to ensure data integrity and is auditable for tracking purposes.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id`      | `UUID` | The unique identifier of the game to be deleted. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return any value. |
+
+## Security and Auditing
+
+- **Security**: The method is annotated with `@PreAuthorize("hasAuthority('ADMIN')")`, ensuring that only users with the 'ADMIN' authority can execute the deletion.
+- **Auditing**: The `@Auditable` annotation is used to log the deletion action, specifying the action as "GAME_HARD_DELETED" and the resource type as "GAME". The resource ID is dynamically resolved from the method's arguments.

@@ -1,0 +1,23 @@
+---
+id: IListVenuesService
+title: IListVenuesService Interface
+sidebar_label: IListVenuesService
+---
+
+## Purpose
+
+The `IListVenuesService` interface is part of the `com.upmatches.app.features.venue.services` package. It defines a contract for services that list venues, providing a method to execute the listing operation with pagination support. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `ListVenuesService` class.
+
+## Public Methods
+
+### `execute`
+
+Executes the venue listing operation with pagination.
+
+| Parameter | Type                      | Description                                      |
+|-----------|---------------------------|--------------------------------------------------|
+| pageable  | `org.springframework.data.domain.Pageable` | Provides pagination information such as page number and size. |
+
+| Return Type                              | Description                                      |
+|------------------------------------------|--------------------------------------------------|
+| `PagedResponse<VenueResponse>`           | A paginated response containing venue details.   |

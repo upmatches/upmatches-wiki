@@ -1,0 +1,31 @@
+---
+id: delete-notification-service
+title: DeleteNotificationService
+sidebar_label: DeleteNotificationService
+---
+
+## Purpose of the Class
+
+The `DeleteNotificationService` class is a part of the notification feature in the application. It is responsible for handling the deletion of notifications for authenticated users. This service ensures that only the notifications belonging to the authenticated user are deleted, maintaining data integrity and security.
+
+## Public Methods
+
+### `execute`
+
+This method is responsible for executing the deletion of a notification based on its unique identifier (UUID) and the authenticated user's ID.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id`      | `UUID` | The unique identifier of the notification to be deleted. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return any value. |
+
+### Method Details
+
+- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction. This guarantees that the deletion operation is atomic and consistent.
+- **Exception Handling**: If the notification is not found for the given user, a `NotificationNotFoundException` is thrown with a descriptive message.
+- **Service Operation Execution**: The actual deletion is performed using the `ServiceOperationExecutor.executeVoid` method, which handles the operation status and potential exceptions like `ResourceNotFoundException`.
+
+This service is crucial for maintaining the integrity of user-specific notifications and ensuring that users can manage their notifications effectively.

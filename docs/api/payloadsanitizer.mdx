@@ -1,0 +1,43 @@
+---
+id: payload-sanitizer
+title: PayloadSanitizer Class
+sidebar_label: PayloadSanitizer
+---
+
+## Purpose
+
+The `PayloadSanitizer` class is designed to sanitize sensitive information from JSON payloads. It is particularly useful in scenarios where sensitive data such as passwords, tokens, and personal identifiers need to be redacted before logging or processing. The class uses a set of predefined keys to identify sensitive information and applies masking or truncation as necessary.
+
+## Public Methods
+
+### sanitize
+
+Sanitizes the given payload by masking sensitive information and truncating the payload if it exceeds a certain size.
+
+| Parameter | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| payload   | Object | The payload to be sanitized.         |
+
+| Return Type | Description                                      |
+|-------------|--------------------------------------------------|
+| String      | The sanitized JSON string, or `null` if an error occurs. |
+
+## Detailed Description
+
+The `PayloadSanitizer` class uses an `ObjectMapper` to convert the payload into a JSON tree structure. It then traverses this structure to mask sensitive data based on predefined key sets:
+
+- **REDACT_KEYS**: Keys that should be completely redacted (e.g., "password", "token").
+- **EMAIL_KEYS**: Keys that should have their values partially masked to obscure email addresses.
+- **PHONE_KEYS**: Keys that should have their values partially masked to obscure phone numbers.
+
+The class also ensures that the resulting JSON does not exceed a specified byte size (`MAX_PAYLOAD_BYTES`). If it does, the JSON is truncated and a suffix is appended to indicate truncation.
+
+### Masking Logic
+
+- **Emails**: Only the first character and domain are retained, with the rest replaced by asterisks.
+- **Phone Numbers**: Only the last four digits are retained, with the rest replaced by asterisks.
+- **Other Sensitive Data**: Completely replaced by asterisks.
+
+### Truncation
+
+If the JSON string exceeds `MAX_PAYLOAD_BYTES`, it is truncated to fit within this limit, and a suffix (`TRUNCATED_SUFFIX`) is added to indicate that truncation has occurred.

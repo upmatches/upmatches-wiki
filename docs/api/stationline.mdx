@@ -1,0 +1,38 @@
+---
+id: station-line
+title: StationLine Class
+sidebar_label: StationLine
+---
+
+## Overview
+
+The `StationLine` class is an entity representing the relationship between a station and a transit line in a transportation system. It is part of the `com.upmatches.app.features.venue.entities` package and is mapped to the `station_lines` table in the database. This class uses JPA annotations to define its persistence behavior and Lombok to generate boilerplate code like getters.
+
+## Class Structure
+
+The `StationLine` class contains the following fields:
+
+- `id`: A composite key represented by the `StationLineId` class.
+- `station`: A reference to the `Station` entity.
+- `transitLine`: A reference to the `TransitLine` entity.
+- `stationNumber`: An integer representing the station's number on the transit line.
+
+## Public Methods
+
+The `StationLine` class provides a static factory method to create instances. Below is a detailed description of the public method available in this class:
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `public static StationLine create(Station station, TransitLine transitLine, Integer stationNumber)` | Creates a new `StationLine` instance with the specified station, transit line, and station number. |
+
+### Method Details
+
+#### `create`
+
+| Parameter      | Type          | Description                                      |
+| -------------- | ------------- | ------------------------------------------------ |
+| `station`      | `Station`     | The station entity associated with this line.    |
+| `transitLine`  | `TransitLine` | The transit line entity associated with this station. |
+| `stationNumber`| `Integer`     | The number of the station on the transit line.   |
+
+**Returns**: `StationLine` - A new instance of the `StationLine` class initialized with the provided parameters.

@@ -1,0 +1,34 @@
+---
+id: iappleloginservice
+title: IAppleLoginService Interface
+sidebar_label: IAppleLoginService
+---
+
+## Overview
+
+The `IAppleLoginService` interface is part of the authentication services in the `com.upmatches.app.features.auth.services` package. It defines the contract for implementing Apple login functionality within the application. This interface is designed to be implemented by classes that handle the authentication process using Apple's login system.
+
+## Public Methods
+
+The `IAppleLoginService` interface declares the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `AppleLoginResponse execute(AppleLoginRequest request)` | Executes the Apple login process using the provided `AppleLoginRequest` and returns an `AppleLoginResponse`. |
+
+### Method Details
+
+#### `execute`
+
+- **Description**: This method is responsible for processing the Apple login request and returning the corresponding response.
+- **Parameters**:
+  | Name    | Type                          | Description                                   |
+  |---------|-------------------------------|-----------------------------------------------|
+  | request | `AppleLoginRequest`           | The request object containing login details.  |
+  
+- **Returns**: 
+  | Type                   | Description                                          |
+  |------------------------|------------------------------------------------------|
+  | `AppleLoginResponse`   | The response object containing the result of the login process. |
+
+This interface is sealed, meaning it restricts which classes can implement it. Currently, it permits the `AppleLoginService` class to implement the interface, ensuring controlled and secure handling of Apple login operations.

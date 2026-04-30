@@ -1,0 +1,61 @@
+---
+id: share-link-rate-limit-filter
+title: ShareLinkRateLimitFilter
+sidebar_label: ShareLinkRateLimitFilter
+---
+
+## Purpose
+
+The `ShareLinkRateLimitFilter` class is a Spring component designed to enforce rate limiting on specific API endpoints related to share links. It extends `OncePerRequestFilter` to ensure that the filter is executed once per request. The filter uses Redis to track request counts and determine if a client has exceeded the allowed number of requests within a specified time window.
+
+## Public Methods
+
+### Constructor
+
+| Method Signature | Description |
+|------------------|-------------|
+| `ShareLinkRateLimitFilter(StringRedisTemplate redisTemplate)` | Constructs a new instance of `ShareLinkRateLimitFilter` with the provided `StringRedisTemplate` for Redis operations. |
+
+### Protected Methods
+
+#### shouldNotFilter
+
+| Method Signature | Description |
+|------------------|-------------|
+| `protected boolean shouldNotFilter(HttpServletRequest request)` | Determines if the filter should be applied to the incoming request based on its URI. Returns `true` if the request URI does not start with the share link path prefix. |
+
+#### doFilterInternal
+
+| Method Signature | Description |
+|------------------|-------------|
+| `protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)` | Applies the rate limiting logic to incoming requests. If the request exceeds the rate limit, it sends a "Too Many Requests" response; otherwise, it allows the request to proceed. |
+
+### Private Methods
+
+#### isRateLimited
+
+| Method Signature | Description |
+|------------------|-------------|
+| `private boolean isRateLimited(String key, int limit)` | Checks if the request associated with the given key has exceeded the specified limit. Uses Redis to increment the request count and set an expiration if it's the first request. Returns `true` if the limit is exceeded. |
+
+#### resolveClientIp
+
+| Method Signature | Description |
+|------------------|-------------|
+| `private String resolveClientIp(HttpServletRequest request)` | Resolves the client's IP address from the request, using the `X-Forwarded-For` header if available. |
+
+#### resolveSubjectOrIp
+
+| Method Signature | Description |
+|------------------|-------------|
+| `private String resolveSubjectOrIp(HttpServletRequest request)` | Resolves the subject from the JWT token if available, otherwise falls back to the client's IP address. |
+
+#### writeRateLimitResponse
+
+| Method Signature | Description |
+|------------------|-------------|
+| `private void writeRateLimitResponse(HttpServletResponse response, String bucket, String instance)` | Writes a "Too Many Requests" response to the client, including a problem detail JSON object with information about the rate limit exceeded. |
+
+## Usage
+
+This filter is automatically applied to requests when a `StringRedisTemplate` bean is present in the Spring application context. It is specifically configured to limit requests to the `/api/v1/share-links` endpoints, with separate limits for GET and POST requests.

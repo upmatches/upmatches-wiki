@@ -1,0 +1,34 @@
+---
+id: venue-import-response
+title: VenueImportResponse
+sidebar_label: VenueImportResponse
+---
+
+## VenueImportResponse Class
+
+The `VenueImportResponse` class is a simple Java record used to encapsulate the response of a venue import operation. This class is part of the `com.upmatches.app.features.venue.responses` package. It is designed to hold the number of venues that have been successfully imported.
+
+### Public Methods
+
+The `VenueImportResponse` record provides the following public methods:
+
+| Method Signature                   | Description                                                                 |
+|------------------------------------|-----------------------------------------------------------------------------|
+| `VenueImportResponse(Integer imported)` | Constructor that initializes the record with the number of imported venues. |
+| `Integer imported()`               | Returns the number of venues that have been successfully imported.          |
+
+### Parameters
+
+The constructor of the `VenueImportResponse` record takes the following parameter:
+
+| Parameter Name | Type    | Description                                      |
+|----------------|---------|--------------------------------------------------|
+| `imported`     | Integer | The number of venues that have been imported.    |
+
+### Return Types
+
+The `imported()` method returns:
+
+| Return Type | Description                                      |
+|-------------|--------------------------------------------------|
+| `Integer`   | The number of venues that have been successfully imported. |

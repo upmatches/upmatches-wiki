@@ -1,0 +1,28 @@
+---
+id: IListMyHostedGamesCursorService
+title: IListMyHostedGamesCursorService Interface
+sidebar_label: IListMyHostedGamesCursorService
+---
+
+## Overview
+
+The `IListMyHostedGamesCursorService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide paginated access to a list of games hosted by the user. This interface ensures that any implementing class will provide a mechanism to retrieve game data in a paginated manner using a cursor-based approach.
+
+## Public Methods
+
+The interface declares the following method:
+
+### `execute`
+
+Retrieves a paginated list of games hosted by the user, starting from a specified cursor position.
+
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `cursor`  | String | The cursor indicating the starting point of the page. |
+| `size`    | int    | The number of game records to retrieve.          |
+
+| Return Type                              | Description                                      |
+|------------------------------------------|--------------------------------------------------|
+| `CursorPagedResponse<GameResponse>`      | A paginated response containing game data.       |
+
+This method is designed to facilitate efficient data retrieval by allowing clients to specify the starting point and the number of records they wish to retrieve, thus supporting scalable and performant data access patterns.

@@ -1,0 +1,36 @@
+---
+id: complete-profile-request
+title: CompleteProfileRequest Class
+sidebar_label: CompleteProfileRequest
+---
+
+## Purpose of the CompleteProfileRequest Class
+
+The `CompleteProfileRequest` class is a Java record used to encapsulate the data required to complete a user's profile in the application. It ensures that the profile data adheres to specific validation constraints, such as non-blank names, a limited number of contact methods, and skill levels. This class is part of the `com.upmatches.app.features.user.requests` package and is designed to be used in scenarios where a user's profile needs to be completed or updated with validated data.
+
+## Public Methods
+
+The `CompleteProfileRequest` class is a record, which means it automatically provides a constructor, accessors, `equals()`, `hashCode()`, and `toString()` methods. Below are the details of the parameters used in this record:
+
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `CompleteProfileRequest` | `String name`, `List<ContactMethod> contactMethods`, `List<SkillLevelSelection> skillLevels` | `CompleteProfileRequest` | Constructs a new `CompleteProfileRequest` record with the specified name, contact methods, and skill levels. |
+
+### Parameters
+
+- **name**: 
+  - **Type**: `String`
+  - **Constraints**: Must not be blank and cannot exceed 200 characters.
+  - **Description**: Represents the name of the user. It is a required field and must be a non-empty string.
+
+- **contactMethods**: 
+  - **Type**: `List<ContactMethod>`
+  - **Constraints**: Must contain at least one contact method and cannot exceed 10 methods.
+  - **Description**: A list of contact methods for the user. At least one contact method must be provided.
+
+- **skillLevels**: 
+  - **Type**: `List<SkillLevelSelection>`
+  - **Constraints**: Must not be null and cannot exceed 50 skill levels.
+  - **Description**: A list of skill levels selected by the user. This field is required and must be validated.
+
+This class leverages annotations from the `jakarta.validation` package to enforce constraints on its fields, ensuring that the data provided is valid and meets the application's requirements.

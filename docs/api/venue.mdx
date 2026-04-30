@@ -1,0 +1,81 @@
+---
+id: venue
+title: Venue Class Documentation
+sidebar_label: Venue
+---
+
+## Overview
+
+The `Venue` class represents a venue entity within the application. It is designed to store and manage information about various venues, including their location, associated activities, and nearby stations. This class is a JPA entity, which means it is mapped to a database table named `venues`.
+
+## Public Methods
+
+The `Venue` class provides several public methods to interact with venue instances. Below is a detailed description of these methods, including their parameters and return types.
+
+### `create`
+
+Creates a new instance of the `Venue` class with the specified attributes.
+
+| Parameter   | Type          | Description                                      |
+|-------------|---------------|--------------------------------------------------|
+| `sourceId`  | `String`      | Unique identifier for the venue source.          |
+| `activity`  | `Activity`    | The activity associated with the venue.          |
+| `name`      | `String`      | The name of the venue.                           |
+| `address`   | `String`      | The address of the venue.                        |
+| `postalCode`| `String`      | The postal code of the venue's location.         |
+| `latitude`  | `BigDecimal`  | The latitude coordinate of the venue.            |
+| `longitude` | `BigDecimal`  | The longitude coordinate of the venue.           |
+
+**Returns:** `Venue` - A new instance of the `Venue` class.
+
+### `addStation`
+
+Adds a station to the set of stations associated with the venue.
+
+| Parameter  | Type      | Description                      |
+|------------|-----------|----------------------------------|
+| `station`  | `Station` | The station to be added.         |
+
+**Returns:** `void`
+
+### `removeStation`
+
+Removes a station from the set of stations associated with the venue.
+
+| Parameter  | Type      | Description                      |
+|------------|-----------|----------------------------------|
+| `station`  | `Station` | The station to be removed.       |
+
+**Returns:** `void`
+
+## Entity Lifecycle Methods
+
+The `Venue` class includes lifecycle methods that are automatically invoked during the persistence lifecycle of the entity.
+
+### `onCreate`
+
+This method is called before the entity is persisted for the first time. It sets the `createdAt` and `updatedAt` timestamps to the current time.
+
+**Returns:** `void`
+
+### `onUpdate`
+
+This method is called before the entity is updated. It updates the `updatedAt` timestamp to the current time.
+
+**Returns:** `void`
+
+## Attributes
+
+The `Venue` class includes several attributes that map to columns in the `venues` database table. These attributes store information about the venue's identity, location, and relationships with other entities.
+
+- `id`: The primary key of the venue.
+- `sourceId`: A unique identifier for the venue source.
+- `activity`: The activity associated with the venue.
+- `name`: The name of the venue.
+- `address`: The address of the venue.
+- `postalCode`: The postal code of the venue's location.
+- `latitude`: The latitude coordinate of the venue.
+- `longitude`: The longitude coordinate of the venue.
+- `stations`: A set of stations associated with the venue.
+- `createdAt`: The timestamp when the venue was created.
+- `updatedAt`: The timestamp when the venue was last updated.

@@ -1,0 +1,22 @@
+---
+id: at-least-one-contact-method-validator
+title: AtLeastOneContactMethodValidator
+sidebar_label: AtLeastOneContactMethodValidator
+---
+
+## Purpose
+
+The `AtLeastOneContactMethodValidator` class is a custom validator used in the context of Java Bean Validation (JSR 380). It ensures that a list of `ContactMethod` objects contains at least one valid contact method. The valid contact methods are defined as "whatsapp", "telegram", or "messenger". Each contact method must have a non-empty value associated with it. This validator is typically used to enforce constraints on user input data where at least one method of contact is required.
+
+## Public Methods
+
+### `isValid`
+
+This method checks if the provided list of `ContactMethod` objects contains at least one valid and non-empty contact method.
+
+| Parameter          | Type                           | Description                                                                 |
+|--------------------|--------------------------------|-----------------------------------------------------------------------------|
+| `contactMethods`   | `List<ContactMethod>`          | A list of `ContactMethod` objects to be validated.                          |
+| `context`          | `ConstraintValidatorContext`   | Context in which the constraint is evaluated.                               |
+
+**Returns:** `boolean` - Returns `true` if at least one valid contact method is present and non-empty; otherwise, returns `false`.

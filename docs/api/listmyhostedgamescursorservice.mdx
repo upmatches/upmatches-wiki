@@ -1,0 +1,44 @@
+---
+id: list-my-hosted-games-cursor-service
+title: ListMyHostedGamesCursorService
+sidebar_label: List My Hosted Games Cursor Service
+---
+
+## Overview
+
+The `ListMyHostedGamesCursorService` class is a service component in a Java application that manages the retrieval of games hosted by a user. It leverages cursor-based pagination to efficiently fetch a subset of games, allowing users to navigate through large datasets seamlessly. This service is particularly useful in scenarios where users need to view their hosted games in a paginated manner, ensuring optimal performance and user experience.
+
+## Public Methods
+
+### `execute`
+
+The `execute` method is the primary operation of the `ListMyHostedGamesCursorService` class. It retrieves a paginated list of games hosted by the authenticated user, based on the provided cursor and size parameters.
+
+| Parameter | Type   | Description                                                                 |
+|-----------|--------|-----------------------------------------------------------------------------|
+| `cursor`  | String | A string representing the current position in the pagination sequence.      |
+| `size`    | int    | The number of games to retrieve in the current page.                        |
+
+#### Returns
+
+- `CursorPagedResponse<GameResponse>`: A response object containing the list of games and the next cursor for pagination.
+
+## Detailed Description
+
+- **Purpose**: The `ListMyHostedGamesCursorService` class is designed to facilitate the retrieval of games hosted by a specific user. It uses cursor-based pagination to handle large datasets efficiently, ensuring that users can navigate through their hosted games without performance degradation.
+
+- **Dependencies**: This service depends on several components:
+  - `GameRepository`: To access game data.
+  - `GameParticipantRepository`: To count active participants in each game.
+  - `IAuthenticatedUserResolver`: To resolve the current authenticated user.
+  - `GameCursor`: To handle encoding and decoding of pagination cursors.
+
+- **Transactional Behavior**: The `execute` method is annotated with `@Transactional(readOnly = true)`, indicating that it performs read-only operations within a transactional context, ensuring data consistency and integrity.
+
+- **Exception Handling**: The method utilizes `ServiceOperationExecutor` to handle operations and exceptions, specifically throwing a `ResourceNotFoundException` if the retrieval operation fails.
+
+- **Cursor Management**: The service uses the `GameCursor` utility to decode the incoming cursor and encode the next cursor, allowing for seamless navigation through paginated results.
+
+- **Participant Counting**: The `countParticipants` private method aggregates the number of active participants for each game, enhancing the game response with participant data.
+
+This service is a crucial component for applications that require efficient and scalable retrieval of user-specific game data, providing a robust solution for managing hosted games with pagination support.

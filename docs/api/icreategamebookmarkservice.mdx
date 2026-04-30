@@ -1,0 +1,28 @@
+---
+id: icreate-game-bookmark-service
+title: ICreateGameBookmarkService Interface
+sidebar_label: ICreateGameBookmarkService
+---
+
+## Overview
+
+The `ICreateGameBookmarkService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for creating game bookmarks within the application. This interface is designed to be implemented by classes that provide the functionality to bookmark a game, identified by its unique identifier (UUID), and return a response encapsulating the bookmark details.
+
+## Public Methods
+
+The interface declares the following public method:
+
+| Method Signature                       | Description                                                                 |
+|----------------------------------------|-----------------------------------------------------------------------------|
+| `GameBookmarkResponse execute(UUID gameId)` | Executes the bookmark creation process for a game identified by `gameId`.   |
+
+### Method Details
+
+#### `execute`
+
+- **Description**: This method is responsible for executing the process of creating a bookmark for a game. It takes a unique game identifier as input and returns a response object containing the details of the created bookmark.
+- **Parameters**:
+  | Name    | Type  | Description                     |
+  |---------|-------|---------------------------------|
+  | `gameId` | `UUID` | The unique identifier of the game to be bookmarked. |
+- **Returns**: `GameBookmarkResponse` - An object containing the details of the created game bookmark.

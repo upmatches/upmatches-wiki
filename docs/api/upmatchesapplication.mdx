@@ -1,0 +1,50 @@
+---
+id: upmatches-application
+title: UpmatchesApplication Class
+sidebar_label: UpmatchesApplication
+---
+
+import com.upmatches.app.features.auth.properties.AppleProperties;
+import com.upmatches.app.features.auth.properties.Auth0Properties;
+import com.upmatches.app.features.auth.properties.AuthDevProperties;
+import com.upmatches.app.features.auth.properties.InfisicalProperties;
+import com.upmatches.app.features.auth.properties.JwtProperties;
+import com.upmatches.app.features.auth.properties.SingpassProperties;
+import com.upmatches.app.features.sharelink.properties.ShareLinkProperties;
+import com.upmatches.app.shared.logging.properties.LogAspectProperties;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+
+## Overview
+
+The `UpmatchesApplication` class serves as the entry point for the Upmatches application. It is a Spring Boot application that is configured to enable specific configuration properties related to authentication, logging, and share link features. This class is responsible for bootstrapping the application using the Spring framework.
+
+## Configuration Properties
+
+The application is configured to enable the following properties:
+
+- **LogAspectProperties**: Configuration properties for logging aspects.
+- **SingpassProperties**: Configuration properties for Singpass authentication.
+- **Auth0Properties**: Configuration properties for Auth0 authentication.
+- **AppleProperties**: Configuration properties for Apple authentication.
+- **AuthDevProperties**: Configuration properties for development authentication.
+- **JwtProperties**: Configuration properties for JWT authentication.
+- **InfisicalProperties**: Configuration properties for Infisical authentication.
+- **ShareLinkProperties**: Configuration properties for share link features.
+
+## Public Methods
+
+The `UpmatchesApplication` class contains the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `public static void main(String[] args)` | The main method that serves as the entry point for the Spring Boot application. It initializes and runs the application. |
+
+### Parameters
+
+- `args`: An array of `String` arguments passed to the application on startup.
+
+### Return Type
+
+- `void`: This method does not return any value. It initiates the application startup process.

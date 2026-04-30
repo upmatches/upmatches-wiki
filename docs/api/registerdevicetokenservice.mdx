@@ -1,0 +1,35 @@
+---
+id: register-device-token-service
+title: RegisterDeviceTokenService
+sidebar_label: RegisterDeviceTokenService
+---
+
+## Purpose
+
+The `RegisterDeviceTokenService` class is a Spring service responsible for handling the registration of device tokens for users. It ensures that device tokens are associated with the correct user and updates or creates new records as necessary. This service is part of the notification feature in the application and interacts with repositories to persist data.
+
+## Public Methods
+
+### `execute`
+
+The `execute` method is the primary method of the `RegisterDeviceTokenService` class. It registers a device token for the authenticated user, updating an existing token if it already exists or creating a new one if it does not.
+
+| Parameter | Type                               | Description                                                                 |
+|-----------|------------------------------------|-----------------------------------------------------------------------------|
+| request   | `RegisterDeviceTokenRequest`       | The request object containing the device token and platform information.    |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return a value. |
+
+### Method Details
+
+- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operations within the method are executed within a transaction context. This guarantees data consistency in case of any failures during the execution.
+
+- **User Resolution**: The method uses `IAuthenticatedUserResolver` to obtain the current user's ID, ensuring that the device token is registered for the correct user.
+
+- **Device Token Handling**: 
+  - If a device token already exists for the user, it updates the existing token's timestamp using the `touch` method.
+  - If no existing token is found, it creates a new `DeviceToken` entity and saves it to the repository.
+
+- **Error Handling**: The method throws a `ResourceNotFoundException` if the user cannot be found in the repository, ensuring that only valid users can register device tokens.

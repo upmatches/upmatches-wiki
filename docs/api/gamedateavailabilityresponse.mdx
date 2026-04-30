@@ -1,0 +1,27 @@
+---
+id: game-date-availability-response
+title: GameDateAvailabilityResponse
+sidebar_label: GameDateAvailabilityResponse
+---
+
+## Overview
+
+The `GameDateAvailabilityResponse` class is a Java record that represents the availability of a game on a specific date. It is part of the `com.upmatches.app.features.game.responses` package. This class is designed to encapsulate the response data for game date availability checks, providing a simple and immutable data structure.
+
+## Class Definition
+
+The `GameDateAvailabilityResponse` is defined as a record, which is a special kind of class in Java that is used to model immutable data. It contains two fields:
+
+- `date`: A `LocalDate` object representing the date for which the game availability is being checked.
+- `hasGame`: A `Boolean` indicating whether a game is available on the specified date.
+
+## Public Methods
+
+Since `GameDateAvailabilityResponse` is a record, it automatically provides the following public methods:
+
+| Method Name | Parameters | Return Type | Description |
+|-------------|------------|-------------|-------------|
+| `date`      | None       | `LocalDate` | Returns the date for which the game availability is being checked. |
+| `hasGame`   | None       | `Boolean`   | Returns whether a game is available on the specified date. |
+
+These methods are implicitly provided by the Java compiler for all record components, allowing easy access to the data stored in the record.

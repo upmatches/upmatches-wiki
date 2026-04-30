@@ -1,0 +1,31 @@
+---
+id: create-game-bookmark-request
+title: CreateGameBookmarkRequest Class
+sidebar_label: CreateGameBookmarkRequest
+---
+
+## Overview
+
+The `CreateGameBookmarkRequest` class is a Java record used to encapsulate the data required to create a game bookmark request. This class is part of the `com.upmatches.app.features.game.requests` package and utilizes Java's record feature to provide an immutable data structure with minimal boilerplate code.
+
+## Purpose
+
+The primary purpose of the `CreateGameBookmarkRequest` class is to serve as a data transfer object (DTO) that carries the necessary information to bookmark a game within the application. It ensures that the `gameId` is provided and is not null, leveraging Jakarta Bean Validation for input validation.
+
+## Public Methods
+
+Since `CreateGameBookmarkRequest` is a record, it automatically provides a constructor, accessors, `equals()`, `hashCode()`, and `toString()` methods. Below is a table documenting the public methods available in this record:
+
+| Method Name | Parameters | Return Type | Description |
+|-------------|------------|-------------|-------------|
+| `gameId`    | None       | `UUID`      | Returns the `UUID` of the game to be bookmarked. |
+
+## Parameters
+
+The `CreateGameBookmarkRequest` record has the following parameter:
+
+| Parameter Name | Type  | Description                     |
+|----------------|-------|---------------------------------|
+| `gameId`       | `UUID`| The unique identifier of the game to be bookmarked. This parameter is annotated with `@NotNull` to ensure that it cannot be null. |
+
+By using this class, developers can ensure that the necessary data for bookmarking a game is consistently structured and validated before processing.

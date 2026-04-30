@@ -1,0 +1,33 @@
+---
+id: jwks-controller
+title: JwksController
+sidebar_label: JwksController
+---
+
+## Overview
+
+The `JwksController` class is a Spring Boot REST controller responsible for serving JSON Web Key Set (JWKS) data. This controller exposes an endpoint that provides the public keys used for verifying JSON Web Tokens (JWTs). The keys are fetched from a service implementing the `ISingpassKeyProvider` interface. The endpoint is designed to be cacheable, improving performance and reducing server load.
+
+## Public Methods
+
+### `getJwks`
+
+This method handles HTTP GET requests to the JWKS endpoint and returns the public JWKS data in JSON format. It also sets appropriate cache control headers to allow clients to cache the response for a specified duration.
+
+| Method Signature | `public ResponseEntity<String> getJwks()` |
+|------------------|-------------------------------------------|
+
+#### Parameters
+
+This method does not take any parameters.
+
+#### Return Type
+
+| Type                      | Description                                          |
+|---------------------------|------------------------------------------------------|
+| `ResponseEntity<String>`  | A response entity containing the JWKS JSON data.     |
+
+The response entity is configured with the following:
+
+- **Cache Control**: The response is cacheable for up to 1 hour.
+- **Content Type**: The response content type is set to `application/json`.

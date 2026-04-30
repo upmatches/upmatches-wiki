@@ -1,0 +1,40 @@
+---
+id: iauthsessionstore
+title: IAuthSessionStore Interface
+sidebar_label: IAuthSessionStore
+---
+
+## Overview
+
+The `IAuthSessionStore` interface is part of the `com.upmatches.app.features.auth.services` package. It defines a contract for storing and retrieving authentication sessions. This interface is designed to be implemented by classes that manage authentication session data, providing a standardized way to handle session storage and retrieval operations.
+
+## Public Methods
+
+The `IAuthSessionStore` interface declares the following public methods:
+
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `store` | `String state`, `AuthSession session` | `void` | Stores an authentication session associated with a specific state. |
+| `retrieveAndRemove` | `String state` | `AuthSession` | Retrieves and removes the authentication session associated with the given state. |
+| `getPlatform` | `String state` | `String` | Retrieves the platform information associated with the given state. |
+
+### Method Details
+
+- **store**
+  - **Parameters:**
+    - `state`: A `String` representing the unique state identifier for the session.
+    - `session`: An `AuthSession` object containing the session details to be stored.
+  - **Return Type:** `void`
+  - **Description:** This method stores the provided `AuthSession` object in association with the specified state. It does not return any value.
+
+- **retrieveAndRemove**
+  - **Parameters:**
+    - `state`: A `String` representing the unique state identifier for the session.
+  - **Return Type:** `AuthSession`
+  - **Description:** This method retrieves the `AuthSession` object associated with the given state and removes it from the store. It returns the `AuthSession` object if found, otherwise, it may return `null`.
+
+- **getPlatform**
+  - **Parameters:**
+    - `state`: A `String` representing the unique state identifier for the session.
+  - **Return Type:** `String`
+  - **Description:** This method retrieves the platform information associated with the specified state. The platform information is returned as a `String`.

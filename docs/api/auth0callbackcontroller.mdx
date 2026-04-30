@@ -1,0 +1,46 @@
+---
+id: auth0-callback-controller
+title: Auth0CallbackController
+sidebar_label: Auth0 Callback Controller
+---
+
+## Purpose
+
+The `Auth0CallbackController` class is a Spring Boot REST controller designed to handle the callback from Auth0 during the OAuth authentication process. It processes the authorization code returned by Auth0, exchanges it for user claims, and manages user sessions and tokens. The controller also logs authentication events for auditing purposes.
+
+## Public Methods
+
+### `callbackAuth0`
+
+Handles the Auth0 callback request, processes the authorization code, and manages user authentication.
+
+| Parameter | Type                  | Description                                               |
+|-----------|-----------------------|-----------------------------------------------------------|
+| `code`    | `String`              | The authorization code returned by Auth0.                 |
+| `state`   | `String`              | The state parameter to prevent CSRF attacks.              |
+| `request` | `HttpServletRequest`  | The HTTP request object.                                  |
+| `response`| `HttpServletResponse` | The HTTP response object.                                 |
+
+| Return Type                 | Description                                                                 |
+|-----------------------------|-----------------------------------------------------------------------------|
+| `ResponseEntity<Object>`    | A response entity indicating the result of the authentication process.      |
+
+## Detailed Description
+
+The `Auth0CallbackController` class is responsible for handling the callback from Auth0 after a user attempts to authenticate. It performs the following key operations:
+
+1. **Error Handling**: Checks for any errors returned by Auth0 and throws an `AuthenticationException` if any are found.
+
+2. **Parameter Validation**: Ensures that the `code` and `state` parameters are present and valid.
+
+3. **Session Management**: Retrieves and removes the authentication session associated with the `state` parameter.
+
+4. **Token Exchange**: Exchanges the authorization code for verified claims using the `IAuth0AuthService`.
+
+5. **User Management**: Finds or creates a user in the system based on the Auth0 user ID, and updates user information as needed.
+
+6. **Audit Logging**: Records successful and failed authentication attempts for auditing purposes using the `IRecordAuditEventService`.
+
+7. **Response Building**: Constructs the appropriate HTTP response, setting cookies or redirecting to the appropriate URL based on the platform (web or mobile).
+
+This class is a critical component in the authentication flow, ensuring secure and efficient user login and session management.

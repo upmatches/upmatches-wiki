@@ -1,0 +1,34 @@
+---
+id: list-game-bookmarks-service
+title: ListGameBookmarksService
+sidebar_label: List Game Bookmarks Service
+---
+
+## Overview
+
+The `ListGameBookmarksService` class is a service component in a Java application that manages the retrieval of game bookmarks for a user. It is part of the application's game feature set and is responsible for executing a paginated query to fetch bookmarks based on a cursor and size. This service ensures that only active participants are considered and provides a paginated response with the necessary bookmark details.
+
+## Public Methods
+
+### `execute`
+
+This method retrieves a paginated list of game bookmarks for the authenticated user. It uses a cursor-based pagination mechanism to efficiently fetch the data.
+
+| Parameter | Type   | Description                                                                 |
+|-----------|--------|-----------------------------------------------------------------------------|
+| `cursor`  | String | The cursor indicating the starting point for the next page of results.      |
+| `size`    | int    | The maximum number of bookmarks to retrieve in this request.                |
+
+#### Returns
+
+- `CursorPagedResponse<GameBookmarkResponse>`: A paginated response containing the list of game bookmarks and a cursor for the next page of results, if available.
+
+## Key Components
+
+- **GameBookmarkRepository**: Used to access and retrieve game bookmark data from the database.
+- **GameParticipantRepository**: Used to count active participants for the games associated with the bookmarks.
+- **IAuthenticatedUserResolver**: Resolves the authenticated user's ID to ensure that bookmarks are fetched for the correct user.
+- **GameCursor**: Handles encoding and decoding of cursors for pagination purposes.
+- **ServiceOperationExecutor**: Executes the service operation with error handling and status management.
+
+This service is marked with the `@Service` annotation, indicating that it is a Spring service component, and it uses the `@Transactional(readOnly = true)` annotation to ensure that the database operations are performed in a read-only transaction.

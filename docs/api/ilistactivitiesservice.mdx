@@ -1,0 +1,23 @@
+---
+id: IListActivitiesService
+title: IListActivitiesService Interface
+sidebar_label: IListActivitiesService
+---
+
+## Purpose
+
+The `IListActivitiesService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for services that list activities within the application. This interface is designed to be implemented by classes that provide the functionality to retrieve a paginated list of activities, encapsulated in a `PagedResponse` object.
+
+## Public Methods
+
+### execute
+
+Retrieves a paginated list of activities.
+
+| Parameter | Type                     | Description                      |
+|-----------|--------------------------|----------------------------------|
+| pageable  | `org.springframework.data.domain.Pageable` | Provides pagination information such as page number and size. |
+
+| Return Type                          | Description                                      |
+|--------------------------------------|--------------------------------------------------|
+| `PagedResponse<ActivityResponse>`    | A paginated response containing activity data.   |

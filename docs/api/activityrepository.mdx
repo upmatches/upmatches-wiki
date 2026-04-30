@@ -1,0 +1,34 @@
+---
+id: activity-repository
+title: ActivityRepository Interface
+sidebar_label: ActivityRepository
+---
+
+## Overview
+
+The `ActivityRepository` interface is a part of the `com.upmatches.app.features.activity.repositories` package. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers CRUD operations and additional JPA-related methods for the `Activity` entity. This repository interface is designed to manage `Activity` entities, which are identified by a `UUID`.
+
+## Public Methods
+
+The `ActivityRepository` interface provides the following public methods:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `Optional<Activity> findByReferenceId(Integer referenceId)` | Retrieves an `Activity` entity based on the provided `referenceId`. Returns an `Optional` containing the `Activity` if found, or an empty `Optional` if not. |
+| `boolean existsByName(String name)` | Checks if an `Activity` entity with the specified `name` exists in the repository. Returns `true` if such an entity exists, otherwise returns `false`. |
+
+### Method Details
+
+#### `findByReferenceId`
+
+- **Parameters**: 
+  - `referenceId` (Integer): The reference ID of the `Activity` to be retrieved.
+- **Return Type**: 
+  - `Optional<Activity>`: An `Optional` containing the `Activity` if found, or empty if not.
+
+#### `existsByName`
+
+- **Parameters**: 
+  - `name` (String): The name of the `Activity` to check for existence.
+- **Return Type**: 
+  - `boolean`: Returns `true` if an `Activity` with the specified name exists, otherwise `false`.

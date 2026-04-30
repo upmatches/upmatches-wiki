@@ -1,0 +1,47 @@
+---
+id: send-game-reminders-service
+title: SendGameRemindersService
+sidebar_label: SendGameRemindersService
+---
+
+## Overview
+
+The `SendGameRemindersService` class is a service component in a Java application that handles the sending of game reminder notifications to participants. This service is responsible for notifying users about upcoming games, either individually or in an aggregated manner, depending on the notification type. It interacts with various repositories and services to fetch game data, create notifications, and deliver them via push and email notifications.
+
+## Public Methods
+
+### `execute`
+
+Executes the process of sending game reminders based on the specified notification type and time range.
+
+| Parameter      | Type            | Description                                                                 |
+|----------------|-----------------|-----------------------------------------------------------------------------|
+| `type`         | `NotificationType` | The type of notification to send (e.g., 3-day reminder, 1-day reminder).    |
+| `minHoursAhead`| `long`          | The minimum number of hours ahead from the current time to consider games.  |
+| `maxHoursAhead`| `long`          | The maximum number of hours ahead from the current time to consider games.  |
+
+**Returns:** `int` - The number of notifications sent.
+
+## Key Functionalities
+
+- **Game Retrieval:** Fetches games scheduled to start within a specified time range.
+- **Notification Sending:** Sends notifications either as individual game reminders or aggregated reminders for multiple games.
+- **Recipient Identification:** Determines the recipients of the notifications, including game organizers and active participants.
+- **External Delivery:** Delivers notifications via push notifications and emails, ensuring that users are informed even if push notifications fail.
+
+## Dependencies
+
+- **Repositories:**
+  - `GameRepository`: For retrieving game data.
+  - `GameParticipantRepository`: For retrieving game participants.
+  - `NotificationRepository`: For checking existing notifications.
+
+- **Services:**
+  - `ICreateNotificationService`: For creating notification entities.
+  - `IPushNotificationService`: For sending push notifications.
+  - `IEmailNotificationService`: For sending email notifications.
+
+- **Properties:**
+  - `ShareLinkProperties`: For generating game URLs.
+
+This service is a critical component for ensuring that users are reminded of their upcoming games, enhancing user engagement and participation.

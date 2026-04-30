@@ -1,0 +1,39 @@
+---
+id: station-response
+title: StationResponse Class
+sidebar_label: StationResponse
+---
+
+## Overview
+
+The `StationResponse` class is a Java record that serves as a data transfer object (DTO) for transferring station-related data within the application. It encapsulates information about a station, including its ID, name, geographical coordinates, and associated transit lines. This class is part of the `com.upmatches.app.features.venue.responses` package and is designed to facilitate the conversion of `Station` entities into a format suitable for client responses.
+
+## Public Methods
+
+The `StationResponse` class provides the following public method:
+
+### `fromStation`
+
+Converts a `Station` entity into a `StationResponse` object.
+
+| Parameter | Type     | Description                  |
+|-----------|----------|------------------------------|
+| station   | Station  | The station entity to convert.|
+
+| Return Type        | Description                                      |
+|--------------------|--------------------------------------------------|
+| `StationResponse`  | A new instance of `StationResponse` containing the data from the provided `Station` entity.|
+
+## Fields
+
+The `StationResponse` record contains the following fields:
+
+| Field        | Type                        | Description                                  |
+|--------------|-----------------------------|----------------------------------------------|
+| `id`         | `Long`                      | The unique identifier of the station.        |
+| `name`       | `String`                    | The name of the station.                     |
+| `latitude`   | `BigDecimal`                | The latitude coordinate of the station.      |
+| `longitude`  | `BigDecimal`                | The longitude coordinate of the station.     |
+| `transitLines` | `List<TransitLineResponse>` | A list of transit lines associated with the station. |
+
+This structure allows for efficient data handling and transfer, making it easier to manage station-related information within the application.

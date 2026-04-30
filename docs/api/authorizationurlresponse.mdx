@@ -1,0 +1,30 @@
+---
+id: authorization-url-response
+title: AuthorizationUrlResponse
+sidebar_label: AuthorizationUrlResponse
+---
+
+## Overview
+
+The `AuthorizationUrlResponse` class is a simple Java record used to encapsulate an authorization URL. It is part of the `com.upmatches.app.features.auth.responses` package. This class provides a convenient way to handle authorization URLs by storing them in an immutable data structure.
+
+## Public Methods
+
+The `AuthorizationUrlResponse` class includes the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `static AuthorizationUrlResponse of(String authorizationUrl)` | A static factory method that creates a new instance of `AuthorizationUrlResponse` with the provided authorization URL. |
+
+### Method Details
+
+#### `of`
+
+- **Description**: This static method is a factory method that returns a new instance of the `AuthorizationUrlResponse` record. It simplifies the creation of `AuthorizationUrlResponse` objects.
+- **Parameters**:
+
+  | Name              | Type   | Description                        |
+  |-------------------|--------|------------------------------------|
+  | `authorizationUrl`| String | The authorization URL to be stored in the response. |
+
+- **Returns**: An instance of `AuthorizationUrlResponse` containing the specified authorization URL.

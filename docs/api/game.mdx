@@ -1,0 +1,96 @@
+---
+id: game
+title: Game Class Documentation
+sidebar_label: Game
+---
+
+## Overview
+
+The `Game` class represents a scheduled game event within the application. It encapsulates details such as the activity, organizer, venue, skill levels, pricing, and timing of the game. The class also manages the game's status and provides methods to update and validate game details.
+
+## Public Methods
+
+### `create`
+
+Creates a new `Game` instance with the specified parameters.
+
+| Parameter         | Type           | Description                                      |
+|-------------------|----------------|--------------------------------------------------|
+| `activity`        | `Activity`     | The activity associated with the game.           |
+| `organizer`       | `User`         | The user organizing the game.                    |
+| `venue`           | `Venue`        | The venue where the game will take place.        |
+| `skillLevelFrom`  | `SkillLevel`   | The minimum skill level required for the game.   |
+| `skillLevelTo`    | `SkillLevel`   | The maximum skill level allowed for the game.    |
+| `currency`        | `Currency`     | The currency used for the game's pricing.        |
+| `price`           | `BigDecimal`   | The price of participating in the game.          |
+| `slots`           | `Integer`      | The number of available slots for participants.  |
+| `startTime`       | `Instant`      | The start time of the game.                      |
+| `endTime`         | `Instant`      | The end time of the game.                        |
+| `visibility`      | `GameVisibility` | The visibility status of the game.            |
+| `gameType`        | `GameType`     | The type of game being played.                   |
+| `remark`          | `String`       | Additional remarks about the game.               |
+
+**Returns:** `Game` - A new instance of the `Game` class.
+
+### `update`
+
+Updates the details of an existing game.
+
+| Parameter         | Type           | Description                                      |
+|-------------------|----------------|--------------------------------------------------|
+| `venue`           | `Venue`        | The updated venue for the game.                  |
+| `skillLevelFrom`  | `SkillLevel`   | The updated minimum skill level.                 |
+| `skillLevelTo`    | `SkillLevel`   | The updated maximum skill level.                 |
+| `currency`        | `Currency`     | The updated currency for pricing.                |
+| `price`           | `BigDecimal`   | The updated price of the game.                   |
+| `slots`           | `Integer`      | The updated number of slots.                     |
+| `startTime`       | `Instant`      | The updated start time of the game.              |
+| `endTime`         | `Instant`      | The updated end time of the game.                |
+| `gameType`        | `GameType`     | The updated type of game.                        |
+| `remark`          | `String`       | Updated remarks about the game.                  |
+
+### `updateSlots`
+
+Updates the number of available slots for the game.
+
+| Parameter | Type      | Description                              |
+|-----------|-----------|------------------------------------------|
+| `slots`   | `Integer` | The new number of available slots.       |
+
+### `markStarted`
+
+Marks the game as started.
+
+### `markExpired`
+
+Marks the game as expired.
+
+### `cancel`
+
+Cancels the game.
+
+### `markDeleted`
+
+Marks the game as deleted by setting the `deletedAt` timestamp.
+
+### `isDeleted`
+
+Checks if the game is marked as deleted.
+
+**Returns:** `boolean` - `true` if the game is deleted, otherwise `false`.
+
+### `isFull`
+
+Checks if the game is full based on the participant count.
+
+| Parameter         | Type      | Description                              |
+|-------------------|-----------|------------------------------------------|
+| `participantCount`| `long`    | The current number of participants.      |
+
+**Returns:** `boolean` - `true` if the game is full, otherwise `false`.
+
+### `isPastOrInactive`
+
+Checks if the game is either past or inactive.
+
+**Returns:** `boolean` - `true` if the game is past or inactive, otherwise `false`.

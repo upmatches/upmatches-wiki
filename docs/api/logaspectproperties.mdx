@@ -1,0 +1,45 @@
+---
+id: log-aspect-properties
+title: LogAspectProperties Class
+sidebar_label: LogAspectProperties
+---
+
+import com.upmatches.app.shared.logging.constants.AspectConstant;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+## Overview
+
+The `LogAspectProperties` class is a configuration properties holder for logging aspects in a Spring Boot application. It is designed to manage properties related to logging, specifically focusing on the threshold for slow execution logging. This class uses the `@ConfigurationProperties` annotation to bind properties with the prefix `app.logging.aspect` to its fields.
+
+## Class Definition
+
+```java
+@ConfigurationProperties(prefix = "app.logging.aspect")
+public record LogAspectProperties(Long slowExecutionThresholdMs) {
+    public LogAspectProperties {
+        if (slowExecutionThresholdMs == null || slowExecutionThresholdMs <= 0) {
+            slowExecutionThresholdMs = AspectConstant.SLOW_EXECUTION_THRESHOLD_MS;
+        }
+    }
+}
+```
+
+## Purpose
+
+The primary purpose of the `LogAspectProperties` class is to encapsulate configuration properties related to logging aspects. It provides a mechanism to define a threshold for what is considered a "slow" execution in milliseconds. If the provided threshold is not set or is invalid (null or less than or equal to zero), it defaults to a predefined constant value from `AspectConstant`.
+
+## Public Methods
+
+The `LogAspectProperties` class is a record, which means it automatically provides a constructor, accessors, `equals()`, `hashCode()`, and `toString()` methods. Below is a table documenting the constructor and its parameter:
+
+| Method Signature | Parameters | Return Type | Description |
+|------------------|------------|-------------|-------------|
+| `LogAspectProperties(Long slowExecutionThresholdMs)` | `slowExecutionThresholdMs` (Long) | - | Initializes the `LogAspectProperties` with a specified slow execution threshold. If the threshold is null or less than or equal to zero, it defaults to `AspectConstant.SLOW_EXECUTION_THRESHOLD_MS`. |
+
+## Parameters
+
+- **slowExecutionThresholdMs**: A `Long` value representing the threshold in milliseconds for logging slow executions. If not set or invalid, it defaults to a constant value.
+
+## Return Types
+
+The `LogAspectProperties` class does not have explicit return types for methods since it is a record. The constructor initializes the record with the provided or default values.

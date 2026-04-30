@@ -1,0 +1,25 @@
+---
+id: game-web-fallback-controller
+title: GameWebFallbackController
+sidebar_label: GameWebFallbackController
+---
+
+## Purpose
+
+The `GameWebFallbackController` class is a Spring Boot REST controller designed to handle HTTP GET requests for game pages. It provides HTML responses based on the visibility and existence of a game. The controller uses services to look up game details and build shareable URLs. It supports both public and private games, providing different HTML content accordingly.
+
+## Public Methods
+
+### `gamePage`
+
+Handles GET requests for game pages and returns an HTML response.
+
+| Parameter | Type   | Description                      |
+|-----------|--------|----------------------------------|
+| `id`      | String | The unique identifier of the game|
+
+| Return Type                  | Description                           |
+|------------------------------|---------------------------------------|
+| `ResponseEntity<String>`     | An HTML response representing the game page or an error message if the game is not found or the ID is invalid. |
+
+This method attempts to parse the provided game ID into a UUID. If successful, it retrieves the game details using the `IGameLookupService`. Depending on the game's visibility, it generates an appropriate HTML page using either `publicGamePage` or `privateGamePage`. If the game is not found or the ID is invalid, it returns a "Game not found" page.

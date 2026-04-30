@@ -1,0 +1,26 @@
+---
+id: game-filter-options-response
+title: GameFilterOptionsResponse
+sidebar_label: GameFilterOptionsResponse
+---
+
+import com.upmatches.app.features.game.enums.GameType;
+import com.upmatches.app.features.skilllevels.responses.SkillLevelResponse;
+import com.upmatches.app.features.venue.responses.VenueResponse;
+
+## Purpose
+
+The `GameFilterOptionsResponse` class is a record in the `com.upmatches.app.features.game.responses` package. It is designed to encapsulate various filtering options for games, which can be used to tailor game searches or listings according to user preferences or criteria. This class aggregates information about venues, skill levels, available start times, and game types, providing a comprehensive set of options for filtering games.
+
+## Public Methods
+
+Since `GameFilterOptionsResponse` is a record, it automatically provides public methods to access its components. Below is a table documenting these methods, their parameters, and return types:
+
+| Method Name          | Parameters | Return Type                        | Description                                      |
+|----------------------|------------|------------------------------------|--------------------------------------------------|
+| `venues`             | None       | `List<VenueResponse>`              | Returns a list of venue responses.               |
+| `skillLevels`        | None       | `List<SkillLevelResponse>`         | Returns a list of skill level responses.         |
+| `availableStartTimes`| None       | `List<String>`                     | Returns a list of available start times as strings. |
+| `gameTypes`          | None       | `List<GameType>`                   | Returns a list of game types.                    |
+
+Each method corresponds to a component of the record, providing access to the data stored within the `GameFilterOptionsResponse` instance.

@@ -1,0 +1,29 @@
+---
+id: get-game-date-availability-service
+title: GetGameDateAvailabilityService
+sidebar_label: GetGameDateAvailabilityService
+---
+
+## Purpose of the Class
+
+The `GetGameDateAvailabilityService` class is a Spring service responsible for determining the availability of game dates within a specified date range. It interacts with a `GameRepository` to retrieve distinct game start times and constructs a list of `GameDateAvailabilityResponse` objects indicating whether games are available on each date within the range.
+
+## Public Methods
+
+### `execute`
+
+This method retrieves game date availability between two specified dates.
+
+| Parameter | Type     | Description                                           |
+|-----------|----------|-------------------------------------------------------|
+| `fromDate`| `LocalDate` | The start date of the range to check for game availability. |
+| `toDate`  | `LocalDate` | The end date of the range to check for game availability.   |
+
+| Return Type                          | Description                                                                 |
+|--------------------------------------|-----------------------------------------------------------------------------|
+| `List<GameDateAvailabilityResponse>` | A list of responses indicating game availability for each date in the range. |
+
+#### Exceptions
+
+- Throws `IllegalArgumentException` if `toDate` is before `fromDate`.
+- Utilizes `ResourceNotFoundException` if no game start times are found within the specified range.

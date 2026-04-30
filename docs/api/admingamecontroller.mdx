@@ -1,0 +1,24 @@
+---
+id: admin-game-controller
+title: AdminGameController
+sidebar_label: AdminGameController
+---
+
+import com.upmatches.app.features.game.controllers.AdminGameController;
+
+## Purpose
+
+The `AdminGameController` class is a REST controller in a Spring Boot application that provides administrative functionalities for managing games. Specifically, it allows for the hard deletion of games via HTTP DELETE requests. This controller is part of the `com.upmatches.app.features.game.controllers` package and is designed to interact with the `IHardDeleteGameService` to perform the deletion operation.
+
+## Public Methods
+
+### hardDeleteGame
+
+The `hardDeleteGame` method is an endpoint that handles HTTP DELETE requests to remove a game permanently from the system.
+
+| Method Signature | `public ResponseEntity<Void> hardDeleteGame(@PathVariable UUID id)` |
+|------------------|--------------------------------------------------------------------|
+| **Parameters**   | `@PathVariable UUID id` - The unique identifier of the game to be deleted. |
+| **Return Type**  | `ResponseEntity<Void>` - Returns a response entity with no content if the deletion is successful. |
+
+This method uses the `IHardDeleteGameService` to execute the deletion logic and responds with a `204 No Content` status, indicating that the operation was successful and there is no additional content to return.

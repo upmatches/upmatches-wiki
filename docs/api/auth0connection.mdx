@@ -1,0 +1,39 @@
+---
+id: auth0-connection
+title: Auth0Connection Enum
+sidebar_label: Auth0Connection
+---
+
+## Purpose
+
+The `Auth0Connection` enum is part of the `com.upmatches.app.features.auth.enums` package and is designed to represent different authentication providers and their corresponding connection identifiers. It provides a structured way to handle authentication connections, specifically for Google and Facebook, within an application.
+
+## Public Methods
+
+### `fromProvider`
+
+This static method attempts to retrieve an `Auth0Connection` instance based on a given provider name.
+
+| Parameter | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| provider  | String | The name of the provider to look up. |
+
+| Return Type                  | Description                                                                 |
+|------------------------------|-----------------------------------------------------------------------------|
+| `Optional<Auth0Connection>`  | An `Optional` containing the `Auth0Connection` if found, otherwise empty.   |
+
+### `provider`
+
+This method returns the provider name associated with the `Auth0Connection` instance.
+
+| Return Type | Description                     |
+|-------------|---------------------------------|
+| String      | The provider name.              |
+
+### `connectionId`
+
+This method returns the connection identifier associated with the `Auth0Connection` instance.
+
+| Return Type | Description                          |
+|-------------|--------------------------------------|
+| String      | The connection identifier.           |

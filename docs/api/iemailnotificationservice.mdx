@@ -1,0 +1,28 @@
+---
+id: iemailnotificationservice
+title: IEmailNotificationService Interface
+sidebar_label: IEmailNotificationService
+---
+
+## Overview
+
+The `IEmailNotificationService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines the contract for sending email notifications within the application. This interface is a sealed interface, which means it restricts the classes that can implement it. Currently, it permits the `EmailNotificationService` class to implement its methods.
+
+## Public Methods
+
+The `IEmailNotificationService` interface declares the following public method:
+
+### `send`
+
+This method is responsible for sending an email notification based on the provided `Notification` and `EmailContext`.
+
+| Parameter   | Type                                  | Description                                           |
+|-------------|---------------------------------------|-------------------------------------------------------|
+| notification| `Notification`                        | The notification entity containing notification details. |
+| context     | `EmailContext`                        | The context for the email, including template and variables. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return any value. |
+
+The `send` method is crucial for the functionality of sending email notifications, ensuring that the appropriate notification details and context are utilized to deliver the message effectively.

@@ -1,0 +1,23 @@
+---
+id: notification-repository
+title: NotificationRepository Interface
+sidebar_label: NotificationRepository
+---
+
+## Overview
+
+The `NotificationRepository` interface is a part of the `com.upmatches.app.features.notification.repositories` package. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers CRUD operations and pagination capabilities for the `Notification` entity. This repository interface is responsible for managing `Notification` entities, allowing for operations such as finding notifications by recipient, counting unread notifications, and marking notifications as read.
+
+## Public Methods
+
+The following table documents the public methods available in the `NotificationRepository` interface:
+
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `findByRecipientIdOrderByCreatedAtDesc` | `UUID recipientId`, `Pageable pageable` | `Page<Notification>` | Retrieves a paginated list of notifications for a specific recipient, ordered by creation date in descending order. |
+| `countByRecipientIdAndIsReadFalse` | `UUID recipientId` | `long` | Counts the number of unread notifications for a specific recipient. |
+| `findByIdAndRecipientId` | `UUID id`, `UUID recipientId` | `Optional<Notification>` | Finds a notification by its ID and recipient ID. |
+| `existsByRecipientIdAndTypeAndResourceId` | `UUID recipientId`, `NotificationType type`, `UUID resourceId` | `boolean` | Checks if a notification exists for a specific recipient, type, and resource ID. |
+| `markAllReadByRecipientId` | `UUID recipientId`, `Instant readAt` | `int` | Marks all unread notifications as read for a specific recipient and sets the read timestamp. This method is annotated with `@Modifying` to indicate that it performs an update operation. |
+
+This interface leverages the power of Spring Data JPA to simplify database interactions and provides a clean API for managing notifications within the application.

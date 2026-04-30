@@ -1,0 +1,30 @@
+---
+id: unread-count-response
+title: UnreadCountResponse Class
+sidebar_label: UnreadCountResponse
+---
+
+## Purpose
+
+The `UnreadCountResponse` class is a simple Java record used to encapsulate the count of unread notifications. It provides a convenient way to handle the unread count as a single immutable data object. This class is part of the `com.upmatches.app.features.notification.responses` package.
+
+## Public Methods
+
+The `UnreadCountResponse` class includes the following public method:
+
+| Method Signature                      | Description                                                                 |
+|---------------------------------------|-----------------------------------------------------------------------------|
+| `public static UnreadCountResponse of(Long count)` | Creates a new instance of `UnreadCountResponse` with the specified count.   |
+
+### Method Details
+
+#### `of`
+
+- **Description**: This static method is a factory method that creates a new instance of the `UnreadCountResponse` record with the provided count.
+- **Parameters**:
+
+  | Name  | Type  | Description              |
+  |-------|-------|--------------------------|
+  | count | Long  | The count of unread notifications. |
+
+- **Returns**: An instance of `UnreadCountResponse` containing the specified count.

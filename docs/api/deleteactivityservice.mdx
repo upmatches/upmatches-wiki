@@ -1,0 +1,29 @@
+---
+id: delete-activity-service
+title: DeleteActivityService
+sidebar_label: DeleteActivityService
+---
+
+## Purpose of the Class
+
+The `DeleteActivityService` class is a Spring service responsible for handling the deletion of `Activity` entities from the system. It ensures that an activity is deleted only if it exists, otherwise, it throws a `ResourceNotFoundException`. The class is marked as `non-sealed`, indicating that it can be extended by other classes. It uses Spring's `@Transactional` annotation to manage transaction boundaries and an `@Auditable` annotation to log the deletion action.
+
+## Public Methods
+
+### `execute`
+
+Deletes an `Activity` entity identified by its unique ID.
+
+| Parameter | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| `id`      | `UUID` | The unique identifier of the activity to be deleted. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return a value. |
+
+The `execute` method performs the following operations:
+- It attempts to find the `Activity` by its ID using the `ActivityRepository`.
+- If the `Activity` is not found, it throws a `ResourceNotFoundException`.
+- If found, it deletes the `Activity` from the repository.
+- The method is annotated with `@Auditable` to log the deletion action with the specified parameters.

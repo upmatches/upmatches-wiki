@@ -1,0 +1,26 @@
+---
+id: IListMyJoinedGamesCursorService
+title: IListMyJoinedGamesCursorService Interface
+sidebar_label: IListMyJoinedGamesCursorService
+---
+
+## Purpose
+
+The `IListMyJoinedGamesCursorService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide paginated access to games that a user has joined. This interface is designed to be implemented by classes that handle the retrieval of game data in a paginated manner, using a cursor-based approach.
+
+## Public Methods
+
+### `execute`
+
+This method retrieves a paginated list of games that the user has joined, starting from a specified cursor position and limited to a specified size.
+
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `cursor`  | String | The cursor indicating the starting point of the page. |
+| `size`    | int    | The number of game records to retrieve.          |
+
+| Return Type                              | Description                                      |
+|------------------------------------------|--------------------------------------------------|
+| `CursorPagedResponse<GameResponse>`      | A paginated response containing game data.       |
+
+The `execute` method is the core functionality of this interface, allowing clients to fetch game data efficiently using pagination. It returns a `CursorPagedResponse` containing `GameResponse` objects, which encapsulate the details of each game.

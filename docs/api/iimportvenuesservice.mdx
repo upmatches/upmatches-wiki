@@ -1,0 +1,33 @@
+---
+id: iimport-venues-service
+title: IImportVenuesService Interface
+sidebar_label: IImportVenuesService
+---
+
+## Overview
+
+The `IImportVenuesService` interface is part of the `com.upmatches.app.features.venue.services` package. It defines a contract for importing venue data from a file. This interface is designed to be implemented by classes that handle the specifics of processing and importing venue information, ensuring a consistent method signature for executing the import operation.
+
+## Public Methods
+
+The interface declares the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `VenueImportResponse execute(MultipartFile file)` | Executes the import process for venue data from the provided file. |
+
+### Method Details
+
+#### `execute`
+
+- **Description**: This method is responsible for processing a file containing venue data and returning a response that indicates the result of the import operation.
+- **Parameters**:
+  | Name | Type | Description |
+  |------|------|-------------|
+  | `file` | `MultipartFile` | The file containing venue data to be imported. |
+- **Returns**: 
+  | Type | Description |
+  |------|-------------|
+  | `VenueImportResponse` | An object containing details about the outcome of the import process, such as success status and any error messages. |
+
+This interface is sealed, permitting only the `ImportVenuesService` class to implement it, ensuring controlled extension and adherence to the defined contract.

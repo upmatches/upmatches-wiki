@@ -1,0 +1,38 @@
+---
+id: coordinate
+title: Coordinate Class
+sidebar_label: Coordinate
+---
+
+## Purpose of the Coordinate Class
+
+The `Coordinate` class is a value object that represents a geographical coordinate with a latitude and longitude. It ensures that the latitude and longitude values are within valid ranges: latitude between -90 and 90, and longitude between -180 and 180. This class is immutable and uses Java's `record` feature to encapsulate the coordinate data.
+
+## Public Methods
+
+The `Coordinate` class provides the following public methods:
+
+### `create`
+
+Creates a new instance of the `Coordinate` class with the specified latitude and longitude.
+
+| Parameter   | Type        | Description                                |
+|-------------|-------------|--------------------------------------------|
+| `latitude`  | `BigDecimal`| The latitude of the coordinate. Must be between -90 and 90. |
+| `longitude` | `BigDecimal`| The longitude of the coordinate. Must be between -180 and 180. |
+
+| Return Type | Description                                |
+|-------------|--------------------------------------------|
+| `Coordinate`| A new instance of the `Coordinate` class.  |
+
+### `toString`
+
+Returns a string representation of the `Coordinate` object in the format "latitude, longitude".
+
+| Return Type | Description                                |
+|-------------|--------------------------------------------|
+| `String`    | A string representation of the coordinate. |
+
+## Validation
+
+The `Coordinate` class performs validation in its constructor to ensure that both latitude and longitude are not null and fall within their respective valid ranges. If any of these conditions are not met, an `IllegalArgumentException` is thrown.

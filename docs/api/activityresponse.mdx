@@ -1,0 +1,39 @@
+---
+id: activity-response
+title: ActivityResponse Class
+sidebar_label: ActivityResponse
+---
+
+import com.upmatches.app.features.activity.entities.Activity;
+
+import java.util.UUID;
+
+## Purpose
+
+The `ActivityResponse` class is a record in the `com.upmatches.app.features.activity.responses` package. It is designed to encapsulate the response data for an activity, providing a structured way to transfer activity information such as its unique identifier, reference ID, and name. This class is particularly useful for converting `Activity` entities into a format suitable for API responses or other external communications.
+
+## Public Methods
+
+The `ActivityResponse` class provides the following public method:
+
+### fromActivity
+
+Converts an `Activity` entity into an `ActivityResponse` record.
+
+| Method Signature | Description |
+|------------------|-------------|
+| `public static ActivityResponse fromActivity(Activity activity)` | Creates an `ActivityResponse` instance from the given `Activity` object. |
+
+#### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `activity` | `Activity` | The `Activity` entity to be converted into an `ActivityResponse`. |
+
+#### Return Type
+
+| Type | Description |
+|------|-------------|
+| `ActivityResponse` | Returns a new instance of `ActivityResponse` containing the ID, reference ID, and name extracted from the provided `Activity` entity. |
+
+This method simplifies the transformation of an `Activity` entity into a response-friendly format, ensuring that only the necessary data is exposed.

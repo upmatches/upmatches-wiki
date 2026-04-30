@@ -1,0 +1,27 @@
+---
+id: get-activity-service
+title: GetActivityService
+sidebar_label: GetActivityService
+---
+
+## Overview
+
+The `GetActivityService` class is a part of the `com.upmatches.app.features.activity.services` package. It is a Spring service designed to retrieve activity details from the database. This service is responsible for fetching an activity by its unique identifier (UUID) and returning a response object that represents the activity data. It ensures that the operation is executed within a transactional context and handles cases where the activity is not found by throwing a `ResourceNotFoundException`.
+
+## Public Methods
+
+### `execute`
+
+This method is responsible for retrieving an activity based on its UUID. It uses the `ActivityRepository` to find the activity and converts it into an `ActivityResponse`. If the activity is not found, it throws a `ResourceNotFoundException`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id`      | `UUID` | The unique identifier of the activity to be retrieved. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `ActivityResponse` | An object representing the activity data. |
+
+## Exception Handling
+
+- **ResourceNotFoundException**: This exception is thrown if no activity is found with the provided UUID. The error message includes the ID of the activity that was not found.

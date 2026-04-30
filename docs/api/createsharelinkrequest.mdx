@@ -1,0 +1,36 @@
+---
+id: create-share-link-request
+title: CreateShareLinkRequest Class
+sidebar_label: CreateShareLinkRequest
+---
+
+## Overview
+
+The `CreateShareLinkRequest` class is a Java record used to encapsulate the data required to create a share link within the application. It is part of the `com.upmatches.app.features.sharelink.requests` package. This class ensures that the necessary information, such as the resource type and resource ID, is provided and validated before a share link is created.
+
+## Class Details
+
+The `CreateShareLinkRequest` class is defined as a record, which is a special kind of class in Java that is ideal for immutable data carriers. This class includes validation annotations to ensure that the data provided meets specific criteria.
+
+### Fields
+
+- **resourceType**: An instance of `ResourceType` that specifies the type of resource for which the share link is being created. This field is mandatory.
+- **resourceId**: A `String` representing the unique identifier of the resource. This field must be a valid UUID and is also mandatory.
+
+### Validation Constraints
+
+- `resourceType` must not be null. If it is null, an error message "Resource type is required." will be displayed.
+- `resourceId` must not be blank and must match the UUID pattern. If these conditions are not met, appropriate error messages will be displayed:
+  - "Resource ID is required." if the field is blank.
+  - "Resource ID must be a valid UUID." if the field does not match the UUID pattern.
+
+## Public Methods
+
+Since `CreateShareLinkRequest` is a record, it automatically provides the following methods:
+
+| Method Name | Parameters | Return Type | Description |
+|-------------|------------|-------------|-------------|
+| `resourceType` | None | `ResourceType` | Returns the resource type of the share link request. |
+| `resourceId` | None | `String` | Returns the resource ID of the share link request. |
+
+These methods are implicitly provided by the record and allow access to the fields of the `CreateShareLinkRequest` instance.

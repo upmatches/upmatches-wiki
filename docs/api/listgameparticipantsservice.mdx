@@ -1,0 +1,39 @@
+---
+id: list-game-participants-service
+title: ListGameParticipantsService
+sidebar_label: List Game Participants Service
+---
+
+## Overview
+
+The `ListGameParticipantsService` class is a Spring service responsible for retrieving a list of active participants in a game. This service ensures that only authorized users can view the participants of a specific game. It leverages several dependencies to perform user authentication, game lookup, and authorization checks.
+
+## Public Methods
+
+### `execute`
+
+Retrieves a list of active game participants for a specified game.
+
+| Parameter | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| `id`      | `UUID` | The unique identifier of the game.   |
+
+| Return Type                          | Description                                      |
+|--------------------------------------|--------------------------------------------------|
+| `List<GameParticipantResponse>`      | A list of responses representing active participants in the game. |
+
+## Detailed Description
+
+- **Dependencies**:
+  - `GameParticipantRepository`: Used to query the database for game participants.
+  - `IAuthenticatedUserResolver`: Resolves the currently authenticated user's ID.
+  - `IGameLookupService`: Provides functionality to find and validate the existence of a game.
+  - `IGameAuthorizationService`: Ensures that the user has the necessary permissions to view the game participants.
+
+- **Transactional Behavior**: The `execute` method is annotated with `@Transactional(readOnly = true)`, indicating that it performs read-only operations within a transactional context.
+
+- **Operation Execution**: The method uses `ServiceOperationExecutor` to execute the retrieval operation, handling any potential `ResourceNotFoundException` if the game or participants are not found.
+
+- **Participant Filtering**: The service filters participants by their status, ensuring only active participants are included in the response, and orders them by their join date in ascending order.
+
+This service is a critical component in managing game participant visibility, ensuring secure and efficient access to participant data.

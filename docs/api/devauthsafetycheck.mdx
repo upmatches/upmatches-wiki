@@ -1,0 +1,46 @@
+---
+id: dev-auth-safety-check
+title: DevAuthSafetyCheck Class
+sidebar_label: DevAuthSafetyCheck
+---
+
+## Overview
+
+The `DevAuthSafetyCheck` class is a configuration component in a Spring application designed to ensure security by preventing the activation of development-specific authentication endpoints in a production environment. This class checks the application's active profiles and the configuration properties to ensure that potentially unsafe development features are not enabled when the application is running in production mode.
+
+## Public Methods
+
+The class contains the following public constructor:
+
+### Constructor
+
+| Method Signature | Description |
+|------------------|-------------|
+| `DevAuthSafetyCheck(final AuthDevProperties authDevProperties, final Environment environment)` | Initializes a new instance of the `DevAuthSafetyCheck` class with the specified authentication properties and environment. |
+
+#### Parameters
+
+| Parameter Name     | Type                  | Description |
+|--------------------|-----------------------|-------------|
+| `authDevProperties` | `AuthDevProperties`   | The properties related to development authentication settings. |
+| `environment`       | `Environment`         | The Spring environment, used to access active profiles. |
+
+## Private Methods
+
+### `verify`
+
+The `verify` method is annotated with `@PostConstruct`, indicating that it is executed after the bean's construction and dependency injection. This method checks if the development endpoint for minting tokens is enabled and if the application is running with the 'prod' profile. If both conditions are true, it throws an `IllegalStateException` to prevent a security risk.
+
+#### Method Details
+
+| Method Signature | Description |
+|------------------|-------------|
+| `void verify()`  | Checks the application's configuration to ensure that development endpoints are not enabled in a production environment. |
+
+#### Exceptions
+
+| Exception Type         | Condition |
+|------------------------|-----------|
+| `IllegalStateException` | Thrown if the development token minting endpoint is enabled while the application is running with the 'prod' profile. |
+
+This class is crucial for maintaining the security integrity of the application by ensuring that development features are not inadvertently exposed in a production setting.

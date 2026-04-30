@@ -1,0 +1,29 @@
+---
+id: iharddeletegameservice
+title: IHardDeleteGameService Interface
+sidebar_label: IHardDeleteGameService
+---
+
+## Overview
+
+The `IHardDeleteGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that perform hard deletion of game entities identified by a unique identifier. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting only the `HardDeleteGameService` class.
+
+## Public Methods
+
+### `execute`
+
+This method is responsible for executing the hard delete operation on a game entity.
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `void execute(UUID id)` | Executes the hard deletion of a game entity identified by the provided UUID. |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `id`      | `UUID` | The unique identifier of the game entity to be deleted. |
+
+#### Return Type
+
+This method does not return any value (`void`).

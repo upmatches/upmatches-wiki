@@ -1,0 +1,26 @@
+---
+id: share-link-properties
+title: ShareLinkProperties Class
+sidebar_label: ShareLinkProperties
+---
+
+## Purpose of the ShareLinkProperties Class
+
+The `ShareLinkProperties` class is a configuration properties holder used in a Spring Boot application. It is designed to manage and provide default values for URLs related to sharing links within the application. This class utilizes the `@ConfigurationProperties` annotation to bind properties from external configuration files (such as `application.properties` or `application.yml`) with a specified prefix (`app.share-link`) to the fields within the class.
+
+The class is implemented as a Java record, which is a special kind of class in Java that is immutable and provides a concise syntax for declaring data-carrying classes.
+
+## Public Methods
+
+The `ShareLinkProperties` class does not explicitly declare public methods beyond those automatically provided by the Java record, such as the constructor and accessor methods for each field. Below is a table documenting these methods:
+
+| Method Name      | Parameters | Return Type | Description                                                                 |
+|------------------|------------|-------------|-----------------------------------------------------------------------------|
+| `baseUrl()`      | None       | `String`    | Returns the base URL for sharing links. Defaults to `https://api.upmatches.dev/s` if not provided. |
+| `webBaseUrl()`   | None       | `String`    | Returns the web base URL. Defaults to `https://api.upmatches.dev` if not provided. |
+| `appStoreUrl()`  | None       | `String`    | Returns the App Store URL. Defaults to `https://apps.apple.com/app/idXXXXXXXXXX` if not provided. |
+| `playStoreUrl()` | None       | `String`    | Returns the Play Store URL. Defaults to `https://play.google.com/store/apps/details?id=com.upmatches.android` if not provided. |
+
+## Constructor
+
+The constructor of the `ShareLinkProperties` class is automatically provided by the Java record and is used to initialize the fields. It ensures that if any of the URL fields are not provided or are blank, they are set to their respective default values.

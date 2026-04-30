@@ -1,0 +1,40 @@
+---
+id: game-participant-response
+title: GameParticipantResponse Class
+sidebar_label: GameParticipantResponse
+---
+
+## Overview
+
+The `GameParticipantResponse` class is a Java record that represents a response object for a participant in a game. It encapsulates various details about a game participant, such as their unique identifiers, status, skill level, and timestamps for when they joined and left the game. This class is primarily used to transfer data related to game participants in a structured format.
+
+## Public Methods
+
+The `GameParticipantResponse` class provides the following public methods:
+
+### `fromGameParticipant`
+
+This static method creates an instance of `GameParticipantResponse` from a `GameParticipant` object and a game activity ID.
+
+| Parameter         | Type                | Description                                                                 |
+|-------------------|---------------------|-----------------------------------------------------------------------------|
+| `participant`     | `GameParticipant`   | The game participant entity from which to create the response.              |
+| `gameActivityId`  | `UUID`              | The unique identifier of the game activity, used to resolve the skill level.|
+
+**Returns:**  
+`GameParticipantResponse` - A new instance of `GameParticipantResponse` populated with data from the provided `GameParticipant`.
+
+## Detailed Description
+
+The `GameParticipantResponse` record includes the following fields:
+
+- **id** (`UUID`): The unique identifier of the game participant.
+- **gameId** (`UUID`): The unique identifier of the game.
+- **userId** (`UUID`): The unique identifier of the user.
+- **userName** (`String`): The name of the user.
+- **status** (`ParticipantStatus`): The current status of the participant in the game.
+- **skillLevel** (`SkillLevelResponse`): The skill level of the participant, resolved based on the game activity.
+- **joinedAt** (`Instant`): The timestamp when the participant joined the game.
+- **leftAt** (`Instant`): The timestamp when the participant left the game.
+
+The `resolveSkillLevel` method is a private utility that determines the skill level of a participant based on the provided game activity ID. If the activity ID matches one of the user's skill levels, it returns a corresponding `SkillLevelResponse`. Otherwise, it returns `null`.

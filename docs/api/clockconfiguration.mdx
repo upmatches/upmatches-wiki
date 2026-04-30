@@ -1,0 +1,51 @@
+---
+id: clock-configuration
+title: ClockConfiguration Class
+sidebar_label: ClockConfiguration
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+## Overview
+
+The `ClockConfiguration` class is a Spring configuration class that provides a bean definition for a `Clock` instance. This configuration is useful for applications that require a consistent and testable source of the current time, particularly in environments where the system time may vary or need to be mocked for testing purposes.
+
+## Class Definition
+
+<Tabs>
+<TabItem value="java" label="Java">
+
+```java
+package com.upmatches.app.shared.configurations;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.time.Clock;
+
+@Configuration
+public class ClockConfiguration {
+
+    @Bean
+    public Clock clock() {
+        return Clock.systemUTC();
+    }
+
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Public Methods
+
+The `ClockConfiguration` class provides the following public method:
+
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `clock` | None | `Clock` | Returns a `Clock` instance set to the UTC time zone. This method is annotated with `@Bean`, indicating that it returns a Spring-managed bean. |
+
+## Usage
+
+By defining a `Clock` bean in the Spring application context, you can inject this bean into other components that require access to the current time. This approach allows for greater flexibility and testability, as the `Clock` can be easily mocked or replaced with a different implementation if needed.

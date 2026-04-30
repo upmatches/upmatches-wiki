@@ -1,0 +1,28 @@
+---
+id: get-unread-count-service
+title: GetUnreadCountService
+sidebar_label: GetUnreadCountService
+---
+
+## Purpose
+
+The `GetUnreadCountService` class is a part of the notification feature in the application. It is responsible for retrieving the count of unread notifications for the authenticated user. This service interacts with the `NotificationRepository` to fetch the necessary data and returns it encapsulated in an `UnreadCountResponse` object.
+
+## Public Methods
+
+### `execute`
+
+This method retrieves the count of unread notifications for the currently authenticated user.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      | N/A  | This method does not take any parameters. |
+
+| Return Type          | Description |
+|----------------------|-------------|
+| `UnreadCountResponse` | Returns an `UnreadCountResponse` object containing the count of unread notifications. |
+
+## Dependencies
+
+- **NotificationRepository**: Used to interact with the notification data source to count unread notifications.
+- **IAuthenticatedUserResolver**: Utilized to resolve the currently authenticated user's ID.

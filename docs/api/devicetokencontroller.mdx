@@ -1,0 +1,34 @@
+---
+id: device-token-controller
+title: DeviceTokenController
+sidebar_label: DeviceTokenController
+---
+
+## Overview
+
+The `DeviceTokenController` class is a REST controller in a Spring Boot application that manages device token registration and unregistration. It provides endpoints to register a new device token and to unregister an existing device token. This functionality is essential for managing notifications in applications where devices need to be registered to receive updates.
+
+## Public Methods
+
+### `registerToken`
+
+Registers a new device token.
+
+| Parameter | Type                              | Description                                                                 |
+|-----------|-----------------------------------|-----------------------------------------------------------------------------|
+| `body`    | `RegisterDeviceTokenRequest`      | The request body containing the device token details to be registered.      |
+| `request` | `HttpServletRequest`              | The HTTP request object, used to retrieve the request URI.                  |
+
+**Returns:**  
+`ResponseEntity<ApiResponse<Void>>` - A response entity with a success message and HTTP status 201 (Created).
+
+### `unregisterToken`
+
+Unregisters an existing device token.
+
+| Parameter     | Type   | Description                                                                 |
+|---------------|--------|-----------------------------------------------------------------------------|
+| `deviceToken` | String | The device token to be unregistered. It must not be blank and has a maximum size of 512 characters. |
+
+**Returns:**  
+`ResponseEntity<Void>` - A response entity with HTTP status 204 (No Content) indicating successful unregistration.

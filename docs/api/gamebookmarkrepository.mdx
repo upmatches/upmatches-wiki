@@ -1,0 +1,52 @@
+---
+id: game-bookmark-repository
+title: GameBookmarkRepository Interface
+sidebar_label: GameBookmarkRepository
+---
+
+## Purpose
+
+The `GameBookmarkRepository` interface is a part of the `com.upmatches.app.features.game.repositories` package and extends the `JpaRepository` interface. It is responsible for managing the persistence and retrieval of `GameBookmark` entities from the database. This interface provides methods to check the existence of bookmarks, retrieve bookmarks by game and user IDs, and perform custom queries to fetch bookmarks with pagination support.
+
+## Public Methods
+
+### existsByGameIdAndUserId
+
+Checks if a bookmark exists for a given game and user.
+
+| Parameter | Type   | Description                  |
+|-----------|--------|------------------------------|
+| gameId    | UUID   | The ID of the game.          |
+| userId    | UUID   | The ID of the user.          |
+
+| Return Type | Description                              |
+|-------------|------------------------------------------|
+| boolean     | `true` if the bookmark exists, otherwise `false`. |
+
+### findByGameIdAndUserId
+
+Finds a bookmark by game ID and user ID.
+
+| Parameter | Type   | Description                  |
+|-----------|--------|------------------------------|
+| gameId    | UUID   | The ID of the game.          |
+| userId    | UUID   | The ID of the user.          |
+
+| Return Type          | Description                              |
+|----------------------|------------------------------------------|
+| Optional<GameBookmark> | An `Optional` containing the `GameBookmark` if found, otherwise empty. |
+
+### findByUserIdCursor
+
+Retrieves a list of bookmarks for a user with pagination support using a cursor-based approach.
+
+| Parameter          | Type   | Description                                                                 |
+|--------------------|--------|-----------------------------------------------------------------------------|
+| userId             | UUID   | The ID of the user.                                                         |
+| afterBookmarkedAt  | Instant| The timestamp to start fetching bookmarks after. Can be `null`.             |
+| afterId            | UUID   | The ID to start fetching bookmarks after. Used for tie-breaking.            |
+| size               | int    | The maximum number of bookmarks to return.                                  |
+
+| Return Type          | Description                              |
+|----------------------|------------------------------------------|
+| List<GameBookmark>   | A list of `GameBookmark` entities.       |

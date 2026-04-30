@@ -1,0 +1,59 @@
+---
+id: security-configuration
+title: Security Configuration
+sidebar_label: Security Configuration
+---
+
+## Purpose
+
+The `SecurityConfiguration` class is a Spring Security configuration class that sets up security settings for a web application. It configures HTTP security, JWT decoding, CORS settings, and a custom bearer token resolver. This configuration ensures that the application is protected against unauthorized access while allowing specific endpoints to be publicly accessible.
+
+## Public Methods
+
+### `securityFilterChain`
+
+Configures the security filter chain for the application.
+
+| Parameter | Type          | Description                      |
+|-----------|---------------|----------------------------------|
+| `http`    | `HttpSecurity`| The HTTP security configuration. |
+
+| Return Type          |
+|----------------------|
+| `SecurityFilterChain`|
+
+### `jwtDecoder`
+
+Creates a JWT decoder bean that uses a custom key provider for decoding JWT tokens.
+
+| Parameter     | Type                     | Description                           |
+|---------------|--------------------------|---------------------------------------|
+| `keyProvider` | `ISingpassKeyProvider`   | Provides the signing key for JWT.     |
+
+| Return Type |
+|-------------|
+| `JwtDecoder`|
+
+### `cookieFallbackBearerTokenResolver`
+
+Creates a custom bearer token resolver that checks for a bearer token in the HTTP Authorization header and falls back to a cookie if the header is not present.
+
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| None      | N/A    | N/A         |
+
+| Return Type          |
+|----------------------|
+| `BearerTokenResolver`|
+
+### `corsConfigurationSource`
+
+Configures CORS settings for the application, allowing specific origins and methods.
+
+| Parameter        | Type   | Description                                      |
+|------------------|--------|--------------------------------------------------|
+| `allowedOrigins` | `String`| A semicolon-separated list of allowed origins.  |
+
+| Return Type               |
+|---------------------------|
+| `CorsConfigurationSource`|
