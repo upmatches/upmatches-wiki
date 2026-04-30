@@ -7,7 +7,7 @@ sidebar_position: 7
 
 ## Overview
 
-Skill levels are per-activity difficulty tiers used by [onboarding](/docs/modules/new-user-onboarding), [game creation](/docs/modules/game), and user profiles. For badminton, the canonical seven-level ladder is documented in [Sports → Badminton → Skill Levels](/docs/sports/badminton/skill-levels).
+Skill levels are per-activity difficulty tiers used by [onboarding](/docs/modules/me), [game creation](/docs/modules/game), and user profiles. For badminton, the canonical seven-level ladder is documented in [Sports → Badminton → Skill Levels](/docs/sports/badminton/skill-levels).
 
 ## Data Model
 

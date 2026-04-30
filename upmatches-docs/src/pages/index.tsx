@@ -24,7 +24,7 @@ export default function Home(): ReactNode {
         </p>
         <Link
           className="button button--primary button--lg"
-          to="/docs/modules/new-user-onboarding">
+          to="/docs/modules/me">
           Get Started
         </Link>
       </header>

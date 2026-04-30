@@ -7,7 +7,7 @@ sidebar_position: 4
 
 ## Overview
 
-The activity module manages sport and activity types (e.g., Badminton, Volleyball) that serve as lookup references for other modules such as [Venue](/docs/modules/venue), [Skill Levels](/docs/modules/skill-levels), and the per-activity skill selections captured during [Onboarding](/docs/modules/new-user-onboarding).
+The activity module manages sport and activity types (e.g., Badminton, Volleyball) that serve as lookup references for other modules such as [Venue](/docs/modules/venue), [Skill Levels](/docs/modules/skill-levels), and the per-activity skill selections captured during onboarding (see [Me](/docs/modules/me)).
 
 Each activity has a database-generated `referenceId` — a stable integer identifier used for cross-referencing. Skill levels are scoped per activity, and users select at most one skill level per activity during onboarding.
 

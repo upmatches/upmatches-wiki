@@ -59,7 +59,7 @@ Game endpoints are split between three controllers:
 - `/api/v1/game-bookmarks` — per-user bookmarks; require a JWT.
 - `/api/v1/admin/games` — destructive admin operations; require the `ADMIN` role.
 
-See the [API overview](/docs/api/overview) for the envelope and error shapes. My-games listings live under [`/api/v1/me/games`](/docs/modules/new-user-onboarding#me-games).
+See the [API overview](/docs/api/overview) for the envelope and error shapes. My-games listings live under [`/api/v1/me/games`](/docs/modules/me#me-games).
 
 ### `POST /api/v1/games`
 

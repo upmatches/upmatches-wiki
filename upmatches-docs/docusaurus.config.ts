@@ -75,7 +75,7 @@ const config: Config = {
           items: [
             {
               label: 'Documentation',
-              to: '/docs/modules/new-user-onboarding',
+              to: '/docs/modules/me',
             },
           ],
         },

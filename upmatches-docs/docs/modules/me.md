@@ -1,13 +1,20 @@
 ---
-title: Onboarding
+title: Me
 sidebar_position: 2
 ---
 
-# Onboarding
+# Me
 
 ## Overview
 
-New users must complete a one-time profile completion step before accessing the main application. The client checks onboarding status on every app launch via `GET /api/v1/me` and redirects incomplete users to the onboarding screen.
+The `Me` module exposes the authenticated user's own profile, onboarding state, and personal game listings. All endpoints are scoped to the caller via JWT — no user ID is passed in the path.
+
+Onboarding is handled by this module:
+
+- `GET /api/v1/me` — check `hasCompletedOnboarding` to decide whether to route the user to the onboarding screen.
+- `POST /api/v1/me` — complete the one-time onboarding by submitting the required profile fields.
+
+The client checks onboarding status on every app launch via `GET /api/v1/me` and redirects incomplete users to the onboarding screen.
 
 ## Profile Fields
 
