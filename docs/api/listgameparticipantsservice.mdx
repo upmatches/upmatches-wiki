@@ -6,80 +6,68 @@ sidebar_label: ListGameParticipantsService
 
 # ListGameParticipantsService
 
-The `ListGameParticipantsService` class is a Spring service responsible for retrieving the list of active participants for a specific game. It ensures that only authorized users (those who can view the game) can access the participant list, and it conditionally includes contact information if the requesting user is the game organizer.
+The `ListGameParticipantsService` class is a Spring service responsible for retrieving the list of active participants for a specific game. It ensures that only authorized users can view participant data and optionally includes contact information if the requesting user is the game organizer.
 
 ## Purpose
 
-- Fetches all active participants for a given game ID.
-- Enforces authorization: only users who are allowed to view the game can retrieve the participant list.
-- Conditionally includes contact methods (e.g., phone, email) in the response if the requester is the game organizer.
-- Wraps the database operation in a transactional read-only context for performance and consistency.
-
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `GameParticipantRepository` | Repository | Data access for `GameParticipant` entities. |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID. |
-| `IGameLookupService` | Service | Looks up a `Game` entity by its ID, throwing an exception if not found. |
-| `IGameAuthorizationService` | Service | Validates whether a user has permission to view a game. |
+This service provides a secure and transactional method to fetch all active participants of a game. It performs the following operations:
+- Resolves the authenticated user.
+- Validates that the game exists.
+- Checks authorization to view the game.
+- Retrieves all active participants ordered by join date.
+- Maps participants to response objects, optionally including contact details for the organizer.
 
 ## Public Methods
 
 ### `execute(UUID id)`
 
-Retrieves the list of active participants for the game identified by the given ID.
-
-**Parameters:**
+Retrieves the list of active participants for the game identified by the given UUID.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `id` | `UUID` | The unique identifier of the game. |
 
-**Returns:**
-
-| Type | Description |
-|------|-------------|
-| `List<GameParticipantResponse>` | A list of `GameParticipantResponse` objects representing active participants. |
+**Returns:** `List<GameParticipantResponse>` — A list of participant response objects.
 
 **Throws:**
-
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | If the game does not exist or the participant retrieval fails. |
-| `AuthorizationException` | If the authenticated user does not have permission to view the game. |
+- `ResourceNotFoundException` — If the game does not exist or an error occurs during retrieval.
 
 **Behavior:**
+1. Resolves the authenticated user's ID.
+2. Looks up the game by its ID; throws `ResourceNotFoundException` if not found.
+3. Checks if the authenticated user has permission to view the game.
+4. Determines whether to include contact methods based on whether the user is the game organizer.
+5. Queries the repository for all active participants, ordered by join date.
+6. Maps each participant to a `GameParticipantResponse` object, including the activity ID and contact methods flag.
+7. Returns the list of responses.
 
-1. Resolves the authenticated user's ID via `userResolver.requireUserId()`.
-2. Looks up the game using `lookupService.findGameOrThrow(id)`.
-3. Verifies that the user can view the game via `authorizationService.assertCanViewGame(game, userId)`.
-4. Determines the activity ID from the game (if any) and whether to include contact methods (if the user is the organizer).
-5. Queries the repository for all participants with status `ACTIVE` for the given game, ordered by join date ascending.
-6. Maps each `GameParticipant` entity to a `GameParticipantResponse` using the `fromGameParticipant` factory method, passing the activity ID and the `includeContactMethods` flag.
-7. Wraps the entire operation in `ServiceOperationExecutor.execute()` for consistent error handling and logging.
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameParticipantRepository` | Repository | Data access layer for game participants. |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user. |
+| `IGameLookupService` | Service | Provides game lookup functionality. |
+| `IGameAuthorizationService` | Service | Handles authorization checks for game operations. |
+| `ServiceOperationExecutor` | Utility | Executes service operations with standardized error handling. |
+
+## Annotations
+
+- `@Service` — Marks this class as a Spring service component.
+- `@Transactional(readOnly = true)` — Ensures the method runs within a read-only transaction for performance optimization.
+
+## Class Modifiers
+
+- `non-sealed` — This class is part of a sealed hierarchy, allowing it to be extended by other classes.
 
 ## Usage Example
 
 ```java
-@RestController
-public class GameController {
-    private final ListGameParticipantsService listGameParticipantsService;
+@Autowired
+private ListGameParticipantsService listGameParticipantsService;
 
-    public GameController(ListGameParticipantsService listGameParticipantsService) {
-        this.listGameParticipantsService = listGameParticipantsService;
-    }
-
-    @GetMapping("/games/{id}/participants")
-    public ResponseEntity<List<GameParticipantResponse>> getParticipants(@PathVariable UUID id) {
-        List<GameParticipantResponse> participants = listGameParticipantsService.execute(id);
-        return ResponseEntity.ok(participants);
-    }
+public void displayParticipants(UUID gameId) {
+    List<GameParticipantResponse> participants = listGameParticipantsService.execute(gameId);
+    participants.forEach(p -> System.out.println(p.getUser().getDisplayName()));
 }
 ```
-
-## Notes
-
-- The service is annotated with `@Service` and `@Transactional(readOnly = true)` to ensure it operates within a read-only transaction context.
-- The class is declared as `non-sealed`, indicating it is part of a sealed interface hierarchy (likely `IListGameParticipantsService`).
-- Contact methods are only included in the response if the requesting user is the game organizer, protecting participant privacy.

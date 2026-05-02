@@ -6,9 +6,11 @@ sidebar_label: MeController
 
 # MeController
 
-The `MeController` class is a REST controller in the UpMatches application that handles all operations related to the currently authenticated user's profile. It provides endpoints for retrieving, completing, updating, and deleting the user's profile information.
+The `MeController` class provides REST API endpoints for managing the authenticated user's profile. It handles profile retrieval, completion, update, and deletion operations through a centralized `/api/v1/me` base path.
 
-This controller is mapped to the `/api/v1/me` base path and uses the `IUserService` interface to perform business logic operations.
+## Purpose
+
+This controller serves as the primary interface for authenticated users to manage their personal profile data. It delegates all business logic to the `IUserService` implementation, ensuring separation of concerns and maintainability.
 
 ## Endpoints
 
@@ -16,124 +18,60 @@ This controller is mapped to the `/api/v1/me` base path and uses the `IUserServi
 
 Retrieves the profile of the currently authenticated user.
 
-**Response:** Returns the user's profile data wrapped in an `ApiResponse` with HTTP status 200 (OK).
-
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `HttpServletRequest` | The HTTP request object (injected by Spring) |
+| `request` | `HttpServletRequest` | The HTTP request object (injected automatically) |
 
-**Response Body:**
-```json
-{
-  "success": true,
-  "message": "User profile retrieved successfully.",
-  "data": {
-    "id": "string",
-    "username": "string",
-    "email": "string",
-    "firstName": "string",
-    "lastName": "string",
-    "bio": "string",
-    "avatarUrl": "string"
-  },
-  "path": "/api/v1/me"
-}
-```
+**Response:** `200 OK` with `ApiResponse<UserProfileResponse>` containing the user's profile data.
 
 ### POST /api/v1/me
 
-Completes the user's profile after initial registration. This endpoint is typically called when a user needs to provide additional information to fully set up their profile.
-
-**Response:** Returns the completed profile data wrapped in an `ApiResponse` with HTTP status 201 (Created).
+Completes the user's profile with initial data.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `body` | `CompleteProfileRequest` | The request body containing profile completion data (validated) |
-| `request` | `HttpServletRequest` | The HTTP request object (injected by Spring) |
+| `body` | `CompleteProfileRequest` | The profile completion data (validated) |
+| `request` | `HttpServletRequest` | The HTTP request object (injected automatically) |
 
-**Request Body Example:**
-```json
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "bio": "Software developer and coffee enthusiast",
-  "avatarUrl": "https://example.com/avatar.jpg"
-}
-```
-
-**Response Body:**
-```json
-{
-  "success": true,
-  "message": "User profile completed successfully.",
-  "data": {
-    "id": "string",
-    "username": "string",
-    "email": "string",
-    "firstName": "John",
-    "lastName": "Doe",
-    "bio": "Software developer and coffee enthusiast",
-    "avatarUrl": "https://example.com/avatar.jpg"
-  },
-  "path": "/api/v1/me"
-}
-```
+**Response:** `201 Created` with `ApiResponse<UserProfileResponse>` containing the completed profile.
 
 ### PUT /api/v1/me
 
-Updates the profile of the currently authenticated user. This endpoint allows partial or full updates to the user's profile information.
-
-**Response:** Returns the updated profile data wrapped in an `ApiResponse` with HTTP status 200 (OK).
+Updates the authenticated user's profile.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `body` | `UpdateProfileRequest` | The request body containing profile update data (validated) |
-| `request` | `HttpServletRequest` | The HTTP request object (injected by Spring) |
+| `body` | `UpdateProfileRequest` | The profile update data (validated) |
+| `request` | `HttpServletRequest` | The HTTP request object (injected automatically) |
 
-**Request Body Example:**
-```json
-{
-  "firstName": "Jane",
-  "bio": "Updated bio information"
-}
-```
-
-**Response Body:**
-```json
-{
-  "success": true,
-  "message": "User profile updated successfully.",
-  "data": {
-    "id": "string",
-    "username": "string",
-    "email": "string",
-    "firstName": "Jane",
-    "lastName": "Doe",
-    "bio": "Updated bio information",
-    "avatarUrl": "https://example.com/avatar.jpg"
-  },
-  "path": "/api/v1/me"
-}
-```
+**Response:** `200 OK` with `ApiResponse<UserProfileResponse>` containing the updated profile.
 
 ### DELETE /api/v1/me
 
-Deletes the currently authenticated user's account and associated data.
-
-**Response:** Returns HTTP status 204 (No Content) with no response body.
+Deletes the authenticated user's account.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| None | - | No request body or parameters required |
+| None | - | - |
+
+**Response:** `204 No Content` with no response body.
 
 ## Dependencies
 
-- **IUserService**: The service interface that provides the business logic for user profile operations.
-- **CompleteProfileRequest**: A validated request DTO for completing a user's profile.
-- **UpdateProfileRequest**: A validated request DTO for updating a user's profile.
-- **UserProfileResponse**: The response DTO containing user profile data.
-- **ApiResponse**: A generic response wrapper used for consistent API responses.
+- **IUserService**: Service interface for user profile operations
+- **CompleteProfileRequest**: Request DTO for profile completion
+- **UpdateProfileRequest**: Request DTO for profile updates
+- **UserProfileResponse**: Response DTO for user profile data
+- **ApiResponse**: Generic API response wrapper
 
 ## Error Handling
 
-All endpoints rely on Spring's validation framework (`@Valid` annotation) to ensure request bodies are properly validated. Validation errors will result in appropriate HTTP 400 (Bad Request) responses. Other errors (e.g., user not found, authentication issues) are handled by the service layer and may result in various HTTP status codes.
+All endpoints return appropriate HTTP status codes:
+- `200 OK` for successful GET and PUT operations
+- `201 Created` for successful POST operations
+- `204 No Content` for successful DELETE operations
+- Validation errors return `400 Bad Request` with error details
+
+## Security
+
+This controller is designed to work with Spring Security. All endpoints require authentication, and the `IUserService` implementation should handle authorization checks for the currently authenticated user.

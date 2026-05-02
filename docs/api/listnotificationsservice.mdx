@@ -6,11 +6,11 @@ sidebar_label: ListNotificationsService
 
 # ListNotificationsService
 
-The `ListNotificationsService` class is a Spring service component responsible for retrieving a paginated list of notifications for the currently authenticated user. It implements the `IListNotificationsService` interface and provides read-only transactional access to notification data.
+The `ListNotificationsService` class is a Spring service component responsible for retrieving a paginated list of notifications for the currently authenticated user. It implements the `IListNotificationsService` interface and provides a read-only transactional operation that fetches notifications ordered by creation date in descending order.
 
 ## Purpose
 
-This service handles the use case of fetching notifications for a logged-in user. It resolves the authenticated user's identity, queries the notification repository for notifications addressed to that user, and returns the results as a paginated response. The service leverages Spring's `@Transactional(readOnly = true)` to optimize database access for read operations.
+This service encapsulates the logic for fetching user notifications with pagination support. It resolves the authenticated user's identity, queries the notification repository for notifications addressed to that user, and transforms the results into a standardized paginated response format. The service leverages `ServiceOperationExecutor` for consistent error handling and operation status tracking.
 
 ## Dependencies
 
@@ -19,72 +19,48 @@ This service handles the use case of fetching notifications for a logged-in user
 | `NotificationRepository` | Repository | Data access layer for notification entities |
 | `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's UUID |
 
-## Constructor
-
-### `ListNotificationsService(NotificationRepository notificationRepository, IAuthenticatedUserResolver userResolver)`
-
-Creates a new instance of the service with the required dependencies.
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `notificationRepository` | `NotificationRepository` | Repository for accessing notification data |
-| `userResolver` | `IAuthenticatedUserResolver` | Service to resolve the authenticated user's identity |
-
 ## Public Methods
 
 ### `execute(Pageable pageable)`
 
-Retrieves a paginated list of notifications for the currently authenticated user, ordered by creation date in descending order (most recent first).
-
-**Parameters:**
+Retrieves a paginated list of notifications for the authenticated user, ordered by creation date (newest first).
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sort parameters |
 
-**Returns:**
-
-| Type | Description |
-|------|-------------|
-| `PagedResponse<NotificationResponse>` | A paginated response containing notification data for the authenticated user |
-
-**Exceptions:**
-
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | Thrown if the operation fails or no data is found (wrapped by `ServiceOperationExecutor`) |
+| Returns | Type | Description |
+|---------|------|-------------|
+| Success | `PagedResponse<NotificationResponse>` | A paginated response containing notification data |
+| Failure | Throws `ResourceNotFoundException` | If no notifications are found or an error occurs during retrieval |
 
 **Behavior:**
+1. Resolves the authenticated user's UUID via `userResolver.requireUserId()`
+2. Queries the `notificationRepository` for notifications where `recipientId` matches the user ID, ordered by `createdAt` in descending order
+3. Maps each notification entity to a `NotificationResponse` DTO using the `fromNotification` factory method
+4. Wraps the result in a `PagedResponse` object
+5. Executes the operation through `ServiceOperationExecutor` with `RETRIEVE` status and `ResourceNotFoundException` as the error type
 
-1. Resolves the authenticated user's UUID using `userResolver.requireUserId()`
-2. Queries the `notificationRepository` for notifications where `recipientId` matches the user's UUID, ordered by `createdAt` in descending order
-3. Maps each notification entity to a `NotificationResponse` DTO using the `fromNotification` method
-4. Returns the result wrapped in a `PagedResponse` object
-5. The operation is executed within the `ServiceOperationExecutor` framework, which handles error handling and logging with the `RETRIEVE` operation status
-
-## Usage Example
-
+**Example usage:**
 ```java
-// Inject the service
-private final ListNotificationsService listNotificationsService;
+@Autowired
+private ListNotificationsService listNotificationsService;
 
-// Create a pageable request
-Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-// Execute the service
+// Get first page of 10 notifications
+Pageable pageable = PageRequest.of(0, 10);
 PagedResponse<NotificationResponse> notifications = listNotificationsService.execute(pageable);
-
-// Access the results
-List<NotificationResponse> items = notifications.getContent();
-int totalPages = notifications.getTotalPages();
-long totalElements = notifications.getTotalElements();
 ```
 
-## Notes
+## Transactional Behavior
 
-- The service is annotated with `@Service` and is a `non-sealed` class, allowing for future extension if needed
-- The `@Transactional(readOnly = true)` annotation ensures optimal database performance for read operations
-- The `ServiceOperationExecutor` provides consistent error handling and logging across all service operations
-- Notifications are returned in reverse chronological order (newest first) by default
+The method is annotated with `@Transactional(readOnly = true)`, which:
+- Ensures the database operation runs within a read-only transaction context
+- Optimizes performance by allowing the database to use read replicas if configured
+- Prevents any accidental write operations during the query
+
+## Error Handling
+
+The service uses `ServiceOperationExecutor.execute()` which provides:
+- Consistent error handling across all service operations
+- Automatic wrapping of exceptions into `ResourceNotFoundException` when retrieval fails
+- Standardized operation status tracking via the `RETRIEVE` enum value

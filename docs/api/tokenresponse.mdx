@@ -6,34 +6,28 @@ sidebar_label: TokenResponse
 
 # TokenResponse
 
-The `TokenResponse` class is a Java record that represents the response payload returned by the authentication server after a successful login or token refresh operation. It encapsulates the essential tokens and expiration information required for maintaining a user's authenticated session.
+The `TokenResponse` class is a Java record that encapsulates the response data returned after a successful authentication or token refresh operation. It provides a structured way to transport the access token, refresh token, and expiration timestamp between the authentication service and the client.
 
 ## Purpose
 
-This record serves as a data transfer object (DTO) for authentication responses. It contains:
-- An **access token** used for authorizing API requests
-- A **refresh token** used to obtain new access tokens without requiring the user to re-authenticate
-- The **expiration timestamp** indicating when the access token will expire
+This record serves as a Data Transfer Object (DTO) for authentication responses. It bundles three critical pieces of information:
+- **Access Token**: The short-lived token used for API authorization
+- **Refresh Token**: A longer-lived token used to obtain new access tokens
+- **Expires At**: The Unix timestamp (in seconds or milliseconds) when the access token expires
 
 ## Record Components
 
 | Component | Type | Description |
 |-----------|------|-------------|
-| `accessToken` | `String` | The JWT or bearer token used to authenticate API requests |
-| `refreshToken` | `String` | A long-lived token used to obtain new access tokens |
-| `expiresAt` | `Long` | Unix timestamp (in seconds or milliseconds) indicating when the access token expires |
+| `accessToken` | `String` | The JWT or bearer token for API authentication |
+| `refreshToken` | `String` | The token used to request new access tokens |
+| `expiresAt` | `Long` | Unix timestamp indicating when the access token expires |
 
-## Methods
+## Public Methods
 
-### `of`
+### `of(String accessToken, String refreshToken, Long expiresAt)`
 
-```java
-public static TokenResponse of(String accessToken, String refreshToken, Long expiresAt)
-```
-
-Factory method to create a new `TokenResponse` instance.
-
-**Parameters:**
+Creates a new `TokenResponse` instance with the specified values.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -41,30 +35,22 @@ Factory method to create a new `TokenResponse` instance.
 | `refreshToken` | `String` | The refresh token string |
 | `expiresAt` | `Long` | The expiration timestamp |
 
-**Returns:**
+**Returns:** `TokenResponse` - A new instance with the provided values.
 
-| Type | Description |
-|------|-------------|
-| `TokenResponse` | A new `TokenResponse` instance with the provided values |
-
-## Usage Example
-
+**Example usage:**
 ```java
-// Creating a TokenResponse from authentication server response
 TokenResponse response = TokenResponse.of(
-    "eyJhbGciOiJIUzI1NiIs...",  // access token
-    "dGhpcyBpcyBhIHJlZnJl...",  // refresh token
-    1700000000L                   // expires at timestamp
+    "eyJhbGciOiJIUzI1NiIs...",
+    "dGhpcyBpcyBhIHJlZnJl...",
+    1700000000L
 );
-
-// Accessing record components
-String accessToken = response.accessToken();
-String refreshToken = response.refreshToken();
-Long expiresAt = response.expiresAt();
 ```
 
 ## Notes
 
-- As a Java record, `TokenResponse` automatically provides `equals()`, `hashCode()`, `toString()`, and component accessor methods.
-- The record is immutable, ensuring thread-safety when passing token data between components.
-- The `of` static factory method provides a convenient way to construct instances while maintaining the immutability guarantees of the record.
+- As a Java record, `TokenResponse` automatically provides:
+  - Constructor with all components
+  - `accessToken()`, `refreshToken()`, and `expiresAt()` accessor methods
+  - `equals()`, `hashCode()`, and `toString()` implementations
+- The static factory method `of()` provides a convenient way to create instances without using the `new` keyword
+- This class is immutable by design, making it safe for use in concurrent environments

@@ -6,11 +6,11 @@ sidebar_label: IJwtTokenService
 
 # IJwtTokenService Interface
 
-The `IJwtTokenService` interface defines the contract for JWT (JSON Web Token) token generation services within the authentication module. This sealed interface restricts implementation to the `JwtTokenService` class, ensuring a controlled and secure token generation mechanism.
-
 ## Purpose
 
-This interface serves as the abstraction layer for generating access and refresh tokens used in the application's authentication flow. By defining a sealed interface, the design enforces that only the designated `JwtTokenService` class can implement the token generation logic, promoting security and maintainability.
+The `IJwtTokenService` interface defines the contract for JWT (JSON Web Token) token generation services within the authentication module. It provides a sealed interface pattern that restricts implementation to the `JwtTokenService` class, ensuring controlled token generation behavior across the application.
+
+This interface is part of the `com.upmatches.app.features.auth.services` package and serves as the abstraction layer for generating access tokens and refresh tokens used in user authentication flows.
 
 ## Interface Definition
 
@@ -18,63 +18,72 @@ This interface serves as the abstraction layer for generating access and refresh
 public sealed interface IJwtTokenService permits JwtTokenService
 ```
 
-The interface is declared as `sealed`, meaning it can only be implemented by the classes specified in the `permits` clause. In this case, only `JwtTokenService` is allowed to implement this interface.
+The interface is declared as `sealed`, meaning only the specified class `JwtTokenService` is allowed to implement it. This design pattern provides:
+- **Controlled extensibility**: Only authorized implementations can exist
+- **Enhanced security**: Prevents unauthorized token generation implementations
+- **Clear contract**: Defines exactly what token operations are available
 
 ## Methods
 
 ### `generateAccessToken`
 
-Generates an access token for authenticated users. This method accepts multiple user identifiers to support different authentication providers.
+Generates an access token for authenticated users with multiple identity provider identifiers.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `userId` | `UUID` | The unique identifier of the user in the system |
-| `singpassUuid` | `String` | The user's UUID from Singpass authentication provider |
-| `auth0Uuid` | `String` | The user's UUID from Auth0 authentication provider |
-| `appleUuid` | `String` | The user's UUID from Apple authentication provider |
+| `singpassUuid` | `String` | The user's UUID from Singpass identity provider |
+| `auth0Uuid` | `String` | The user's UUID from Auth0 identity provider |
+| `appleUuid` | `String` | The user's UUID from Apple identity provider |
 
-**Returns:** `AccessTokenResult` - A result object containing the generated access token and related metadata.
+**Returns**: `AccessTokenResult` - An object containing the generated access token and its metadata (defined in `JwtTokenService`)
 
 ### `generateRefreshToken`
 
-Generates a refresh token that can be used to obtain new access tokens without requiring re-authentication.
+Generates a refresh token for extending user sessions without requiring re-authentication.
 
-**Parameters:** None
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None | - | - |
 
-**Returns:** `String` - A refresh token string that can be used for token refresh operations.
+**Returns**: `String` - A generated refresh token string
 
 ## Usage Example
 
 ```java
-// Implementation example (conceptual)
-public class JwtTokenService implements IJwtTokenService {
+// Implementation in JwtTokenService
+public final class JwtTokenService implements IJwtTokenService {
     
     @Override
     public AccessTokenResult generateAccessToken(
-            UUID userId,
-            String singpassUuid,
-            String auth0Uuid,
-            String appleUuid) {
-        // Token generation logic here
-        return new AccessTokenResult(/* token data */);
+        UUID userId,
+        String singpassUuid,
+        String auth0Uuid,
+        String appleUuid) {
+        // Token generation logic
     }
     
     @Override
     public String generateRefreshToken() {
-        // Refresh token generation logic here
-        return "generated-refresh-token";
+        // Refresh token generation logic
     }
+    
+    // Nested record for access token result
+    public record AccessTokenResult(
+        String accessToken,
+        Instant expiresAt,
+        String tokenType
+    ) {}
 }
 ```
 
 ## Dependencies
 
-- `com.upmatches.app.features.auth.services.JwtTokenService` - The implementing class
-- `com.upmatches.app.features.auth.services.JwtTokenService.AccessTokenResult` - The result type for access token generation
-- `java.util.UUID` - Used for user identification
+- `java.util.UUID` - For user identification
+- `JwtTokenService` - The permitted implementation class containing `AccessTokenResult` definition
 
-## Notes
+## Related Components
 
-- The sealed interface pattern ensures that only the permitted implementation class can provide token generation functionality
-- Multiple UUID parameters allow the system to support various authentication providers (Singpass, Auth0, Apple)
-- The refresh token generation method returns a simple string, while access token generation returns a structured result object
+- `JwtTokenService` - The sole implementation of this interface
+- Authentication controllers that consume these tokens
+- Security filters that validate generated tokens

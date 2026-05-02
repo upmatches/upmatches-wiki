@@ -6,35 +6,50 @@ sidebar_label: StationLineRepository
 
 # StationLineRepository
 
-The `StationLineRepository` interface provides database access operations for the `StationLine` entity. It extends Spring Data JPA's `JpaRepository`, which automatically provides standard CRUD (Create, Read, Update, Delete) functionality without requiring any implementation code.
+The `StationLineRepository` interface provides database access operations for the `StationLine` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD (Create, Read, Update, Delete) functionality, as well as pagination and sorting capabilities.
 
 ## Purpose
 
-This repository serves as the data access layer for managing station line records in the venue management system. By extending `JpaRepository<StationLine, StationLineId>`, it inherits a comprehensive set of methods for interacting with the `StationLine` entity in the database, using `StationLineId` as the composite primary key type.
+This repository serves as the data access layer for managing `StationLine` records in the application's venue management system. By extending `JpaRepository`, it automatically provides:
 
-## Key Features
+- Basic CRUD operations (save, findById, findAll, delete, etc.)
+- Fluent query methods
+- Pagination and sorting support
+- Batch operations
 
-- **Automatic CRUD Operations**: Inherits standard methods like `save()`, `findById()`, `findAll()`, `deleteById()`, and `count()` from `JpaRepository`
-- **Composite Primary Key Support**: Works with `StationLineId` as the entity's composite key type
-- **No Boilerplate Code**: Eliminates the need for manual implementation of basic database operations
-- **Spring Data Integration**: Leverages Spring Data JPA's powerful repository abstraction
+## Type Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| Entity | `StationLine` | The entity class this repository manages |
+| ID | `StationLineId` | The composite primary key type for the entity |
 
 ## Inherited Methods
 
-The following table lists the most commonly used methods inherited from `JpaRepository`:
+The following methods are inherited from `JpaRepository` and are available for use without additional implementation:
+
+### Basic CRUD Operations
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `save(S entity)` | `S` | Saves a given entity (insert or update) |
+| `save(S entity)` | `S` | Saves a given entity. Use the returned instance for further operations |
 | `saveAll(Iterable<S> entities)` | `List<S>` | Saves all given entities |
 | `findById(ID id)` | `Optional<T>` | Retrieves an entity by its primary key |
-| `findAll()` | `List<T>` | Returns all instances of the entity |
-| `findAllById(Iterable<ID> ids)` | `List<T>` | Returns all entities with the given IDs |
+| `existsById(ID id)` | `boolean` | Returns whether an entity with the given id exists |
+| `findAll()` | `List<T>` | Returns all instances of the type |
+| `findAllById(Iterable<ID> ids)` | `List<T>` | Returns all instances with the given IDs |
 | `count()` | `long` | Returns the number of entities |
-| `deleteById(ID id)` | `void` | Deletes an entity by its primary key |
+| `deleteById(ID id)` | `void` | Deletes the entity with the given id |
 | `delete(T entity)` | `void` | Deletes a given entity |
+| `deleteAll(Iterable<? extends T> entities)` | `void` | Deletes all given entities |
 | `deleteAll()` | `void` | Deletes all entities managed by the repository |
-| `existsById(ID id)` | `boolean` | Returns whether an entity with the given ID exists |
+
+### Pagination and Sorting
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `findAll(Pageable pageable)` | `Page<T>` | Returns a `Page` of entities meeting the paging restriction |
+| `findAll(Sort sort)` | `List<T>` | Returns all entities sorted by the given options |
 
 ## Usage Example
 
@@ -48,15 +63,15 @@ public class StationLineService {
         this.stationLineRepository = stationLineRepository;
     }
     
-    public StationLine createStationLine(StationLine stationLine) {
+    public StationLine saveStationLine(StationLine stationLine) {
         return stationLineRepository.save(stationLine);
     }
     
-    public Optional<StationLine> findStationLineById(StationLineId id) {
+    public Optional<StationLine> findById(StationLineId id) {
         return stationLineRepository.findById(id);
     }
     
-    public List<StationLine> getAllStationLines() {
+    public List<StationLine> findAllStationLines() {
         return stationLineRepository.findAll();
     }
     
@@ -66,13 +81,8 @@ public class StationLineService {
 }
 ```
 
-## Dependencies
-
-- **Spring Data JPA**: Provides the `JpaRepository` interface and automatic implementation
-- **StationLine Entity**: The domain entity this repository manages
-- **StationLineId**: The composite primary key class for the `StationLine` entity
-
 ## Notes
 
-- This repository is designed to work with a composite primary key (`StationLineId`), which typically consists of multiple fields that together uniquely identify a station line record
-- For custom query methods beyond the standard CRUD operations, additional methods can be added to this interface using Spring Data JPA's query derivation mechanism or `@Query` annotations
+- This repository uses a composite primary key (`StationLineId`) rather than a single-field ID
+- No custom query methods are defined in this interface; all operations rely on the inherited `JpaRepository` methods
+- The repository is part of the `com.upmatches.app.features.venue.repositories` package, indicating it belongs to the venue management feature module

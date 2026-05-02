@@ -8,18 +8,18 @@ sidebar_label: ResolveShareLinkService
 
 ## Purpose
 
-The `ResolveShareLinkService` is a Spring service class responsible for resolving shared links within the UpMatches application. It handles the process of looking up a short link code, tracking click counts, granting access to private games when applicable, and constructing both web and mobile URLs for the resolved resource.
+The `ResolveShareLinkService` is a Spring service class responsible for resolving shared links within the UpMatches application. It handles the process of looking up a short link code, retrieving the associated resource (such as a game), and generating the appropriate web and mobile URLs for redirection. Additionally, it automatically grants access to private games when a user resolves a share link for a private game they haven't accessed before.
 
-This service implements the `IResolveShareLinkService` interface and is marked as a non-sealed class, allowing for future extension if needed.
+This service implements the `IResolveShareLinkService` interface and is marked as a `non-sealed` class, indicating it's part of a sealed interface hierarchy.
 
 ## Key Features
 
-- **Link Resolution**: Looks up short links by their unique code
-- **Click Tracking**: Automatically increments click counts for resolved links
-- **Private Game Access**: Automatically grants access to private games when a user resolves a share link
+- **Short Link Resolution**: Looks up and validates short link codes
+- **Click Tracking**: Increments click count for resolved links
+- **Private Game Access**: Automatically grants access to private games when resolved by authenticated users
 - **URL Generation**: Builds both web and mobile URLs for the resolved resource
-- **Audit Logging**: Uses the `@Auditable` annotation to log sensitive read operations
-- **Transaction Management**: Ensures atomicity of the resolution process
+- **Audit Logging**: Records share link resolution events for security auditing
+- **Transactional Execution**: Ensures data consistency during link resolution
 
 ## Dependencies
 
@@ -35,80 +35,86 @@ This service implements the `IResolveShareLinkService` interface and is marked a
 
 ### `execute(String code)`
 
-Resolves a share link by its unique code and returns the corresponding public response.
+Resolves a share link code and returns the corresponding public share link response.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `code` | `String` | The unique short link code to resolve |
 
-**Returns**: `PublicShareLinkResponse` containing the resolved link details, web URL, and mobile URL
+| Returns | Type | Description |
+|---------|------|-------------|
+| `PublicShareLinkResponse` | Object | Contains the resolved link details including web and mobile URLs |
 
-**Throws**: `ResourceNotFoundException` if no link is found with the given code
+**Behavior:**
+1. Looks up the short link by its code in the database
+2. Throws `ResourceNotFoundException` if the link is not found
+3. Increments the click count for the resolved link
+4. Automatically grants private game access if applicable (see `grantPrivateGameAccessIfApplicable`)
+5. Builds web and mobile URLs using the `IShareLinkUrlBuilder`
+6. Returns a `PublicShareLinkResponse` constructed from the short link and generated URLs
 
-**Behavior**:
-1. Looks up the short link by code in the repository
-2. Increments the click count for the link
-3. Grants private game access if the link points to a private game and the user is authenticated
-4. Builds web and mobile URLs using the `IShareLinkUrlBuilder`
-5. Returns a `PublicShareLinkResponse` constructed from the link and URLs
+**Audit Logging:**
+- Action: `SHARE_LINK_RESOLVED`
+- Category: `SENSITIVE_READ`
+- Resource Type: `SHARE_LINK`
+- Resource ID: The provided code parameter
+
+**Transactional:** Yes
 
 ## Private Methods
 
 ### `grantPrivateGameAccessIfApplicable(ShortLink link)`
 
-Grants access to a private game if the resolved link points to a game resource and the user is authenticated.
+Grants access to a private game for the authenticated user if the link points to a private game and the user hasn't already been granted access.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `link` | `ShortLink` | The resolved short link entity |
 
-**Behavior**:
+**Logic:**
 1. Checks if the link's resource type is `GAME`; returns if not
-2. Retrieves the authenticated user's ID; returns if not authenticated
-3. Validates the resource ID as a valid UUID; returns if invalid
-4. Checks if the game exists and is private; returns if not
-5. Checks if the user already has access to the game; returns if already granted
-6. Creates and saves a new `GameShareAccess` record
+2. Retrieves the authenticated user's ID from the security context
+3. Returns if no authenticated user is found
+4. Parses the resource ID as a UUID; returns if parsing fails
+5. Looks up the game by ID; returns if not found or not private
+6. Looks up the user by ID; returns if not found
+7. Checks if access already exists; returns if it does
+8. Creates and saves a new `GameShareAccess` record
 
 ### `getAuthenticatedUserIdOrNull()`
 
-Retrieves the authenticated user's ID from the security context.
+Retrieves the authenticated user's ID from the Spring Security context.
 
-**Returns**: `UUID` of the authenticated user, or `null` if not authenticated or unable to parse the subject
+| Returns | Type | Description |
+|---------|------|-------------|
+| `UUID` or `null` | UUID | The authenticated user's ID, or `null` if not authenticated or unable to parse |
 
-**Behavior**:
-1. Gets the current authentication from `SecurityContextHolder`
-2. Checks if the principal is a `Jwt` instance
+**Logic:**
+1. Gets the current `Authentication` from `SecurityContextHolder`
+2. Returns `null` if no authentication exists or principal is not a `Jwt`
 3. Parses the JWT subject as a UUID
-4. Returns the UUID or null if any step fails
+4. Returns the UUID or `null` if parsing fails
 
 ## Error Handling
 
-- **ResourceNotFoundException**: Thrown when the short link code is not found in the repository
-- **IllegalArgumentException**: Caught and silently ignored when parsing invalid UUIDs for game IDs
-- **Security Context**: Handles cases where no authentication is present or the principal is not a JWT
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | Thrown when the short link code is not found in the database |
+
+The service uses `ServiceOperationExecutor.execute()` which wraps the main logic and converts any `ResourceNotFoundException` to the appropriate exception type.
 
 ## Usage Example
 
 ```java
+// Inject the service
 @Autowired
 private ResolveShareLinkService resolveShareLinkService;
 
-public void handleShareLink(String code) {
-    try {
-        PublicShareLinkResponse response = resolveShareLinkService.execute(code);
-        // Use the response to redirect or display the shared resource
-        String webUrl = response.getWebUrl();
-        String mobileUrl = response.getMobileUrl();
-    } catch (ResourceNotFoundException e) {
-        // Handle invalid or expired share link
-    }
-}
+// Resolve a share link
+String shareCode = "abc123";
+PublicShareLinkResponse response = resolveShareLinkService.execute(shareCode);
+
+// Access the resolved URLs
+String webUrl = response.getWebUrl();
+String mobileUrl = response.getMobileUrl();
 ```
-
-## Notes
-
-- The service is annotated with `@Transactional` to ensure data consistency during link resolution
-- All operations are wrapped in `ServiceOperationExecutor.execute()` for consistent error handling and logging
-- The `@Auditable` annotation logs the resolution as a sensitive read operation for audit purposes
-- Private game access is only granted if the user is authenticated and doesn't already have access

@@ -6,40 +6,40 @@ sidebar_label: ResourceType
 
 # ResourceType Enum
 
-The `ResourceType` enum defines the different types of resources that can be shared via the share link feature in the UpMatches application. It provides a mapping between resource types and their corresponding API path segments.
+The `ResourceType` enum defines the types of resources that can be shared via the share link feature in the UpMatches application. It provides a mapping between resource types and their corresponding API path segments.
 
 ## Purpose
 
-This enum is used to standardize resource type identification throughout the share link functionality. Each enum constant represents a specific type of resource that can be shared, and contains the URL path segment associated with that resource type. This design ensures consistency when constructing API endpoints and handling resource routing.
+This enum is used to standardize resource type identification when constructing API endpoints for shared content. Currently, it supports game resources, with the ability to extend to additional resource types in the future.
 
-## Enum Constants
+## Enum Values
 
-| Constant | Path Value | Description |
-|----------|------------|-------------|
-| `GAME`   | `games`    | Represents a game resource type |
+| Enum Constant | Path Value | Description |
+|---------------|------------|-------------|
+| `GAME` | `"games"` | Represents a game resource type |
 
 ## Methods
 
 ### `path()`
 
-Returns the URL path segment associated with the resource type.
+Returns the API path segment associated with the resource type.
 
-**Signature:**
+**Signature:** `public String path()`
+
+**Returns:** `String` - The path segment for the resource type (e.g., `"games"` for the `GAME` enum constant)
+
+## Usage Example
+
 ```java
-public String path()
+// Access the path for a game resource
+String gamePath = ResourceType.GAME.path();
+// gamePath = "games"
+
+// Use the path in API endpoint construction
+String endpoint = "/api/" + ResourceType.GAME.path() + "/123";
+// endpoint = "/api/games/123"
 ```
 
-**Returns:**
-- `String` - The path segment for the resource type (e.g., `"games"` for the `GAME` constant)
+## Package Location
 
-**Example Usage:**
-```java
-ResourceType type = ResourceType.GAME;
-String path = type.path(); // Returns "games"
-```
-
-## Usage Notes
-
-- The enum is immutable and thread-safe by design
-- New resource types can be added by defining additional enum constants with their corresponding path values
-- The path values are used to construct API endpoints for resource sharing operations
+`com.upmatches.app.features.sharelink.enums`

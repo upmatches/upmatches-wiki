@@ -6,45 +6,30 @@ sidebar_label: Auth0CallbackController
 
 # Auth0CallbackController
 
-The `Auth0CallbackController` is a Spring REST controller that handles the OAuth 2.0 callback from Auth0 after a user authenticates. It processes the authorization code, exchanges it for tokens, creates or retrieves the user, and returns the appropriate response based on the client platform (web or mobile).
+The `Auth0CallbackController` is a Spring REST controller that handles the OAuth 2.0 callback from Auth0 after a user has authenticated. It processes the authorization code, exchanges it for tokens, creates or retrieves the user, and generates the appropriate response (either a redirect for web clients or a token-based response for mobile clients).
 
 ## Purpose
 
-This controller serves as the entry point for Auth0's redirect after successful (or failed) authentication. It:
+This controller serves as the entry point for Auth0's authentication callback flow. It:
 
-- Validates the callback parameters (`code` and `state`)
+- Validates the incoming callback request parameters (`code` and `state`)
 - Exchanges the authorization code for verified claims from Auth0
 - Creates a new user or retrieves an existing user based on the Auth0 user ID
 - Generates JWT access and refresh tokens
-- Returns either a redirect response (for web clients) or a mobile-specific redirect (for mobile clients)
-- Records audit events for both successful and failed authentication attempts
+- Returns the appropriate response based on the client platform (web or mobile)
 
 ## Endpoints
 
-### `GET /callback/auth0`
-
-Handles the Auth0 callback after user authentication.
-
-**Query Parameters:**
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `code` | String | No | Authorization code from Auth0 |
-| `state` | String | No | State parameter for CSRF protection |
-
-**Response:**
-
-| Status Code | Description |
-|-------------|-------------|
-| 302 (Found) | Redirect to frontend callback URL with tokens (web) or mobile scheme URL (mobile) |
-| 400 (Bad Request) | Missing required parameters |
-| 401 (Unauthorized) | Authentication failed |
+| HTTP Method | Path | Description |
+|-------------|------|-------------|
+| GET | `/callback/auth0` | Handles the Auth0 authentication callback |
 
 ## Public Methods
 
 ### `callbackAuth0`
 
 ```java
+@GetMapping("/callback/auth0")
 public ResponseEntity<Object> callbackAuth0(
     @RequestParam(required = false) final String code,
     @RequestParam(required = false) final String state,
@@ -52,51 +37,60 @@ public ResponseEntity<Object> callbackAuth0(
     final HttpServletResponse response)
 ```
 
-Main callback handler that orchestrates the authentication flow.
+The main callback handler that processes the Auth0 authentication response.
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `code` | String | Authorization code from Auth0 |
-| `state` | String | State parameter for CSRF validation |
-| `request` | HttpServletRequest | Incoming HTTP request |
-| `response` | HttpServletResponse | HTTP response for setting cookies |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `code` | `String` | No | The authorization code from Auth0 |
+| `state` | `String` | No | The state parameter for CSRF protection |
+| `request` | `HttpServletRequest` | Yes | The HTTP request object |
+| `response` | `HttpServletResponse` | Yes | The HTTP response object |
 
-**Returns:** `ResponseEntity<Object>` - Redirect response with tokens or error
+**Returns:** `ResponseEntity<Object>` - A redirect response for web clients or a token response for mobile clients
 
 **Throws:**
-
-| Exception | Condition |
-|-----------|-----------|
-| `InvalidAuthRequestException` | Missing `code` or `state` parameters |
-| `AuthenticationException` | State mismatch, token exchange failure, or user creation failure |
+- `InvalidAuthRequestException` - If `code` or `state` parameters are missing
+- `AuthenticationException` - If authentication fails for any reason
 
 ## Internal Methods
 
 ### `recordAuthSuccess`
 
-Records a successful authentication audit event.
+```java
+private void recordAuthSuccess(final UUID userId, final HttpServletRequest request)
+```
+
+Records a successful authentication event in the audit log.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `userId` | UUID | ID of the authenticated user |
-| `request` | HttpServletRequest | HTTP request for client info |
+| `userId` | `UUID` | The ID of the authenticated user |
+| `request` | `HttpServletRequest` | The HTTP request for extracting client information |
 
 ### `recordAuthFailure`
 
-Records a failed authentication audit event.
+```java
+private void recordAuthFailure(final RuntimeException ex, final HttpServletRequest request)
+```
+
+Records a failed authentication event in the audit log.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `ex` | RuntimeException | The exception that caused the failure |
-| `request` | HttpServletRequest | HTTP request for client info |
+| `ex` | `RuntimeException` | The exception that caused the failure |
+| `request` | `HttpServletRequest` | The HTTP request for extracting client information |
 
 ### `rejectIfProviderError`
+
+```java
+private void rejectIfProviderError(final HttpServletRequest request)
+```
 
 Checks if Auth0 returned an error in the callback and throws an exception if so.
 
@@ -104,11 +98,15 @@ Checks if Auth0 returned an error in the callback and throws an exception if so.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | HttpServletRequest | HTTP request containing error parameters |
+| `request` | `HttpServletRequest` | The HTTP request containing potential error parameters |
 
-**Throws:** `AuthenticationException` if Auth0 returned an error
+**Throws:** `AuthenticationException` - If Auth0 returned an error
 
 ### `exchangeCode`
+
+```java
+private Auth0VerifiedClaims exchangeCode(final String code, final AuthSession session, final String state)
+```
 
 Exchanges the authorization code for verified claims from Auth0.
 
@@ -116,15 +114,19 @@ Exchanges the authorization code for verified claims from Auth0.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `code` | String | Authorization code |
-| `session` | AuthSession | Session containing code verifier and nonce |
-| `state` | String | State parameter for logging |
+| `code` | `String` | The authorization code |
+| `session` | `AuthSession` | The stored authentication session |
+| `state` | `String` | The state parameter for logging |
 
-**Returns:** `Auth0VerifiedClaims` - Verified claims from Auth0
+**Returns:** `Auth0VerifiedClaims` - The verified claims from Auth0
 
-**Throws:** `AuthenticationException` if token exchange fails
+**Throws:** `AuthenticationException` - If the token exchange fails
 
 ### `parseAuth0Uuid`
+
+```java
+private Auth0Uuid parseAuth0Uuid(final String sub)
+```
 
 Parses the Auth0 `sub` claim into an `Auth0Uuid` value object.
 
@@ -132,13 +134,17 @@ Parses the Auth0 `sub` claim into an `Auth0Uuid` value object.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `sub` | String | Auth0 subject claim |
+| `sub` | `String` | The Auth0 subject claim |
 
-**Returns:** `Auth0Uuid` - Parsed UUID
+**Returns:** `Auth0Uuid` - The parsed Auth0 user ID
 
-**Throws:** `AuthenticationException` if the sub claim is invalid
+**Throws:** `AuthenticationException` - If the `sub` claim is invalid or cannot be parsed
 
 ### `findOrCreateUser`
+
+```java
+private CallbackResult findOrCreateUser(final Auth0Uuid auth0UserId, final String pictureUrl, final String email)
+```
 
 Finds an existing user by Auth0 UUID or creates a new one.
 
@@ -146,15 +152,19 @@ Finds an existing user by Auth0 UUID or creates a new one.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `auth0UserId` | Auth0Uuid | Auth0 user ID |
-| `pictureUrl` | String | User's profile picture URL |
-| `email` | String | User's email address |
+| `auth0UserId` | `Auth0Uuid` | The Auth0 user ID |
+| `pictureUrl` | `String` | The user's profile picture URL |
+| `email` | `String` | The user's email address |
 
-**Returns:** `CallbackResult` - Record containing the user and whether they are new
+**Returns:** `CallbackResult` - A record containing the user and whether they are new
 
-**Throws:** `AuthenticationException` if user creation/find fails
+**Throws:** `AuthenticationException` - If unable to create or find the user
 
 ### `refreshAvatar`
+
+```java
+private void refreshAvatar(final User user, final String pictureUrl)
+```
 
 Updates the user's avatar URL if a new picture URL is provided.
 
@@ -162,64 +172,82 @@ Updates the user's avatar URL if a new picture URL is provided.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `user` | User | The user entity to update |
-| `pictureUrl` | String | New picture URL |
+| `user` | `User` | The user entity to update |
+| `pictureUrl` | `String` | The new profile picture URL |
 
 ### `buildResponse`
 
-Builds the appropriate HTTP response based on the client platform.
+```java
+private ResponseEntity<Object> buildResponse(
+    final CallbackResult result,
+    final String platform,
+    final HttpServletRequest request,
+    final HttpServletResponse response)
+```
+
+Builds the appropriate response based on the client platform.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `result` | CallbackResult | User and new user flag |
-| `platform` | String | Client platform (web or mobile) |
-| `request` | HttpServletRequest | HTTP request |
-| `response` | HttpServletResponse | HTTP response |
+| `result` | `CallbackResult` | The authentication result containing user and new user flag |
+| `platform` | `String` | The client platform (e.g., "mobile") |
+| `request` | `HttpServletRequest` | The HTTP request |
+| `response` | `HttpServletResponse` | The HTTP response |
 
-**Returns:** `ResponseEntity<Object>` - Redirect response with tokens
+**Returns:** `ResponseEntity<Object>` - Either a redirect response or a token response
 
 ### `buildMobileRedirect`
 
-Builds a redirect response for mobile clients, optionally rendering a developer token page.
+```java
+private ResponseEntity<Object> buildMobileRedirect(
+    final JwtTokenService.AccessTokenResult accessToken,
+    final String refreshToken,
+    final boolean isNewUser,
+    final HttpServletRequest request)
+```
+
+Builds a redirect response for mobile clients with tokens in the URL.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `accessToken` | JwtTokenService.AccessTokenResult | Generated access token |
-| `refreshToken` | String | Generated refresh token |
-| `isNewUser` | boolean | Whether the user is new |
-| `request` | HttpServletRequest | HTTP request |
+| `accessToken` | `JwtTokenService.AccessTokenResult` | The generated access token |
+| `refreshToken` | `String` | The generated refresh token |
+| `isNewUser` | `boolean` | Whether the user is new |
+| `request` | `HttpServletRequest` | The HTTP request |
 
-**Returns:** `ResponseEntity<Object>` - Mobile redirect response
+**Returns:** `ResponseEntity<Object>` - A redirect response with tokens in the URL
+
+## Inner Types
+
+### `CallbackResult`
+
+```java
+private record CallbackResult(User user, Boolean isNewUser)
+```
+
+A record that holds the result of finding or creating a user.
+
+**Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `user` | `User` | The authenticated user entity |
+| `isNewUser` | `Boolean` | Whether the user was just created |
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `IAuth0AuthService` | Service | Auth0 authentication service |
-| `IAuthSessionStore` | Service | Session store for OAuth state |
-| `UserRepository` | Repository | User data access |
-| `IJwtTokenService` | Service | JWT token generation |
-| `IRefreshTokenStore` | Service | Refresh token storage |
-| `ICookieHelper` | Service | Cookie management |
-| `IDevTokenPageRenderer` | Service | Developer token page rendering |
+| `IAuth0AuthService` | Service | Handles Auth0 authentication operations |
+| `IAuthSessionStore` | Service | Manages authentication sessions |
+| `UserRepository` | Repository | Data access for user entities |
+| `IJwtTokenService` | Service | Generates JWT tokens |
+| `IRefreshTokenStore` | Service | Stores refresh tokens |
+| `ICookieHelper` | Service | Manages HTTP cookies |
+| `IDevTokenPageRenderer` | Service | Renders developer token pages |
 | `JwtProperties` | Configuration | JWT configuration properties |
-| `IRecordAuditEventService` | Service | Audit event recording |
-
-## Usage Example
-
-```java
-// The controller is automatically mapped by Spring
-// No direct instantiation needed
-```
-
-## Notes
-
-- The controller uses a `CallbackResult` record to encapsulate the user and new user flag
-- Mobile clients receive a redirect to a custom scheme URL (e.g., `myapp://auth/callback?accessToken=...`)
-- Web clients receive cookies and a redirect to the frontend callback URL
-- Audit events are recorded for both success and failure scenarios
-- The controller handles concurrent user creation attempts gracefully using `DataIntegrityViolationException`
+| `IRecordAuditEventService` | Service | Records audit events |

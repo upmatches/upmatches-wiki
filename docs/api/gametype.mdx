@@ -6,31 +6,34 @@ sidebar_label: GameType
 
 # GameType Enum
 
-The `GameType` enum defines the possible types of games within the application. It is used to distinguish between single-player and double-player game modes.
+The `GameType` enum defines the possible game modes for a match in the UpMatches application. It is used to distinguish between singles and doubles matches, which affects player count, scoring rules, and match logic.
 
-## Package Location
+## Location
 
-`com.upmatches.app.features.game.enums`
+- **Package:** `com.upmatches.app.features.game.enums`
+- **File:** `GameType.java`
 
-## Enum Values
+## Values
 
-| Value    | Description                                                                 |
-| -------- | --------------------------------------------------------------------------- |
-| `SINGLE` | Represents a single-player game mode where one participant plays alone.     |
-| `DOUBLE` | Represents a double-player game mode where two participants play together.  |
+| Constant | Description |
+|----------|-------------|
+| `SINGLE` | A match played between two individual players (1 vs 1). |
+| `DOUBLE` | A match played between two teams of two players each (2 vs 2). |
 
 ## Usage
 
-This enum is typically used to configure game logic, UI components, or data models that need to differentiate between the number of players in a game session. For example, it can be used in a game settings class or as a parameter in a game creation method.
+This enum is typically used in match creation, game logic, and UI components to determine the appropriate configuration for a match. For example:
+
+- **Player count validation:** Ensure the correct number of players are assigned.
+- **Scoring rules:** Apply different scoring logic for singles vs. doubles.
+- **Display:** Show the correct match type label in the user interface.
 
 ## Example
 
 ```java
-GameType currentGameType = GameType.SINGLE;
+GameType type = GameType.SINGLE;
 
-if (currentGameType == GameType.DOUBLE) {
-    // Initialize two-player game logic
-} else {
-    // Initialize single-player game logic
+if (type == GameType.DOUBLE) {
+    // Handle doubles match logic
 }
 ```

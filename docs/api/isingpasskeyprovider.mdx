@@ -6,52 +6,53 @@ sidebar_label: ISingpassKeyProvider
 
 # ISingpassKeyProvider Interface
 
-The `ISingpassKeyProvider` is a **sealed interface** that defines the contract for providing cryptographic keys specifically for Singpass authentication. It extends the `SigningKeyProvider` interface and is restricted to be implemented only by the `SingpassKeyProvider` class.
-
-This interface is part of the authentication services layer in the `com.upmatches.app.features.auth.services` package and is designed to work with Nimbus JOSE+JWT library for handling JSON Web Keys (JWK).
-
 ## Purpose
 
-The primary purpose of this interface is to standardize the way Singpass-related cryptographic keys are accessed within the application. It provides:
+The `ISingpassKeyProvider` interface defines a contract for providing cryptographic keys specifically for Singpass authentication. It extends the `SigningKeyProvider` interface and is a **sealed interface**, meaning it can only be implemented by the permitted subclass `SingpassKeyProvider`. This interface ensures that any implementation provides both encryption keys and public JWKS (JSON Web Key Set) data for Singpass integration.
 
-- Access to an encryption key in the form of an Elliptic Curve (EC) key
-- A method to retrieve the public JSON Web Key Set (JWKS) as a JSON string
+## Interface Hierarchy
 
-## Interface Definition
-
-```java
-public sealed interface ISingpassKeyProvider extends SigningKeyProvider permits SingpassKeyProvider {
-    // Methods defined below
-}
+```
+SigningKeyProvider (parent interface)
+    └── ISingpassKeyProvider (sealed interface)
+            └── SingpassKeyProvider (permitted implementation)
 ```
 
-### Sealed Interface
-
-This interface is declared as `sealed`, meaning it has a restricted set of implementations. Only the `SingpassKeyProvider` class is permitted to implement this interface. This design ensures controlled inheritance and provides compile-time safety.
-
-## Methods
+## Method Summary
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `getEncryptionKey()` | `ECKey` | Returns the encryption key as an Elliptic Curve JSON Web Key (EC JWK) from the Nimbus library |
-| `getPublicJwksJson()` | `String` | Returns the public JSON Web Key Set (JWKS) as a JSON string |
+| `getEncryptionKey()` | `ECKey` | Retrieves the Elliptic Curve (EC) encryption key used for encrypting data in Singpass communications |
+| `getPublicJwksJson()` | `String` | Returns the public JSON Web Key Set (JWKS) as a JSON string, which is used for verifying signatures and encrypting data |
 
-### Method Details
+## Method Details
 
-#### `getEncryptionKey()`
+### `getEncryptionKey()`
 
-- **Return Type**: `com.nimbusds.jose.jwk.ECKey`
-- **Description**: Provides the encryption key used for encrypting data in Singpass authentication flows. The key is represented as an Elliptic Curve key from the Nimbus JOSE+JWT library.
+```java
+ECKey getEncryptionKey();
+```
 
-#### `getPublicJwksJson()`
+Returns an `ECKey` object representing the Elliptic Curve encryption key. This key is used for encrypting sensitive data during Singpass authentication flows.
 
-- **Return Type**: `String`
-- **Description**: Returns the public JSON Web Key Set (JWKS) as a serialized JSON string. This is typically used to expose public keys to external systems for verification purposes.
+**Returns:**
+- `ECKey` - The Elliptic Curve encryption key
+
+### `getPublicJwksJson()`
+
+```java
+String getPublicJwksJson();
+```
+
+Returns the public JSON Web Key Set (JWKS) as a JSON string. This is used by external systems to verify signatures and encrypt data intended for the Singpass integration.
+
+**Returns:**
+- `String` - The public JWKS in JSON format
 
 ## Usage Example
 
 ```java
-// Example implementation (SingpassKeyProvider)
+// Example implementation (not actual code)
 public final class SingpassKeyProvider implements ISingpassKeyProvider {
     
     @Override
@@ -63,20 +64,17 @@ public final class SingpassKeyProvider implements ISingpassKeyProvider {
     @Override
     public String getPublicJwksJson() {
         // Return the public JWKS as JSON string
-        return publicJwksJson;
+        return jwksJson;
     }
     
-    // Additional implementation details...
+    // Additional methods from SigningKeyProvider interface
+    // ...
 }
 ```
 
-## Dependencies
+## Important Notes
 
-- **Nimbus JOSE+JWT**: The interface depends on `com.nimbusds.jose.jwk.ECKey` for the encryption key type
-- **SigningKeyProvider**: This interface extends `SigningKeyProvider`, inheriting any signing-related methods
-
-## Notes
-
-- The interface is sealed, ensuring that only `SingpassKeyProvider` can implement it
-- The encryption key is specifically an EC (Elliptic Curve) key, which is commonly used in modern cryptographic systems
-- The public JWKS JSON string is essential for key distribution and verification in JWT-based authentication systems
+- This is a **sealed interface**, which restricts implementation to only the `SingpassKeyProvider` class
+- The interface extends `SigningKeyProvider`, inheriting any signing-related methods
+- The `ECKey` type comes from the Nimbus JOSE+JWT library (`com.nimbusds.jose.jwk.ECKey`)
+- This interface is part of the `com.upmatches.app.features.auth.services` package

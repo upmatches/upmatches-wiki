@@ -6,65 +6,67 @@ sidebar_label: ShareLinkRedirectController
 
 # ShareLinkRedirectController
 
-The `ShareLinkRedirectController` is a Spring REST controller responsible for handling share link redirections. It validates incoming share link codes, resolves them to their target URLs, and issues HTTP 302 redirect responses with the resolved URL appended with the original share code as a query parameter.
+The `ShareLinkRedirectController` is a Spring REST controller responsible for handling share link redirections. It receives a short alphanumeric code via a GET request, resolves it to a target URL using the `IResolveShareLinkService`, and issues an HTTP 302 redirect response with the resolved URL appended with the original share code as a query parameter.
 
 ## Purpose
 
-This controller provides a public endpoint that accepts short alphanumeric share codes (e.g., `/s/AbCd1234`), validates the code format, resolves it to a full web URL using the `IResolveShareLinkService`, and redirects the user to that URL with the original code appended as a `from=` query parameter.
+This controller enables the application's share link functionality by:
+- Accepting a unique 8-character alphanumeric code in the URL path.
+- Validating the code format before processing.
+- Resolving the code to a full web URL via the service layer.
+- Appending the original code as a `from=` query parameter to the resolved URL.
+- Returning an HTTP 302 (Found) redirect response to the client.
 
-## Dependencies
-
-| Dependency | Description |
-|------------|-------------|
-| `IResolveShareLinkService` | Service interface for resolving share link codes to their target URLs |
-
-## Constants
-
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `CODE_PATTERN` | `^[0-9A-Za-z]{8}$` | Regex pattern for validating share link codes (exactly 8 alphanumeric characters) |
-| `MSG_INVALID_CODE` | `"Share link code must be 8 alphanumeric characters."` | Error message for invalid code format |
-| `FROM_QUERY_KEY` | `from=` | Query parameter key for the original share code |
-| `QUERY_DELIMITER` | `?` | URL query string delimiter |
-| `QUERY_SEPARATOR` | `&` | URL query parameter separator |
-
-## Constructor
-
-### `ShareLinkRedirectController(IResolveShareLinkService resolveShareLinkService)`
-
-Creates a new instance of the controller with the required service dependency.
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `resolveShareLinkService` | `IResolveShareLinkService` | Service used to resolve share link codes to URLs |
-
-## Endpoints
+## Endpoint
 
 ### `GET /s/{code}`
 
-Redirects the user to the resolved URL with the original share code appended as a query parameter.
+Redirects the user to the resolved URL associated with the provided share code.
 
-**Path Parameters:**
+**Path Parameters**
 
-| Parameter | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| `code` | `String` | Must match `^[0-9A-Za-z]{8}$` | The 8-character alphanumeric share link code |
+| Parameter | Type   | Description                                                                 | Validation Pattern          |
+|-----------|--------|-----------------------------------------------------------------------------|-----------------------------|
+| `code`    | String | An 8-character alphanumeric share link code.                                | `^[0-9A-Za-z]{8}$`         |
 
-**Response:**
+**Response**
 
-| Status | Description |
-|--------|-------------|
-| `302 Found` | Redirect response with `Location` header pointing to the resolved URL |
+| Status Code | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| 302 Found   | Redirects to the resolved URL with the `from=` query parameter appended.   |
+| 400 Bad Request | Returned if the `code` parameter does not match the required pattern.   |
 
-**Example:**
+**Example Request**
 
 ```
-GET /s/AbCd1234
-Response: 302 Found
-Location: https://example.com/profile?from=AbCd1234
+GET /s/Abc12345
 ```
+
+**Example Response**
+
+- Status: `302 Found`
+- Location header: `https://example.com/target-page?from=Abc12345`
+
+## Public Methods
+
+### `redirect(String code)`
+
+Resolves a share link code and returns a redirect response.
+
+| Parameter | Type   | Description                                                                 |
+|-----------|--------|-----------------------------------------------------------------------------|
+| `code`    | String | The 8-character alphanumeric share link code from the URL path.             |
+
+| Returns               | Description                                                                 |
+|-----------------------|-----------------------------------------------------------------------------|
+| `ResponseEntity<Void>` | A 302 Found response with the `Location` header set to the resolved URL.   |
+
+**Behavior**
+
+1. Validates the `code` parameter against the pattern `^[0-9A-Za-z]{8}$`.
+2. Calls `resolveShareLinkService.execute(code)` to obtain a `PublicShareLinkResponse` containing the resolved web URL.
+3. Appends the original code as a `from=` query parameter to the resolved URL.
+4. Returns a `ResponseEntity` with HTTP status 302 and the `Location` header.
 
 ## Private Methods
 
@@ -72,31 +74,38 @@ Location: https://example.com/profile?from=AbCd1234
 
 Appends the share code as a `from=` query parameter to the given URL.
 
-**Parameters:**
+| Parameter | Type   | Description                                                                 |
+|-----------|--------|-----------------------------------------------------------------------------|
+| `webUrl`  | String | The base URL to which the query parameter will be appended.                 |
+| `code`    | String | The share link code to include as the `from` parameter value.               |
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `webUrl` | `String` | The base URL to append the query parameter to |
-| `code` | `String` | The share link code to include in the query parameter |
+| Returns | Description                                                                 |
+|---------|-----------------------------------------------------------------------------|
+| String  | The original URL with the `from=` query parameter appended.                 |
 
-**Returns:**
+**Behavior**
 
-| Type | Description |
-|------|-------------|
-| `String` | The URL with the `from=` query parameter appended |
+- If the `webUrl` already contains a query string (indicated by `?`), the parameter is appended using `&`.
+- Otherwise, the parameter is appended using `?`.
 
-**Behavior:**
+## Dependencies
 
-- If the URL already contains a query string (has `?`), the parameter is appended using `&`
-- If the URL has no query string, the parameter is appended using `?`
+| Dependency                  | Description                                                                 |
+|-----------------------------|-----------------------------------------------------------------------------|
+| `IResolveShareLinkService`  | Service interface for resolving a share link code to its target URL.        |
 
-## Usage Example
+## Constants
 
-```java
-// Request: GET /s/XyZ789Ab
-// Response: HTTP 302 with Location: https://example.com/page?from=XyZ789Ab
-```
+| Constant            | Value                          | Description                                                                 |
+|---------------------|--------------------------------|-----------------------------------------------------------------------------|
+| `CODE_PATTERN`      | `^[0-9A-Za-z]{8}$`            | Regular expression for validating the share link code format.               |
+| `MSG_INVALID_CODE`  | `"Share link code must be 8 alphanumeric characters."` | Error message for invalid code format.                                      |
+| `FROM_QUERY_KEY`    | `"from="`                      | The query parameter key used to pass the original share code.               |
+| `QUERY_DELIMITER`   | `"?"`                          | Character used to start a query string in a URL.                            |
+| `QUERY_SEPARATOR`   | `"&"`                          | Character used to separate multiple query parameters in a URL.              |
 
-## Validation
+## Usage Notes
 
-The controller uses `@Validated` at the class level and `@Pattern` on the `code` path parameter to ensure that only valid 8-character alphanumeric codes are processed. Invalid codes will result in a validation error response before the service is called.
+- The controller is annotated with `@Validated`, enabling validation of the `@Pattern` constraint on the `code` parameter.
+- The service layer (`IResolveShareLinkService`) is injected via constructor injection.
+- The redirect uses HTTP 302 (Found) status code, which is standard for temporary redirects.

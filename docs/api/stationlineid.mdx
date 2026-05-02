@@ -6,33 +6,29 @@ sidebar_label: StationLineId
 
 # StationLineId
 
-The `StationLineId` class is a composite primary key class used in the UpMatches application's venue domain. It represents the unique identifier for a station line association, combining a station ID and a transit line code. This class is annotated with `@Embeddable` from Jakarta Persistence, making it suitable for use as an embedded ID in JPA entities.
+The `StationLineId` class is a JPA embeddable composite primary key used to uniquely identify a relationship between a transit station and a transit line. It is designed to be used as a primary key in an entity that maps the many-to-many relationship between stations and transit lines.
 
 ## Purpose
 
-This class serves as a composite key to uniquely identify the relationship between a station and a transit line. It implements `Serializable` to allow for serialization of the composite key, which is required for JPA entities that use composite primary keys.
+This class serves as a composite key that combines:
+- A `stationId` (Long) representing the unique identifier of a transit station
+- A `transitLineCode` (String) representing the code of a transit line
+
+By implementing `Serializable` and providing proper `equals()` and `hashCode()` methods, this class ensures that instances can be used reliably in JPA collections and as primary keys.
 
 ## Class Details
 
-| Aspect | Description |
-|--------|-------------|
-| Package | `com.upmatches.app.features.venue.entities` |
-| Annotations | `@Embeddable`, `@Getter` (Lombok) |
-| Implements | `Serializable` |
-
-## Fields
-
-| Field | Type | Column Name | Length | Description |
-|-------|------|-------------|--------|-------------|
-| `stationId` | `Long` | `station_id` | N/A | The unique identifier of the station |
-| `transitLineCode` | `String` | `transit_line_code` | 10 | The code identifying the transit line |
+| Property | Type | Description |
+|----------|------|-------------|
+| `stationId` | `Long` | The unique identifier of the transit station |
+| `transitLineCode` | `String` | The code of the transit line (max 10 characters) |
 
 ## Constructors
 
 | Constructor | Description |
 |-------------|-------------|
 | `StationLineId()` | Protected no-argument constructor required by JPA |
-| `StationLineId(Long stationId, String transitLineCode)` | Parameterized constructor to create a composite key with both components |
+| `StationLineId(Long stationId, String transitLineCode)` | Creates a new composite key with the specified station ID and transit line code |
 
 ## Methods
 
@@ -44,21 +40,21 @@ Compares this `StationLineId` with another object for equality.
 |-----------|------|-------------|
 | `o` | `Object` | The object to compare with |
 
-**Returns:** `boolean` - `true` if the objects are equal (same station ID and transit line code), `false` otherwise.
+**Returns:** `boolean` - `true` if the objects are equal (same station ID and transit line code), `false` otherwise
 
 ### `hashCode()`
 
 Returns a hash code value for this `StationLineId`.
 
-**Returns:** `int` - A hash code computed from both `stationId` and `transitLineCode` fields.
+**Returns:** `int` - A hash code computed from the station ID and transit line code
 
 ## Usage Example
 
 ```java
 // Creating a composite key
-StationLineId stationLineId = new StationLineId(123L, "RED");
+StationLineId key = new StationLineId(123L, "RED");
 
-// Using in JPA entity
+// Using in an entity
 @Entity
 public class StationLine {
     @EmbeddedId
@@ -70,7 +66,8 @@ public class StationLine {
 
 ## Notes
 
-- The class uses Lombok's `@Getter` annotation to automatically generate getter methods for both fields.
-- The protected no-argument constructor is required by JPA specifications for entity classes.
-- The `equals()` and `hashCode()` methods are overridden to ensure proper behavior when used in collections and JPA operations.
-- The `transitLineCode` field has a maximum length of 10 characters as specified by the `@Column` annotation.
+- The class is annotated with `@Embeddable` to indicate it can be used as an embedded primary key in JPA entities
+- The `@Getter` annotation from Lombok generates getter methods for both fields
+- The protected no-argument constructor is required by JPA for entity instantiation
+- The `equals()` and `hashCode()` methods are implemented using `Objects.equals()` and `Objects.hash()` for proper comparison and hashing
+- The `transitLineCode` field is limited to 10 characters as specified by the `@Column(length = 10)` annotation

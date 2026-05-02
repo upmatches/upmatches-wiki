@@ -4,39 +4,40 @@ title: IGameLookupService Interface
 sidebar_label: IGameLookupService
 ---
 
-# IGameLookupService Interface
+## Overview
 
-The `IGameLookupService` interface defines a contract for retrieving core domain entities within the game management system. It serves as a centralized lookup service that provides type-safe methods for fetching `Game`, `Activity`, `Venue`, `User`, and `SkillLevel` entities by their respective identifiers.
+The `IGameLookupService` interface defines a contract for retrieving domain entities within the game management context. It serves as a centralized lookup service that provides type-safe methods for fetching core business objects such as `Game`, `Activity`, `Venue`, `User`, and `SkillLevel` by their respective identifiers.
 
-This interface is declared as a **sealed interface**, meaning only the permitted implementation (`GameLookupService`) can implement it. This design pattern enforces controlled extensibility and ensures that all lookup operations follow a consistent contract.
+This interface is declared as a **sealed interface**, meaning only explicitly permitted classes (in this case, `GameLookupService`) can implement it. This design enforces a controlled implementation hierarchy and ensures that all lookup operations follow a consistent pattern.
 
 ## Purpose
 
-- Provides a unified API for entity retrieval across the game service layer
-- Ensures consistent error handling through `orThrow` method naming convention
-- Supports different lookup semantics (standard find, find for update, find ignoring soft-deleted records)
-- Enforces type safety with specific identifier types (`UUID` for most entities, `Long` for `Venue` and `SkillLevel`)
+The primary purpose of this interface is to abstract the retrieval of domain entities from their persistence layer. By providing dedicated lookup methods, it promotes:
 
-## Method Summary
+- **Consistency**: All entity lookups follow the same pattern and error handling strategy.
+- **Type Safety**: Each method returns a specific entity type, eliminating the need for casting.
+- **Separation of Concerns**: The interface isolates lookup logic from business logic, making the codebase more maintainable and testable.
 
-| Method | Return Type | Parameter(s) | Description |
-|--------|-------------|--------------|-------------|
-| `findGameOrThrow` | `Game` | `UUID id` | Retrieves a game by its UUID. Throws an exception if not found. |
-| `findGameForUpdateOrThrow` | `Game` | `UUID id` | Retrieves a game with a pessimistic lock for update operations. Throws if not found. |
-| `findGameIgnoringDeletedOrThrow` | `Game` | `UUID id` | Retrieves a game regardless of its soft-delete status. Throws if not found. |
-| `findActivityOrThrow` | `Activity` | `UUID id` | Retrieves an activity by its UUID. Throws if not found. |
-| `findVenueOrThrow` | `Venue` | `Long id` | Retrieves a venue by its numeric identifier. Throws if not found. |
-| `findUserOrThrow` | `User` | `UUID id` | Retrieves a user by their UUID. Throws if not found. |
-| `findUserForUpdateOrThrow` | `User` | `UUID id` | Retrieves a user with a pessimistic lock for update operations. Throws if not found. |
-| `findSkillLevelOrThrow` | `SkillLevel` | `Long id` | Retrieves a skill level by its numeric identifier. Throws if not found. |
+## Methods
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findGameOrThrow` | `Game` | `UUID id` | Retrieves a game by its unique identifier. Throws an exception if the game is not found. |
+| `findGameForUpdateOrThrow` | `Game` | `UUID id` | Retrieves a game with a pessimistic lock for update operations. Throws an exception if not found. |
+| `findGameIgnoringDeletedOrThrow` | `Game` | `UUID id` | Retrieves a game even if it has been soft-deleted. Throws an exception if not found. |
+| `findActivityOrThrow` | `Activity` | `UUID id` | Retrieves an activity by its unique identifier. Throws an exception if not found. |
+| `findVenueOrThrow` | `Venue` | `Long id` | Retrieves a venue by its unique identifier. Throws an exception if not found. |
+| `findUserOrThrow` | `User` | `UUID id` | Retrieves a user by their unique identifier. Throws an exception if not found. |
+| `findUserForUpdateOrThrow` | `User` | `UUID id` | Retrieves a user with a pessimistic lock for update operations. Throws an exception if not found. |
+| `findSkillLevelOrThrow` | `SkillLevel` | `Long id` | Retrieves a skill level by its unique identifier. Throws an exception if not found. |
 
 ## Usage Notes
 
-- All methods follow the "orThrow" pattern, indicating they will throw an appropriate exception (typically a `NotFoundException` or similar) when the requested entity does not exist
-- The `findGameForUpdateOrThrow` and `findUserForUpdateOrThrow` methods are designed for concurrent update scenarios where database-level locking is required
-- The `findGameIgnoringDeletedOrThrow` method is useful for administrative operations that need to access soft-deleted records
-- Identifier types are intentionally different: `UUID` for `Game`, `Activity`, and `User` entities; `Long` for `Venue` and `SkillLevel` entities
+- All methods follow the "or throw" naming convention, indicating that they will throw an exception (typically a `NotFoundException` or similar) if the requested entity does not exist.
+- The interface uses `UUID` for `Game`, `Activity`, and `User` identifiers, while `Venue` and `SkillLevel` use `Long` identifiers.
+- The `findGameForUpdateOrThrow` and `findUserForUpdateOrThrow` methods are designed for scenarios where concurrent modifications need to be prevented, typically by acquiring a database-level lock.
+- The `findGameIgnoringDeletedOrThrow` method is useful for administrative operations where soft-deleted records need to be accessed.
 
 ## Implementation
 
-This interface is implemented by the `GameLookupService` class. The implementation should provide concrete database access logic for each method while adhering to the contract defined by this interface.
+The only permitted implementation of this interface is `GameLookupService`. Implementations must provide concrete logic for each lookup method, typically delegating to corresponding repository classes and handling the "not found" scenarios by throwing appropriate exceptions.

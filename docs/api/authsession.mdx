@@ -6,64 +6,41 @@ sidebar_label: AuthSession
 
 # AuthSession
 
-The `AuthSession` class is a Java record that encapsulates the essential parameters required for an OAuth 2.0 authorization flow. It stores the state, nonce, code verifier, and platform identifier used during the authentication process. This record is immutable and provides a concise way to group these related fields together.
+The `AuthSession` class is a Java record that encapsulates the essential parameters required for managing an OAuth 2.0 authentication flow within the application. It stores the state, nonce, code verifier, and platform identifier used during the authorization process to ensure secure and stateful communication with the authentication provider.
 
 ## Purpose
 
-- **State**: A random string used to prevent Cross-Site Request Forgery (CSRF) attacks. The authorization server returns this value, and the client verifies it matches the original request.
-- **Nonce**: A random value used to associate a client session with an ID token and to mitigate replay attacks.
-- **Code Verifier**: A cryptographically random string used in the PKCE (Proof Key for Code Exchange) flow to securely exchange the authorization code for tokens.
-- **Platform**: A string identifying the platform (e.g., "web", "android", "ios") from which the authentication request originated.
+This record serves as a lightweight, immutable data carrier for the transient data needed during the OAuth handshake. By bundling these parameters together, it simplifies passing authentication context between different components of the system (e.g., from the authorization request to the token exchange step). The `state` and `nonce` help prevent CSRF and replay attacks, while the `codeVerifier` is used in the PKCE (Proof Key for Code Exchange) flow. The `platform` field identifies the client platform (e.g., "web", "mobile") for routing or logging purposes.
 
-## Record Definition
+## Record Components
 
-```java
-public record AuthSession(String state, String nonce, String codeVerifier, String platform) {}
-```
-
-## Constructor
-
-The record automatically generates a canonical constructor that initializes all fields.
-
-| Parameter      | Type     | Description                                                                 |
-|----------------|----------|-----------------------------------------------------------------------------|
-| `state`        | `String` | A random string for CSRF protection.                                        |
-| `nonce`        | `String` | A random string for session association and replay attack prevention.       |
-| `codeVerifier` | `String` | A cryptographically random string used in the PKCE flow.                    |
-| `platform`     | `String` | The platform identifier (e.g., "web", "android", "ios").                    |
-
-## Methods
-
-Since `AuthSession` is a Java record, the compiler automatically generates the following methods:
-
-| Method            | Return Type | Description                                                                 |
-|-------------------|-------------|-----------------------------------------------------------------------------|
-| `state()`         | `String`    | Returns the state value.                                                    |
-| `nonce()`         | `String`    | Returns the nonce value.                                                    |
-| `codeVerifier()`  | `String`    | Returns the code verifier value.                                            |
-| `platform()`      | `String`    | Returns the platform identifier.                                            |
-| `equals(Object)`  | `boolean`   | Compares this record to another object for equality based on all fields.    |
-| `hashCode()`      | `int`       | Returns a hash code value for this record based on all fields.              |
-| `toString()`      | `String`    | Returns a string representation of the record, including all field values.  |
+| Component       | Type     | Description                                                                 |
+|-----------------|----------|-----------------------------------------------------------------------------|
+| `state`         | `String` | A random string used to maintain state between the request and callback to prevent CSRF attacks. |
+| `nonce`         | `String` | A unique value used to associate a client session with an ID token and mitigate replay attacks. |
+| `codeVerifier`  | `String` | A cryptographically random string used in the PKCE flow to verify the authorization code exchange. |
+| `platform`      | `String` | Identifies the client platform (e.g., "ios", "android", "web") for context-aware processing. |
 
 ## Usage Example
 
 ```java
+// Creating an AuthSession instance
 AuthSession session = new AuthSession(
-    "randomState123",
-    "randomNonce456",
-    "codeVerifier789",
+    "xyz123state",
+    "abc456nonce",
+    "generatedCodeVerifierValue",
     "web"
 );
 
-String state = session.state();          // "randomState123"
-String nonce = session.nonce();          // "randomNonce456"
-String codeVerifier = session.codeVerifier(); // "codeVerifier789"
-String platform = session.platform();    // "web"
+// Accessing fields
+String state = session.state();
+String nonce = session.nonce();
+String codeVerifier = session.codeVerifier();
+String platform = session.platform();
 ```
 
 ## Notes
 
-- This record is immutable and thread-safe.
-- All fields are non-nullable by default; ensure you pass non-null values to avoid `NullPointerException`.
-- The record is part of the `com.upmatches.app.features.auth.models` package.
+- This record is immutable and thread-safe by design.
+- All fields are non-nullable by convention; ensure values are provided during construction.
+- The record automatically provides `equals()`, `hashCode()`, and `toString()` methods based on its components.

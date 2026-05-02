@@ -6,174 +6,198 @@ sidebar_label: ListGamesCursorService
 
 # ListGamesCursorService
 
-The `ListGamesCursorService` class is a Spring service that provides cursor-based pagination for listing games. It implements the `IListGamesCursorService` interface and handles filtering, sorting, and pagination of game data with support for location-based queries, time ranges, skill levels, and venue filters.
+The `ListGamesCursorService` class is a Spring service that provides cursor-based pagination for listing games. It implements the `IListGamesCursorService` interface and is responsible for fetching, filtering, and paginating game data with support for geolocation, time-based filters, and user-specific joinability information.
 
 ## Purpose
 
-This service enables efficient retrieval of game listings with cursor-based pagination, allowing clients to fetch games in pages while maintaining consistent ordering. It supports complex filtering including:
-- Location-based filtering with bounding box calculations
-- Date and time range filtering
-- Skill level and venue filtering
-- Participant count aggregation
-- Joinability status computation for authenticated users
+This service enables efficient, cursor-based pagination of game listings with the following capabilities:
+- Filter games by date/time ranges, skill levels, venues, and geographic location
+- Compute bounding boxes for location-based queries
+- Resolve authenticated user context for personalized responses
+- Calculate participant counts and joinability status for each game
+- Generate cursor-based pagination tokens for efficient navigation
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
 | `GameRepository` | Repository | Data access for game entities |
-| `GameParticipantRepository` | Repository | Data access for participant counts |
-| `IAuthenticatedUserResolver` | Service | Resolves current authenticated user |
+| `GameParticipantRepository` | Repository | Data access for game participant counts |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
 | `IGameJoinabilityService` | Service | Computes joinability status for games |
-| `GameCursor` | Helper | Encodes/decodes cursor values for pagination |
+| `GameCursor` | Helper | Encodes/decodes cursor tokens for pagination |
 | `Clock` | Utility | Provides current time for temporal calculations |
 
 ## Public Methods
 
-### `execute(ListGamesCursorFilterRequest filter, String cursor, int size)`
+### `execute`
 
-Executes a cursor-based paginated query for games with optional filtering.
+```java
+@Transactional(readOnly = true)
+public CursorPagedResponse<GameResponse> execute(
+    ListGamesCursorFilterRequest filter,
+    String cursor,
+    int size)
+```
+
+Executes the cursor-based pagination query with optional filters.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `filter` | `ListGamesCursorFilterRequest` | Filter criteria (can be null for no filtering) |
-| `cursor` | `String` | Encoded cursor for pagination (null for first page) |
-| `size` | `int` | Maximum number of results to return |
+| `filter` | `ListGamesCursorFilterRequest` | Optional filter criteria (date range, location, skill levels, venues). If null, an empty filter is used. |
+| `cursor` | `String` | Encoded cursor token for pagination. Null for the first page. |
+| `size` | `int` | Maximum number of results to return per page. |
 
-**Returns:** `CursorPagedResponse<GameResponse>`
+**Returns:**
 
-**Throws:** `ResourceNotFoundException` if the operation fails
+| Type | Description |
+|------|-------------|
+| `CursorPagedResponse<GameResponse>` | A paginated response containing the list of games and an optional next cursor token. |
 
-**Behavior:**
-1. Resolves the current authenticated user (if any)
-2. Decodes the cursor to determine the starting point
-3. Validates cross-field constraints in the filter
-4. Executes the query with all applicable filters
-5. Aggregates participant counts for returned games
-6. Computes joinability status for authenticated users
-7. Maps game entities to response DTOs
-8. Generates the next cursor for subsequent pages
+**Throws:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | Wraps any underlying data access exceptions |
+| `IllegalArgumentException` | If filter validation fails (e.g., incomplete location fields, invalid date range) |
 
 ## Internal Methods
 
-### `computeBoundingBox(ListGamesCursorFilterRequest f)`
+### `runQuery`
 
-Computes a bounding box for location-based filtering.
+```java
+private List<Game> runQuery(
+    UUID userId,
+    Optional<GameCursor.Value> decoded,
+    ListGamesCursorFilterRequest f,
+    int size)
+```
+
+Executes the actual database query with all filter parameters applied.
 
 **Parameters:**
-- `f`: Filter request containing latitude, longitude, and radius
 
-**Returns:** `BoundingBox` record with lat/lng min/max values
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | `UUID` | The authenticated user's ID (null if anonymous) |
+| `decoded` | `Optional<GameCursor.Value>` | Decoded cursor value containing start time and ID |
+| `f` | `ListGamesCursorFilterRequest` | Validated filter request |
+| `size` | `int` | Page size |
 
-### `emptyFilter()`
+**Returns:** `List<Game>` - The filtered and paginated list of games.
 
-Creates an empty filter request with all null fields.
+### `countParticipants`
 
-**Returns:** `ListGamesCursorFilterRequest` with all null values
+```java
+private Map<UUID, Long> countParticipants(List<Game> games)
+```
 
-### `toMinutes(LocalTime time)`
+Counts active participants for each game in the result set.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `games` | `List<Game>` | The list of games to count participants for |
+
+**Returns:** `Map<UUID, Long>` - A map of game IDs to participant counts.
+
+### `computeBoundingBox`
+
+```java
+private static BoundingBox computeBoundingBox(ListGamesCursorFilterRequest f)
+```
+
+Computes a geographic bounding box based on the filter's latitude, longitude, and radius.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `f` | `ListGamesCursorFilterRequest` | Filter request containing location data |
+
+**Returns:** `BoundingBox` - A record containing latMin, latMax, lngMin, lngMax values.
+
+### `validateCrossFields`
+
+```java
+private static void validateCrossFields(ListGamesCursorFilterRequest f)
+```
+
+Validates cross-field constraints in the filter request.
+
+**Throws:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `IllegalArgumentException` | If location fields are incomplete or date range is invalid |
+
+### `floorAtNow`
+
+```java
+private Instant floorAtNow(Instant dateFloor)
+```
+
+Returns the later of the provided date floor and the current time.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `dateFloor` | `Instant` | The date floor to compare against |
+
+**Returns:** `Instant` - The later of the two instants.
+
+### `emptyFilter`
+
+```java
+private static ListGamesCursorFilterRequest emptyFilter()
+```
+
+Creates an empty filter request with all fields set to null.
+
+**Returns:** `ListGamesCursorFilterRequest` - An empty filter instance.
+
+### `toMinutes`
+
+```java
+private static Integer toMinutes(LocalTime time)
+```
 
 Converts a `LocalTime` to total minutes since midnight.
 
 **Parameters:**
-- `time`: Time to convert (can be null)
 
-**Returns:** Integer representing minutes, or null if input is null
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `time` | `LocalTime` | The time to convert (may be null) |
 
-### `validateCrossFields(ListGamesCursorFilterRequest f)`
+**Returns:** `Integer` - Total minutes, or null if input is null.
 
-Validates cross-field constraints in the filter request.
-
-**Throws:** `IllegalArgumentException` if:
-- Location fields are partially provided
-- `toDate` is before `fromDate`
-
-### `runQuery(UUID userId, Optional<GameCursor.Value> decoded, ListGamesCursorFilterRequest f, int size)`
-
-Executes the actual database query with all applied filters.
-
-**Parameters:**
-- `userId`: Current user ID (null for anonymous)
-- `decoded`: Decoded cursor value
-- `f`: Filter request
-- `size`: Page size
-
-**Returns:** `List<Game>` of matching games
-
-### `floorAtNow(Instant dateFloor)`
-
-Returns the later of the provided date floor and current time.
-
-**Parameters:**
-- `dateFloor`: Date floor instant (can be null)
-
-**Returns:** `Instant` representing the effective floor time
-
-### `countParticipants(List<Game> games)`
-
-Counts active participants for a list of games.
-
-**Parameters:**
-- `games`: List of games to count participants for
-
-**Returns:** `Map<UUID, Long>` mapping game IDs to participant counts
-
-## Inner Types
+## Internal Records
 
 ### `BoundingBox`
 
-A record representing a geographic bounding box.
+```java
+private record BoundingBox(BigDecimal latMin, BigDecimal latMax, BigDecimal lngMin, BigDecimal lngMax)
+```
 
-**Fields:**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `latMin` | `BigDecimal` | Minimum latitude |
-| `latMax` | `BigDecimal` | Maximum latitude |
-| `lngMin` | `BigDecimal` | Minimum longitude |
-| `lngMax` | `BigDecimal` | Maximum longitude |
+A record representing a geographic bounding box for location-based filtering.
 
 **Static Methods:**
 
 | Method | Description |
 |--------|-------------|
-| `empty()` | Creates an empty bounding box with all null fields |
+| `empty()` | Creates a bounding box with all null values, indicating no geographic filter |
 
 ## Constants
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `SGT` | `Asia/Singapore` | Singapore timezone |
-| `KM_PER_DEGREE_LAT` | `111.045` | Kilometers per degree of latitude |
+| `SGT` | `ZoneId.of("Asia/Singapore")` | Singapore timezone for date calculations |
+| `KM_PER_DEGREE_LAT` | `new BigDecimal("111.045")` | Approximate kilometers per degree of latitude |
 | `MINUTES_PER_HOUR` | `60` | Minutes in an hour |
-| `MIN_COS_LAT` | `1e-6` | Minimum cosine latitude to prevent division by zero |
-| `MC` | Precision 16, HALF_UP rounding | Math context for BigDecimal operations |
-
-## Usage Example
-
-```java
-// Create filter for games within 10km of a location
-ListGamesCursorFilterRequest filter = new ListGamesCursorFilterRequest(
-    new BigDecimal("1.3521"),  // latitude
-    new BigDecimal("103.8198"), // longitude
-    BigDecimal.TEN,             // radius in km
-    null,                       // fromDate
-    null,                       // toDate
-    null,                       // fromTime
-    null,                       // toTime
-    null,                       // skillLevelIds
-    null                        // venueIds
-);
-
-// Execute query
-CursorPagedResponse<GameResponse> response = service.execute(
-    filter,
-    null,  // first page
-    20     // page size
-);
-
-// Use nextCursor for subsequent pages
-String nextCursor = response.nextCursor();
-```
+| `MIN_COS_LAT` | `1e-6` | Minimum cosine of latitude to prevent division by zero |
+| `MC` | `new MathContext(16, RoundingMode.HALF_UP)` | Math context for BigDecimal calculations |

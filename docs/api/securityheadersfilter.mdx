@@ -1,98 +1,119 @@
 ---
 id: security-headers-filter
-title: SecurityHeadersFilter Documentation
+title: SecurityHeadersFilter
 sidebar_label: SecurityHeadersFilter
 ---
 
 # SecurityHeadersFilter
 
+The `SecurityHeadersFilter` is a Spring Boot servlet filter that automatically adds essential security headers to every HTTP response. By implementing `OncePerRequestFilter` and registering with the highest precedence, it ensures that all outgoing responses include protections against common web vulnerabilities such as clickjacking, MIME-type sniffing, and cross-site scripting (XSS).
+
+This filter is part of the `com.upmatches.app.features.auth.filters` package and is intended for use in production environments where security hardening is required.
+
 ## Purpose
 
-The `SecurityHeadersFilter` is a Spring Boot servlet filter that automatically adds essential security headers to every HTTP response. It extends `OncePerRequestFilter` to guarantee execution once per request and is registered with the highest precedence to ensure headers are set before any other processing occurs.
-
-This filter helps protect the application against common web vulnerabilities by:
-- Preventing MIME type sniffing attacks
-- Blocking clickjacking attempts
-- Controlling referrer information leakage
-- Restricting cross-domain policies
-- Limiting browser features via permissions policy
-- Enforcing a strict Content Security Policy
-- Removing server fingerprinting headers
+- **Prevent clickjacking** by setting `X-Frame-Options: DENY`.
+- **Disable MIME-type sniffing** via `X-Content-Type-Options: nosniff`.
+- **Control referrer information** with `Referrer-Policy: strict-origin-when-cross-origin`.
+- **Restrict cross-domain policies** using `X-Permitted-Cross-Domain-Policies: none`.
+- **Limit browser features** (camera, microphone, geolocation) via `Permissions-Policy`.
+- **Enforce a strict Content Security Policy** that blocks all resources by default and prevents framing.
+- **Remove server fingerprinting** by blanking out `Server` and `X-Powered-By` headers.
 
 ## Class Overview
 
 | Aspect | Details |
 |--------|---------|
 | **Package** | `com.upmatches.app.features.auth.filters` |
-| **Parent Class** | `OncePerRequestFilter` |
-| **Annotations** | `@Component`, `@Order(Ordered.HIGHEST_PRECEDENCE + 5)` |
-| **Order Offset** | `5` (ensures highest priority execution) |
+| **Annotation** | `@Component`, `@Order(Ordered.HIGHEST_PRECEDENCE + 5)` |
+| **Superclass** | `OncePerRequestFilter` |
+| **Thread Safety** | Stateless and thread-safe |
 
-## Security Headers Applied
+## Constants
 
-The filter sets the following HTTP response headers:
-
-| Header | Value | Purpose |
-|--------|-------|---------|
-| `X-Content-Type-Options` | `nosniff` | Prevents MIME type sniffing |
-| `X-Frame-Options` | `DENY` | Prevents clickjacking by disallowing framing |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | Controls referrer information sent with requests |
-| `X-Permitted-Cross-Domain-Policies` | `none` | Restricts Adobe Flash/PDF cross-domain requests |
-| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | Disables camera, microphone, and geolocation APIs |
-| `Content-Security-Policy` | `default-src 'none'; frame-ancestors 'none'` | Restricts resource loading and framing |
-| `Server` | (empty) | Removes server information header |
-| `X-Powered-By` | (empty) | Removes technology stack information |
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `ORDER_OFFSET` | `5` | Offset from highest precedence to allow other high-priority filters to run before this one. |
+| `HEADER_X_CONTENT_TYPE_OPTIONS` | `X-Content-Type-Options` | Header name for MIME-sniffing protection. |
+| `NOSNIFF` | `nosniff` | Value to disable MIME sniffing. |
+| `HEADER_X_FRAME_OPTIONS` | `X-Frame-Options` | Header name for clickjacking protection. |
+| `DENY` | `DENY` | Value to prevent any framing. |
+| `HEADER_REFERRER_POLICY` | `Referrer-Policy` | Header name for referrer policy. |
+| `STRICT_ORIGIN_WHEN_CROSS_ORIGIN` | `strict-origin-when-cross-origin` | Sends full URL for same-origin requests, origin only for cross-origin. |
+| `HEADER_X_PERMITTED_CROSS_DOMAIN_POLICIES` | `X-Permitted-Cross-Domain-Policies` | Header name for cross-domain policy. |
+| `NONE` | `none` | Value to disallow cross-domain policies. |
+| `HEADER_PERMISSIONS_POLICY` | `Permissions-Policy` | Header name for browser feature permissions. |
+| `PERMISSIONS_POLICY_VALUE` | `camera=(), microphone=(), geolocation=()` | Disables camera, microphone, and geolocation. |
+| `HEADER_CONTENT_SECURITY_POLICY` | `Content-Security-Policy` | Header name for CSP. |
+| `CONTENT_SECURITY_POLICY_VALUE` | `default-src 'none'; frame-ancestors 'none'` | Blocks all resources and prevents framing. |
+| `HEADER_SERVER` | `Server` | Header name for server software. |
+| `HEADER_X_POWERED_BY` | `X-Powered-By` | Header name for technology stack. |
+| `EMPTY` | `""` | Empty string used to blank out headers. |
 
 ## Public Methods
 
 ### `doFilterInternal`
 
 ```java
-protected final void doFilterInternal(
-    HttpServletRequest request,
-    HttpServletResponse response,
-    FilterChain filterChain
-) throws ServletException, IOException
+protected final void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    throws ServletException, IOException
 ```
 
-This is the core method that applies security headers to every HTTP response.
+This is the core method that applies security headers to every HTTP response. It is invoked once per request by the servlet container.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `HttpServletRequest` | The incoming HTTP request |
-| `response` | `HttpServletResponse` | The outgoing HTTP response to modify |
-| `filterChain` | `FilterChain` | The filter chain to continue processing |
-
-**Returns:** `void`
-
-**Throws:**
-- `ServletException` - if a servlet error occurs
-- `IOException` - if an I/O error occurs
+| `request` | `HttpServletRequest` | The incoming HTTP request (not modified by this filter). |
+| `response` | `HttpServletResponse` | The outgoing HTTP response to which headers are added. |
+| `filterChain` | `FilterChain` | The filter chain to continue processing the request. |
 
 **Behavior:**
-1. Sets all security headers on the response object
-2. Clears `Server` and `X-Powered-By` headers to prevent information leakage
-3. Calls `filterChain.doFilter(request, response)` to continue request processing
 
-## Configuration Notes
+1. Sets the following security headers on the response:
+   - `X-Content-Type-Options: nosniff`
+   - `X-Frame-Options: DENY`
+   - `Referrer-Policy: strict-origin-when-cross-origin`
+   - `X-Permitted-Cross-Domain-Policies: none`
+   - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+   - `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'`
+2. Blanks out the `Server` and `X-Powered-By` headers to prevent information leakage.
+3. Calls `filterChain.doFilter(request, response)` to continue processing the request.
 
-- The filter is automatically discovered by Spring Boot's component scanning due to the `@Component` annotation
-- It runs with the highest precedence (`Ordered.HIGHEST_PRECEDENCE + 5`) to ensure headers are set before any other filters or controllers execute
-- The `final` keyword on `doFilterInternal` prevents subclassing from overriding the security header logic
+**Throws:**
 
-## Usage Example
+| Exception | Condition |
+|-----------|-----------|
+| `ServletException` | If the filter chain throws a servlet exception. |
+| `IOException` | If an I/O error occurs during filtering. |
 
-No explicit configuration is required. Simply include this class in your Spring Boot application's component scan path, and it will automatically apply security headers to all HTTP responses.
+## Usage
+
+Since the class is annotated with `@Component`, Spring Boot automatically discovers and registers it as a filter. No additional configuration is required.
 
 ```java
-// The filter is automatically registered by Spring Boot
-// No additional configuration needed
+// No explicit instantiation needed; Spring Boot auto-configures it.
 ```
 
 ## Security Considerations
 
-- The Content Security Policy (`default-src 'none'`) is extremely restrictive and may break applications that load external resources. Adjust the policy value if your application requires loading scripts, styles, or other resources.
-- The `X-Frame-Options: DENY` setting prevents your application from being embedded in any iframe. Use `SAMEORIGIN` if you need to allow framing from the same origin.
-- Emptying the `Server` and `X-Powered-By` headers helps prevent attackers from identifying your server technology stack.
+- **Ordering**: The filter runs at `HIGHEST_PRECEDENCE + 5`, meaning it executes before most other filters but after any filters with `HIGHEST_PRECEDENCE` or `HIGHEST_PRECEDENCE + 1` through `+4`.
+- **CSP Strictness**: The Content Security Policy (`default-src 'none'`) is extremely restrictive. If your application loads external resources (scripts, styles, images), you must modify the `CONTENT_SECURITY_POLICY_VALUE` constant to allow those resources.
+- **Header Overwriting**: The filter overwrites any existing values for the headers it sets. If other parts of your application set these headers, this filter's values will take precedence.
+- **Server Fingerprinting**: Blanking out `Server` and `X-Powered-By` helps prevent attackers from identifying your technology stack, but it is not a complete security measure.
+
+## Example Response Headers
+
+After this filter processes a request, the response will include:
+
+```
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: strict-origin-when-cross-origin
+X-Permitted-Cross-Domain-Policies: none
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Content-Security-Policy: default-src 'none'; frame-ancestors 'none'
+Server:
+X-Powered-By:
+```

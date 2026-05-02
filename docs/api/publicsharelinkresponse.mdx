@@ -6,9 +6,9 @@ sidebar_label: PublicShareLinkResponse
 
 # PublicShareLinkResponse
 
-The `PublicShareLinkResponse` class is a Java record that represents the response payload for a public share link. It encapsulates the essential information needed to share a resource via a short link, including the resource type, resource identifier, and both web and mobile URLs.
+The `PublicShareLinkResponse` class is a Java record that represents the response payload for a publicly shared link. It encapsulates the essential information needed to access a shared resource, including the resource type, its identifier, and the generated URLs for both web and mobile access.
 
-This record is typically used in API responses to provide clients with the necessary data to access a shared resource through different platforms (web and mobile).
+This record is typically used as the return type from API endpoints that create or retrieve public share links, providing a consistent and immutable data structure for the response.
 
 ## Record Components
 
@@ -16,8 +16,8 @@ This record is typically used in API responses to provide clients with the neces
 |-----------|------|-------------|
 | `resourceType` | `ResourceType` | The type of the shared resource (e.g., document, image, video) |
 | `resourceId` | `String` | The unique identifier of the shared resource |
-| `webUrl` | `String` | The URL for accessing the resource on the web |
-| `mobileUrl` | `String` | The URL for accessing the resource on mobile devices |
+| `webUrl` | `String` | The URL for accessing the resource via a web browser |
+| `mobileUrl` | `String` | The URL for accessing the resource via a mobile application |
 
 ## Methods
 
@@ -27,15 +27,15 @@ This record is typically used in API responses to provide clients with the neces
 public static PublicShareLinkResponse fromShortLink(ShortLink link, String webUrl, String mobileUrl)
 ```
 
-Creates a `PublicShareLinkResponse` instance from a `ShortLink` entity and the generated web and mobile URLs.
+Creates a `PublicShareLinkResponse` instance from a `ShortLink` entity and the generated URLs.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `link` | `ShortLink` | The short link entity containing the resource type and ID |
-| `webUrl` | `String` | The web URL for accessing the resource |
-| `mobileUrl` | `String` | The mobile URL for accessing the resource |
+| `link` | `ShortLink` | The short link entity containing the resource type and identifier |
+| `webUrl` | `String` | The web URL for accessing the shared resource |
+| `mobileUrl` | `String` | The mobile URL for accessing the shared resource |
 
 **Returns:**
 
@@ -43,18 +43,21 @@ Creates a `PublicShareLinkResponse` instance from a `ShortLink` entity and the g
 |------|-------------|
 | `PublicShareLinkResponse` | A new response instance populated with data from the provided short link and URLs |
 
-## Usage Example
+**Example Usage:**
 
 ```java
-// Assuming you have a ShortLink object and generated URLs
-ShortLink shortLink = shortLinkService.createShortLink(resource);
-String webUrl = "https://example.com/share/" + shortLink.getCode();
-String mobileUrl = "https://m.example.com/share/" + shortLink.getCode();
+ShortLink shortLink = new ShortLink(ResourceType.DOCUMENT, "doc-123");
+String webUrl = "https://example.com/share/doc-123";
+String mobileUrl = "https://app.example.com/share/doc-123";
 
 PublicShareLinkResponse response = PublicShareLinkResponse.fromShortLink(shortLink, webUrl, mobileUrl);
+// response.resourceType() == ResourceType.DOCUMENT
+// response.resourceId() == "doc-123"
+// response.webUrl() == "https://example.com/share/doc-123"
+// response.mobileUrl() == "https://app.example.com/share/doc-123"
 ```
 
-## Related Classes
+## Dependencies
 
-- `ShortLink` - The entity class representing a short link in the database
-- `ResourceType` - The enum defining the types of resources that can be shared
+- `com.upmatches.app.features.sharelink.entities.ShortLink` - The entity class representing a short link
+- `com.upmatches.app.features.sharelink.enums.ResourceType` - Enum defining the types of resources that can be shared

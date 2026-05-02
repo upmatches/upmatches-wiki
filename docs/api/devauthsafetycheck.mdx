@@ -6,72 +6,78 @@ sidebar_label: DevAuthSafetyCheck
 
 # DevAuthSafetyCheck
 
-The `DevAuthSafetyCheck` class is a Spring Boot configuration component that acts as a safety guard to prevent accidental exposure of development-only authentication endpoints in a production environment. It performs a runtime validation during application startup to ensure that the development token minting endpoint is not enabled when the `prod` profile is active.
+The `DevAuthSafetyCheck` class is a Spring Boot configuration component that provides a critical safety mechanism for development-only authentication features. Its primary purpose is to prevent the accidental exposure of a development endpoint that mints access tokens when the application is running in a production environment.
 
-## Purpose
+## Overview
 
-This class addresses a critical security concern: preventing the accidental deployment of a development endpoint that can mint authentication tokens for any user. Such an endpoint, if exposed in production, would represent a severe security vulnerability. The check runs automatically after bean initialization using the `@PostConstruct` annotation.
+This class acts as a runtime guard that checks whether the application has been misconfigured to enable a development-only token minting endpoint while the `prod` profile is active. If such a dangerous configuration is detected, it throws an `IllegalStateException` during application startup, effectively preventing the application from running in an insecure state.
 
-## Dependencies
+## Class Details
 
-| Dependency | Description |
-|------------|-------------|
-| `AuthDevProperties` | Configuration properties class containing the `mint-endpoint-enabled` flag |
-| `Environment` | Spring's environment abstraction to access active profiles |
+- **Package:** `com.upmatches.app.features.auth.configurations`
+- **Annotations:** `@Configuration`
+- **Dependencies:** `AuthDevProperties`, `Environment`
 
 ## Constructor
 
-### `DevAuthSafetyCheck(AuthDevProperties authDevProperties, Environment environment)`
-
-Creates a new instance of the safety check with the required dependencies.
+The constructor injects two dependencies required for the safety check:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `authDevProperties` | `AuthDevProperties` | Configuration properties for development authentication features |
-| `environment` | `Environment` | Spring environment to check active profiles |
+| `authDevProperties` | `AuthDevProperties` | Configuration properties containing the development endpoint flag |
+| `environment` | `Environment` | Spring's environment abstraction to access active profiles |
 
 ## Methods
 
 ### `verify()`
 
-Performs the safety validation during application startup. This method is annotated with `@PostConstruct`, ensuring it executes after the bean is fully initialized.
+| Aspect | Details |
+|--------|---------|
+| **Visibility** | Package-private (default) |
+| **Return Type** | `void` |
+| **Annotation** | `@PostConstruct` |
+| **Description** | Executes automatically after bean initialization to validate that the development token minting endpoint is not enabled in a production environment |
 
 **Behavior:**
-1. Checks if the development mint endpoint is enabled via `authDevProperties.mintEndpointEnabled()`
-2. Checks if the `prod` profile is among the active profiles
-3. If both conditions are true, throws an `IllegalStateException` with a descriptive error message
 
-**Throws:**
-- `IllegalStateException` - When the development endpoint is enabled in a production environment
+1. Retrieves the value of `authDevProperties.mintEndpointEnabled()` and checks if it is `true`
+2. Retrieves the list of active Spring profiles from the environment
+3. Checks if the `prod` profile is among the active profiles
+4. If both conditions are true (dev endpoint enabled AND prod profile active), throws an `IllegalStateException` with a descriptive error message
 
-## Error Message
-
-When the safety check fails, the following error message is thrown:
+**Error Message:**
 
 ```
-FATAL: app.auth.dev.mint-endpoint-enabled=true is not allowed when the 'prod' profile is active. 
-This would expose an endpoint that mints access tokens for any user.
+FATAL: app.auth.dev.mint-endpoint-enabled=true is not allowed when the 'prod' profile is active. This would expose an endpoint that mints access tokens for any user.
 ```
 
-## Usage Example
+## Usage
 
-```java
-// In application-dev.yml
+This class is automatically instantiated and executed by Spring Boot when the application context is loaded. No manual invocation is required. Simply include this class in your Spring Boot application, and it will automatically enforce the safety check during startup.
+
+## Example Configuration
+
+To properly use this safety check, ensure your `application-dev.yml` or `application-dev.properties` contains:
+
+```yaml
 app:
   auth:
     dev:
       mint-endpoint-enabled: true
+```
 
-// In application-prod.yml
+And your `application-prod.yml` or `application-prod.properties` should either omit this property or set it to `false`:
+
+```yaml
 app:
   auth:
     dev:
-      mint-endpoint-enabled: false  # Must be false when prod profile is active
+      mint-endpoint-enabled: false
 ```
 
-## Security Considerations
+## Important Notes
 
-- This check is mandatory for any application that has development-only authentication endpoints
-- The check runs at startup, preventing the application from running in an insecure state
-- The error message clearly indicates the configuration property and profile that caused the failure
-- The check is non-bypassable as it throws an exception that prevents application startup
+- This check runs during application startup, preventing the application from starting in an insecure configuration
+- The check is only performed once during the `@PostConstruct` phase
+- If the application starts successfully, it means the configuration is safe
+- This is a development safety feature and should not be removed or disabled in production builds

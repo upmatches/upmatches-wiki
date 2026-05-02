@@ -6,24 +6,20 @@ sidebar_label: GameReminderEvent
 
 # GameReminderEvent
 
-The `GameReminderEvent` is a Java record that represents a notification event for a game reminder. It is part of the notification system within the `com.upmatches.app` application, specifically designed to encapsulate the data required to trigger or process a reminder notification related to a game.
-
-This record is immutable and provides a concise way to carry the necessary information—namely, the unique identifier of the game and the type of notification to be sent.
+The `GameReminderEvent` is a Java record that encapsulates the data required to trigger a game reminder notification. It serves as a lightweight, immutable data carrier within the notification system of the application. This record is typically used in event-driven architectures to publish or consume reminder events for scheduled games.
 
 ## Purpose
 
-- **Encapsulation of Event Data**: Bundles the game ID and notification type into a single, immutable object.
-- **Event-Driven Architecture**: Used as a payload in event-driven systems (e.g., message queues, event buses) to trigger reminder notifications.
-- **Type Safety**: Leverages Java records to ensure that the data structure is clear and type-safe.
+- **Event Data Model**: Represents a specific notification event for reminding users about an upcoming game.
+- **Immutability**: As a Java record, it provides automatic `equals()`, `hashCode()`, `toString()`, and a canonical constructor, ensuring thread-safe and predictable behavior.
+- **Type Safety**: Uses the `NotificationType` enum to specify the kind of reminder (e.g., push, email, in-app).
 
 ## Record Components
-
-The `GameReminderEvent` record has two components:
 
 | Component | Type | Description |
 |-----------|------|-------------|
 | `gameId` | `UUID` | The unique identifier of the game for which the reminder is being sent. |
-| `type` | `NotificationType` | The type of notification to be dispatched (e.g., push, email, in-app). |
+| `type` | `NotificationType` | The type of notification to be delivered (e.g., `PUSH`, `EMAIL`, `IN_APP`). |
 
 ## Usage Example
 
@@ -31,17 +27,18 @@ The `GameReminderEvent` record has two components:
 import com.upmatches.app.features.notification.enums.NotificationType;
 import java.util.UUID;
 
-// Create a new GameReminderEvent
-UUID gameId = UUID.randomUUID();
-GameReminderEvent event = new GameReminderEvent(gameId, NotificationType.PUSH);
+// Create a new game reminder event for a push notification
+GameReminderEvent event = new GameReminderEvent(
+    UUID.fromString("123e4567-e89b-12d3-a456-426614174000"),
+    NotificationType.PUSH
+);
 
-// Access the components
-System.out.println("Game ID: " + event.gameId());
-System.out.println("Notification Type: " + event.type());
+// Access the record components
+UUID gameId = event.gameId();
+NotificationType type = event.type();
 ```
 
 ## Notes
 
-- The `NotificationType` enum is defined in the `com.upmatches.app.features.notification.enums` package and contains the possible notification types (e.g., `PUSH`, `EMAIL`, `IN_APP`).
-- As a record, `GameReminderEvent` automatically provides `equals()`, `hashCode()`, `toString()`, and accessor methods (`gameId()`, `type()`).
-- This class is immutable and thread-safe by design.
+- The `NotificationType` enum is defined in the `com.upmatches.app.features.notification.enums` package and should contain values relevant to the application's notification channels.
+- This record is part of the `com.upmatches.app.features.notification.events` package and is intended for use within the notification subsystem.

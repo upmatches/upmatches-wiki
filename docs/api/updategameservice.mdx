@@ -6,18 +6,19 @@ sidebar_label: UpdateGameService
 
 # UpdateGameService
 
-The `UpdateGameService` class is a Spring service responsible for handling game update operations within the UpMatches application. It implements the `IUpdateGameService` interface and provides a comprehensive update workflow that includes authorization checks, data validation, and event publishing.
+The `UpdateGameService` class is a Spring service responsible for handling game update operations within the UpMatches application. It implements the `IUpdateGameService` interface and provides a comprehensive, transactional workflow for updating game details while enforcing business rules, authorization checks, and audit logging.
 
 ## Purpose
 
-This service handles the complete lifecycle of updating a game, including:
+This service orchestrates the complete game update process, including:
 - User authentication and authorization verification
 - Game lookup and validation
 - Immutable field protection
 - Participant count validation
 - Venue, skill level, and pricing resolution
-- Database persistence with transaction management
-- Audit logging and notification events
+- Database persistence with transactional integrity
+- Audit logging via the `@Auditable` annotation
+- Event publishing for notification systems
 
 ## Dependencies
 
@@ -27,8 +28,8 @@ This service handles the complete lifecycle of updating a game, including:
 | `GameParticipantRepository` | Repository | Data access for game participants |
 | `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
 | `IGameLookupService` | Service | Provides lookup operations for related entities |
-| `IGameAuthorizationService` | Service | Handles authorization checks |
-| `ApplicationEventPublisher` | Spring | Publishes domain events for notifications |
+| `IGameAuthorizationService` | Service | Handles authorization and validation logic |
+| `ApplicationEventPublisher` | Event | Publishes domain events for notifications |
 
 ## Public Methods
 
@@ -40,41 +41,33 @@ This service handles the complete lifecycle of updating a game, including:
 public GameResponse execute(UUID id, UpdateGameRequest request)
 ```
 
-Updates an existing game with the provided changes.
+Updates an existing game with the provided request data.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `id` | `UUID` | The unique identifier of the game to update |
-| `request` | `UpdateGameRequest` | The update request containing modified fields |
+| `request` | `UpdateGameRequest` | The request object containing updated game fields |
 
-**Returns:**
-
-| Type | Description |
-|------|-------------|
-| `GameResponse` | The updated game response for the viewer |
+**Returns:** `GameResponse` - A response object containing the updated game details for the viewer.
 
 **Throws:**
-
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | When the game or related entities are not found |
-| `AuthorizationException` | When the user is not authorized to update the game |
+- `ResourceNotFoundException` if the game or related entities are not found
+- Authorization exceptions if the user is not the organizer or validation fails
 
 **Workflow:**
-
-1. **Authentication**: Resolves the current user's ID
-2. **Game Lookup**: Retrieves the game for update or throws exception
-3. **Authorization Checks**:
-   - Verifies the user is the game organizer
-   - Ensures visibility hasn't changed
-   - Validates immutable fields based on active participant count
-   - Checks slot count doesn't fall below active participants
-4. **Field Resolution**: Resolves optional fields (venue, skill levels, pricing) using helper methods
-5. **Persistence**: Saves the updated game with transaction support
-6. **Event Publishing**: Publishes a `GameNotificationEvent` for notification processing
-7. **Response**: Returns the updated game response
+1. Resolves the authenticated user ID
+2. Looks up the game for update or throws an exception
+3. Verifies the user is the game organizer
+4. Validates visibility hasn't changed
+5. Counts active participants
+6. Validates immutable fields haven't changed
+7. Validates new slot count is above active participant count
+8. Resolves and updates all game fields
+9. Persists the updated game
+10. Publishes a `GAME_UPDATED` notification event
+11. Returns the game response
 
 ## Private Helper Methods
 
@@ -84,7 +77,7 @@ Updates an existing game with the provided changes.
 private Venue resolveVenue(Game game, UpdateGameRequest request)
 ```
 
-Resolves the venue for the update. Returns the requested venue if provided, otherwise keeps the existing venue.
+Resolves the venue for the update. Returns the venue from the request if provided, otherwise keeps the existing game venue.
 
 ### `resolveSkillLevelFrom`
 
@@ -92,7 +85,7 @@ Resolves the venue for the update. Returns the requested venue if provided, othe
 private SkillLevel resolveSkillLevelFrom(Game game, UpdateGameRequest request)
 ```
 
-Resolves the starting skill level. Returns the requested skill level if provided, otherwise keeps the existing value.
+Resolves the starting skill level for the update. Returns the skill level from the request if provided, otherwise keeps the existing value.
 
 ### `resolveSkillLevelTo`
 
@@ -100,7 +93,7 @@ Resolves the starting skill level. Returns the requested skill level if provided
 private SkillLevel resolveSkillLevelTo(Game game, UpdateGameRequest request)
 ```
 
-Resolves the ending skill level. Returns the requested skill level if provided, otherwise keeps the existing value.
+Resolves the ending skill level for the update. Returns the skill level from the request if provided, otherwise keeps the existing value.
 
 ### `resolveCurrency`
 
@@ -108,7 +101,7 @@ Resolves the ending skill level. Returns the requested skill level if provided, 
 private Currency resolveCurrency(Game game, UpdateGameRequest request)
 ```
 
-Resolves the currency for pricing. Creates a new `Currency` instance from the request or existing game data.
+Resolves the currency for pricing. Creates a new `Currency` instance from the request if provided, otherwise creates one from the existing game currency.
 
 ### `resolvePricing`
 
@@ -117,17 +110,9 @@ private Pricing resolvePricing(Game game, UpdateGameRequest request)
 ```
 
 Resolves the pricing for the update with the following precedence:
-1. Structured `pricing` object from the request
-2. Legacy `price` and optional `currency` fields (for backward compatibility)
-3. Existing pricing on the game
-
-## Annotations
-
-| Annotation | Description |
-|------------|-------------|
-| `@Service` | Marks the class as a Spring service component |
-| `@Transactional` | Ensures the update operation is executed within a transaction |
-| `@Auditable` | Enables audit logging for the update operation |
+1. Structured `pricing` object on the request (if supplied)
+2. Legacy `price` and optional `currency` fields on the request (for backward compatibility)
+3. Existing pricing on the game (fallback)
 
 ## Usage Example
 
@@ -154,3 +139,11 @@ public void updateGameExample() {
     GameResponse response = updateGameService.execute(gameId, request);
 }
 ```
+
+## Notes
+
+- The service is annotated with `@Service` and is a `non-sealed` implementation of `IUpdateGameService`
+- All update operations are wrapped in a single database transaction (`@Transactional`)
+- Audit logging is automatically applied via the `@Auditable` annotation
+- The service publishes domain events for notification processing
+- Legacy pricing fields (`price` and `currency`) are supported for backward compatibility with older clients

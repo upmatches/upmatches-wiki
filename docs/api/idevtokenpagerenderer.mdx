@@ -1,85 +1,77 @@
 ---
 id: idevtokenpagerenderer
-title: IDevTokenPageRenderer
+title: IDevTokenPageRenderer Interface
 sidebar_label: IDevTokenPageRenderer
 ---
 
-# IDevTokenPageRenderer
-
-The `IDevTokenPageRenderer` is a sealed interface in the `com.upmatches.app.features.auth.services` package that defines the contract for rendering developer token pages. It is designed to provide a standardized way to display authentication tokens (access and refresh tokens) to developers during the authentication flow, particularly for mobile or web applications that need to capture token information.
-
-This interface is part of the authentication services layer and is intended to be implemented by the `DevTokenPageRenderer` class. The sealed nature of the interface ensures that only the permitted implementation can fulfill this contract, providing a controlled extension point.
+# IDevTokenPageRenderer Interface
 
 ## Purpose
 
-The primary purpose of this interface is to:
-- Determine whether the token page rendering is enabled for a given HTTP request
-- Generate an HTML response containing the authentication tokens and related metadata
-- Support mobile redirect scenarios by providing a configurable redirect URL
+The `IDevTokenPageRenderer` interface defines a contract for rendering developer token pages in the authentication flow. It provides methods to check if the token page rendering is enabled for a given request and to generate HTML responses containing access and refresh tokens. This interface is part of the authentication services layer and is designed to be implemented by `DevTokenPageRenderer`.
 
-## Interface Methods
+## Interface Definition
+
+```java
+public sealed interface IDevTokenPageRenderer permits DevTokenPageRenderer
+```
+
+The interface is declared as `sealed`, meaning only the specified class `DevTokenPageRenderer` is permitted to implement it. This ensures controlled extension and maintains security in the authentication flow.
+
+## Methods
 
 ### `isEnabledFor`
 
-```java
-boolean isEnabledFor(HttpServletRequest request)
-```
-
-Checks whether the developer token page rendering is enabled for the given HTTP request. This method allows for conditional rendering based on request attributes, such as user agent, IP address, or custom headers.
+Determines whether the developer token page rendering is enabled for the given HTTP request.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `HttpServletRequest` | The incoming HTTP request to evaluate |
-
-| Returns | Description |
-|---------|-------------|
-| `boolean` | `true` if the token page rendering is enabled for this request, `false` otherwise |
-
-### `render`
-
-```java
-ResponseEntity<String> render(
-    String accessToken,
-    String refreshToken,
-    Long expiresAtUtc,
-    Boolean isNewUser,
-    String mobileRedirectUrl)
-```
-
-Generates an HTML response containing the authentication tokens and associated metadata. This method is responsible for creating a user-friendly page that displays the tokens to the developer.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `accessToken` | `String` | The JWT access token to display |
-| `refreshToken` | `String` | The refresh token to display |
-| `expiresAtUtc` | `Long` | The expiration timestamp of the access token in UTC milliseconds |
-| `isNewUser` | `Boolean` | Flag indicating whether this is a new user registration |
-| `mobileRedirectUrl` | `String` | The URL to redirect mobile clients after token display |
+| `request` | `HttpServletRequest` | The incoming HTTP servlet request to evaluate |
 
 | Returns | Type | Description |
 |---------|------|-------------|
-| `ResponseEntity<String>` | HTTP response | The rendered HTML page containing token information |
+| `boolean` | `boolean` | `true` if token page rendering is enabled for this request, `false` otherwise |
 
-## Implementation Notes
+### `render`
 
-- The interface is declared as `sealed`, meaning only the `DevTokenPageRenderer` class is permitted to implement it
-- All methods are part of the public API contract
-- The `render` method returns a `ResponseEntity<String>` to allow for custom HTTP status codes and headers
-- The `isNewUser` parameter can be used to customize the rendering for new versus returning users
-- The `mobileRedirectUrl` parameter enables mobile-friendly redirect behavior after token display
+Generates an HTML response containing authentication tokens for the developer.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `accessToken` | `String` | The JWT access token to be displayed |
+| `refreshToken` | `String` | The JWT refresh token to be displayed |
+| `expiresAtUtc` | `Long` | The UTC timestamp (in milliseconds) when the tokens expire |
+| `isNewUser` | `Boolean` | Flag indicating whether this is a new user registration |
+| `mobileRedirectUrl` | `String` | The URL to redirect mobile clients after successful authentication |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| `ResponseEntity<String>` | `ResponseEntity<String>` | HTTP response containing the rendered HTML page with token information |
 
 ## Usage Example
 
 ```java
 // Example implementation check
-if (tokenPageRenderer.isEnabledFor(request)) {
-    ResponseEntity<String> response = tokenPageRenderer.render(
-        accessToken,
-        refreshToken,
-        expiresAtUtc,
-        isNewUser,
-        mobileRedirectUrl
+if (tokenRenderer.isEnabledFor(request)) {
+    ResponseEntity<String> response = tokenRenderer.render(
+        "eyJhbGciOiJIUzI1NiIs...",
+        "dGhpcyBpcyBhIHJlZnJl...",
+        1700000000000L,
+        false,
+        "com.example.app://callback"
     );
     return response;
 }
 ```
+
+## Dependencies
+
+- `jakarta.servlet.http.HttpServletRequest` - Jakarta Servlet API for HTTP request handling
+- `org.springframework.http.ResponseEntity` - Spring Framework's HTTP response entity wrapper
+
+## Implementation Notes
+
+- The interface uses a sealed class hierarchy to restrict implementation to `DevTokenPageRenderer` only
+- The `render` method returns a `ResponseEntity<String>` to allow full control over HTTP response headers and status codes
+- Token expiration is provided as a UTC timestamp in milliseconds for consistent timezone handling
+- The `mobileRedirectUrl` parameter supports deep linking for mobile applications

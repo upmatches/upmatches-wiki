@@ -6,106 +6,67 @@ sidebar_label: GameCursor
 
 # GameCursor
 
-The `GameCursor` class is a Spring `@Component` that provides encoding and decoding functionality for cursor-based pagination in a gaming application. It serializes a combination of a timestamp (`Instant`) and a unique identifier (`UUID`) into a URL-safe Base64-encoded string, and can decode such strings back into their original components.
+The `GameCursor` class is a Spring `@Component` that provides encoding and decoding of pagination cursors for game-related data. It uses a URL-safe Base64 encoding scheme to serialize and deserialize cursor payloads containing a timestamp (`Instant`) and a unique identifier (`UUID`). This is commonly used in cursor-based pagination for APIs where you need to pass a token that represents a specific point in a dataset.
 
-This approach is commonly used for implementing keyset pagination (also known as cursor pagination), where a cursor represents a specific position in a dataset, allowing efficient and consistent traversal of large result sets.
+## How It Works
 
-## Constructor
-
-| Constructor | Description |
-|---|---|
-| `GameCursor(ObjectMapper objectMapper)` | Creates a new `GameCursor` instance with the provided Jackson `ObjectMapper` for JSON serialization/deserialization. |
+- **Encoding**: Takes a `startTime` (Instant) and an `id` (UUID), serializes them into a JSON payload, and then Base64 URL-encodes the result without padding.
+- **Decoding**: Takes a Base64 URL-encoded string, decodes it, deserializes the JSON payload, and returns an `Optional<Value>` containing the original `startTime` and `id`. Returns `Optional.empty()` for null or blank input, and throws `IllegalArgumentException` for invalid cursors.
 
 ## Public Methods
 
 ### `encode`
 
-```java
-public String encode(Instant startTime, UUID id)
-```
-
-Encodes a given `startTime` and `id` into a URL-safe Base64-encoded cursor string.
-
-**Parameters:**
-
 | Parameter | Type | Description |
-|---|---|---|
-| `startTime` | `Instant` | The timestamp representing the cursor position. |
-| `id` | `UUID` | The unique identifier for the cursor position. |
+|-----------|------|-------------|
+| `startTime` | `Instant` | The timestamp to encode in the cursor |
+| `id` | `UUID` | The unique identifier to encode in the cursor |
+| **Returns** | `String` | A URL-safe Base64 encoded cursor string |
+| **Throws** | `IllegalStateException` | If JSON serialization fails |
 
-**Returns:**
-
-| Type | Description |
-|---|---|
-| `String` | A URL-safe Base64-encoded string representing the cursor. |
-
-**Throws:**
-
-| Exception | Description |
-|---|---|
-| `IllegalStateException` | If JSON serialization fails. |
+Encodes the given `startTime` and `id` into a URL-safe Base64 cursor string.
 
 ### `decode`
 
-```java
-public Optional<Value> decode(String cursor)
-```
-
-Decodes a cursor string back into its original `Value` (containing `startTime` and `id`).
-
-**Parameters:**
-
 | Parameter | Type | Description |
-|---|---|---|
-| `cursor` | `String` | The URL-safe Base64-encoded cursor string to decode. |
+|-----------|------|-------------|
+| `cursor` | `String` | The Base64 URL-encoded cursor string to decode |
+| **Returns** | `Optional<Value>` | An `Optional` containing the decoded `Value` (with `startTime` and `id`), or empty if the input is null or blank |
+| **Throws** | `IllegalArgumentException` | If the cursor is invalid (e.g., malformed JSON, missing fields, or decoding failure) |
 
-**Returns:**
-
-| Type | Description |
-|---|---|
-| `Optional<Value>` | An `Optional` containing the decoded `Value` if the cursor is valid and non-blank, or `Optional.empty()` if the cursor is `null` or blank. |
-
-**Throws:**
-
-| Exception | Description |
-|---|---|
-| `IllegalArgumentException` | If the cursor is invalid (e.g., malformed Base64, invalid JSON, or missing required fields). |
+Decodes a Base64 URL-encoded cursor string back into its original `Value` components.
 
 ## Inner Types
 
-### `Value`
-
-```java
-public record Value(Instant startTime, UUID id)
-```
-
-A public record representing the decoded cursor value.
-
-**Fields:**
+### `Value` (public record)
 
 | Field | Type | Description |
-|---|---|---|
-| `startTime` | `Instant` | The timestamp from the decoded cursor. |
-| `id` | `UUID` | The unique identifier from the decoded cursor. |
+|-------|------|-------------|
+| `startTime` | `Instant` | The timestamp from the decoded cursor |
+| `id` | `UUID` | The unique identifier from the decoded cursor |
 
-### `Payload` (private)
+A public record representing the decoded cursor data.
 
-```java
-private record Payload(Instant startTime, UUID id)
-```
+### `Payload` (private record)
 
-A private record used internally for JSON serialization and deserialization. It mirrors the structure of `Value`.
+| Field | Type | Description |
+|-------|------|-------------|
+| `startTime` | `Instant` | The timestamp to serialize |
+| `id` | `UUID` | The unique identifier to serialize |
+
+A private record used internally for JSON serialization/deserialization.
 
 ## Usage Example
 
 ```java
-// Assuming GameCursor is injected via Spring
+// Assuming GameCursor is injected as a bean
 GameCursor cursor = new GameCursor(new ObjectMapper());
 
 // Encode a cursor
 Instant now = Instant.now();
-UUID uuid = UUID.randomUUID();
-String encoded = cursor.encode(now, uuid);
+UUID gameId = UUID.randomUUID();
+String encoded = cursor.encode(now, gameId);
+// encoded is a URL-safe Base64 string like "eyJzdGFydFRpbWUiOiIyMDI0LTAxLTE1VDEwOjMwOjAwWiIsImlkIjoiMTIzZS00NTY3LTg5YWItY2RlZiJ9"
 
 // Decode a cursor
 Optional<GameCursor.Value> decoded = cursor.decode(encoded);

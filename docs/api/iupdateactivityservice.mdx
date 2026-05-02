@@ -10,7 +10,7 @@ The `IUpdateActivityService` interface defines the contract for updating an exis
 
 ## Purpose
 
-This interface serves as the abstraction layer for the activity update use case. By sealing the interface, the design enforces that only the designated `UpdateActivityService` class can implement the update logic, preventing unintended implementations and promoting a clear, single-responsibility architecture.
+This interface encapsulates the business logic for modifying activity details. By defining a single `execute` method, it provides a clear and focused API for updating activities, promoting separation of concerns and testability.
 
 ## Interface Definition
 
@@ -20,39 +20,35 @@ public sealed interface IUpdateActivityService permits UpdateActivityService {
 }
 ```
 
-## Method Summary
+- **Sealed Interface**: The `sealed` keyword restricts which classes can implement this interface. Only `UpdateActivityService` is permitted, ensuring that all update operations follow the same implementation pattern.
+- **Single Method**: The interface contains one method, `execute`, which takes an activity ID and an update request, returning an `ActivityResponse`.
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `execute(UUID id, UpdateActivityRequest request)` | `ActivityResponse` | Updates an existing activity identified by the given UUID with the provided request data and returns the updated activity response. |
+## Method Documentation
 
-## Parameters
+### `execute`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `id` | `UUID` | The unique identifier of the activity to be updated. |
-| `request` | `UpdateActivityRequest` | The request object containing the updated activity data. |
+| `request` | `UpdateActivityRequest` | An object containing the updated activity data. |
+| **Returns** | `ActivityResponse` | The response object containing the updated activity details. |
 
-## Return Type
-
-| Type | Description |
-|------|-------------|
-| `ActivityResponse` | The response object representing the updated activity after successful modification. |
+**Behavior**: This method processes the update request for the specified activity ID and returns the updated activity information. The concrete implementation (`UpdateActivityService`) handles validation, persistence, and response mapping.
 
 ## Usage Example
 
 ```java
-// Assuming the implementation is injected via dependency injection
-IUpdateActivityService updateActivityService = new UpdateActivityService(/* dependencies */);
+// Assuming dependency injection provides an instance
+IUpdateActivityService updateService = new UpdateActivityService(/* dependencies */);
 
 UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 UpdateActivityRequest request = new UpdateActivityRequest(/* updated fields */);
 
-ActivityResponse updatedActivity = updateActivityService.execute(activityId, request);
+ActivityResponse response = updateService.execute(activityId, request);
 ```
 
 ## Related Components
 
-- **`UpdateActivityRequest`**: The input data transfer object containing the fields to be updated.
-- **`ActivityResponse`**: The output data transfer object representing the updated activity state.
-- **`UpdateActivityService`**: The sole permitted implementation class that contains the actual update logic.
+- **`UpdateActivityRequest`**: The input DTO containing the fields to be updated.
+- **`ActivityResponse`**: The output DTO representing the updated activity.
+- **`UpdateActivityService`**: The sole permitted implementation of this interface.

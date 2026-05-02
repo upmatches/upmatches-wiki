@@ -6,52 +6,72 @@ sidebar_label: GameShareAccessRepository
 
 # GameShareAccessRepository
 
-The `GameShareAccessRepository` interface provides database access operations for the `GameShareAccess` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD (Create, Read, Update, Delete) functionality, and includes a custom query method for checking access permissions.
+The `GameShareAccessRepository` interface provides database access operations for the `GameShareAccess` entity. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD operations while adding a custom query method to check for existing share access records.
 
 ## Purpose
 
-This repository serves as the data access layer for managing game share access records. It enables the application to:
-- Perform standard database operations on `GameShareAccess` entities (save, find, delete, etc.)
-- Check whether a specific user has access to a particular game
+This repository manages the persistence layer for game share access permissions. It enables the application to:
+- Perform standard CRUD operations on `GameShareAccess` entities
+- Check whether a specific user already has access to a particular game
 
-## Inheritance
-
-The interface extends `JpaRepository<GameShareAccess, UUID>`, which provides:
-- **Entity type**: `GameShareAccess`
-- **Primary key type**: `UUID`
-
-## Custom Methods
-
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `existsByGameIdAndUserId` | `boolean` | `UUID gameId`, `UUID userId` | Checks if a record exists where a specific user has access to a specific game. Returns `true` if an access record exists, `false` otherwise. |
-
-## Usage Example
+## Interface Definition
 
 ```java
-@Service
-public class GameShareService {
-    
-    private final GameShareAccessRepository repository;
-    
-    public GameShareService(GameShareAccessRepository repository) {
-        this.repository = repository;
-    }
-    
-    public boolean hasUserAccessToGame(UUID gameId, UUID userId) {
-        return repository.existsByGameIdAndUserId(gameId, userId);
-    }
+public interface GameShareAccessRepository extends JpaRepository<GameShareAccess, UUID>
+```
+
+The repository works with `GameShareAccess` entities using `UUID` as the primary key type.
+
+## Methods
+
+### Inherited Methods
+
+The following methods are inherited from `JpaRepository<GameShareAccess, UUID>`:
+
+| Method | Description |
+|--------|-------------|
+| `findAll()` | Returns all `GameShareAccess` entities |
+| `findById(UUID id)` | Finds a `GameShareAccess` by its UUID |
+| `save(GameShareAccess entity)` | Saves a new or existing `GameShareAccess` |
+| `deleteById(UUID id)` | Deletes a `GameShareAccess` by its UUID |
+| `count()` | Returns the total number of `GameShareAccess` records |
+
+### Custom Methods
+
+#### `existsByGameIdAndUserId`
+
+```java
+boolean existsByGameIdAndUserId(UUID gameId, UUID userId)
+```
+
+Checks whether a `GameShareAccess` record exists for the specified game and user combination.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameId` | `UUID` | The unique identifier of the game |
+| `userId` | `UUID` | The unique identifier of the user |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `boolean` | `true` if a matching record exists, `false` otherwise |
+
+**Usage Example:**
+
+```java
+@Autowired
+private GameShareAccessRepository repository;
+
+public boolean hasAccess(UUID gameId, UUID userId) {
+    return repository.existsByGameIdAndUserId(gameId, userId);
 }
 ```
 
 ## Dependencies
 
 - **Spring Data JPA**: Provides the `JpaRepository` base interface and query derivation
-- **GameShareAccess entity**: The JPA entity this repository manages
-- **UUID**: Used as the primary key type for the entity
-
-## Notes
-
-- The custom method `existsByGameIdAndUserId` is automatically implemented by Spring Data JPA through method name convention
-- This method is optimized for existence checks and returns a boolean result without loading the full entity
-- The repository is typically injected into service classes using constructor injection
+- **GameShareAccess entity**: The domain object this repository manages
+- **UUID**: Java's standard UUID class used as the entity identifier type

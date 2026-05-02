@@ -20,26 +20,16 @@ This service manages the complete authentication lifecycle with Auth0, including
 
 ### `getAuthorizationUrl`
 
-Generates the Auth0 authorization URL for user redirection.
+Generates the Auth0 authorization URL for redirecting users to the login page.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `state` | `String` | Anti-CSRF state parameter |
-| `nonce` | `String` | Cryptographic nonce for replay protection |
+| `nonce` | `String` | Replay attack prevention nonce |
 | `codeVerifier` | `String` | PKCE code verifier for code challenge generation |
 | `connection` | `String` | Optional Auth0 connection (e.g., "google-oauth2") |
 
 **Returns:** `String` - The complete authorization URL
-
-**Example:**
-```java
-String authUrl = authService.getAuthorizationUrl(
-    "random-state-value",
-    "random-nonce-value",
-    "code-verifier-value",
-    "google-oauth2"
-);
-```
 
 ### `exchangeAuthorizationCode`
 
@@ -51,61 +41,59 @@ Exchanges an authorization code for verified claims from Auth0.
 | `codeVerifier` | `String` | The PKCE code verifier used in the authorization request |
 | `nonce` | `String` | The nonce used in the authorization request |
 
-**Returns:** `Auth0VerifiedClaims` - Verified claims containing:
-- `sub` (subject/user ID)
-- `picture` (user profile picture URL)
-- `email` (user email address)
+**Returns:** `Auth0VerifiedClaims` - Verified claims including subject, picture, and email
 
-**Throws:** `IllegalStateException` if:
-- ID token is missing from response
-- Token verification fails
-- Claims validation fails
+**Throws:** `IllegalStateException` if the token response is invalid or missing required fields
 
-**Example:**
-```java
-Auth0VerifiedClaims claims = authService.exchangeAuthorizationCode(
-    "authorization-code-from-callback",
-    "code-verifier-from-session",
-    "nonce-from-session"
-);
-```
+## Internal Methods
 
-## Internal Implementation Details
+### `verifyIdToken`
 
-### JWKS Caching
+Verifies the ID token signature and validates claims.
 
-The service caches Auth0's JWKS (JSON Web Key Set) for 900 seconds (15 minutes) to reduce network calls and improve performance. The cache is thread-safe using double-checked locking.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `idToken` | `String` | The JWT ID token from Auth0 |
+| `nonce` | `String` | Expected nonce value for validation |
 
-### ID Token Verification
+**Returns:** `Auth0VerifiedClaims` - Verified claims from the token
 
-The `verifyIdToken` method performs the following validations:
-1. **Signature Verification**: Uses RS256 algorithm with Auth0's JWKS
-2. **Issuer Validation**: Verifies the token issuer matches the configured Auth0 domain
-3. **Audience Validation**: Verifies the token audience matches the configured client ID
-4. **Nonce Validation**: Verifies the nonce matches the one provided in the authorization request
-5. **Subject Validation**: Ensures the `sub` claim is present and non-empty
+**Throws:** `Exception` if token verification fails
 
-### Error Handling
+### `getAuth0Jwks`
 
-The service uses specific error messages for different failure scenarios:
-- `MSG_MISSING_ID_TOKEN`: When the token response doesn't contain an ID token
-- `MSG_ISSUER_MISMATCH`: When the token issuer doesn't match the expected Auth0 domain
-- `MSG_AUDIENCE_MISMATCH`: When the token audience doesn't match the client ID
-- `MSG_NONCE_MISMATCH`: When the nonce is missing or doesn't match
-- `MSG_MISSING_SUB`: When the token is missing the subject claim
+Retrieves and caches the Auth0 JWKS (JSON Web Key Set) for token signature verification.
 
-## Dependencies
+**Returns:** `JWKSet` - The parsed JWKS from Auth0
 
-- **Auth0Properties**: Configuration properties for Auth0 (domain, client ID, client secret, redirect URI, scopes)
-- **RestClient**: HTTP client for making requests to Auth0 endpoints
-- **ObjectMapper**: Jackson JSON parser for processing responses
-- **Nimbus JOSE + JWT**: Library for JWT processing and verification
+**Throws:** `IllegalStateException` if JWKS fetch fails or returns empty
 
 ## Configuration
 
-The service requires the following configuration in `Auth0Properties`:
-- `domain`: Auth0 tenant domain
-- `clientId`: Auth0 application client ID
-- `clientSecret`: Auth0 application client secret
-- `redirectUri`: Callback URL for authorization code flow
-- `scopes`: Requested OAuth scopes (e.g., "openid profile email")
+The service uses `Auth0Properties` for configuration, which includes:
+- `domain` - Auth0 tenant domain
+- `clientId` - Auth0 application client ID
+- `clientSecret` - Auth0 application client secret
+- `redirectUri` - Callback URL after authentication
+- `scopes` - Requested OAuth scopes
+
+## Dependencies
+
+- **RestClient** - HTTP client for Auth0 API calls
+- **Auth0Properties** - Configuration properties
+- **ObjectMapper** - JSON parsing
+- **Nimbus JOSE + JWT** - JWT processing and verification
+
+## Error Handling
+
+The service throws `IllegalStateException` for various failure scenarios:
+- Missing ID token in response
+- Issuer mismatch
+- Audience mismatch
+- Nonce mismatch
+- Missing subject claim
+- Empty or failed JWKS fetch
+
+## Caching
+
+JWKS is cached for 900 seconds (15 minutes) to reduce network calls to Auth0's JWKS endpoint. The cache is thread-safe using double-checked locking with a volatile field.

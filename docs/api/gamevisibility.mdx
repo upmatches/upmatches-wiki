@@ -6,35 +6,34 @@ sidebar_label: GameVisibility
 
 # GameVisibility Enum
 
-The `GameVisibility` enum is part of the `com.upmatches.app.features.game.enums` package. It defines the visibility options for a game within the UpMatches application.
+The `GameVisibility` enum defines the visibility options available for a game within the application. It is used to control whether a game is publicly accessible or restricted to a private audience.
 
-## Purpose
+## Package
 
-This enum is used to control whether a game is publicly visible to all users or restricted to a private group. It provides a simple, type-safe way to manage game visibility settings throughout the application.
+`com.upmatches.app.features.game.enums`
 
 ## Enum Values
 
 | Value | Description |
 |-------|-------------|
-| `PUBLIC` | The game is visible to all users of the application. |
-| `PRIVATE` | The game is only visible to invited or authorized users. |
+| `PUBLIC` | The game is visible and accessible to all users. |
+| `PRIVATE` | The game is hidden from public view and only accessible to invited or authorized users. |
 
 ## Usage
 
-The `GameVisibility` enum is typically used in game creation, editing, and display logic to determine how a game should be presented to users. For example:
-
-- When creating a new game, the user can select between `PUBLIC` and `PRIVATE` visibility.
-- When displaying a list of games, only `PUBLIC` games are shown to unauthenticated users.
-- When a user views their own games, both `PUBLIC` and `PRIVATE` games are shown.
-
-## Example
+This enum is typically used as a field in game-related entities or data transfer objects (DTOs) to specify the visibility level of a game. For example:
 
 ```java
 GameVisibility visibility = GameVisibility.PUBLIC;
-
-if (visibility == GameVisibility.PUBLIC) {
-    // Show game to all users
-} else {
-    // Restrict access to authorized users only
-}
 ```
+
+## Methods
+
+Since `GameVisibility` is a simple enum with no custom methods, it inherits the standard methods from `java.lang.Enum`:
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `values()` | `GameVisibility[]` | Returns an array containing all enum constants in the order they are declared. |
+| `valueOf(String name)` | `GameVisibility` | Returns the enum constant with the specified name. |
+| `name()` | `String` | Returns the name of this enum constant. |
+| `ordinal()` | `int` | Returns the ordinal (position) of this enum constant. |

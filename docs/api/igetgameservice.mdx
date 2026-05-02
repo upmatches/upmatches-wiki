@@ -6,57 +6,64 @@ sidebar_label: IGetGameService
 
 # IGetGameService Interface
 
-The `IGetGameService` interface defines the contract for retrieving a single game by its unique identifier. It is a sealed interface, meaning only explicitly permitted classes (in this case, `GetGameService`) can implement it. This design enforces a controlled hierarchy and ensures that the retrieval logic is centralized and consistent across the application.
+The `IGetGameService` interface defines the contract for retrieving a single game entity by its unique identifier. It is a sealed interface, meaning only the explicitly permitted class `GetGameService` can implement it. This design enforces a controlled hierarchy and ensures that the retrieval logic is centralized and consistent across the application.
 
 ## Purpose
 
-- **Sealed Contract**: Restricts implementation to `GetGameService`, preventing unauthorized or accidental implementations.
-- **Single Responsibility**: Provides a single method to fetch a game by its UUID, promoting clean separation of concerns.
-- **Type Safety**: Returns a `GameResponse` object, ensuring the caller receives a well-defined data structure.
+- Provides a single method to fetch a game based on its UUID.
+- Encapsulates the retrieval logic behind a clean, testable interface.
+- Uses Java's sealed interface feature to restrict implementation to a specific service class.
 
 ## Method Summary
 
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `execute` | `GameResponse` | `UUID id` | Retrieves a game by its unique identifier. |
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute(UUID id)` | `GameResponse` | Retrieves a game by its unique identifier and returns the corresponding response object. |
 
 ## Method Details
 
-### `execute`
+### `execute(UUID id)`
 
 ```java
 GameResponse execute(UUID id);
 ```
 
-**Description**:  
-Executes the retrieval of a game entity based on the provided UUID. The implementation (`GetGameService`) is responsible for fetching the game from the data source (e.g., database, cache) and mapping it to a `GameResponse` object.
+**Parameters:**
 
-**Parameters**:
-- `id` (`UUID`): The unique identifier of the game to retrieve. Must not be null.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to retrieve. Must not be null. |
 
-**Returns**:
-- `GameResponse`: A response object containing the game's data. The exact fields depend on the `GameResponse` class definition.
+**Returns:**
 
-**Throws**:
-- The interface does not declare checked exceptions, but implementations may throw runtime exceptions (e.g., `EntityNotFoundException` if the game is not found).
+| Type | Description |
+|------|-------------|
+| `GameResponse` | The response object containing the game data. |
+
+**Throws:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `IllegalArgumentException` | If the provided `id` is null. |
+| `NoSuchElementException` | If no game exists with the given `id`. |
 
 ## Usage Example
 
 ```java
-// Assuming IGetGameService is injected via dependency injection
-IGetGameService getGameService = ...;
+// Assuming GetGameService is properly instantiated
+IGetGameService gameService = new GetGameService();
+
 UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-GameResponse game = getGameService.execute(gameId);
+GameResponse response = gameService.execute(gameId);
 ```
 
 ## Implementation Notes
 
-- The interface is **sealed**, so only `GetGameService` can implement it. This is enforced at compile time.
-- The `execute` method is intentionally simple, focusing on a single operation (get by ID). For batch retrieval or filtering, consider separate services.
-- The `GameResponse` class should be immutable or effectively immutable to ensure thread safety.
+- The interface is sealed, so only `GetGameService` can implement it.
+- The `execute` method is the single entry point for game retrieval.
+- The returned `GameResponse` object should contain all necessary game information for the client.
 
 ## Related Components
 
-- **`GetGameService`**: The only permitted implementation of this interface.
-- **`GameResponse`**: The data transfer object returned by the `execute` method.
-- **`UUID`**: Standard Java class used for unique identification.
+- `GetGameService` - The only permitted implementation of this interface.
+- `GameResponse` - The data transfer object returned by the `execute` method.

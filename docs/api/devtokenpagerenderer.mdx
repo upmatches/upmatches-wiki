@@ -6,22 +6,23 @@ sidebar_label: DevTokenPageRenderer
 
 # DevTokenPageRenderer
 
-The `DevTokenPageRenderer` class is a Spring `@Service` that renders an HTML page for development purposes. It is part of the authentication services in the Upmatches application and is used to display authentication tokens (access and refresh tokens) in a user-friendly HTML format during development.
+The `DevTokenPageRenderer` class is a Spring `@Service` that generates an HTML page for development purposes. It renders authentication tokens (access and refresh tokens) in a user-friendly web interface, allowing developers to easily copy tokens during local development and testing.
 
-This service is only active when the application is running in development mode (`MOCKPASS_DEV_MODE=true`). It provides a visual callback page that developers can use to inspect tokens and test authentication flows without needing a real mobile client.
+This class implements the `IDevTokenPageRenderer` interface and is designed to work with the `AuthDevProperties` configuration to control when and how the token page is displayed.
 
 ## Purpose
 
-- **Development Tool**: Provides a visual representation of authentication tokens during development
-- **Token Display**: Renders access tokens, refresh tokens, and expiration times in an HTML page
-- **Host Restriction**: Only serves the token page from allowed hosts (localhost, 127.0.0.1, etc.)
-- **Mobile Simulation**: Simulates mobile deep links for testing purposes
+- Provides a visual representation of authentication tokens during development
+- Enables easy copying of access and refresh tokens for testing
+- Displays token expiration information
+- Shows mobile deep links for testing mobile authentication flows
+- Restricts access to trusted hosts (localhost, 127.0.0.1, etc.)
 
 ## Configuration
 
-The class uses `AuthDevProperties` for configuration, which includes:
-- `tokenPageEnabled`: Boolean flag to enable/disable the token page
-- `tokenPageAllowedHosts`: Additional hosts allowed to access the token page
+The class uses `AuthDevProperties` to configure:
+- Whether the token page is enabled (`tokenPageEnabled`)
+- Additional allowed hosts beyond the defaults (`tokenPageAllowedHosts`)
 
 ## Default Allowed Hosts
 
@@ -36,17 +37,17 @@ The class uses `AuthDevProperties` for configuration, which includes:
 
 ### `isEnabledFor(HttpServletRequest request)`
 
-Checks if the token page is enabled for the given request.
+Checks if the token page should be rendered for the given request.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `request` | `HttpServletRequest` | The incoming HTTP request |
 
-**Returns**: `boolean` - `true` if the token page is enabled and the request comes from an allowed host
+**Returns:** `boolean` - `true` if the token page is enabled and the request comes from an allowed host
 
 ### `render(String accessToken, String refreshToken, Long expiresAtUtc, Boolean isNewUser, String mobileRedirectUrl)`
 
-Renders the HTML page with token information.
+Generates the HTML page containing the authentication tokens.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -56,18 +57,19 @@ Renders the HTML page with token information.
 | `isNewUser` | `Boolean` | Whether this is a new user (shows "new user" badge) |
 | `mobileRedirectUrl` | `String` | The mobile deep link URL |
 
-**Returns**: `ResponseEntity<String>` - HTML response with content type `text/html`
+**Returns:** `ResponseEntity<String>` - HTML response with `Content-Type: text/html`
 
 ## HTML Page Features
 
-The rendered page includes:
-- **Title**: "Upmatches Dev Callback" with optional "new user" badge
-- **Note**: Indicates that the dev token page is active
-- **Access Token**: Read-only textarea with copy button
-- **Refresh Token**: Read-only textarea with copy button
-- **Expires At**: Display of expiration time in UTC epoch seconds
-- **Mobile Deep Link**: Clickable link for mobile testing
-- **Copy Functionality**: JavaScript-powered copy buttons with visual feedback
+The generated page includes:
+
+- **Title section** with optional "new user" badge
+- **Development mode notice** indicating `MOCKPASS_DEV_MODE=true`
+- **Access Token field** with copy button
+- **Refresh Token field** with copy button
+- **Expiration time** display in UTC epoch seconds
+- **Mobile Deep Link** with clickable URL
+- **Copy functionality** with visual feedback (button changes to "Copied" with green styling)
 
 ## Usage Example
 
@@ -78,20 +80,20 @@ private DevTokenPageRenderer renderer;
 public ResponseEntity<String> handleCallback(HttpServletRequest request) {
     if (renderer.isEnabledFor(request)) {
         return renderer.render(
-            "access_token_here",
-            "refresh_token_here",
-            1234567890L,
+            "eyJhbGciOiJIUzI1NiIs...",
+            "dGhpcyBpcyBhIHJlZnJl...",
+            1700000000L,
             true,
-            "upmatches://callback?token=abc"
+            "myapp://callback?token=abc123"
         );
     }
-    // Handle non-development requests
+    // Handle normal flow
 }
 ```
 
 ## Security Considerations
 
-- The token page is only accessible from allowed hosts (localhost and configured hosts)
-- All displayed values are HTML-escaped to prevent XSS attacks
-- The service is disabled by default and must be explicitly enabled via configuration
-- Tokens are displayed in read-only fields to prevent accidental modification
+- The page is only rendered for requests from allowed hosts (localhost by default)
+- All token values are HTML-escaped to prevent XSS attacks
+- The class uses `HtmlUtils.htmlEscape()` for safe rendering
+- Additional hosts can be configured via `AuthDevProperties`

@@ -6,18 +6,16 @@ sidebar_label: ImportVenuesService
 
 # ImportVenuesService
 
-## Purpose
-
-The `ImportVenuesService` class is responsible for importing venue data from a JSON file into the system. It processes a batch of venue import requests, validates the data, resolves associated activities, transit lines, and stations, and persists the new venues to the database. The service ensures that duplicate venues (based on `sourceId`) are skipped and that all related entities (activities, stations, transit lines) are either retrieved from the database or created as needed.
+The `ImportVenuesService` class is a Spring service responsible for importing venue data from a JSON file into the system. It handles the complete import workflow including parsing the JSON file, validating station codes, resolving or creating transit lines and stations, and persisting venues with their associated data. The service is designed to be idempotent, skipping venues that already exist based on their source ID.
 
 ## Key Features
 
-- **JSON File Parsing**: Reads and parses a JSON file containing an array of venue import requests.
-- **Duplicate Detection**: Skips venues that already exist in the database (based on `sourceId`).
-- **Activity Resolution**: Looks up activities by their reference ID and caches them for performance.
-- **Station and Transit Line Resolution**: Resolves or creates stations and transit lines based on station codes.
-- **Transactional Execution**: The entire import process is wrapped in a database transaction.
-- **Audit Logging**: The import action is annotated with `@Auditable` for audit trail purposes.
+- **JSON File Import**: Parses a JSON array of venue objects from a multipart file upload
+- **Idempotent Processing**: Skips venues that already exist in the database by source ID
+- **Station Code Parsing**: Supports single and dual station codes (e.g., "A1" or "A1 / B2")
+- **Automatic Resource Creation**: Creates transit lines and stations if they don't already exist
+- **Audit Logging**: Annotated with `@Auditable` for tracking import operations
+- **Transactional**: Entire import process is wrapped in a database transaction
 
 ## Public Methods
 
@@ -25,105 +23,62 @@ The `ImportVenuesService` class is responsible for importing venue data from a J
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `file` | `MultipartFile` | The JSON file containing venue import data |
+| `file` | `MultipartFile` | The JSON file containing venue data to import |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `VenueImportResponse` | Response object | Contains the count of successfully imported venues |
+| Returns | Type |
+|---------|------|
+| `VenueImportResponse` | Response object containing the count of successfully imported venues |
 
-**Description**:  
-Parses the provided JSON file and processes the venue import requests. The method is transactional and auditable. It delegates the actual processing to `processImport()` and wraps the operation in a `ServiceOperationExecutor` for consistent error handling.
+**Description**: Main entry point for importing venues. Parses the JSON file, processes each venue, and returns a response with the import count. The method is transactional and auditable.
 
 **Throws**:
-- `InvalidFileException` – If the JSON file cannot be parsed or contains invalid station codes.
-- `ResourceNotFoundException` – If an activity referenced by a venue import request is not found.
+- `InvalidFileException` - If the JSON file cannot be parsed or contains invalid station codes
+- `ResourceNotFoundException` - If a referenced activity is not found in the database
 
-## Internal Methods (Private)
+## Internal Processing Flow
 
-### `parseJsonFile(MultipartFile file)`
+1. **Parse JSON**: The uploaded file is parsed into a list of `VenueImportRequest` objects using Jackson's `ObjectMapper`
+2. **Process Each Venue**: For each venue request:
+   - Check if venue already exists by source ID (skip if found)
+   - Resolve the associated activity from cache or database
+   - Create the venue entity with formatted postal code
+   - Resolve and associate stations with their transit lines
+   - Save the venue
+3. **Return Response**: Return a `VenueImportResponse` with the count of imported venues
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `file` | `MultipartFile` | The JSON file to parse |
+## Station Code Format
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `List<VenueImportRequest>` | List of venue import request DTOs | Parsed venue data |
+Station codes follow the pattern: `[LineCode][StationNumber]` or `[LineCode][StationNumber] / [LineCode][StationNumber]` for dual codes.
 
-**Description**:  
-Uses Jackson's `ObjectMapper` to deserialize the JSON file content into a list of `VenueImportRequest` objects. If parsing fails, it throws an `InvalidFileException` with a descriptive message including the file name and the root cause.
-
-### `processImport(List<VenueImportRequest> venueDtos)`
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `venueDtos` | `List<VenueImportRequest>` | List of venue import requests to process |
-
-| Returns | Type | Description |
-|---------|------|-------------|
-| `VenueImportResponse` | Response object | Contains the count of successfully imported venues |
-
-**Description**:  
-Iterates through each venue import request, checks for duplicates, resolves the associated activity, creates a `Venue` entity, resolves stations and transit lines, and saves the venue to the database. Uses caches for activities, transit lines, and stations to optimize performance.
-
-### `resolveStation(StationImportRequest stationDto, Map<String, TransitLine> transitLineCache, Map<String, Station> stationCache)`
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `stationDto` | `StationImportRequest` | The station import request data |
-| `transitLineCache` | `Map<String, TransitLine>` | Cache of transit lines by code |
-| `stationCache` | `Map<String, Station>` | Cache of stations by name |
-
-| Returns | Type | Description |
-|---------|------|-------------|
-| `Station` | Station entity | The resolved or newly created station |
-
-**Description**:  
-Resolves a station by name from the cache or database. If not found, creates a new station. Then processes the station code(s) which may contain dual codes separated by " / ". For each code, it extracts the transit line code and optional station number, resolves or creates the transit line, and associates it with the station if not already linked.
-
-## Constants
-
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `STATION_CODE_PATTERN` | `^([A-Za-z]+)(\d+)?$` | Regex pattern for validating station codes |
-| `LINE_CODE_GROUP` | `1` | Regex group index for the line code |
-| `STATION_NUMBER_GROUP` | `2` | Regex group index for the station number |
-| `DUAL_CODE_SEPARATOR` | `" / "` | Separator for dual station codes |
-| `POSTAL_CODE_FORMAT` | `"%06d"` | Format string for zero-padded postal codes |
-
-## Error Messages
-
-| Constant | Message Template | Description |
-|----------|------------------|-------------|
-| `MSG_ACTIVITY_NOT_FOUND` | `"Activity with ID %d not found."` | Thrown when an activity reference ID is not found |
-| `MSG_INVALID_STATION_CODE` | `"Invalid station code format: %s"` | Thrown when a station code doesn't match the expected pattern |
-| `MSG_PARSE_FAILED` | `"Failed to parse venues JSON file '%s'. Expected a JSON array of venue objects at the root. Reason: %s"` | Thrown when JSON parsing fails |
+| Component | Description | Example |
+|-----------|-------------|---------|
+| Line Code | Alphabetic characters representing the transit line | `A`, `B`, `RED` |
+| Station Number | Optional numeric identifier for the station | `1`, `23` |
+| Dual Code Separator | Two codes separated by ` / ` | `A1 / B2` |
 
 ## Dependencies
 
-- **VenueRepository** – For persisting and querying venues
-- **ActivityRepository** – For looking up activities by reference ID
-- **StationRepository** – For persisting and querying stations
-- **TransitLineRepository** – For persisting and querying transit lines
-- **ObjectMapper** – For JSON deserialization
-- **ServiceOperationExecutor** – For consistent operation execution and error handling
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `VenueRepository` | Repository | Persistence for venue entities |
+| `ActivityRepository` | Repository | Lookup for activity entities |
+| `StationRepository` | Repository | Persistence and lookup for station entities |
+| `TransitLineRepository` | Repository | Persistence and lookup for transit line entities |
+| `ObjectMapper` | Jackson | JSON parsing utility |
+
+## Error Handling
+
+| Error Condition | Exception | Message |
+|-----------------|-----------|---------|
+| Invalid JSON format | `InvalidFileException` | "Failed to parse venues JSON file '{filename}'. Expected a JSON array of venue objects at the root. Reason: {reason}" |
+| Invalid station code | `InvalidFileException` | "Invalid station code format: {code}" |
+| Activity not found | `ResourceNotFoundException` | "Activity with ID {id} not found." |
 
 ## Usage Example
 
 ```java
-@Autowired
-private ImportVenuesService importVenuesService;
-
-public void importVenues(MultipartFile file) {
-    VenueImportResponse response = importVenuesService.execute(file);
-    System.out.println("Successfully imported " + response.importedCount() + " venues.");
-}
+// Assuming ImportVenuesService is injected as importVenuesService
+MultipartFile file = // ... get file from request
+VenueImportResponse response = importVenuesService.execute(file);
+System.out.println("Imported " + response.importedCount() + " venues");
 ```
-
-## Notes
-
-- The service is declared as `non-sealed`, indicating it implements a sealed interface `IImportVenuesService`.
-- The import process is transactional, meaning if any part of the import fails, all changes are rolled back.
-- Station codes are validated against a regex pattern that expects alphabetic characters followed by optional digits (e.g., "A", "B12", "C3").
-- Dual station codes (e.g., "A / B") are supported, allowing a station to belong to multiple transit lines.
-- Postal codes are formatted as zero-padded 6-digit strings.

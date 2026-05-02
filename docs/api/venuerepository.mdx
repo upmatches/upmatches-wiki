@@ -6,22 +6,17 @@ sidebar_label: VenueRepository
 
 # VenueRepository
 
-The `VenueRepository` interface provides data access operations for the `Venue` entity. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD (Create, Read, Update, Delete) functionality while adding a custom query method to retrieve venues by their external source identifier.
+The `VenueRepository` interface provides database access operations for the `Venue` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD (Create, Read, Update, Delete) functionality, and defines a custom query method for looking up venues by their external source identifier.
 
 ## Purpose
 
-This repository serves as the persistence layer for venue data within the application. By extending `JpaRepository<Venue, Long>`, it automatically provides:
-- Basic CRUD operations (save, findById, findAll, delete, etc.)
-- Pagination and sorting support
-- Batch operations
-
-The custom `findBySourceId` method enables efficient lookup of venues using an external system's unique identifier, which is essential for data synchronization and deduplication when integrating with third-party venue data sources.
+This repository serves as the data access layer for venue management within the application. By extending `JpaRepository<Venue, Long>`, it automatically provides methods for saving, finding, updating, and deleting `Venue` entities where the primary key is of type `Long`. The custom `findBySourceId` method enables efficient lookups of venues based on an external system's unique identifier, which is essential for data synchronization and deduplication when integrating with third-party venue data sources.
 
 ## Public Methods
 
 ### Inherited from JpaRepository
 
-The following methods are inherited from `JpaRepository<Venue, Long>` and are available for use:
+The following standard CRUD methods are inherited from `JpaRepository<Venue, Long>`:
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
@@ -29,16 +24,16 @@ The following methods are inherited from `JpaRepository<Venue, Long>` and are av
 | `findById(Long id)` | `Optional<Venue>` | Finds a venue by its primary key |
 | `save(Venue venue)` | `Venue` | Saves a venue entity (insert or update) |
 | `saveAll(Iterable<Venue> venues)` | `List<Venue>` | Saves multiple venue entities |
-| `delete(Venue venue)` | `void` | Deletes a specific venue entity |
 | `deleteById(Long id)` | `void` | Deletes a venue by its primary key |
+| `delete(Venue venue)` | `void` | Deletes a specific venue entity |
 | `count()` | `long` | Returns the total number of venue entities |
 | `existsById(Long id)` | `boolean` | Checks if a venue exists by its primary key |
 
-### Custom Methods
+### Custom Query Methods
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
-| `findBySourceId(String sourceId)` | `Optional<Venue>` | `sourceId` - The external source identifier to search for | Finds a venue by its external source ID. Returns an empty `Optional` if no matching venue is found. |
+| `findBySourceId(String sourceId)` | `Optional<Venue>` | `sourceId` - The external source identifier to search for | Finds a venue by its unique source identifier from an external system. Returns an empty `Optional` if no matching venue is found. |
 
 ## Usage Example
 
@@ -52,8 +47,8 @@ public class VenueService {
         this.venueRepository = venueRepository;
     }
     
-    public Optional<Venue> findVenueBySourceId(String sourceId) {
-        return venueRepository.findBySourceId(sourceId);
+    public Optional<Venue> findVenueByExternalId(String externalId) {
+        return venueRepository.findBySourceId(externalId);
     }
     
     public Venue saveVenue(Venue venue) {
@@ -65,5 +60,5 @@ public class VenueService {
 ## Dependencies
 
 - **Spring Data JPA**: Provides the `JpaRepository` interface and automatic query implementation
-- **Venue Entity**: The domain entity this repository manages
+- **Venue entity**: The domain object this repository manages
 - **Java Optional**: Used for null-safe return values in the custom query method

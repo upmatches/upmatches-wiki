@@ -1,77 +1,102 @@
 ---
 id: user-repository
-title: UserRepository
+title: UserRepository - Data Access Layer
 sidebar_label: UserRepository
 ---
 
 # UserRepository
 
-The `UserRepository` interface provides database access operations for the `User` entity within the UpMatches application. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD functionality while adding custom query methods tailored to user authentication and identity management workflows.
+The `UserRepository` interface provides data access operations for the `User` entity within the UpMatches application. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD operations while adding custom query methods tailored to user authentication and identity management workflows.
 
-This repository supports multiple authentication providers (Singpass, Auth0, Apple) and includes a pessimistic locking mechanism for concurrent update scenarios.
+## Purpose
 
-## Interface Definition
+This repository serves as the persistence layer for user records, supporting multiple authentication providers (Singpass, Auth0, Apple) and email-based lookups. It also includes a pessimistic locking mechanism for concurrency-safe user updates.
+
+## Class Definition
 
 ```java
 public interface UserRepository extends JpaRepository<User, UUID>
 ```
 
+- **Package:** `com.upmatches.app.features.user.repositories`
+- **Entity:** `User`
+- **Primary Key Type:** `UUID`
+
 ## Methods
 
-### findBySingpassUuid
+### Standard CRUD Methods
 
-Retrieves a user by their Singpass unique identifier.
+The following methods are inherited from `JpaRepository<User, UUID>`:
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `singpassUuid` | `String` | The unique identifier from Singpass authentication |
+| Method | Description |
+|--------|-------------|
+| `save(User entity)` | Persists a new user or updates an existing one |
+| `findById(UUID id)` | Retrieves a user by their UUID |
+| `findAll()` | Returns all users |
+| `delete(User entity)` | Removes a user record |
+| `count()` | Returns the total number of users |
 
-**Returns:** `Optional<User>` - The user entity if found, or empty if no user exists with the given Singpass UUID.
+### Custom Query Methods
 
-### findByAuth0Uuid
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findBySingpassUuid(String singpassUuid)` | `Optional<User>` | `singpassUuid` - The Singpass unique identifier | Finds a user by their Singpass UUID |
+| `findByAuth0Uuid(String auth0UserId)` | `Optional<User>` | `auth0UserId` - The Auth0 user identifier | Finds a user by their Auth0 UUID |
+| `findByAppleUuid(String appleUuid)` | `Optional<User>` | `appleUuid` - The Apple user identifier | Finds a user by their Apple UUID |
+| `findFirstByEmail(String email)` | `Optional<User>` | `email` - The user's email address | Returns the first user matching the given email |
+| `findForUpdateById(UUID id)` | `Optional<User>` | `id` - The user's UUID | Retrieves a user with a pessimistic write lock for safe concurrent updates |
 
-Retrieves a user by their Auth0 user identifier.
+## Method Details
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `auth0UserId` | `String` | The unique identifier from Auth0 authentication |
+### `findBySingpassUuid(String singpassUuid)`
 
-**Returns:** `Optional<User>` - The user entity if found, or empty if no user exists with the given Auth0 UUID.
+Searches for a user who authenticated via Singpass. Returns an empty `Optional` if no match is found.
 
-### findByAppleUuid
+### `findByAuth0Uuid(String auth0UserId)`
 
-Retrieves a user by their Apple Sign-In identifier.
+Searches for a user who authenticated via Auth0. Returns an empty `Optional` if no match is found.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `appleUuid` | `String` | The unique identifier from Apple authentication |
+### `findByAppleUuid(String appleUuid)`
 
-**Returns:** `Optional<User>` - The user entity if found, or empty if no user exists with the given Apple UUID.
+Searches for a user who authenticated via Apple Sign-In. Returns an empty `Optional` if no match is found.
 
-### findFirstByEmail
+### `findFirstByEmail(String email)`
 
-Retrieves the first user matching the given email address.
+Returns the first user record with the specified email address. Useful when email uniqueness is enforced at the application level rather than the database level.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `email` | `String` | The email address to search for |
+### `findForUpdateById(UUID id)`
 
-**Returns:** `Optional<User>` - The first user entity with the matching email, or empty if no user exists.
+This method applies a `PESSIMISTIC_WRITE` lock to the selected row, preventing other transactions from modifying or reading the row until the current transaction completes. Use this method when performing critical updates that require exclusive access to the user record.
 
-### findForUpdateById
+**Lock Behavior:**
+- Acquires a database-level write lock
+- Blocks other write transactions
+- Blocks `PESSIMISTIC_READ` locks
+- Does not block standard reads (non-locked queries)
 
-Retrieves a user by their ID with a pessimistic write lock, preventing concurrent modifications.
+## Usage Example
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the user |
+```java
+@Service
+public class UserService {
+    private final UserRepository userRepository;
 
-**Returns:** `Optional<User>` - The user entity with a pessimistic write lock, or empty if no user exists with the given ID.
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-**Lock Behavior:** This method applies `PESSIMISTIC_WRITE` locking, which acquires an exclusive database-level lock on the retrieved row. Other transactions attempting to read or modify this row will be blocked until the current transaction completes.
+    @Transactional
+    public void updateUserEmail(UUID userId, String newEmail) {
+        User user = userRepository.findForUpdateById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        user.setEmail(newEmail);
+        userRepository.save(user);
+    }
+}
+```
 
-## Usage Notes
+## Dependencies
 
-- All custom query methods return `Optional<User>` to encourage null-safe handling.
-- The `findForUpdateById` method should be used within a transactional context to ensure proper lock management.
-- The repository uses `UUID` as the entity identifier type, providing globally unique identifiers suitable for distributed systems.
+- **Spring Data JPA** - Provides the repository infrastructure
+- **Jakarta Persistence API** - Used for lock mode types and query annotations
+- **User Entity** - The domain object this repository manages

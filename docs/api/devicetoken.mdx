@@ -1,77 +1,84 @@
 ---
-id: device-token-entity
+id: device-token
 title: DeviceToken Entity
 sidebar_label: DeviceToken
 ---
 
 # DeviceToken
 
-The `DeviceToken` entity represents a push notification device token registered by a user in the UpMatches application. It maps to the `notification_device_tokens` database table and enforces a unique constraint on the combination of `user_id` and `device_token` to prevent duplicate registrations.
+The `DeviceToken` entity represents a push notification token registered for a specific user's device. It is used to manage and store device tokens for sending push notifications to users across different platforms (e.g., iOS, Android).
 
 ## Purpose
 
-This entity is used to store and manage device tokens for push notifications. Each token is associated with a specific user and platform (e.g., iOS, Android). The entity supports lifecycle callbacks to automatically set timestamps on creation and updates.
+This entity is part of the notification system and serves the following purposes:
 
-## Fields
+- **Token Storage**: Stores the unique device token provided by the push notification service (e.g., APNs for iOS, FCM for Android).
+- **User Association**: Links each device token to a specific user via a many-to-one relationship.
+- **Platform Tracking**: Records the platform type (e.g., iOS, Android) associated with the token.
+- **Uniqueness**: Ensures that the combination of user and device token is unique, preventing duplicate registrations.
 
-| Field | Type | Description |
-|-------|------|-------------|
+## Entity Details
+
+| Property | Type | Description |
+|----------|------|-------------|
 | `id` | `UUID` | Primary key, auto-generated using UUID strategy |
 | `user` | `User` | The user who owns this device token (many-to-one relationship) |
 | `deviceToken` | `String` | The actual device token string (max 512 characters) |
-| `platform` | `DevicePlatform` | The platform type (e.g., iOS, Android) stored as a string |
+| `platform` | `DevicePlatform` | The platform type (enum: e.g., IOS, ANDROID) |
 | `createdAt` | `Instant` | Timestamp when the token was created (non-updatable) |
 | `updatedAt` | `Instant` | Timestamp when the token was last updated |
+
+## Database Mapping
+
+- **Table Name**: `notification_device_tokens`
+- **Unique Constraint**: `uq_notification_device_tokens_user_token` on columns `(user_id, device_token)`
 
 ## Public Methods
 
 ### `create(User user, String deviceToken, DevicePlatform platform)`
 
+Creates a new `DeviceToken` instance with the specified parameters.
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `user` | `User` | The user to associate with this device token |
-| `deviceToken` | `String` | The device token string |
-| `platform` | `DevicePlatform` | The platform type |
+| `deviceToken` | `String` | The device token string from the push notification service |
+| `platform` | `DevicePlatform` | The platform type (e.g., IOS, ANDROID) |
 
-**Returns:** `DeviceToken` - A new DeviceToken instance with the provided values.
-
-This static factory method creates a new `DeviceToken` instance. It is the preferred way to instantiate the entity, as the default constructor is protected.
+**Returns**: `DeviceToken` - A new instance with the provided values.
 
 ### `touch(DevicePlatform platform)`
 
+Updates the platform associated with this device token. This method is typically called when a token is re-registered or updated.
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `platform` | `DevicePlatform` | The new platform value to set |
+| `platform` | `DevicePlatform` | The new platform type to set |
 
-**Returns:** `void`
-
-Updates the platform associated with this device token. This method is used when a token's platform needs to be updated without creating a new entity instance.
+**Returns**: `void`
 
 ## Lifecycle Callbacks
 
 The entity uses JPA lifecycle callbacks to automatically manage timestamps:
 
-- **`@PrePersist`** (`onCreate`): Sets `createdAt` to the current instant before the entity is persisted.
-- **`@PreUpdate`** (`onUpdate`): Sets `updatedAt` to the current instant before the entity is updated.
-
-## Database Constraints
-
-The table `notification_device_tokens` has a unique constraint named `uq_notification_device_tokens_user_token` on the combination of `user_id` and `device_token` columns. This ensures that a user cannot register the same device token twice.
+- **`@PrePersist` (`onCreate()`)**: Sets `createdAt` to the current instant before persisting.
+- **`@PreUpdate` (`onUpdate()`)**: Sets `updatedAt` to the current instant before updating.
 
 ## Usage Example
 
 ```java
-// Create a new device token
-DeviceToken token = DeviceToken.create(
-    user,
-    "abc123-device-token-xyz",
-    DevicePlatform.IOS
-);
-
-// Save using repository
+// Create a new device token for a user
+User user = userRepository.findById(userId).orElseThrow();
+DeviceToken token = DeviceToken.create(user, "device-token-string", DevicePlatform.IOS);
 deviceTokenRepository.save(token);
 
-// Update platform
+// Update the platform for an existing token
 token.touch(DevicePlatform.ANDROID);
 deviceTokenRepository.save(token);
 ```
+
+## Notes
+
+- The `@NoArgsConstructor(access = AccessLevel.PROTECTED)` annotation ensures that the entity can only be instantiated through the static factory method `create()`.
+- The `@Getter` annotation from Lombok generates getters for all fields, but no setters are exposed to maintain immutability of the entity's core data.
+- The `updatedAt` field is nullable, meaning it will be `null` until the first update occurs.

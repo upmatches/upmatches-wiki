@@ -6,52 +6,36 @@ sidebar_label: TransitLineRepository
 
 # TransitLineRepository
 
-The `TransitLineRepository` interface provides database access operations for `TransitLine` entities within the venue feature of the UpMatches application. It extends Spring Data JPA's `JpaRepository`, inheriting a comprehensive set of CRUD (Create, Read, Update, Delete) and query methods without requiring any custom implementation.
+The `TransitLineRepository` interface provides database access operations for `TransitLine` entities. It extends Spring Data JPA's `JpaRepository`, which automatically provides standard CRUD (Create, Read, Update, Delete) functionality without requiring any implementation code.
 
 ## Purpose
 
-This repository serves as the data access layer for managing transit line records. By extending `JpaRepository<TransitLine, String>`, it automatically provides:
-- Standard CRUD operations (save, findById, findAll, delete, etc.)
-- Pagination and sorting support
-- Batch operations
-- Flush and clear capabilities for entity management
+This repository serves as the data access layer for transit line information within the venue management feature of the application. By extending `JpaRepository<TransitLine, String>`, it inherits a comprehensive set of methods for interacting with the `TransitLine` entity in the database, where the primary key is of type `String`.
 
-The primary key type is `String`, indicating that transit lines are identified by a string-based identifier (e.g., a route code or name).
+## Inheritance
 
-## Inherited Public Methods
+The interface extends `org.springframework.data.jpa.repository.JpaRepository` with the following generic parameters:
 
-Since `TransitLineRepository` extends `JpaRepository` without adding custom methods, all public methods are inherited from the Spring Data JPA interfaces. Below are the key methods available:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| Entity | `TransitLine` | The entity class this repository manages |
+| ID | `String` | The type of the entity's primary key |
 
-### CRUD Operations
+## Inherited Methods
 
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `save(S entity)` | `S` | `S entity` - The entity to save | Persists a new entity or updates an existing one |
-| `saveAll(Iterable<S> entities)` | `List<S>` | `Iterable<S> entities` - Collection of entities | Saves all given entities in batch |
-| `findById(ID id)` | `Optional<S>` | `ID id` - The entity identifier | Retrieves an entity by its primary key |
-| `existsById(ID id)` | `boolean` | `ID id` - The entity identifier | Checks if an entity exists with the given ID |
-| `findAll()` | `List<S>` | None | Returns all entities |
-| `findAllById(Iterable<ID> ids)` | `List<S>` | `Iterable<ID> ids` - Collection of IDs | Returns all entities with the given IDs |
-| `count()` | `long` | None | Returns the total number of entities |
-| `deleteById(ID id)` | `void` | `ID id` - The entity identifier | Deletes the entity with the given ID |
-| `delete(S entity)` | `void` | `S entity` - The entity to delete | Deletes a given entity |
-| `deleteAll(Iterable<? extends S> entities)` | `void` | `Iterable<? extends S> entities` - Entities to delete | Deletes all given entities |
-| `deleteAll()` | `void` | None | Deletes all entities managed by the repository |
+Since `TransitLineRepository` extends `JpaRepository`, it automatically inherits the following commonly used methods:
 
-### Query Methods
-
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `findAll(Sort sort)` | `List<S>` | `Sort sort` - Sort specification | Returns all entities sorted by the given options |
-| `findAll(Pageable pageable)` | `Page<S>` | `Pageable pageable` - Pagination information | Returns a `Page` of entities meeting the pagination constraints |
-
-### Entity Management
-
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `flush()` | `void` | None | Flushes all pending changes to the database |
-| `saveAndFlush(S entity)` | `S` | `S entity` - The entity to save | Saves an entity and immediately flushes changes |
-| `deleteInBatch(Iterable<S> entities)` | `void` | `Iterable<S> entities` - Entities to delete | Deletes the given entities in a single JPQL query |
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `findAll()` | `List<TransitLine>` | Retrieves all transit line entities |
+| `findById(String id)` | `Optional<TransitLine>` | Finds a transit line by its unique identifier |
+| `save(TransitLine entity)` | `TransitLine` | Saves (inserts or updates) a transit line entity |
+| `saveAll(Iterable<TransitLine> entities)` | `List<TransitLine>` | Saves multiple transit line entities |
+| `deleteById(String id)` | `void` | Deletes a transit line by its identifier |
+| `delete(TransitLine entity)` | `void` | Deletes a specific transit line entity |
+| `deleteAll()` | `void` | Deletes all transit line entities |
+| `count()` | `long` | Returns the total number of transit line entities |
+| `existsById(String id)` | `boolean` | Checks if a transit line exists with the given identifier |
 
 ## Usage Example
 
@@ -65,13 +49,9 @@ public class TransitLineService {
         this.transitLineRepository = transitLineRepository;
     }
     
-    public TransitLine findTransitLineById(String id) {
+    public TransitLine findTransitLine(String id) {
         return transitLineRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Transit line not found: " + id));
-    }
-    
-    public List<TransitLine> getAllTransitLines() {
-        return transitLineRepository.findAll();
     }
     
     public TransitLine saveTransitLine(TransitLine transitLine) {
@@ -80,13 +60,13 @@ public class TransitLineService {
 }
 ```
 
-## Dependencies
+## Package Location
 
-- **Spring Data JPA**: Provides the `JpaRepository` interface and all inherited functionality
-- **TransitLine entity**: The domain object this repository manages, located in `com.upmatches.app.features.venue.entities`
+```
+com.upmatches.app.features.venue.repositories
+```
 
-## Notes
+## Related Components
 
-- The repository is intentionally minimal, relying entirely on Spring Data JPA's auto-implementation
-- For custom query methods, developers can add method signatures following Spring Data JPA's query derivation conventions (e.g., `findByName(String name)`)
-- The `String` primary key type suggests transit lines use natural keys (like route identifiers) rather than auto-generated numeric IDs
+- **Entity**: `com.upmatches.app.features.venue.entities.TransitLine`
+- **Service**: Typically consumed by service classes within the venue feature package

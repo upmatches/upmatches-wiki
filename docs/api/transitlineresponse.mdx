@@ -6,24 +6,20 @@ sidebar_label: TransitLineResponse
 
 # TransitLineResponse
 
-The `TransitLineResponse` is a Java record class designed to represent a simplified view of a transit line associated with a specific station. It is used as a Data Transfer Object (DTO) to expose transit line information in API responses, typically within a venue or transit context.
+The `TransitLineResponse` is a Java record class used to represent a simplified view of a transit line associated with a specific station. It is primarily designed for API responses, providing a lightweight data transfer object (DTO) that includes the transit line's code, name, color, and the station number on that line.
 
 ## Purpose
 
-This record serves as a lightweight, immutable data carrier that extracts and flattens relevant fields from a `StationLine` entity. It is particularly useful for:
-
-- Returning transit line details (code, name, color) along with the station number in a single response.
-- Decoupling the internal entity structure from the API contract.
-- Improving performance by avoiding serialization of full entity graphs.
+This record serves as a response model for endpoints that need to return transit line information in a concise format. By using a record, it automatically provides `equals()`, `hashCode()`, `toString()`, and accessor methods, reducing boilerplate code. The static factory method `fromStationLine()` converts a `StationLine` entity into this response object, ensuring a clean separation between the persistence layer and the API layer.
 
 ## Record Components
 
-| Field           | Type      | Description                                      |
+| Component       | Type      | Description                                      |
 |-----------------|-----------|--------------------------------------------------|
 | `code`          | `String`  | The unique code identifying the transit line.    |
 | `name`          | `String`  | The human-readable name of the transit line.     |
 | `color`         | `String`  | The color associated with the transit line.      |
-| `stationNumber` | `Integer` | The station number along the transit line.       |
+| `stationNumber` | `Integer` | The station's number or order on this line.      |
 
 ## Public Methods
 
@@ -31,27 +27,21 @@ This record serves as a lightweight, immutable data carrier that extracts and fl
 
 Creates a `TransitLineResponse` instance from a `StationLine` entity.
 
-**Parameters:**
-
 | Parameter      | Type           | Description                                      |
 |----------------|----------------|--------------------------------------------------|
-| `stationLine`  | `StationLine`  | The source entity containing transit line and station number data. |
+| `stationLine`  | `StationLine`  | The entity containing transit line and station data. |
 
-**Returns:**
+**Returns:** `TransitLineResponse` — A new response object populated with data from the provided entity.
 
-| Type                   | Description                                      |
-|------------------------|--------------------------------------------------|
-| `TransitLineResponse`  | A new `TransitLineResponse` populated with data from the provided `StationLine`. |
-
-**Example Usage:**
+**Example usage:**
 
 ```java
 StationLine stationLine = stationLineRepository.findById(stationLineId);
 TransitLineResponse response = TransitLineResponse.fromStationLine(stationLine);
 ```
 
-## Notes
+## Usage Notes
 
-- This record is immutable and thread-safe by design.
-- The `fromStationLine` factory method assumes that `stationLine.getTransitLine()` is not null. Ensure proper null handling in the calling code if necessary.
-- The record is intended for read-only API responses and should not be used for database persistence.
+- This record is immutable by design, making it safe for use in concurrent environments.
+- The `fromStationLine()` method extracts data from the nested `TransitLine` entity within the `StationLine` object, so ensure that the `StationLine` entity is properly loaded with its associated `TransitLine` before calling this method.
+- The `stationNumber` field represents the station's position on the transit line (e.g., stop number or order index).

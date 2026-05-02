@@ -1,78 +1,86 @@
 ---
 id: async-configuration
-title: AsyncConfiguration
-sidebar_label: AsyncConfiguration
+title: Async Configuration
+sidebar_label: Async Configuration
 ---
 
-# AsyncConfiguration
+# Async Configuration
 
-The `AsyncConfiguration` class is a Spring configuration component that sets up asynchronous task execution and scheduling capabilities within the application. It enables Spring's `@Async` and `@Scheduled` annotations, allowing methods to be executed asynchronously or on a scheduled basis.
+The `AsyncConfiguration` class provides a centralized configuration for asynchronous task execution and scheduling within the application. By leveraging Spring's `@EnableAsync` and `@EnableScheduling` annotations, it enables the application to execute methods asynchronously and schedule tasks efficiently.
 
 ## Purpose
 
-This configuration class defines a custom thread pool executor for handling asynchronous tasks. By configuring a dedicated `ThreadPoolTaskExecutor`, it ensures that asynchronous operations (such as email sending, report generation, or background data processing) are managed efficiently without blocking the main application threads.
+This configuration class sets up a custom `ThreadPoolTaskExecutor` bean that manages a pool of threads for executing asynchronous tasks. It defines the core pool size, maximum pool size, queue capacity, and thread naming prefix to optimize resource utilization and ensure predictable behavior under varying workloads.
 
 ## Configuration Details
 
-The class uses the following annotations:
-- `@Configuration` – Marks this class as a Spring configuration source.
-- `@EnableAsync` – Enables Spring's asynchronous method execution capability.
-- `@EnableScheduling` – Enables Spring's scheduled task execution capability.
+The class uses the following constants to configure the thread pool:
 
-## Thread Pool Configuration
-
-The thread pool is configured with the following parameters:
-
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| Core Pool Size | 4 | Minimum number of threads kept alive in the pool |
-| Max Pool Size | 8 | Maximum number of threads allowed in the pool |
-| Queue Capacity | 100 | Maximum number of tasks that can be queued before new threads are created |
-| Thread Name Prefix | `async-` | Prefix for thread names (e.g., `async-1`, `async-2`) |
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `CORE_POOL_SIZE` | 4 | The number of threads to keep in the pool, even if they are idle |
+| `MAX_POOL_SIZE` | 8 | The maximum number of threads allowed in the pool |
+| `QUEUE_CAPACITY` | 100 | The capacity of the queue holding tasks before they are executed |
+| `THREAD_NAME_PREFIX` | `async-` | The prefix for thread names created by this executor |
 
 ## Public Methods
 
 ### `taskExecutor()`
 
-Creates and returns a configured `ThreadPoolTaskExecutor` bean.
+Creates and configures a `ThreadPoolTaskExecutor` bean that serves as the primary executor for asynchronous operations.
 
-| Aspect | Details |
-|--------|---------|
+| Property | Details |
+|----------|---------|
 | **Bean Name** | `taskExecutor` |
 | **Return Type** | `java.util.concurrent.Executor` |
-| **Description** | Initializes a thread pool executor with predefined core pool size, max pool size, queue capacity, and thread name prefix. This executor is used by Spring to run `@Async` annotated methods. |
+| **Description** | Initializes a thread pool executor with the configured core pool size, maximum pool size, queue capacity, and thread name prefix |
+
+#### Configuration Behavior
+
+- **Core Pool Size (4)**: The executor maintains at least 4 threads ready to handle tasks immediately
+- **Max Pool Size (8)**: When the core pool is fully utilized and the queue is full, the executor can create up to 8 threads
+- **Queue Capacity (100)**: Tasks that cannot be immediately executed are queued; once the queue reaches 100 tasks, new threads are created up to the maximum pool size
+- **Thread Name Prefix**: All threads created by this executor will have names starting with `async-` for easy identification in logs and monitoring tools
 
 ## Usage Example
 
-To use this configuration in your application, simply annotate a method with `@Async`:
+To use this asynchronous configuration in your application, simply inject the `taskExecutor` bean where needed:
 
 ```java
 @Service
 public class NotificationService {
     
-    @Async
-    public void sendEmailAsync(String recipient, String message) {
-        // This method will be executed in a separate thread
-        // using the configured thread pool
+    @Autowired
+    private Executor taskExecutor;
+    
+    public void sendNotifications(List<User> users) {
+        for (User user : users) {
+            taskExecutor.execute(() -> sendEmail(user));
+        }
+    }
+    
+    private void sendEmail(User user) {
+        // Email sending logic
     }
 }
 ```
 
-For scheduled tasks, use `@Scheduled`:
+Alternatively, you can use the `@Async` annotation on methods to automatically use this executor:
 
 ```java
-@Component
-public class ReportScheduler {
+@Service
+public class EmailService {
     
-    @Scheduled(cron = "0 0 8 * * ?")
-    public void generateDailyReport() {
-        // This method will run daily at 8 AM
+    @Async
+    public void sendWelcomeEmail(User user) {
+        // Asynchronous email sending
     }
 }
 ```
 
-## Notes
+## Dependencies
 
-- The thread pool configuration can be adjusted by modifying the constant values at the top of the class.
-- Ensure that the `taskExecutor` bean name matches the reference used in `@Async("taskExecutor")` if specifying a custom executor.
-- The queue capacity of 100 helps prevent memory issues by limiting the number of pending tasks.
+This configuration requires the following Spring Framework modules:
+
+- `spring-context` - Provides the `@Configuration`, `@EnableAsync`, and `@EnableScheduling` annotations
+- `spring-scheduling` - Provides the `ThreadPoolTaskExecutor` class and scheduling support

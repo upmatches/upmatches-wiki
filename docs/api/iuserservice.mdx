@@ -1,22 +1,28 @@
 ---
-id: iuserservice
+id: i-user-service
 title: IUserService Interface
 sidebar_label: IUserService
 ---
 
 # IUserService Interface
 
-The `IUserService` interface defines the contract for user profile management operations within the UpMatches application. It serves as the abstraction layer between the presentation layer and the concrete implementation (`UserService`), ensuring loose coupling and adherence to the Dependency Inversion Principle.
+The `IUserService` interface defines the contract for user profile management operations within the UpMatches application. It serves as the abstraction layer between the controller and the concrete implementation (`UserService`), ensuring a clean separation of concerns and promoting testability.
 
 ## Purpose
 
-This sealed interface restricts implementation to only the `UserService` class, providing a controlled and secure way to manage user profiles. It encapsulates the core user operations: retrieving, completing, updating, and deleting user profiles.
+This sealed interface establishes a clear API for managing user profiles, including:
+- Retrieving the current user's profile
+- Completing an initial profile setup
+- Updating an existing profile
+- Deleting a user account
+
+By using Java's `sealed` keyword, the interface restricts implementation to only the `UserService` class, providing compile-time safety and a controlled extension point.
 
 ## Interface Definition
 
 ```java
 public sealed interface IUserService permits UserService {
-    // Methods defined below
+    // Method declarations
 }
 ```
 
@@ -24,38 +30,34 @@ public sealed interface IUserService permits UserService {
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `getProfile()` | `UserProfileResponse` | Retrieves the current user's profile information |
-| `completeProfile(CompleteProfileRequest request)` | `UserProfileResponse` | Completes the initial user profile setup with required information |
-| `updateProfile(UpdateProfileRequest request)` | `UserProfileResponse` | Updates existing user profile fields |
-| `deleteUser()` | `void` | Permanently deletes the user account and associated data |
+| `getProfile()` | `UserProfileResponse` | Retrieves the profile of the currently authenticated user |
+| `completeProfile(CompleteProfileRequest request)` | `UserProfileResponse` | Completes the initial profile setup with the provided information |
+| `updateProfile(UpdateProfileRequest request)` | `UserProfileResponse` | Updates the existing user profile with new information |
+| `deleteUser()` | `void` | Deletes the currently authenticated user's account |
 
 ### Method Details
 
 #### `getProfile()`
-- **Purpose**: Fetches the complete profile of the currently authenticated user
+- **Purpose**: Fetches and returns the complete profile data for the authenticated user.
 - **Parameters**: None
-- **Returns**: `UserProfileResponse` containing all user profile data
-- **Throws**: May throw authentication exceptions if user is not logged in
+- **Returns**: `UserProfileResponse` containing the user's profile information
 
 #### `completeProfile(CompleteProfileRequest request)`
-- **Purpose**: Finalizes the initial user registration by providing mandatory profile information
+- **Purpose**: Finalizes the initial profile creation process by adding required details that were not provided during registration.
 - **Parameters**: 
-  - `request` (CompleteProfileRequest): Contains required fields such as name, bio, preferences, etc.
-- **Returns**: `UserProfileResponse` with the completed profile data
-- **Throws**: Validation exceptions if required fields are missing or invalid
+  - `request` (`CompleteProfileRequest`): Contains the necessary data to complete the user's profile
+- **Returns**: `UserProfileResponse` with the updated profile after completion
 
 #### `updateProfile(UpdateProfileRequest request)`
-- **Purpose**: Modifies specific fields of an existing user profile
+- **Purpose**: Allows the user to modify their existing profile information.
 - **Parameters**:
-  - `request` (UpdateProfileRequest): Contains only the fields to be updated
-- **Returns**: `UserProfileResponse` with the updated profile data
-- **Throws**: Validation exceptions if update data is invalid
+  - `request` (`UpdateProfileRequest`): Contains the fields to be updated in the user's profile
+- **Returns**: `UserProfileResponse` reflecting the applied changes
 
 #### `deleteUser()`
-- **Purpose**: Removes the user account and all associated data from the system
+- **Purpose**: Permanently removes the authenticated user's account and associated data from the system.
 - **Parameters**: None
-- **Returns**: void
-- **Throws**: Authentication exceptions if user is not logged in; may throw data integrity exceptions if deletion fails
+- **Returns**: `void`
 
 ## Usage Example
 
@@ -67,25 +69,20 @@ private final IUserService userService;
 UserProfileResponse profile = userService.getProfile();
 
 // Complete initial profile
-CompleteProfileRequest completeRequest = new CompleteProfileRequest(
-    "John Doe", 
-    "Software developer", 
-    List.of("coding", "hiking")
-);
+CompleteProfileRequest completeRequest = new CompleteProfileRequest(/* ... */);
 UserProfileResponse completedProfile = userService.completeProfile(completeRequest);
 
-// Update specific fields
-UpdateProfileRequest updateRequest = new UpdateProfileRequest();
-updateRequest.setBio("Updated bio");
+// Update profile
+UpdateProfileRequest updateRequest = new UpdateProfileRequest(/* ... */);
 UserProfileResponse updatedProfile = userService.updateProfile(updateRequest);
 
-// Delete account
+// Delete user
 userService.deleteUser();
 ```
 
 ## Related Components
 
-- **`UserService`**: The sole implementation class for this interface
-- **`CompleteProfileRequest`**: Request DTO for initial profile completion
+- **`UserService`**: The sole implementation of this interface
+- **`CompleteProfileRequest`**: Request DTO for profile completion
 - **`UpdateProfileRequest`**: Request DTO for profile updates
 - **`UserProfileResponse`**: Response DTO containing user profile data

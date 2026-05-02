@@ -6,26 +6,31 @@ sidebar_label: ListVenuesService
 
 # ListVenuesService
 
-The `ListVenuesService` class is a Spring service component responsible for retrieving a paginated list of venues from the database. It implements the `IListVenuesService` interface and provides a read-only transactional operation that fetches venue data and transforms it into a standardized response format.
+The `ListVenuesService` class is a Spring service component responsible for retrieving a paginated list of venues from the database. It implements the `IListVenuesService` interface and provides a transactional, read-only operation to fetch venue data and convert it into a standardized response format.
 
 ## Purpose
 
-This service encapsulates the business logic for listing venues with pagination support. It leverages Spring Data's `Pageable` parameter to handle pagination efficiently and uses a service operation executor to manage error handling and operation status tracking.
+This service encapsulates the business logic for listing venues with pagination support. It leverages Spring Data's `Pageable` to handle pagination parameters and returns a `PagedResponse<VenueResponse>` that includes both the venue data and pagination metadata. The service uses `ServiceOperationExecutor` to handle operation execution, status tracking, and error handling consistently.
 
 ## Class Details
 
 | Property | Value |
 |----------|-------|
 | **Package** | `com.upmatches.app.features.venue.services` |
-| **Annotations** | `@Service` |
-| **Modifiers** | `public non-sealed` |
+| **Type** | `non-sealed class` |
 | **Implements** | `IListVenuesService` |
+| **Annotations** | `@Service` |
+| **Dependencies** | `VenueRepository` |
 
-## Dependencies
+## Constructor
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `VenueRepository` | Constructor Injection | Repository for accessing venue data from the database |
+### `ListVenuesService(VenueRepository venueRepository)`
+
+Creates a new instance of the service with the required repository dependency.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `venueRepository` | `VenueRepository` | The repository used to access venue data from the database |
 
 ## Public Methods
 
@@ -35,38 +40,44 @@ Retrieves a paginated list of venues and returns them as a `PagedResponse<VenueR
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sort criteria |
+| `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sort parameters |
 
-**Returns:** `PagedResponse<VenueResponse>` - A paginated response containing venue data transformed into `VenueResponse` objects.
+**Returns:** `PagedResponse<VenueResponse>` - A paginated response containing venue data and pagination metadata
 
-**Exceptions:** Throws `ResourceNotFoundException` if the operation fails (handled by `ServiceOperationExecutor`).
+**Exceptions:** Throws `ResourceNotFoundException` if the operation fails (wrapped by `ServiceOperationExecutor`)
 
-**Transactional Behavior:** The method is marked with `@Transactional(readOnly = true)` to optimize database access for read-only operations.
+**Transactional Behavior:** Read-only transaction (`@Transactional(readOnly = true)`)
 
 ## Usage Example
 
 ```java
-@Service
-public class VenueController {
-    private final ListVenuesService listVenuesService;
-    
-    public VenueController(ListVenuesService listVenuesService) {
-        this.listVenuesService = listVenuesService;
-    }
-    
-    public PagedResponse<VenueResponse> getVenues(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return listVenuesService.execute(pageable);
-    }
-}
+// Inject the service
+private final ListVenuesService listVenuesService;
+
+// Create a pageable request
+Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+
+// Execute the query
+PagedResponse<VenueResponse> venues = listVenuesService.execute(pageable);
+
+// Access results
+List<VenueResponse> venueList = venues.getContent();
+int totalPages = venues.getTotalPages();
+long totalElements = venues.getTotalElements();
 ```
 
-## Implementation Details
+## Dependencies
 
-The service uses `ServiceOperationExecutor.execute()` to wrap the database operation with standardized error handling and status tracking. The core operation:
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `VenueRepository` | Spring Data Repository | Provides database access for venue entities |
+| `ServiceOperationExecutor` | Utility | Handles operation execution, status tracking, and error wrapping |
+| `PagedResponse` | Shared Response | Generic wrapper for paginated API responses |
+| `VenueResponse` | DTO | Data transfer object for venue information |
 
-1. Calls `venueRepository.findAll(pageable)` to retrieve a paginated `Page<Venue>` from the database
-2. Transforms each `Venue` entity to a `VenueResponse` using the static method `VenueResponse::fromVenue`
-3. Wraps the result in a `PagedResponse` object for consistent API responses
+## Error Handling
 
-The operation status is set to `RETRIEVE` and any failures result in a `ResourceNotFoundException` being thrown.
+The service uses `ServiceOperationExecutor.execute()` which:
+- Wraps any exceptions in a `ResourceNotFoundException`
+- Tracks the operation status as `RETRIEVE`
+- Provides consistent error handling across the application

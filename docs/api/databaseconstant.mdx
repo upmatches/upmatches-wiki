@@ -6,7 +6,7 @@ sidebar_label: DatabaseConstant
 
 # DatabaseConstant
 
-The `DatabaseConstant` class is a utility class that centralizes all database-related constants used across the Upmatches application. It provides a single source of truth for JDBC URL prefixes, HikariCP connection pool defaults, logging message templates, and database-specific configuration parameters for PostgreSQL and H2 databases.
+The `DatabaseConstant` class is a utility class that centralizes all database-related constants used across the Upmatches application. It provides a single source of truth for JDBC URL prefixes, HikariCP connection pool defaults, PostgreSQL and H2 database-specific configuration parameters, logging message templates, and URL masking patterns.
 
 This class is declared as `final` and has a private constructor to prevent instantiation, following the standard utility class pattern.
 
@@ -17,8 +17,8 @@ This class is declared as `final` and has a private constructor to prevent insta
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
 | `JDBC_H2` | `String` | `"jdbc:h2:"` | JDBC URL prefix for H2 database |
-| `JDBC_POSTGRESQL` | `String` | `"jdbc:postgresql:"` | JDBC URL prefix for PostgreSQL database |
-| `JDBC_MYSQL` | `String` | `"jdbc:mysql:"` | JDBC URL prefix for MySQL database |
+| `JDBC_POSTGRESQL` | `String` | `"jdbc:postgresql:"` | JDBC URL prefix for PostgreSQL |
+| `JDBC_MYSQL` | `String` | `"jdbc:mysql:"` | JDBC URL prefix for MySQL |
 
 ### HikariCP Connection Pool Defaults
 
@@ -28,87 +28,88 @@ This class is declared as `final` and has a private constructor to prevent insta
 | `DEFAULT_APPLICATION_NAME` | `String` | `"Upmatches"` | Default application name |
 | `DEFAULT_MAXIMUM_POOL_SIZE` | `int` | `10` | Maximum number of connections in the pool |
 | `DEFAULT_MINIMUM_IDLE` | `int` | `10` | Minimum number of idle connections |
-| `DEFAULT_CONNECTION_TIMEOUT` | `long` | `30000` (30 seconds) | Connection timeout in milliseconds |
-| `DEFAULT_IDLE_TIMEOUT` | `long` | `600000` (10 minutes) | Idle timeout in milliseconds |
-| `DEFAULT_MAX_LIFETIME` | `long` | `1800000` (30 minutes) | Maximum connection lifetime in milliseconds |
-| `DEFAULT_INITIALIZATION_FAIL_TIMEOUT` | `long` | `30000` (30 seconds) | Initialization fail timeout in milliseconds |
+| `DEFAULT_CONNECTION_TIMEOUT` | `long` | `30000` (30 seconds) | Maximum time to wait for a connection from the pool |
+| `DEFAULT_IDLE_TIMEOUT` | `long` | `600000` (10 minutes) | Maximum time a connection can sit idle in the pool |
+| `DEFAULT_MAX_LIFETIME` | `long` | `1800000` (30 minutes) | Maximum lifetime of a connection in the pool |
+| `DEFAULT_INITIALIZATION_FAIL_TIMEOUT` | `long` | `30000` (30 seconds) | Timeout for pool initialization failure |
 
 ### General Constants
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `PROFILE_SEPARATOR` | `String` | `"-"` | Profile name separator |
-| `UNKNOWN_DATABASE_TYPE` | `String` | `"Unknown"` | Unknown database type identifier |
-| `NOT_AVAILABLE` | `String` | `"N/A"` | Not available indicator |
-| `SPRING_APPLICATION_NAME_PROPERTY` | `String` | `"spring.application.name"` | Spring application name property |
-| `VALUE_TRUE` | `String` | `"true"` | Boolean true string value |
-| `VALUE_FALSE` | `String` | `"false"` | Boolean false string value |
-| `UNIT_MS` | `String` | `"ms"` | Milliseconds unit string |
-| `LEAK_DETECTION_DISABLED` | `String` | `"disabled"` | Leak detection disabled indicator |
+| `PROFILE_SEPARATOR` | `String` | `"-"` | Separator used in profile names |
+| `UNKNOWN_DATABASE_TYPE` | `String` | `"Unknown"` | Fallback value for unknown database types |
+| `NOT_AVAILABLE` | `String` | `"N/A"` | Fallback value for unavailable information |
+| `SPRING_APPLICATION_NAME_PROPERTY` | `String` | `"spring.application.name"` | Spring property key for application name |
+| `VALUE_TRUE` | `String` | `"true"` | String representation of boolean true |
+| `VALUE_FALSE` | `String` | `"false"` | String representation of boolean false |
+| `UNIT_MS` | `String` | `"ms"` | Unit string for milliseconds |
+| `LEAK_DETECTION_DISABLED` | `String` | `"disabled"` | Indicator for disabled leak detection |
 
 ### Logging Message Templates
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `LOG_INITIALIZING_DATASOURCE` | `String` | `"Initializing HikariCP DataSource for {}"` | Log message for datasource initialization |
-| `LOG_UNSUPPORTED_JDBC_URL` | `String` | `"Unsupported JDBC URL: {}. Supported prefixes are: {}, {}, {}"` | Log message for unsupported JDBC URL |
+| `LOG_INITIALIZING_DATASOURCE` | `String` | `"Initializing HikariCP DataSource for {}"` | Log message when initializing datasource |
+| `LOG_UNSUPPORTED_JDBC_URL` | `String` | `"Unsupported JDBC URL: {}. Supported prefixes are: {}, {}, {}"` | Log message for unsupported JDBC URLs |
 | `LOG_H2_OPTIMIZATIONS` | `String` | `"Applied H2-specific optimizations"` | Log message for H2 optimizations |
-| `LOG_METRICS_ENABLED` | `String` | `"Metrics enabled with {}"` | Log message for metrics enablement |
+| `LOG_METRICS_ENABLED` | `String` | `"Metrics enabled with {}"` | Log message when metrics are enabled |
 | `LOG_HIKARI_CONFIGURED` | `String` | `"HikariCP configured:"` | Log message header for HikariCP configuration |
 | `LOG_POOL_NAME` | `String` | `"   Pool Name: {}"` | Log message for pool name |
 | `LOG_POOL_SIZE` | `String` | `"   Pool Size: min={}, max={}"` | Log message for pool size |
-| `LOG_TIMEOUTS` | `String` | `"   Timeouts: connection={}ms, idle={}ms, maxLifetime={}ms"` | Log message for timeouts |
-| `LOG_LEAK_DETECTION` | `String` | `"   Leak Detection: {}"` | Log message for leak detection |
+| `LOG_TIMEOUTS` | `String` | `"   Timeouts: connection={}ms, idle={}ms, maxLifetime={}ms"` | Log message for timeout values |
+| `LOG_LEAK_DETECTION` | `String` | `"   Leak Detection: {}"` | Log message for leak detection status |
 | `LOG_DATABASE_URL` | `String` | `"   Database URL: {}"` | Log message for database URL |
-| `LOG_DRIVER` | `String` | `"   Driver: {}"` | Log message for driver |
+| `LOG_DRIVER` | `String` | `"   Driver: {}"` | Log message for database driver |
 | `LOG_APPLICATION_NAME` | `String` | `"   Application Name: {}"` | Log message for application name |
 
-### PostgreSQL-Specific Constants
+### PostgreSQL-Specific Configuration
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `PG_TCP_KEEP_ALIVE` | `String` | `"tcpKeepAlive"` | TCP keep-alive property name |
-| `PG_APPLICATION_NAME` | `String` | `"ApplicationName"` | Application name property for PostgreSQL |
-| `PG_ASSUME_MIN_SERVER_VERSION` | `String` | `"assumeMinServerVersion"` | Minimum server version property |
-| `PG_ASSUME_MIN_SERVER_VERSION_VALUE` | `String` | `"12.0"` | Minimum server version value |
-| `PG_REWRITE_BATCHED_INSERTS` | `String` | `"reWriteBatchedInserts"` | Rewrite batched inserts property |
-| `PG_PREPARE_THRESHOLD` | `String` | `"prepareThreshold"` | Prepare threshold property |
-| `PG_PREPARE_THRESHOLD_VALUE` | `String` | `"5"` | Prepare threshold value |
-| `PG_PREPARED_STATEMENT_CACHE_QUERIES` | `String` | `"preparedStatementCacheQueries"` | Prepared statement cache queries property |
-| `PG_PREPARED_STATEMENT_CACHE_QUERIES_VALUE` | `String` | `"250"` | Prepared statement cache queries value |
-| `PG_PREPARED_STATEMENT_CACHE_SIZE_MIB` | `String` | `"preparedStatementCacheSizeMiB"` | Prepared statement cache size property |
-| `PG_PREPARED_STATEMENT_CACHE_SIZE_MIB_VALUE` | `String` | `"5"` | Prepared statement cache size value (MiB) |
-| `PG_MAINTAIN_TIME_STATS` | `String` | `"maintainTimeStats"` | Maintain time stats property |
+| `PG_TCP_KEEP_ALIVE` | `String` | `"tcpKeepAlive"` | PostgreSQL TCP keep-alive parameter |
+| `PG_APPLICATION_NAME` | `String` | `"ApplicationName"` | PostgreSQL application name parameter |
+| `PG_ASSUME_MIN_SERVER_VERSION` | `String` | `"assumeMinServerVersion"` | PostgreSQL minimum server version parameter |
+| `PG_ASSUME_MIN_SERVER_VERSION_VALUE` | `String` | `"12.0"` | Minimum PostgreSQL server version |
+| `PG_REWRITE_BATCHED_INSERTS` | `String` | `"reWriteBatchedInserts"` | PostgreSQL batched inserts parameter |
+| `PG_PREPARE_THRESHOLD` | `String` | `"prepareThreshold"` | PostgreSQL prepare threshold parameter |
+| `PG_PREPARE_THRESHOLD_VALUE` | `String` | `"5"` | Default prepare threshold value |
+| `PG_PREPARED_STATEMENT_CACHE_QUERIES` | `String` | `"preparedStatementCacheQueries"` | PostgreSQL prepared statement cache queries parameter |
+| `PG_PREPARED_STATEMENT_CACHE_QUERIES_VALUE` | `String` | `"250"` | Default prepared statement cache queries value |
+| `PG_PREPARED_STATEMENT_CACHE_SIZE_MIB` | `String` | `"preparedStatementCacheSizeMiB"` | PostgreSQL prepared statement cache size parameter |
+| `PG_PREPARED_STATEMENT_CACHE_SIZE_MIB_VALUE` | `String` | `"5"` | Default prepared statement cache size in MiB |
+| `PG_MAINTAIN_TIME_STATS` | `String` | `"maintainTimeStats"` | PostgreSQL time statistics parameter |
 
-### H2-Specific Constants
+### H2-Specific Configuration
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `H2_DB_CLOSE_DELAY` | `String` | `"DB_CLOSE_DELAY"` | Database close delay property |
-| `H2_DB_CLOSE_DELAY_VALUE` | `String` | `"-1"` | Database close delay value (no delay) |
-| `H2_DB_CLOSE_ON_EXIT` | `String` | `"DB_CLOSE_ON_EXIT"` | Database close on exit property |
-| `H2_DB_CLOSE_ON_EXIT_VALUE` | `String` | `"FALSE"` | Database close on exit value |
-| `H2_CACHE_SIZE` | `String` | `"CACHE_SIZE"` | Cache size property |
-| `H2_CACHE_SIZE_VALUE` | `String` | `"65536"` | Cache size value (64KB) |
-| `H2_LOCK_TIMEOUT` | `String` | `"LOCK_TIMEOUT"` | Lock timeout property |
-| `H2_LOCK_TIMEOUT_VALUE` | `String` | `"10000"` | Lock timeout value (10 seconds) |
+| `H2_DB_CLOSE_DELAY` | `String` | `"DB_CLOSE_DELAY"` | H2 database close delay parameter |
+| `H2_DB_CLOSE_DELAY_VALUE` | `String` | `"-1"` | Keep database open indefinitely |
+| `H2_DB_CLOSE_ON_EXIT` | `String` | `"DB_CLOSE_ON_EXIT"` | H2 close on exit parameter |
+| `H2_DB_CLOSE_ON_EXIT_VALUE` | `String` | `"FALSE"` | Do not close database on JVM exit |
+| `H2_CACHE_SIZE` | `String` | `"CACHE_SIZE"` | H2 cache size parameter |
+| `H2_CACHE_SIZE_VALUE` | `String` | `"65536"` | Cache size in KB (64 MB) |
+| `H2_LOCK_TIMEOUT` | `String` | `"LOCK_TIMEOUT"` | H2 lock timeout parameter |
+| `H2_LOCK_TIMEOUT_VALUE` | `String` | `"10000"` | Lock timeout in milliseconds |
 
 ### URL Masking Patterns
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
 | `URL_CREDENTIALS_PATTERN` | `String` | `"://[^@/]*@"` | Regex pattern to match credentials in URL |
-| `URL_CREDENTIALS_MASK` | `String` | `"://***:***@"` | Masked credentials replacement |
+| `URL_CREDENTIALS_MASK` | `String` | `"://***:***@"` | Masked replacement for credentials |
 | `URL_PASSWORD_PATTERN` | `String` | `"([?&]password=)[^&]*"` | Regex pattern to match password parameter |
-| `URL_PASSWORD_MASK` | `String` | `"$1***"` | Masked password replacement |
+| `URL_PASSWORD_MASK` | `String` | `"$1***"` | Masked replacement for password parameter |
 
 ## Constructor
 
 ### `DatabaseConstant()`
 
-**Visibility:** `private`
+The constructor is private and throws an `AssertionError` to prevent instantiation of this utility class.
 
-**Description:** Private constructor to prevent instantiation of this utility class. Throws an `AssertionError` if called.
-
-**Throws:**
-- `AssertionError` - Always thrown to prevent instantiation
+```java
+private DatabaseConstant() {
+    throw new AssertionError();
+}
+```

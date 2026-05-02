@@ -8,51 +8,41 @@ sidebar_label: AtLeastOneContactMethodValidator
 
 ## Purpose
 
-The `AtLeastOneContactMethodValidator` is a custom Jakarta Bean Validation constraint validator that ensures a list of contact methods contains at least one valid, non-empty entry from the allowed set: `whatsapp`, `telegram`, or `messenger`. It is designed to be used with the `@AtLeastOneContactMethod` annotation on fields of type `List<ContactMethod>`.
+The `AtLeastOneContactMethodValidator` class is a custom Jakarta Bean Validation constraint validator. It ensures that a list of `ContactMethod` objects contains at least one valid, non-empty contact method from a predefined set of allowed types: `whatsapp`, `telegram`, or `messenger`.
 
-This validator enforces business rules for user registration or profile update flows where at least one contact method must be provided and must have a non-blank value.
+This validator is designed to be used with the `@AtLeastOneContactMethod` annotation on fields or parameters of type `List<ContactMethod>`. It enforces business rules that require users to provide at least one way to be contacted.
 
-## Class Overview
+## Validation Logic
 
-- **Package:** `com.upmatches.app.features.user.validators`
-- **Implements:** `jakarta.validation.ConstraintValidator<AtLeastOneContactMethod, List<ContactMethod>>`
-- **Type Parameters:** Validates `List<ContactMethod>` objects annotated with `@AtLeastOneContactMethod`
+The validator performs the following checks:
+
+1. **Null or Empty List**: If the input list is `null` or empty, validation fails.
+2. **Valid Contact Method**: For each element in the list, the validator checks:
+   - The element is not `null`.
+   - The `name()` field is not `null`.
+   - The `name()` (case-insensitive) matches one of the allowed values: `whatsapp`, `telegram`, or `messenger`.
+   - The `value()` field is not `null` and is not blank (i.e., contains non-whitespace characters).
+3. **Success Condition**: If at least one element in the list satisfies all the above conditions, validation passes.
 
 ## Constants
 
 | Constant | Type | Description |
 |----------|------|-------------|
 | `DEFAULT_VALIDATION_MESSAGE` | `String` | Default error message: "At least one contact method (whatsapp, telegram, or messenger) must be provided and non-empty." |
-| `VALID_NAMES` | `Set<String>` | Immutable set containing the allowed contact method names: `"whatsapp"`, `"telegram"`, `"messenger"` |
+| `VALID_NAMES` | `Set<String>` | Immutable set containing the valid contact method names: `"whatsapp"`, `"telegram"`, `"messenger"` |
 
 ## Public Methods
 
-### `isValid(List<ContactMethod> contactMethods, ConstraintValidatorContext context)`
-
-Validates that the provided list of contact methods contains at least one valid entry.
+### `isValid`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `contactMethods` | `List<ContactMethod>` | The list of contact methods to validate. Can be `null` or empty. |
-| `context` | `ConstraintValidatorContext` | The validation context provided by the Jakarta Bean Validation framework. |
+| `contactMethods` | `List<ContactMethod>` | The list of contact methods to validate. Can be `null`. |
+| `context` | `ConstraintValidatorContext` | The validation context (provided by the Jakarta Validation framework). |
 
-**Returns:** `boolean` — `true` if the list contains at least one contact method with:
-- A non-null object
-- A non-null name that matches one of the valid names (case-insensitive)
-- A non-null value that is not blank
-
-Returns `false` if:
-- The list is `null` or empty
-- No contact method in the list satisfies all validation criteria
-
-## Validation Logic
-
-1. **Null/Empty Check:** If the `contactMethods` list is `null` or empty, validation fails immediately.
-2. **Stream Processing:** The validator streams through the list, filtering out `null` entries and entries with `null` names.
-3. **Matching Criteria:** For each remaining entry, it checks:
-   - The name (lowercased) is one of `"whatsapp"`, `"telegram"`, or `"messenger"`
-   - The value is not `null` and not blank (after trimming whitespace)
-4. **Result:** Returns `true` if any entry matches all criteria; otherwise `false`.
+| Returns | Description |
+|---------|-------------|
+| `boolean` | `true` if at least one valid, non-empty contact method is present; `false` otherwise. |
 
 ## Usage Example
 
@@ -61,7 +51,10 @@ Returns `false` if:
 private List<ContactMethod> contactMethods;
 ```
 
+When this field is validated (e.g., in a REST controller with `@Valid`), the validator will ensure that the user has provided at least one valid contact method.
+
 ## Dependencies
 
 - `jakarta.validation:jakarta.validation-api` (for `ConstraintValidator` and `ConstraintValidatorContext`)
-- `com.upmatches.app.features.user.requests.ContactMethod` (the record/class representing a single contact method with `name()` and `value()` accessors)
+- `com.upmatches.app.features.user.requests.ContactMethod` (the record/class representing a contact method with `name()` and `value()` accessors)
+- `com.upmatches.app.features.user.validators.AtLeastOneContactMethod` (the custom annotation that triggers this validator)

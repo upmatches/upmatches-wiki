@@ -1,16 +1,16 @@
 ---
 id: update-activity-request
-title: UpdateActivityRequest Record
+title: Update Activity Request
 sidebar_label: UpdateActivityRequest
 ---
 
-# UpdateActivityRequest
+# Update Activity Request
 
-The `UpdateActivityRequest` is a Java record used to encapsulate the data required for updating an existing activity. It ensures that the incoming request payload is validated before processing, leveraging Jakarta Bean Validation annotations.
+The `UpdateActivityRequest` class is a Java record used to encapsulate the data required for updating an existing activity. It serves as a Data Transfer Object (DTO) for the activity update endpoint, ensuring that incoming requests contain valid and properly formatted data before being processed by the application.
 
 ## Purpose
 
-This record serves as a Data Transfer Object (DTO) for the activity update endpoint. It defines the structure and validation rules for the request body, ensuring that the activity name is provided and does not exceed the maximum allowed length.
+This record provides a structured way to receive and validate activity update requests. By using Jakarta Bean Validation annotations, it enforces constraints on the input data at the API boundary, reducing the need for manual validation logic in service layers.
 
 ## Record Definition
 
@@ -24,9 +24,9 @@ public record UpdateActivityRequest(
 
 ## Fields
 
-| Field | Type   | Validation Constraints | Description                                      |
-|-------|--------|------------------------|--------------------------------------------------|
-| name  | String | `@NotBlank`, `@Size(max = 100)` | The updated name of the activity. Must not be blank and must not exceed 100 characters. |
+| Field | Type | Validation Constraints | Description |
+|-------|------|------------------------|-------------|
+| `name` | `String` | `@NotBlank`, `@Size(max = 100)` | The updated name for the activity. Must not be blank and must not exceed 100 characters. |
 
 ## Validation Rules
 
@@ -35,19 +35,16 @@ public record UpdateActivityRequest(
 
 ## Usage Example
 
-The record is typically used as a parameter in a REST controller method:
-
 ```java
-@PutMapping("/activities/{id}")
-public ResponseEntity<ActivityResponse> updateActivity(
-    @PathVariable Long id,
-    @Valid @RequestBody UpdateActivityRequest request) {
-    // Business logic to update the activity
-}
+// Creating a valid update request
+UpdateActivityRequest request = new UpdateActivityRequest("Updated Activity Name");
+
+// Accessing the field
+String activityName = request.name();
 ```
 
-## Notes
+## Related Components
 
-- This record is immutable by design, as all Java records are.
-- Validation is automatically triggered when the `@Valid` annotation is used in the controller method.
-- The record is located in the `com.upmatches.app.features.activity.requests` package.
+- **ActivityController**: The REST controller that accepts `UpdateActivityRequest` as a request body parameter.
+- **ActivityService**: The service layer that processes the update request and persists the changes.
+- **Activity Entity**: The JPA entity that represents the activity in the database.

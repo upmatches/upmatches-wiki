@@ -6,16 +6,16 @@ sidebar_label: SigningKeyProvider
 
 # SigningKeyProvider Interface
 
-The `SigningKeyProvider` interface defines a contract for providing Elliptic Curve (EC) signing keys used in JSON Web Token (JWT) signing operations. This interface is part of the authentication services layer and is designed to work with the Nimbus JOSE + JWT library.
+The `SigningKeyProvider` interface defines a contract for providing Elliptic Curve (EC) signing keys used in JWT (JSON Web Token) authentication within the UpMatches application. This interface abstracts the retrieval of cryptographic signing keys and their associated identifiers, enabling flexible key management strategies such as key rotation, secure storage, or dynamic key generation.
 
 ## Purpose
 
-This interface abstracts the retrieval of signing keys and their identifiers, enabling flexible key management strategies. Implementations can source keys from various backends such as:
+In a JWT-based authentication system, signing keys are essential for creating and verifying token signatures. This interface serves as a provider abstraction that decouples the key acquisition logic from the token generation and validation processes. By implementing this interface, developers can:
 
-- Static key stores
-- Key management systems (KMS)
-- Hardware security modules (HSM)
-- Dynamic key rotation mechanisms
+- Centralize signing key management
+- Support multiple key sources (e.g., file system, hardware security modules, cloud key management services)
+- Facilitate key rotation without modifying token handling code
+- Maintain a consistent key identifier for token verification
 
 ## Interface Definition
 
@@ -25,7 +25,9 @@ package com.upmatches.app.features.auth.services;
 import com.nimbusds.jose.jwk.ECKey;
 
 public interface SigningKeyProvider {
+
     ECKey getSigningKey();
+
     String getSigningKeyId();
 }
 ```
@@ -34,20 +36,20 @@ public interface SigningKeyProvider {
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `getSigningKey()` | `ECKey` | Returns the Elliptic Curve key used for signing JWTs. The returned key should be a valid, ready-to-use `ECKey` instance from the Nimbus JOSE library. |
-| `getSigningKeyId()` | `String` | Returns a unique identifier (key ID or `kid`) associated with the signing key. This identifier is typically included in the JWT header to allow verifiers to select the appropriate key for signature verification. |
+| `getSigningKey()` | `ECKey` | Returns the Elliptic Curve signing key used for JWT token signing. The `ECKey` object from the Nimbus JOSE + JWT library encapsulates the EC key pair (public and private components) along with associated metadata. |
+| `getSigningKeyId()` | `String` | Returns a unique identifier for the signing key. This identifier is typically included in the JWT header as the `kid` (Key ID) claim, allowing token verifiers to select the appropriate key for signature validation. |
 
 ## Usage Example
 
 ```java
-// Example implementation
+// Example implementation for a simple key provider
 public class FileBasedSigningKeyProvider implements SigningKeyProvider {
     private final ECKey signingKey;
     private final String keyId;
 
-    public FileBasedSigningKeyProvider(ECKey key, String id) {
-        this.signingKey = key;
-        this.keyId = id;
+    public FileBasedSigningKeyProvider(ECKey signingKey, String keyId) {
+        this.signingKey = signingKey;
+        this.keyId = keyId;
     }
 
     @Override
@@ -60,41 +62,31 @@ public class FileBasedSigningKeyProvider implements SigningKeyProvider {
         return keyId;
     }
 }
+```
 
-// Usage in JWT signing
-SigningKeyProvider keyProvider = new FileBasedSigningKeyProvider(ecKey, "my-key-1");
-JWSSigner signer = new ECDSASigner(keyProvider.getSigningKey());
-JWTClaimsSet claims = new JWTClaimsSet.Builder()
-    .subject("user123")
-    .issuer("https://auth.example.com")
-    .build();
+## Dependencies
 
-SignedJWT signedJWT = new SignedJWT(
-    new JWSHeader.Builder(JWSAlgorithm.ES256)
-        .keyID(keyProvider.getSigningKeyId())
-        .build(),
-    claims
-);
-signedJWT.sign(signer);
+This interface depends on the **Nimbus JOSE + JWT** library, specifically the `com.nimbusds.jose.jwk.ECKey` class. Ensure the following dependency is included in your project:
+
+```xml
+<!-- Maven -->
+<dependency>
+    <groupId>com.nimbusds</groupId>
+    <artifactId>nimbus-jose-jwt</artifactId>
+    <version>9.31</version>
+</dependency>
+```
+
+```gradle
+// Gradle
+implementation 'com.nimbusds:nimbus-jose-jwt:9.31'
 ```
 
 ## Implementation Considerations
 
 When implementing this interface, consider the following:
 
-- **Key Rotation**: Implement key rotation logic to periodically refresh signing keys for enhanced security.
-- **Thread Safety**: Ensure implementations are thread-safe, as signing keys may be accessed concurrently.
-- **Error Handling**: Handle key retrieval failures gracefully, throwing appropriate exceptions when keys are unavailable.
-- **Key Caching**: Consider caching mechanisms to avoid repeated expensive key retrieval operations.
-
-## Dependencies
-
-This interface requires the Nimbus JOSE + JWT library:
-
-```xml
-<dependency>
-    <groupId>com.nimbusds</groupId>
-    <artifactId>nimbus-jose-jwt</artifactId>
-    <version>9.37.3</version>
-</dependency>
-```
+- **Key Security**: Signing keys should be stored securely and never exposed in source code or configuration files. Consider using environment variables, secrets management services, or hardware security modules.
+- **Key Rotation**: Implement logic to periodically rotate signing keys while maintaining a cache of recent keys for token verification.
+- **Thread Safety**: Ensure that implementations are thread-safe, as the signing key may be accessed concurrently by multiple authentication requests.
+- **Key ID Uniqueness**: The `getSigningKeyId()` method should return a globally unique identifier to prevent key collisions in distributed systems.

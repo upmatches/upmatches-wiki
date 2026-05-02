@@ -6,49 +6,62 @@ sidebar_label: UuidRepository
 
 # UuidRepository
 
-The `UuidRepository` interface is a custom Spring Data JPA repository base interface that extends `JpaRepository` and adds a method to find entities by their UUID. It is annotated with `@NoRepositoryBean`, meaning it will not be instantiated as a repository bean itself but serves as a base interface for other repository interfaces.
+The `UuidRepository` interface is a custom Spring Data JPA repository base interface that provides UUID-based lookup functionality for entities. It extends `JpaRepository` and adds a method to find entities by their UUID field, while being annotated with `@NoRepositoryBean` to prevent Spring from creating a bean for this interface directly.
 
 ## Purpose
 
-This interface provides a reusable foundation for repositories that need to support lookups by UUID in addition to the standard CRUD operations provided by `JpaRepository`. By extending this interface, concrete repository interfaces automatically inherit the `findByUuid` method, ensuring consistent UUID-based querying across your application.
+This interface serves as a reusable base repository for entities that have a UUID field. By extending `UuidRepository` instead of `JpaRepository`, you automatically gain the ability to look up entities by their UUID without having to declare the method in each entity-specific repository.
 
-## Type Parameters
+## Key Features
 
-| Parameter | Description |
-|-----------|-------------|
-| `T` | The entity type that the repository manages |
+- **UUID-based lookup**: Provides a `findByUuid` method for querying entities by their UUID
+- **Standard CRUD operations**: Inherits all standard JPA repository methods from `JpaRepository`
+- **Type safety**: Uses generics to work with any entity type
+- **No direct instantiation**: Marked with `@NoRepositoryBean` to prevent Spring from creating a repository bean for this interface
+
+## Interface Definition
+
+```java
+@NoRepositoryBean
+public interface UuidRepository<T> extends JpaRepository<T, Long> {
+    Optional<T> findByUuid(UUID uuid);
+}
+```
 
 ## Methods
 
-### findByUuid
+### Inherited from JpaRepository
 
-```java
-Optional<T> findByUuid(UUID uuid)
-```
+The interface inherits all standard CRUD and pagination methods from `JpaRepository<T, Long>`, including:
 
-Finds an entity by its UUID.
+| Method | Description |
+|--------|-------------|
+| `findAll()` | Returns all entities |
+| `findById(Long id)` | Finds an entity by its primary key |
+| `save(T entity)` | Saves a given entity |
+| `delete(T entity)` | Deletes a given entity |
+| `deleteById(Long id)` | Deletes an entity by its ID |
+| `count()` | Returns the number of entities |
 
-**Parameters:**
+### Custom Method
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `uuid` | `UUID` | The UUID of the entity to find |
-
-**Returns:**
-
-| Type | Description |
-|------|-------------|
-| `Optional<T>` | An `Optional` containing the entity if found, or empty if no entity exists with the given UUID |
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findByUuid(UUID uuid)` | `Optional<T>` | `uuid` - The UUID to search for | Finds an entity by its UUID field. Returns an `Optional` that contains the entity if found, or empty if not found. |
 
 ## Usage Example
 
-```java
-// Define a concrete repository
-public interface UserRepository extends UuidRepository<User> {
-    // Additional custom query methods can be added here
-}
+To use this repository, create a specific repository interface for your entity:
 
-// Usage in a service
+```java
+public interface UserRepository extends UuidRepository<User> {
+    // Additional custom methods can be added here
+}
+```
+
+Then inject and use it in your service:
+
+```java
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -63,8 +76,13 @@ public class UserService {
 }
 ```
 
+## Requirements
+
+- Your entity class must have a `UUID` field named `uuid` (or you can customize the query method name if using Spring Data JPA's query derivation)
+- The entity's primary key must be of type `Long` (as specified in `JpaRepository<T, Long>`)
+
 ## Notes
 
-- The `@NoRepositoryBean` annotation prevents Spring Data JPA from creating a bean for this interface directly.
-- The `findByUuid` method relies on Spring Data JPA's query derivation mechanism and expects the entity to have a field named `uuid` of type `UUID`.
-- This interface extends `JpaRepository<T, Long>`, so the primary key type is `Long`.
+- The `@NoRepositoryBean` annotation is essential to prevent Spring Data JPA from creating a bean for this interface at runtime
+- This interface is designed to be extended by entity-specific repository interfaces
+- The `findByUuid` method leverages Spring Data JPA's query derivation mechanism

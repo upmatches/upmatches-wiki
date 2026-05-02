@@ -6,23 +6,17 @@ sidebar_label: SingpassAuthService
 
 # SingpassAuthService
 
-The `SingpassAuthService` class is a Spring service that implements the `ISingpassAuthService` interface. It handles the OAuth 2.0 authorization code flow with PKCE (Proof Key for Code Exchange) and DPoP (Demonstration of Proof-of-Possession) for Singpass authentication. This service manages the complete authentication lifecycle, including:
+The `SingpassAuthService` class is a Spring service that implements the `ISingpassAuthService` interface. It provides the core authentication logic for integrating with the Singpass OAuth 2.0 / OpenID Connect (OIDC) provider. This service handles the complete authorization code flow with PKCE (Proof Key for Code Exchange), including Pushed Authorization Requests (PAR), token exchange, and ID token decryption and verification.
 
+## Purpose
+
+This service is responsible for:
 - Generating PKCE code verifiers and challenges
-- Sending Pushed Authorization Requests (PAR)
+- Sending Pushed Authorization Requests (PAR) to Singpass
 - Exchanging authorization codes for tokens
-- Decrypting and verifying ID tokens
-- Managing client assertions and DPoP proofs
-- Caching Singpass JWKS (JSON Web Key Sets)
-
-## Constructor
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `restClient` | `RestClient` | Configured RestClient for Singpass API calls |
-| `properties` | `SingpassProperties` | Configuration properties for Singpass integration |
-| `keyProvider` | `SingpassKeyProvider` | Provider for cryptographic keys |
-| `objectMapper` | `ObjectMapper` | Jackson ObjectMapper for JSON processing |
+- Decrypting and verifying Singpass ID tokens
+- Managing client assertions and DPoP (Demonstration of Proof-of-Possession) proofs
+- Caching Singpass JWKS (JSON Web Key Set) for signature verification
 
 ## Public Methods
 
@@ -30,33 +24,13 @@ The `SingpassAuthService` class is a Spring service that implements the `ISingpa
 
 Generates a cryptographically random PKCE code verifier.
 
-**Returns:** `String` - A base64url-encoded code verifier (32 bytes of random data)
-
-### `generateCodeChallenge(String codeVerifier)`
-
-Generates a PKCE code challenge from a code verifier using SHA-256 hashing.
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `codeVerifier` | `String` | The code verifier to hash |
-
-**Returns:** `String` - A base64url-encoded SHA-256 hash of the code verifier
-
-**Throws:** `IllegalStateException` if SHA-256 algorithm is not available
+| Returns | Description |
+|---------|-------------|
+| `String` | A base64url-encoded random string (32 bytes) |
 
 ### `sendPushedAuthorizationRequest(String state, String nonce, String codeVerifier)`
 
-Sends a Pushed Authorization Request (PAR) to Singpass. This method:
-
-1. Generates a code challenge from the provided code verifier
-2. Creates a client assertion JWT
-3. Creates a DPoP proof for the PAR endpoint
-4. Sends the PAR request with all required parameters
-5. Parses the response to construct the authorization URL
-
-**Parameters:**
+Sends a Pushed Authorization Request (PAR) to the Singpass authorization server.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -64,132 +38,161 @@ Sends a Pushed Authorization Request (PAR) to Singpass. This method:
 | `nonce` | `String` | Nonce value for replay protection |
 | `codeVerifier` | `String` | PKCE code verifier |
 
-**Returns:** `String` - The complete authorization URL including the request URI
+| Returns | Description |
+|---------|-------------|
+| `String` | The constructed authorization URL containing the `request_uri` |
 
-**Throws:** `IllegalStateException` if the PAR response is missing the request URI or if parsing fails
+| Throws | Description |
+|--------|-------------|
+| `IllegalStateException` | If the PAR response is missing the `request_uri` or if parsing fails |
 
 ### `exchangeAuthorizationCode(String authorizationCode, String codeVerifier, String nonce)`
 
-Exchanges an authorization code for an ID token. This method:
-
-1. Creates a client assertion JWT
-2. Creates a DPoP proof for the token endpoint
-3. Sends the token exchange request
-4. Parses the response to extract and verify the ID token
-
-**Parameters:**
+Exchanges an authorization code for tokens and returns the verified user's subject identifier.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `authorizationCode` | `String` | The authorization code from the redirect |
-| `codeVerifier` | `String` | The original PKCE code verifier |
-| `nonce` | `String` | The original nonce value |
+| `authorizationCode` | `String` | The authorization code received from the redirect |
+| `codeVerifier` | `String` | The PKCE code verifier used in the initial request |
+| `nonce` | `String` | The nonce value used in the initial request |
 
-**Returns:** `String` - The subject (`sub`) claim from the verified ID token
+| Returns | Description |
+|---------|-------------|
+| `String` | The `sub` (subject) claim from the verified ID token |
 
-**Throws:** `IllegalStateException` if the token response is missing the ID token, if parsing fails, or if ID token validation fails
+| Throws | Description |
+|--------|-------------|
+| `IllegalStateException` | If the token response is missing the `id_token`, or if ID token validation fails |
 
 ## Private Methods
 
-### `parseParResponse(String responseBody)`
+### `generateCodeChallenge(String codeVerifier)`
 
-Parses the PAR response to extract the request URI and construct the authorization URL.
-
-**Parameters:**
+Generates a PKCE code challenge using SHA-256 hashing.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `responseBody` | `String` | JSON response from PAR endpoint |
+| `codeVerifier` | `String` | The code verifier to hash |
 
-**Returns:** `String` - Complete authorization URL
+| Returns | Description |
+|---------|-------------|
+| `String` | Base64url-encoded SHA-256 hash of the code verifier |
+
+### `parseParResponse(String responseBody)`
+
+Parses the PAR response to extract the `request_uri` and constructs the authorization URL.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `responseBody` | `String` | JSON response from the PAR endpoint |
+
+| Returns | Description |
+|---------|-------------|
+| `String` | The complete authorization URL |
 
 ### `parseTokenResponse(String responseBody, String nonce)`
 
-Parses the token response to extract and verify the ID token.
-
-**Parameters:**
+Parses the token response and initiates ID token decryption and verification.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `responseBody` | `String` | JSON response from token endpoint |
-| `nonce` | `String` | Nonce for ID token validation |
+| `responseBody` | `String` | JSON response from the token endpoint |
+| `nonce` | `String` | The nonce value for verification |
 
-**Returns:** `String` - Subject claim from verified ID token
+| Returns | Description |
+|---------|-------------|
+| `String` | The verified subject identifier |
 
 ### `decryptAndVerifyIdToken(String idToken, String nonce)`
 
-Decrypts a JWE-encrypted ID token and verifies its signature.
-
-**Parameters:**
+Decrypts a JWE (JSON Web Encryption) ID token and verifies its signature.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `idToken` | `String` | Encrypted JWT ID token |
-| `nonce` | `String` | Nonce for validation |
+| `idToken` | `String` | The encrypted JWT ID token |
+| `nonce` | `String` | The nonce value for verification |
 
-**Returns:** `String` - Subject claim from verified ID token
+| Returns | Description |
+|---------|-------------|
+| `String` | The verified `sub` claim |
 
 ### `validateIdTokenClaims(JWTClaimsSet claims, String nonce)`
 
-Validates the claims in a decrypted ID token.
-
-**Parameters:**
+Validates the ID token claims against expected values.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `claims` | `JWTClaimsSet` | Parsed JWT claims |
-| `nonce` | `String` | Expected nonce value |
+| `claims` | `JWTClaimsSet` | The parsed JWT claims |
+| `nonce` | `String` | The expected nonce value |
 
-**Throws:** `IllegalStateException` if any validation check fails (issuer, audience, nonce, or subject)
+| Throws | Description |
+|--------|-------------|
+| `IllegalStateException` | If issuer, audience, nonce, or subject validation fails |
 
 ### `getSingpassJwks()`
 
-Retrieves and caches Singpass JWKS for ID token signature verification.
+Retrieves and caches the Singpass JWKS for signature verification.
 
-**Returns:** `JWKSet` - The Singpass JWKS
+| Returns | Description |
+|---------|-------------|
+| `JWKSet` | The Singpass JWKS (cached for 900 seconds) |
 
 ### `createClientAssertionJwt()`
 
 Creates a signed JWT client assertion for OAuth client authentication.
 
-**Returns:** `String` - Serialized signed JWT
+| Returns | Description |
+|---------|-------------|
+| `String` | Serialized signed JWT |
 
 ### `createDpopProof(String httpMethod, String httpUri)`
 
-Creates a DPoP proof JWT for demonstrating possession of a private key.
-
-**Parameters:**
+Creates a DPoP proof JWT for sender-constrained access tokens.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `httpMethod` | `String` | HTTP method of the request |
-| `httpUri` | `String` | URI of the request |
+| `httpMethod` | `String` | The HTTP method (e.g., "POST") |
+| `httpUri` | `String` | The target URI |
 
-**Returns:** `String` - Serialized DPoP proof JWT
+| Returns | Description |
+|---------|-------------|
+| `String` | Serialized DPoP proof JWT |
 
-## Inner Types
+## Dependencies
 
-### `JwksCache`
+The service depends on the following components injected via constructor:
 
-A record type for caching JWKS with expiration.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `jwks` | `JWKSet` | The cached JWKS |
-| `expiry` | `Instant` | Expiration timestamp for the cache |
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `restClient` | `RestClient` | Configured HTTP client for Singpass API calls |
+| `properties` | `SingpassProperties` | Configuration properties for Singpass integration |
+| `keyProvider` | `SingpassKeyProvider` | Provider for encryption and signing keys |
+| `objectMapper` | `ObjectMapper` | Jackson JSON processor |
 
 ## Constants
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `CLIENT_ASSERTION_EXPIRY_SECONDS` | `60` | Expiry time for client assertion JWTs |
-| `DPOP_EXPIRY_SECONDS` | `120` | Expiry time for DPoP proofs |
-| `JWKS_CACHE_SECONDS` | `900` | Cache duration for JWKS (15 minutes) |
-| `CODE_VERIFIER_BYTES` | `32` | Length of code verifier in bytes |
+| `CLIENT_ASSERTION_EXPIRY_SECONDS` | `60` | Client assertion JWT expiry (60 seconds) |
+| `DPOP_EXPIRY_SECONDS` | `120` | DPoP proof JWT expiry (120 seconds) |
+| `JWKS_CACHE_SECONDS` | `900` | JWKS cache duration (15 minutes) |
+| `CODE_VERIFIER_BYTES` | `32` | Random bytes for code verifier generation |
 
-## Dependencies
+## Error Handling
 
-- **Nimbus JOSE + JWT**: For JWT creation, signing, encryption, and verification
-- **Spring RestClient**: For HTTP communication with Singpass endpoints
-- **Jackson**: For JSON parsing
-- **SLF4J**: For logging
+The service throws `IllegalStateException` for various failure scenarios:
+
+| Error Constant | Description |
+|----------------|-------------|
+| `ERROR_SHA256_NOT_AVAILABLE` | SHA-256 algorithm not available |
+| `ERROR_PAR_MISSING_REQUEST_URI` | PAR response missing `request_uri` |
+| `ERROR_PARSE_PAR_RESPONSE` | Failed to parse PAR response |
+| `ERROR_TOKEN_MISSING_ID_TOKEN` | Token response missing `id_token` |
+| `ERROR_PROCESS_TOKEN_RESPONSE` | Failed to process token response |
+| `ERROR_ISSUER_MISMATCH` | ID token issuer mismatch |
+| `ERROR_AUDIENCE_MISMATCH` | ID token audience mismatch |
+| `ERROR_NONCE_MISMATCH` | ID token nonce missing or mismatched |
+| `ERROR_MISSING_SUB` | ID token missing `sub` claim |
+| `ERROR_FETCH_JWKS` | Failed to fetch Singpass JWKS |
+| `ERROR_SIGN_CLIENT_ASSERTION` | Failed to sign client assertion |
+| `ERROR_SIGN_DPOP_PROOF` | Failed to sign DPoP proof |

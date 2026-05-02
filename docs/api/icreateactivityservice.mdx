@@ -1,12 +1,14 @@
 ---
-id: icreate-activity-service
-title: ICreateActivityService
+id: icreateactivityservice
+title: ICreateActivityService Interface
 sidebar_label: ICreateActivityService
 ---
 
-# ICreateActivityService
+## Overview
 
-The `ICreateActivityService` interface defines the contract for creating new activities within the UpMatches application. It follows a command pattern, encapsulating the creation logic behind a single `execute` method. This interface is sealed, meaning only the explicitly permitted class (`CreateActivityService`) can implement it, ensuring controlled and secure extension of the activity creation behavior.
+The `ICreateActivityService` interface defines the contract for creating a new activity within the UpMatches application. It serves as the abstraction layer for the activity creation use case, ensuring that any implementation (currently `CreateActivityService`) adheres to a consistent method signature.
+
+This interface is declared as `sealed`, meaning only explicitly permitted classes (in this case, `CreateActivityService`) can implement it. This design pattern enforces a controlled hierarchy and improves code maintainability by restricting inheritance.
 
 ## Interface Definition
 
@@ -22,30 +24,32 @@ public sealed interface ICreateActivityService permits CreateActivityService {
 
 ### `execute`
 
-Processes a request to create a new activity and returns the corresponding response.
+The sole method of this interface, responsible for processing a `CreateActivityRequest` and returning an `ActivityResponse`.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `CreateActivityRequest` | The request object containing the necessary data to create an activity (e.g., title, description, date, location). |
+| `request` | `CreateActivityRequest` | The request object containing all necessary data to create a new activity (e.g., activity name, description, date, location). |
 
 | Returns | Type | Description |
 |---------|------|-------------|
-| `ActivityResponse` | `ActivityResponse` | The response object containing the details of the newly created activity (e.g., activity ID, status, timestamps). |
+| `ActivityResponse` | `ActivityResponse` | The response object containing the result of the activity creation operation (e.g., the created activity's ID, status, or error details). |
 
 ## Usage Example
 
 ```java
 // Assuming you have an instance of ICreateActivityService
-ICreateActivityService activityService = new CreateActivityService();
-
-CreateActivityRequest request = new CreateActivityRequest();
-// Populate request fields...
-
-ActivityResponse response = activityService.execute(request);
+ICreateActivityService service = new CreateActivityService();
+CreateActivityRequest request = new CreateActivityRequest(/* ... */);
+ActivityResponse response = service.execute(request);
 ```
 
 ## Related Components
 
 - **`CreateActivityRequest`**: The input data transfer object (DTO) for activity creation.
-- **`ActivityResponse`**: The output data transfer object (DTO) representing the created activity.
-- **`CreateActivityService`**: The sole permitted implementation of this interface.
+- **`ActivityResponse`**: The output DTO representing the result of the creation operation.
+- **`CreateActivityService`**: The concrete implementation of this interface.
+
+## Notes
+
+- The `sealed` keyword ensures that only `CreateActivityService` can implement this interface, providing a clear and restricted API contract.
+- This interface follows the Command pattern, encapsulating the activity creation logic behind a single `execute` method.

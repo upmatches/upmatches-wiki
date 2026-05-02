@@ -6,93 +6,46 @@ sidebar_label: ShareLinkProperties
 
 # ShareLinkProperties
 
-The `ShareLinkProperties` class is a Spring Boot configuration properties record that manages the URLs and identifiers required for generating shareable links within the Upmatches application. It centralizes the configuration for different platform-specific URLs, ensuring that share links point to the correct destinations across web, iOS, and Android platforms.
+The `ShareLinkProperties` class is a Spring Boot configuration properties record that manages the URLs and identifiers required for generating shareable links within the Upmatches application. It provides default values for all properties, ensuring that the application can function even when specific configuration values are not explicitly provided.
 
 ## Purpose
 
-This class serves as a configuration holder for share link URLs, providing sensible defaults while allowing customization through Spring Boot's externalized configuration. It handles the following URL types:
+This class centralizes the configuration for share link generation, including:
+- API base URLs for short link creation
+- Web application base URL
+- App store URLs for both iOS and Android platforms
+- Apple App Store application identifier
 
-- **Base API URL**: The primary endpoint for share link redirection
-- **Web Base URL**: The fallback web URL for share links
-- **App Store URL**: The iOS App Store listing URL
-- **Play Store URL**: The Google Play Store listing URL
-- **App Store App ID**: The iOS application identifier
+By using Spring Boot's `@ConfigurationProperties` with the prefix `app.share-link`, these values can be easily configured through standard Spring Boot configuration files (application.yml, application.properties, environment variables, etc.).
 
 ## Configuration Properties
 
-The class is annotated with `@ConfigurationProperties(prefix = "app.share-link")`, meaning all properties can be configured in your `application.yml` or `application.properties` file under the `app.share-link` prefix.
-
-### Default Values
-
-| Property | Default Value | Description |
-|----------|---------------|-------------|
-| `baseUrl` | `https://api.upmatches.dev/s` | Base URL for share link API endpoints |
-| `webBaseUrl` | `https://api.upmatches.dev` | Base URL for web-based share links |
-| `appStoreUrl` | `https://apps.apple.com/app/idXXXXXXXXXX` | iOS App Store URL for the application |
-| `playStoreUrl` | `https://play.google.com/store/apps/details?id=com.upmatches.android` | Google Play Store URL for the application |
-| `appStoreAppId` | `""` (empty string) | iOS App Store application identifier |
-
-### Configuration Example
-
-```yaml
-app:
-  share-link:
-    base-url: "https://api.upmatches.dev/s"
-    web-base-url: "https://api.upmatches.dev"
-    app-store-url: "https://apps.apple.com/app/idXXXXXXXXXX"
-    play-store-url: "https://play.google.com/store/apps/details?id=com.upmatches.android"
-    app-store-app-id: ""
-```
+| Property | Type | Default Value | Description |
+|----------|------|---------------|-------------|
+| `baseUrl` | `String` | `https://api.upmatches.dev/s` | Base URL for generating short share links |
+| `webBaseUrl` | `String` | `https://api.upmatches.dev` | Base URL for the web application |
+| `appStoreUrl` | `String` | `https://apps.apple.com/app/idXXXXXXXXXX` | Apple App Store URL for the application |
+| `playStoreUrl` | `String` | `https://play.google.com/store/apps/details?id=com.upmatches.android` | Google Play Store URL for the application |
+| `appStoreAppId` | `String` | `""` (empty string) | Apple App Store application identifier |
 
 ## Constructor Behavior
 
-The compact constructor of this record implements fallback logic for each property:
+The compact constructor of this record implements fallback logic for each property. If a property is `null` or blank (for string properties), it defaults to the predefined constant value. This ensures that the application always has valid configuration values, even when properties are not explicitly set.
 
-1. **`baseUrl`**: If `null` or blank, defaults to `DEFAULT_BASE_URL`
-2. **`webBaseUrl`**: If `null` or blank, defaults to `DEFAULT_WEB_BASE_URL`
-3. **`appStoreUrl`**: If `null` or blank, defaults to `DEFAULT_APP_STORE_URL`
-4. **`playStoreUrl`**: If `null` or blank, defaults to `DEFAULT_PLAY_STORE_URL`
-5. **`appStoreAppId`**: If `null`, defaults to `DEFAULT_APP_STORE_APP_ID` (empty string)
+## Usage Example
 
-## Usage
-
-To use this configuration class in your Spring Boot application:
-
-1. **Enable Configuration Properties**: Add `@EnableConfigurationProperties(ShareLinkProperties.class)` to your main application class or a configuration class.
-
-2. **Inject the Properties**: Autowire the record into your services:
-
-```java
-@Service
-public class ShareLinkService {
-    private final ShareLinkProperties properties;
-    
-    public ShareLinkService(ShareLinkProperties properties) {
-        this.properties = properties;
-    }
-    
-    public String generateShareLink(String path) {
-        return properties.baseUrl() + "/" + path;
-    }
-}
+```yaml
+# application.yml
+app:
+  share-link:
+    base-url: https://custom-api.example.com/s
+    web-base-url: https://custom-web.example.com
+    app-store-url: https://apps.apple.com/app/id123456789
+    play-store-url: https://play.google.com/store/apps/details?id=com.custom.app
+    app-store-app-id: "123456789"
 ```
 
-## Public Methods
+## Dependencies
 
-Since `ShareLinkProperties` is a Java record, it automatically provides accessor methods for each component:
-
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `baseUrl()` | `String` | Returns the configured base URL for share links |
-| `webBaseUrl()` | `String` | Returns the configured web base URL |
-| `appStoreUrl()` | `String` | Returns the configured App Store URL |
-| `playStoreUrl()` | `String` | Returns the configured Play Store URL |
-| `appStoreAppId()` | `String` | Returns the configured App Store application ID |
-
-## Best Practices
-
-1. **Environment-Specific Configuration**: Override default values in environment-specific configuration files (e.g., `application-dev.yml`, `application-prod.yml`) to ensure correct URLs for each deployment environment.
-
-2. **Validation**: Consider adding additional validation annotations (e.g., `@NotEmpty`, `@URL`) to ensure configuration values are valid before the application starts.
-
-3. **Documentation**: Keep the default values updated as the application evolves, especially when changing app store URLs or application IDs.
+- Spring Boot: `@ConfigurationProperties` annotation
+- Java 16+ (Record feature)

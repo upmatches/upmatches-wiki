@@ -6,38 +6,36 @@ sidebar_label: AuditEvent
 
 # AuditEvent
 
-The `AuditEvent` class is a JPA entity that represents an auditable action within the system. It captures detailed information about user or system actions, including who performed the action, what action was taken, the outcome, and associated metadata such as IP address, user agent, and request payload.
+The `AuditEvent` class is a JPA entity that represents an auditable action within the system. It captures detailed information about user or system actions, including who performed the action, what action was taken, the outcome, and contextual metadata such as IP address, user agent, and correlation IDs. This entity is designed to support comprehensive audit logging for security, compliance, and debugging purposes.
 
-This entity is mapped to the `audit_events` database table and is designed to be immutable after creation (all fields are either `final` or set only during construction/persistence).
+## Entity Details
 
-## Purpose
-
-- **Audit Trail**: Provides a comprehensive record of all significant actions for compliance, security, and debugging purposes.
-- **Immutable Records**: Once created and persisted, audit events should not be modified, ensuring the integrity of the audit log.
-- **Flexible Metadata**: Supports a wide range of metadata including actor details, resource information, request payloads, and error details.
+- **Package:** `com.upmatches.app.features.audit.entities`
+- **Table:** `audit_events`
+- **Annotations:** `@Entity`, `@Table`, `@Getter` (Lombok), `@NoArgsConstructor(access = AccessLevel.PROTECTED)`
 
 ## Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `Long` | Auto-generated primary key (database identity). |
-| `uuid` | `UUID` | Unique identifier for the event, generated automatically if not provided. |
-| `occurredAt` | `Instant` | Timestamp of when the event occurred, set automatically on persist. |
-| `actorId` | `UUID` | Identifier of the actor who performed the action. |
-| `actorType` | `AuditActorType` | Type of actor (e.g., USER, SYSTEM, API). |
-| `action` | `String` | Description of the action performed (e.g., "LOGIN", "CREATE_USER"). |
-| `category` | `AuditCategory` | Category of the audit event (e.g., AUTHENTICATION, DATA_MODIFICATION). |
-| `outcome` | `AuditOutcome` | Result of the action (e.g., SUCCESS, FAILURE). |
-| `resourceType` | `String` | Type of resource affected (e.g., "User", "Order"). |
-| `resourceId` | `String` | Identifier of the affected resource. |
-| `ipAddress` | `String` | IP address of the client that performed the action. |
-| `userAgent` | `String` | User agent string from the client request. |
-| `correlationId` | `String` | Correlation ID for tracing related events across services. |
-| `requestPayload` | `String` | JSON representation of the request payload (stored as JSONB in database). |
-| `errorCode` | `String` | Error code if the action failed. |
-| `errorMessage` | `String` | Error message if the action failed. |
+| Field | Type | Column | Constraints | Description |
+|-------|------|--------|-------------|-------------|
+| `id` | `Long` | `id` | Primary Key, Auto-generated | Unique identifier for the audit event record |
+| `uuid` | `UUID` | `uuid` | Not null, Unique, Updatable false | Public unique identifier for the event |
+| `occurredAt` | `Instant` | `occurred_at` | Not null, Updatable false | Timestamp when the event occurred |
+| `actorId` | `UUID` | `actor_id` | Nullable | Identifier of the actor who performed the action |
+| `actorType` | `AuditActorType` | `actor_type` | Not null, Length 32 | Type of actor (e.g., USER, SYSTEM, API) |
+| `action` | `String` | `action` | Not null, Length 64 | Description of the action performed |
+| `category` | `AuditCategory` | `category` | Not null, Length 32 | Category of the audit event |
+| `outcome` | `AuditOutcome` | `outcome` | Not null, Length 16 | Result of the action (e.g., SUCCESS, FAILURE) |
+| `resourceType` | `String` | `resource_type` | Length 64, Nullable | Type of resource affected |
+| `resourceId` | `String` | `resource_id` | Length 64, Nullable | Identifier of the affected resource |
+| `ipAddress` | `String` | `ip_address` | Length 64, Nullable | IP address of the actor |
+| `userAgent` | `String` | `user_agent` | Nullable | User agent string from the request |
+| `correlationId` | `String` | `correlation_id` | Length 64, Nullable | Correlation ID for tracing related events |
+| `requestPayload` | `String` | `request_payload` | JSONB type, Nullable | Request payload stored as JSON |
+| `errorCode` | `String` | `error_code` | Length 64, Nullable | Error code if the action failed |
+| `errorMessage` | `String` | `error_message` | Nullable | Error message if the action failed |
 
-## Methods
+## Public Methods
 
 ### `create`
 
@@ -58,36 +56,40 @@ public static AuditEvent create(
     String errorMessage)
 ```
 
-Creates a new `AuditEvent` instance with the provided details.
+Creates a new `AuditEvent` instance with the specified parameters. This is the primary factory method for constructing audit events.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `actorId` | `UUID` | Identifier of the actor. |
-| `actorType` | `AuditActorType` | Type of actor. |
-| `action` | `String` | Action description. |
-| `category` | `AuditCategory` | Event category. |
-| `outcome` | `AuditOutcome` | Action outcome. |
-| `resourceType` | `String` | Type of affected resource (nullable). |
-| `resourceId` | `String` | Identifier of affected resource (nullable). |
-| `ipAddress` | `String` | Client IP address (nullable). |
-| `userAgent` | `String` | Client user agent (nullable). |
-| `correlationId` | `String` | Correlation ID (nullable). |
-| `requestPayload` | `String` | JSON request payload (nullable). |
-| `errorCode` | `String` | Error code (nullable). |
-| `errorMessage` | `String` | Error message (nullable). |
+| `actorId` | `UUID` | Identifier of the actor performing the action |
+| `actorType` | `AuditActorType` | Type of actor (USER, SYSTEM, API, etc.) |
+| `action` | `String` | Description of the action performed |
+| `category` | `AuditCategory` | Category of the audit event |
+| `outcome` | `AuditOutcome` | Result of the action (SUCCESS, FAILURE, etc.) |
+| `resourceType` | `String` | Type of resource affected (nullable) |
+| `resourceId` | `String` | Identifier of the affected resource (nullable) |
+| `ipAddress` | `String` | IP address of the actor (nullable) |
+| `userAgent` | `String` | User agent string from the request (nullable) |
+| `correlationId` | `String` | Correlation ID for tracing (nullable) |
+| `requestPayload` | `String` | Request payload as JSON string (nullable) |
+| `errorCode` | `String` | Error code if action failed (nullable) |
+| `errorMessage` | `String` | Error message if action failed (nullable) |
 
-**Returns:** `AuditEvent` - A new audit event instance.
+**Returns:** `AuditEvent` - A new instance with all fields set according to the provided parameters.
 
-### `onCreate` (Lifecycle Callback)
+## Lifecycle Callbacks
+
+### `onCreate`
 
 ```java
 @PrePersist
 void onCreate()
 ```
 
-Automatically called by JPA before persisting the entity. Sets the `uuid` and `occurredAt` fields if they are null.
+Automatically called before the entity is persisted to the database. This method:
+- Generates a random `UUID` if one hasn't been set
+- Sets the `occurredAt` timestamp to the current time if not already set
 
 ## Usage Example
 
@@ -98,29 +100,20 @@ AuditEvent event = AuditEvent.create(
     "LOGIN",
     AuditCategory.AUTHENTICATION,
     AuditOutcome.SUCCESS,
-    null,
-    null,
+    "User",
+    userId.toString(),
     "192.168.1.1",
     "Mozilla/5.0...",
-    "corr-123",
+    UUID.randomUUID().toString(),
     null,
     null,
     null
 );
-
 auditEventRepository.save(event);
 ```
 
-## Database Mapping
+## Related Enums
 
-- **Table**: `audit_events`
-- **Primary Key**: `id` (auto-increment)
-- **Unique Constraint**: `uuid`
-- **JSON Column**: `request_payload` uses PostgreSQL JSONB type for efficient querying of request data.
-
-## Notes
-
-- The entity uses Lombok's `@Getter` to generate getters for all fields.
-- The `@NoArgsConstructor(access = AccessLevel.PROTECTED)` ensures that JPA can create instances via reflection while preventing direct instantiation.
-- All fields are immutable after creation (no setters exposed).
-- The `uuid` and `occurredAt` fields are automatically populated if not explicitly set, ensuring every event has a unique identifier and timestamp.
+- `AuditActorType` - Defines the types of actors (USER, SYSTEM, API, etc.)
+- `AuditCategory` - Defines audit categories (AUTHENTICATION, AUTHORIZATION, DATA_MODIFICATION, etc.)
+- `AuditOutcome` - Defines possible outcomes (SUCCESS, FAILURE, DENIED, etc.)

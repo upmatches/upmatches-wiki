@@ -6,64 +6,93 @@ sidebar_label: ValidationHelper
 
 # ValidationHelper
 
-The `ValidationHelper` class is a utility class designed to centralize common validation logic for API request parameters. It provides static methods to validate pagination parameters (both offset-based and cursor-based) and sort field parameters, ensuring that incoming requests meet the application's constraints before they are processed further.
+The `ValidationHelper` class is a **final utility class** that provides static methods for validating common input parameters in API endpoints, specifically for pagination and sorting operations. It is designed to be used across the application to ensure consistent validation logic and reduce code duplication.
 
-This class is declared as `final` and has a private constructor to prevent instantiation, following the standard utility class pattern in Java.
+## Class Overview
+
+- **Package:** `com.upmatches.app.shared.helpers`
+- **Modifiers:** `public final`
+- **Constructor:** Private to prevent instantiation (throws `IllegalStateException`)
+
+## Constants
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `DEFAULT_MAX_PAGE_SIZE` | `int` | `1000` | Maximum allowed page size for pagination requests |
 
 ## Methods
 
 ### `validatePaginationParameters(int page, int size)`
 
-Validates offset-based pagination parameters.
+Validates both page index and page size for offset-based pagination.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `page` | `int` | The page number (zero-indexed). Must be >= 0. |
-| `size` | `int` | The number of items per page. Must be > 0 and <= 1000. |
+| Parameter | Type | Description | Validation Rules |
+|-----------|------|-------------|------------------|
+| `page` | `int` | The page index (zero-based) | Must be >= 0 |
+| `size` | `int` | The number of items per page | Must be > 0 and <= 1000 |
 
 **Throws:**
-- `IllegalArgumentException` if `page` is negative.
-- `IllegalArgumentException` if `size` is <= 0 or > 1000.
+- `IllegalArgumentException` if `page` is negative
+- `IllegalArgumentException` if `size` is <= 0 or > 1000
+
+**Example:**
+```java
+ValidationHelper.validatePaginationParameters(0, 50);  // Valid
+ValidationHelper.validatePaginationParameters(-1, 50); // Throws IllegalArgumentException
+ValidationHelper.validatePaginationParameters(0, 0);   // Throws IllegalArgumentException
+```
+
+---
 
 ### `validateCursorPaginationParameters(int size)`
 
-Validates cursor-based pagination parameters.
+Validates the page size for cursor-based pagination (no page index validation needed).
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `size` | `int` | The number of items per page. Must be > 0 and <= 1000. |
+| Parameter | Type | Description | Validation Rules |
+|-----------|------|-------------|------------------|
+| `size` | `int` | The number of items per page | Must be > 0 and <= 1000 |
 
 **Throws:**
-- `IllegalArgumentException` if `size` is <= 0 or > 1000.
+- `IllegalArgumentException` if `size` is <= 0 or > 1000
+
+**Example:**
+```java
+ValidationHelper.validateCursorPaginationParameters(100);  // Valid
+ValidationHelper.validateCursorPaginationParameters(2000); // Throws IllegalArgumentException
+```
+
+---
 
 ### `validateSortBy(String sortBy, String... allowedFields)`
 
 Validates that the `sortBy` parameter matches one of the allowed field names.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sortBy` | `String` | The field name to sort by. Cannot be null or empty. |
-| `allowedFields` | `String...` | Varargs of allowed field names for sorting. |
+| Parameter | Type | Description | Validation Rules |
+|-----------|------|-------------|------------------|
+| `sortBy` | `String` | The field name to sort by | Must not be null or empty |
+| `allowedFields` | `String...` | Varargs of allowed field names | At least one field must match |
 
 **Throws:**
-- `IllegalArgumentException` if `sortBy` is null or empty.
-- `IllegalArgumentException` if `sortBy` does not match any of the `allowedFields`.
+- `IllegalArgumentException` if `sortBy` is null or empty
+- `IllegalArgumentException` if `sortBy` does not match any allowed field
 
-## Usage Example
-
+**Example:**
 ```java
-// Validate offset-based pagination
-ValidationHelper.validatePaginationParameters(0, 20);
-
-// Validate cursor-based pagination
-ValidationHelper.validateCursorPaginationParameters(50);
-
-// Validate sort field
-ValidationHelper.validateSortBy("createdAt", "createdAt", "updatedAt", "name");
+ValidationHelper.validateSortBy("name", "name", "email", "createdAt");  // Valid
+ValidationHelper.validateSortBy("invalid", "name", "email");            // Throws IllegalArgumentException
+ValidationHelper.validateSortBy(null, "name");                          // Throws IllegalArgumentException
 ```
 
-## Notes
+## Usage Notes
 
-- The default maximum page size is set to `1000` items per page.
-- This class is thread-safe as it contains no mutable state.
-- All methods throw `IllegalArgumentException` with descriptive error messages to aid in debugging.
+1. **Utility Class Pattern:** The class follows the standard Java utility class pattern with a private constructor and static methods.
+2. **Thread Safety:** All methods are stateless and thread-safe.
+3. **Error Messages:** Exception messages are descriptive and include the specific validation failure reason.
+4. **Performance:** The `validateSortBy` method performs a linear search through the allowed fields array, which is acceptable for typical use cases with a small number of allowed fields.
+
+## Best Practices
+
+- Call these validation methods at the beginning of your API endpoint handlers before processing any business logic.
+- Use `validatePaginationParameters` for offset-based pagination (e.g., page/size parameters).
+- Use `validateCursorPaginationParameters` for cursor-based pagination (e.g., after/before cursors with size).
+- Always define the allowed sort fields explicitly when calling `validateSortBy` to prevent SQL injection or unexpected behavior.

@@ -6,53 +6,58 @@ sidebar_label: TransitLine
 
 # TransitLine
 
-The `TransitLine` class is a JPA entity that represents a public transit line (e.g., a subway or bus route) within the venue features module. It maps to the `transit_lines` database table and provides a simple, immutable data model for storing transit line metadata such as its code, name, and display color.
+The `TransitLine` class is a JPA entity that represents a public transit line (e.g., a subway or bus line) within the venue features module. It maps to the `transit_lines` database table and stores basic identifying information such as a unique code, a human-readable name, and a display color.
 
 ## Purpose
 
-This entity is used to persist and retrieve information about transit lines that serve a venue. Each transit line is uniquely identified by a short code (e.g., "B", "Red", "100") and includes a human-readable name and a hex color code for UI display purposes.
+This entity is used to model transit lines that serve a venue. Each line is uniquely identified by its `code` (e.g., "RED", "BLUE", "L1") and includes a descriptive name and a color value (typically a hex color code) for UI display purposes.
 
-## Entity Mapping
+## Annotations
 
-| Database Column | Java Field | Type | Constraints |
-|----------------|------------|------|-------------|
-| `code` | `code` | `String` | Primary key, max length 10 |
-| `name` | `name` | `String` | Not null, max length 100 |
-| `color` | `color` | `String` | Not null, max length 7 (hex color, e.g., `#FF0000`) |
+- `@Entity` – Marks this class as a JPA entity.
+- `@Table(name = "transit_lines")` – Maps the entity to the `transit_lines` table.
+- `@Getter` (Lombok) – Automatically generates getter methods for all fields.
+- `@Id` – Designates the `code` field as the primary key.
+- `@Column` – Specifies column details such as name, length, and nullability.
+
+## Fields
+
+| Field | Type | Database Column | Constraints | Description |
+|-------|------|-----------------|-------------|-------------|
+| `code` | `String` | `code` | Primary key, max length 10 | Unique identifier for the transit line (e.g., "RED", "BLUE"). |
+| `name` | `String` | `name` | Not null, max length 100 | Human-readable name of the transit line (e.g., "Red Line"). |
+| `color` | `String` | `color` | Not null, max length 7 | Hex color code for UI display (e.g., "#FF0000"). |
 
 ## Constructor
 
-The class uses a **protected no-argument constructor** required by JPA. Direct instantiation is not intended; use the static factory method instead.
+The class has a **protected no-argument constructor** required by JPA. External instantiation should be done via the static factory method.
 
-## Public Methods
+## Methods
 
 ### `create(String code, String name, String color)`
 
-Creates a new `TransitLine` instance with the specified values.
-
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `code` | `String` | Unique identifier for the transit line (max 10 characters) |
-| `name` | `String` | Human-readable name of the transit line (max 100 characters) |
-| `color` | `String` | Hex color code for UI display (max 7 characters, e.g., `#FF5733`) |
+| `code` | `String` | Unique identifier for the transit line. |
+| `name` | `String` | Human-readable name of the transit line. |
+| `color` | `String` | Hex color code for UI display (e.g., "#FF0000"). |
 
-**Returns:** `TransitLine` — a new entity instance with the provided values.
+**Returns:** `TransitLine` – A new instance with the specified values.
 
-**Example usage:**
+This static factory method creates a fully initialized `TransitLine` entity. It is the preferred way to instantiate new transit lines outside of JPA context.
+
+## Usage Example
+
 ```java
 TransitLine redLine = TransitLine.create("RED", "Red Line", "#FF0000");
 ```
 
-## Getters
+## Database Schema
 
-All fields are exposed via Lombok-generated getters:
+The corresponding `transit_lines` table has the following structure:
 
-- `getCode()` — returns the transit line code
-- `getName()` — returns the transit line name
-- `getColor()` — returns the hex color string
-
-## Notes
-
-- The class uses Lombok's `@Getter` annotation to automatically generate getter methods.
-- The `color` field is expected to be a 7-character hex color string (e.g., `#RRGGBB`).
-- This entity is designed to be immutable after creation; there are no setter methods exposed.
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `code` | `VARCHAR(10)` | PRIMARY KEY |
+| `name` | `VARCHAR(100)` | NOT NULL |
+| `color` | `VARCHAR(7)` | NOT NULL |

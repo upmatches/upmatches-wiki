@@ -6,16 +6,16 @@ sidebar_label: CreateShareLinkService
 
 # CreateShareLinkService
 
-The `CreateShareLinkService` class is a Spring service responsible for creating shareable short links for resources within the application. It implements the `ICreateShareLinkService` interface and provides transactional, auditable functionality for generating unique short codes that map to specific resources.
+The `CreateShareLinkService` class is a Spring service responsible for creating shareable short links for resources within the application. It handles the complete lifecycle of share link creation, including user authentication, duplicate link detection, unique short code generation with collision handling, and response building.
 
 ## Purpose
 
-This service handles the complete lifecycle of creating a share link:
-- Authenticates the current user via JWT token
+This service provides a transactional operation that:
+- Authenticates the current user from the security context
 - Checks for existing share links for the same resource and user to avoid duplicates
-- Generates unique short codes with collision detection and retry logic
-- Persists new short links to the database
-- Builds comprehensive response objects containing multiple URL formats (share, web, mobile)
+- Generates unique short codes with retry logic to handle collisions
+- Persists new share links to the database
+- Builds comprehensive response objects with multiple URL formats (share, web, mobile)
 
 ## Dependencies
 
@@ -23,121 +23,112 @@ This service handles the complete lifecycle of creating a share link:
 |------------|------|-------------|
 | `ShortLinkRepository` | Repository | Data access for `ShortLink` entities |
 | `UserRepository` | Repository | Data access for `User` entities |
-| `IShareLinkUrlBuilder` | Service | Builds share, web, and mobile URLs from short codes |
+| `IShareLinkUrlBuilder` | Service | Builds share, web, and mobile URLs from link data |
 
 ## Public Methods
 
 ### `execute(CreateShareLinkRequest request)`
 
-Creates or retrieves an existing share link for the specified resource.
+Creates or retrieves an existing share link for the given resource.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `request` | `CreateShareLinkRequest` | Contains `resourceType`, `resourceId`, and other link creation parameters |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `ShareLinkResponse` | Object | Contains the short link details, click count, and generated URLs |
+**Returns:** `ShareLinkResponse` - A response object containing the short link details, including:
+- The generated short code
+- Share URL
+- Web URL
+- Mobile URL
+- Current click count
 
 **Behavior:**
-1. Authenticates the current user from the security context
-2. Checks if a share link already exists for the given resource type, resource ID, and user
+1. Authenticates the current user from the JWT token in the security context
+2. Checks if a share link already exists for the same resource type, resource ID, and user
 3. If an existing link is found, returns it with the current click count
-4. If no existing link exists, generates a new unique short code and saves the link
-5. Returns a comprehensive response with share, web, and mobile URLs
+4. If no existing link, generates a unique short code and persists a new `ShortLink` entity
+5. Returns a comprehensive response with all URL formats
 
 **Exceptions:**
-- `AuthenticationException` - If no valid JWT authentication is found or the token subject is invalid
+- `AuthenticationException` - If no valid JWT authentication is found or the token subject is not a valid UUID
 - `ResourceNotFoundException` - If the authenticated user is not found in the database
-- `ShortCodeCollisionException` - If a unique short code cannot be generated after maximum attempts
+- `ShortCodeCollisionException` - If unable to generate a unique short code after maximum attempts
 
 ## Private Methods
 
 ### `saveWithUniqueCode(CreateShareLinkRequest request, User user)`
 
-Attempts to generate and save a short link with a unique code.
+Attempts to create and save a new `ShortLink` with a unique code.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `CreateShareLinkRequest` | The original link creation request |
+| `request` | `CreateShareLinkRequest` | The original creation request |
 | `user` | `User` | The authenticated user entity |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `ShortLink` | Entity | The successfully saved short link |
+**Returns:** `ShortLink` - The persisted short link entity
 
-**Logic:**
-- Attempts up to `MAX_CODE_ATTEMPTS` (3) times to generate a unique code
-- Catches `DataIntegrityViolationException` specifically for code column violations
-- Re-throws non-code-related database exceptions
+**Behavior:**
+- Attempts up to `MAX_CODE_ATTEMPTS` (3) times to generate and save a unique short code
+- On `DataIntegrityViolationException`, checks if the violation is due to a unique code constraint
+- If not a code violation, re-throws the exception
 - Throws `ShortCodeCollisionException` if all attempts fail
 
 ### `isUniqueCodeViolation(DataIntegrityViolationException ex)`
 
-Determines if a database exception is caused by a unique code constraint violation.
+Determines if a data integrity violation is caused by a duplicate short code.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `ex` | `DataIntegrityViolationException` | The database exception to analyze |
+| `ex` | `DataIntegrityViolationException` | The caught exception |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `boolean` | Primitive | `true` if the exception message contains "code" (case-insensitive) |
+**Returns:** `boolean` - `true` if the violation message contains "code", `false` otherwise
 
 ### `getAuthenticatedUserId()`
 
-Extracts the user ID from the current JWT authentication context.
+Extracts the authenticated user's UUID from the JWT token in the security context.
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `UUID` | Object | The authenticated user's UUID from the JWT subject claim |
+**Returns:** `UUID` - The authenticated user's ID
 
 **Exceptions:**
-- `AuthenticationException` - If no authentication exists, principal is not a JWT, or subject is not a valid UUID
+- `AuthenticationException` - If no authentication is found or the JWT subject is not a valid UUID
 
 ### `findUserOrThrow(UUID id)`
 
-Retrieves a user entity by ID or throws an exception.
+Retrieves a user by ID or throws an exception.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `id` | `UUID` | The user's unique identifier |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `User` | Entity | The found user entity |
+**Returns:** `User` - The found user entity
 
 **Exceptions:**
 - `ResourceNotFoundException` - If no user exists with the given ID
 
 ### `buildResponse(ShortLink link, Long clickCount)`
 
-Constructs a `ShareLinkResponse` from a short link entity and its click count.
+Constructs a `ShareLinkResponse` from a `ShortLink` entity and its click count.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `link` | `ShortLink` | The short link entity |
-| `clickCount` | `Long` | The number of clicks on the link |
+| `link` | `ShortLink` | The persisted short link entity |
+| `clickCount` | `Long` | The current number of clicks |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `ShareLinkResponse` | Object | Response containing all URL formats and link metadata |
+**Returns:** `ShareLinkResponse` - A formatted response with all URL variants
 
-## Configuration Constants
+## Annotations
+
+- `@Service` - Marks this class as a Spring service component
+- `@Transactional` - Ensures the `execute` method runs within a database transaction
+- `@Auditable(action = "SHARE_LINK_CREATED", ...)` - Custom annotation for audit logging, capturing the created link's code
+
+## Constants
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `MAX_CODE_ATTEMPTS` | `3` | Maximum retry attempts for generating a unique short code |
-| `CODE_COLUMN` | `"code"` | Database column name for the unique code constraint |
+| `MAX_CODE_ATTEMPTS` | `3` | Maximum retry attempts for unique code generation |
+| `CODE_COLUMN` | `"code"` | Database column name for the short code |
 | `MSG_NO_AUTHENTICATION` | `"No valid authentication found."` | Error message for missing authentication |
 | `MSG_INVALID_SUBJECT` | `"Invalid user ID in token subject: %s"` | Error message template for invalid JWT subject |
 | `MSG_CODE_COLLISION` | `"Failed to generate a unique short code after %d attempts."` | Error message template for code generation failure |
 | `MSG_USER_NOT_FOUND` | `"User not found with ID: %s"` | Error message template for missing user |
-
-## Annotations
-
-| Annotation | Details |
-|------------|---------|
-| `@Service` | Marks this class as a Spring service component |
-| `@Transactional` | Ensures the `execute` method runs within a database transaction |
-| `@Auditable` | Records audit events with action `SHARE_LINK_CREATED`, resource type `SHARE_LINK`, and resource ID from the result's code |

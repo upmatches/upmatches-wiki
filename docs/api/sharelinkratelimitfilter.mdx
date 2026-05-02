@@ -6,89 +6,127 @@ sidebar_label: ShareLinkRateLimitFilter
 
 # ShareLinkRateLimitFilter
 
-The `ShareLinkRateLimitFilter` is a Spring Boot servlet filter that enforces rate limiting on share-link API endpoints. It extends `OncePerRequestFilter` to ensure each request is processed exactly once. The filter uses Redis as a backing store for rate limit counters and applies different limits for resolving (GET) and creating (POST) share links.
-
 ## Purpose
 
-This filter protects the share-link API from abuse by limiting the number of requests a client can make within a 60-second window. It distinguishes between two operations:
+The `ShareLinkRateLimitFilter` is a Spring Boot servlet filter that enforces rate limiting on share-link API endpoints. It extends `OncePerRequestFilter` to ensure each request is processed exactly once. The filter distinguishes between two types of operations:
 
-- **Resolve (GET)**: Limited to 30 requests per 60 seconds per IP address.
-- **Create (POST)**: Limited to 10 requests per 60 seconds per authenticated user (or IP address if unauthenticated).
+- **Resolve** (GET requests to `/api/v1/share-links/{id}`): Rate-limited by client IP address.
+- **Create** (POST requests to `/api/v1/share-links`): Rate-limited by authenticated user subject (JWT subject) or client IP as a fallback.
 
-When a client exceeds the limit, the filter returns a `429 Too Many Requests` response with a `ProblemDetail` JSON body and a `Retry-After` header.
-
-## Dependencies
-
-- **Spring Boot**: `OncePerRequestFilter`, `ConditionalOnBean`
-- **Spring Data Redis**: `StringRedisTemplate`
-- **Spring Security**: `Authentication`, `Jwt`
-- **Jackson**: `ObjectMapper`
-- **Jakarta Servlet**: `HttpServletRequest`, `HttpServletResponse`, `FilterChain`
+Rate limits are enforced using Redis as a distributed counter with a sliding window approach. When a limit is exceeded, the filter returns a `429 Too Many Requests` response with a `ProblemDetail` JSON body and a `Retry-After` header.
 
 ## Configuration
 
-The filter is automatically activated when a `StringRedisTemplate` bean is present in the application context (via `@ConditionalOnBean(StringRedisTemplate.class)`).
+The filter is automatically enabled when a `StringRedisTemplate` bean is present in the application context (via `@ConditionalOnBean(StringRedisTemplate.class)`).
+
+### Rate Limit Defaults
+
+| Parameter | Resolve (GET) | Create (POST) |
+|-----------|---------------|---------------|
+| Max Requests | 30 | 10 |
+| Window Duration | 60 seconds | 60 seconds |
 
 ## Public Methods
 
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `shouldNotFilter` | `boolean` | `HttpServletRequest request` | Determines if the filter should be skipped. Returns `true` if the request URI does not start with `/api/v1/share-links`. |
-| `doFilterInternal` | `void` | `HttpServletRequest request`, `HttpServletResponse response`, `FilterChain filterChain` | Main filter logic. Applies rate limiting for GET requests matching `/api/v1/share-links/{id}` and POST requests to `/api/v1/share-links`. |
+### `shouldNotFilter(HttpServletRequest request)`
 
-## Internal Methods
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request |
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `isRateLimited` | `boolean` | Checks if a Redis key has exceeded its rate limit. Increments the counter and sets expiration on first request. |
-| `resolveClientIp` | `String` | Extracts the client IP from the `X-Forwarded-For` header or falls back to `request.getRemoteAddr()`. |
-| `resolveSubjectOrIp` | `String` | Returns the JWT subject for authenticated users, or the client IP for unauthenticated requests. |
-| `writeRateLimitResponse` | `void` | Writes a `429 Too Many Requests` response with a `ProblemDetail` JSON body and `Retry-After` header. |
+**Returns:** `boolean` - `true` if the request URI does not start with `/api/v1/share-links`, meaning the filter will be skipped for non-share-link endpoints.
 
-## Rate Limit Configuration
+### `doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)`
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| `RESOLVE_LIMIT` | 30 | Maximum number of GET requests per window |
-| `CREATE_LIMIT` | 10 | Maximum number of POST requests per window |
-| `WINDOW_SECONDS` | 60 | Time window in seconds for rate limit counters |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request |
+| `response` | `HttpServletResponse` | The HTTP response |
+| `filterChain` | `FilterChain` | The filter chain to continue processing |
+
+**Behavior:**
+1. Checks if the request matches a share-link resolve (GET) or create (POST) endpoint.
+2. For resolve requests: extracts the client IP and checks the resolve rate limit.
+3. For create requests: extracts the authenticated user subject (or IP fallback) and checks the create rate limit.
+4. If rate-limited, writes a `429 Too Many Requests` response and stops further processing.
+5. Otherwise, continues the filter chain.
+
+### `isRateLimited(String key, int limit)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `key` | `String` | The Redis key for the rate counter |
+| `limit` | `int` | The maximum number of requests allowed |
+
+**Returns:** `boolean` - `true` if the current request count exceeds the limit.
+
+**Implementation:** Uses Redis `INCR` to atomically increment the counter. If the counter is 1 (first request), sets the key expiration to the window duration. Returns `true` when the count exceeds the limit.
+
+### `resolveClientIp(HttpServletRequest request)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request |
+
+**Returns:** `String` - The resolved client IP address.
+
+**Logic:**
+1. Checks the `X-Forwarded-For` header for proxy-aware IP resolution.
+2. If present, takes the first IP from the comma-separated list.
+3. Falls back to `request.getRemoteAddr()`.
+
+### `resolveSubjectOrIp(HttpServletRequest request)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request |
+
+**Returns:** `String` - The authenticated user's JWT subject, or the client IP if no valid authentication is found.
+
+**Logic:**
+1. Retrieves the current `Authentication` from `SecurityContextHolder`.
+2. If the principal is a `Jwt` instance, extracts the subject claim.
+3. Falls back to `resolveClientIp(request)`.
+
+### `writeRateLimitResponse(HttpServletResponse response, String bucket, String instance)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `response` | `HttpServletResponse` | The HTTP response to write to |
+| `bucket` | `String` | The rate limit bucket name (e.g., "resolve" or "create") |
+| `instance` | `String` | The request URI for the `instance` field in the problem detail |
+
+**Behavior:** Constructs and writes a `ProblemDetail` response with:
+- Status: `429 Too Many Requests`
+- Content-Type: `application/problem+json`
+- `Retry-After` header set to the window duration (60 seconds)
+- Problem detail fields: `type`, `title`, `status`, `detail`, `instance`
+
+## Error Response Format
+
+When rate-limited, the API returns a `429 Too Many Requests` response with the following JSON structure:
+
+```json
+{
+  "type": "https://upmatches.com/problems/rate-limit-exceeded",
+  "title": "Too Many Requests",
+  "status": 429,
+  "detail": "Rate limit exceeded for share-link 'resolve' endpoint. Retry after 60 seconds.",
+  "instance": "/api/v1/share-links/abc123"
+}
+```
 
 ## Redis Key Structure
 
-- **Resolve**: `rl:share-link:resolve:{client_ip}`
-- **Create**: `rl:share-link:create:{subject_or_ip}`
+| Key Pattern | Description |
+|-------------|-------------|
+| `rl:share-link:resolve:{ip}` | Counter for resolve requests by IP |
+| `rl:share-link:create:{subject}` | Counter for create requests by subject or IP |
 
-## Error Response
+## Dependencies
 
-When rate limited, the filter returns:
-
-- **HTTP Status**: 429 Too Many Requests
-- **Content-Type**: `application/problem+json`
-- **Headers**: `Retry-After: 60`
-- **Body** (ProblemDetail JSON):
-  ```json
-  {
-    "type": "https://upmatches.com/problems/rate-limit-exceeded",
-    "title": "Too Many Requests",
-    "status": 429,
-    "detail": "Rate limit exceeded for share-link 'resolve' endpoint. Retry after 60 seconds.",
-    "instance": "/api/v1/share-links/abc123"
-  }
-  ```
-
-## Usage Example
-
-```java
-// The filter is automatically applied to all requests starting with /api/v1/share-links
-// No additional configuration is needed beyond having a StringRedisTemplate bean.
-
-// Example: A client making 31 GET requests to /api/v1/share-links/abc123 within 60 seconds
-// will receive a 429 response on the 31st request.
-```
-
-## Notes
-
-- The filter only applies to requests with URIs starting with `/api/v1/share-links`.
-- For POST requests, the filter uses the JWT subject (if available) as the rate limit key, allowing authenticated users to have their own limit separate from their IP address.
-- The `X-Forwarded-For` header is used to determine the client IP when behind a proxy or load balancer.
-- Redis keys automatically expire after 60 seconds if no further requests are made.
+- Spring Boot Web (Servlet)
+- Spring Data Redis (`StringRedisTemplate`)
+- Spring Security (OAuth2 Resource Server JWT)
+- Jackson (`ObjectMapper`)
+- Jakarta Servlet API

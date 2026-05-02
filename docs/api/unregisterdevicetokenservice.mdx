@@ -6,58 +6,51 @@ sidebar_label: UnregisterDeviceTokenService
 
 # UnregisterDeviceTokenService
 
-The `UnregisterDeviceTokenService` is a Spring service class responsible for removing a device token associated with a specific user. It ensures that when a user unregisters a device (e.g., during logout or device removal), the corresponding push notification token is deleted from the database.
+The `UnregisterDeviceTokenService` is a Spring service class responsible for removing a device token associated with a specific user. This is typically used when a user logs out, uninstalls the app, or wants to stop receiving push notifications on a particular device.
 
-This service is part of the notification feature and works in conjunction with the `DeviceTokenRepository` and an authenticated user resolver to securely identify the current user.
+## Purpose
 
-## Class Overview
+This service ensures that when a device token is unregistered, it is properly removed from the database. The operation is performed within a transactional context to maintain data integrity. The service resolves the currently authenticated user and deletes the token only if it belongs to that user, providing a layer of security.
 
-- **Package:** `com.upmatches.app.features.notification.services`
-- **Annotations:** `@Service`
-- **Modifier:** `non-sealed`
-- **Implements:** `IUnregisterDeviceTokenService`
+## Class Details
+
+| Aspect | Description |
+|--------|-------------|
+| **Package** | `com.upmatches.app.features.notification.services` |
+| **Type** | `non-sealed` class implementing `IUnregisterDeviceTokenService` |
+| **Annotations** | `@Service`, `@Transactional` |
+| **Dependencies** | `DeviceTokenRepository`, `IAuthenticatedUserResolver` |
 
 ## Constructor
+
+### `UnregisterDeviceTokenService(DeviceTokenRepository deviceTokenRepository, IAuthenticatedUserResolver userResolver)`
+
+Creates a new instance of the service with the required dependencies.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `deviceTokenRepository` | `DeviceTokenRepository` | Repository for managing device token persistence |
-| `userResolver` | `IAuthenticatedUserResolver` | Resolves the currently authenticated user's ID |
+| `userResolver` | `IAuthenticatedUserResolver` | Resolver to obtain the currently authenticated user |
 
 ## Public Methods
 
 ### `execute(String deviceToken)`
 
-Deletes the device token for the currently authenticated user.
+Unregisters (deletes) the specified device token for the currently authenticated user.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `deviceToken` | `String` | The device token to unregister |
+| `deviceToken` | `String` | The device token to be removed |
 
 **Return Type:** `void`
 
 **Behavior:**
-1. Retrieves the authenticated user's UUID via `userResolver.requireUserId()`.
-2. Delegates the deletion to `ServiceOperationExecutor.executeVoid()` which:
-   - Calls `deviceTokenRepository.deleteByUserIdAndDeviceToken(userId, deviceToken)`.
-   - Uses `DELETE` as the operation status.
-   - Throws a `ResourceNotFoundException` if the deletion fails (e.g., token not found).
+1. Resolves the currently authenticated user's ID using `userResolver.requireUserId()`
+2. Executes the deletion operation via `ServiceOperationExecutor.executeVoid()`
+3. If the token does not exist for the user, a `ResourceNotFoundException` is thrown
 
-**Transactional:** Yes (`@Transactional`)
-
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `DeviceTokenRepository` | Repository | Spring Data repository for device token CRUD operations |
-| `IAuthenticatedUserResolver` | Interface | Resolves the currently authenticated user's identity |
-| `ServiceOperationExecutor` | Utility | Executes service operations with standardized error handling |
-
-## Exceptions
-
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | Thrown when the device token cannot be found for the given user |
+**Exceptions:**
+- `ResourceNotFoundException` - Thrown when the device token is not found for the specified user
 
 ## Usage Example
 
@@ -65,7 +58,26 @@ Deletes the device token for the currently authenticated user.
 @Autowired
 private UnregisterDeviceTokenService unregisterDeviceTokenService;
 
-public void logoutUser(String deviceToken) {
-    unregisterDeviceTokenService.execute(deviceToken);
+public void handleUserLogout(String deviceToken) {
+    try {
+        unregisterDeviceTokenService.execute(deviceToken);
+        // Token successfully removed
+    } catch (ResourceNotFoundException e) {
+        // Token not found - handle accordingly
+    }
 }
 ```
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `DeviceTokenRepository` | Repository | Spring Data repository for device token CRUD operations |
+| `IAuthenticatedUserResolver` | Service | Interface to resolve the currently authenticated user |
+| `ServiceOperationExecutor` | Utility | Helper class for executing service operations with standardized error handling |
+
+## Related Components
+
+- **`IUnregisterDeviceTokenService`** - Interface that this service implements
+- **`DeviceTokenRepository`** - Repository containing the `deleteByUserIdAndDeviceToken()` method
+- **`ResourceNotFoundException`** - Exception thrown when the token is not found

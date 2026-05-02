@@ -4,19 +4,27 @@ title: ISendGameRemindersService Interface
 sidebar_label: ISendGameRemindersService
 ---
 
-# ISendGameRemindersService
+# ISendGameRemindersService Interface
 
-The `ISendGameRemindersService` is a **sealed interface** that defines the contract for sending game reminder notifications. It is part of the notification feature in the `com.upmatches.app` application and is designed to be implemented exclusively by the `SendGameRemindersService` class.
+The `ISendGameRemindersService` is a sealed interface that defines the contract for sending game reminder notifications. It provides a single method to execute reminder notifications based on specified time ranges and notification types.
 
 ## Purpose
 
-This interface provides a single method for executing the sending of game reminders based on a specified notification type and a time window (minimum and maximum hours ahead of the game). The sealed nature of the interface ensures controlled inheritance, allowing only the permitted implementation (`SendGameRemindersService`) to fulfill this contract.
+This interface serves as the abstraction layer for game reminder notification functionality. By using a sealed interface, it restricts implementation to only the `SendGameRemindersService` class, ensuring controlled extension and type safety. The interface allows scheduling and sending reminders for upcoming games within a configurable time window.
+
+## Interface Definition
+
+```java
+public sealed interface ISendGameRemindersService permits SendGameRemindersService
+```
+
+The interface is sealed, meaning only the `SendGameRemindersService` class is permitted to implement it. This design pattern ensures that all reminder notification logic flows through a single, controlled implementation.
 
 ## Method Summary
 
-| Method | Description |
-|--------|-------------|
-| `execute` | Sends game reminder notifications for a given type within a specified time range. |
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute(NotificationType type, long minHoursAhead, long maxHoursAhead)` | `int` | Executes the game reminder notification process for games scheduled within the specified time range |
 
 ## Method Details
 
@@ -26,44 +34,41 @@ This interface provides a single method for executing the sending of game remind
 int execute(NotificationType type, long minHoursAhead, long maxHoursAhead)
 ```
 
-Sends game reminder notifications based on the provided parameters.
+Executes the game reminder notification process. This method identifies games scheduled to occur within the specified time window (between `minHoursAhead` and `maxHoursAhead` from the current time) and sends reminders of the specified type.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `type` | `NotificationType` | The type of notification to send (e.g., push, email, SMS). This is an enum defined in `com.upmatches.app.features.notification.enums`. |
-| `minHoursAhead` | `long` | The minimum number of hours ahead of the game time to send reminders. |
-| `maxHoursAhead` | `long` | The maximum number of hours ahead of the game time to send reminders. |
+| `type` | `NotificationType` | The type of notification to send (e.g., push notification, email, SMS) |
+| `minHoursAhead` | `long` | The minimum number of hours ahead of the game time to consider for reminders |
+| `maxHoursAhead` | `long` | The maximum number of hours ahead of the game time to consider for reminders |
 
 **Returns:**
 
 | Type | Description |
 |------|-------------|
-| `int` | The number of reminders successfully sent. |
-
-**Exceptions:**
-
-This method does not declare any checked exceptions. However, implementations may throw runtime exceptions for issues such as invalid parameters or service failures.
+| `int` | The number of reminders successfully sent or processed |
 
 ## Usage Example
 
 ```java
-// Assuming you have an instance of ISendGameRemindersService
+// Example implementation in a service class
 ISendGameRemindersService reminderService = new SendGameRemindersService();
 
-// Send push notifications for games happening between 2 and 24 hours from now
-int sentCount = reminderService.execute(NotificationType.PUSH, 2, 24);
-System.out.println("Sent " + sentCount + " reminders.");
+// Send push notifications for games starting between 2 and 24 hours from now
+int remindersSent = reminderService.execute(
+    NotificationType.PUSH_NOTIFICATION,
+    2,   // minHoursAhead
+    24   // maxHoursAhead
+);
+
+System.out.println("Sent " + remindersSent + " game reminders");
 ```
 
 ## Implementation Notes
 
-- The interface is **sealed**, meaning only the `SendGameRemindersService` class is permitted to implement it.
-- The `NotificationType` enum should be consulted for available notification types.
-- The `minHoursAhead` and `maxHoursAhead` parameters define a range; reminders are sent for games whose start time falls within this window.
-
-## Related Components
-
-- `SendGameRemindersService` - The sole implementation of this interface.
-- `NotificationType` - Enum defining the types of notifications that can be sent.
+- The `NotificationType` enum is defined in `com.upmatches.app.features.notification.enums` package
+- The sole permitted implementation is `SendGameRemindersService` located in the same package
+- The method returns an integer representing the count of successfully processed reminders
+- Time ranges are specified in hours and are inclusive of both minimum and maximum values

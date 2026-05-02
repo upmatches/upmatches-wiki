@@ -6,51 +6,65 @@ sidebar_label: IRecordAuditEventService
 
 # IRecordAuditEventService
 
+The `IRecordAuditEventService` interface defines the contract for recording audit events within the application. It is a **sealed interface**, meaning only explicitly permitted classes (in this case, `RecordAuditEventService`) can implement it. This design enforces a controlled hierarchy and ensures that audit event recording logic is centralized and not extended arbitrarily.
+
 ## Purpose
 
-The `IRecordAuditEventService` interface defines a contract for recording audit events within the application. It is a **sealed interface**, meaning only the explicitly permitted class (`RecordAuditEventService`) can implement it. This design enforces a controlled hierarchy and ensures that audit event recording is handled by a single, designated implementation.
+- **Audit Logging**: Provides a standardized method to persist or process audit events.
+- **Sealed Contract**: Restricts implementation to a single class (`RecordAuditEventService`), promoting encapsulation and maintainability.
+- **Decoupling**: Allows the rest of the application to depend on this interface rather than concrete implementations, facilitating testing and future changes.
 
-This interface is part of the `com.upmatches.app.features.audit.services` package and is used to decouple the audit event recording logic from its consumers, promoting loose coupling and testability.
+## Method Summary
 
-## Interface Definition
+| Method | Description |
+|--------|-------------|
+| `record(AuditEventRequest request)` | Records an audit event based on the provided request data. |
+
+## Method Details
+
+### `record`
 
 ```java
-public sealed interface IRecordAuditEventService permits RecordAuditEventService {
-    void record(AuditEventRequest request);
-}
+void record(AuditEventRequest request)
 ```
 
-## Methods
+Records an audit event.
 
-| Method | Description | Parameters | Returns |
-|--------|-------------|------------|---------|
-| `record` | Records an audit event based on the provided request data. | `AuditEventRequest request` – The request object containing the details of the audit event to be recorded. | `void` |
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `AuditEventRequest` | The request object containing the details of the audit event to be recorded. |
+
+**Returns:** `void`
+
+**Throws:** This method does not explicitly declare any checked exceptions. Implementations may throw runtime exceptions (e.g., `IllegalArgumentException` if the request is null or invalid).
 
 ## Usage Example
 
 ```java
-// Inject or obtain an instance of IRecordAuditEventService
-IRecordAuditEventService auditService = new RecordAuditEventService();
+@Autowired
+private IRecordAuditEventService auditService;
 
-// Create an audit event request
-AuditEventRequest request = new AuditEventRequest();
-request.setAction("USER_LOGIN");
-request.setUserId(12345L);
-request.setTimestamp(LocalDateTime.now());
+public void someBusinessMethod() {
+    AuditEventRequest event = new AuditEventRequest();
+    event.setAction("USER_LOGIN");
+    event.setUserId(12345L);
+    event.setTimestamp(Instant.now());
 
-// Record the audit event
-auditService.record(request);
+    auditService.record(event);
+}
 ```
 
 ## Implementation Notes
 
-- The interface is **sealed** to restrict implementation to `RecordAuditEventService` only. This prevents unauthorized or unintended implementations.
-- The `record` method is intentionally void; any errors or failures in recording should be handled internally by the implementing class or propagated via unchecked exceptions.
-- The `AuditEventRequest` class should contain all necessary fields for an audit event (e.g., action, user ID, timestamp, IP address, etc.).
+- The interface is **sealed** with `permits RecordAuditEventService`. Only this class can implement the interface.
+- The `RecordAuditEventService` implementation should handle the actual persistence or processing of the audit event (e.g., writing to a database, sending to a message queue, or logging to a file).
+- Consider adding validation logic in the implementation to ensure the `AuditEventRequest` contains all required fields before recording.
 
-## Related Components
+## Related Types
 
-| Component | Description |
-|-----------|-------------|
-| `AuditEventRequest` | The request DTO containing audit event data. |
+| Type | Description |
+|------|-------------|
+| `AuditEventRequest` | The request object containing audit event data (e.g., action, user ID, timestamp). |
 | `RecordAuditEventService` | The sole permitted implementation of this interface. |

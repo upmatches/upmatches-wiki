@@ -8,186 +8,131 @@ sidebar_label: GameAuthorizationService
 
 The `GameAuthorizationService` class is a Spring service component that provides authorization and validation logic for game-related operations in the UpMatches application. It implements the `IGameAuthorizationService` interface and serves as a security layer to ensure that users have the appropriate permissions to view, join, or modify games.
 
-## Purpose
+This service handles various authorization checks including:
+- Game visibility (public vs. private)
+- Organizer permissions
+- Joinability status
+- Field immutability when participants are active
+- Slot capacity validation
 
-This service centralizes all authorization checks and business rule validations for game operations, including:
-- Verifying user permissions to view public and private games
-- Ensuring only game organizers can modify game properties
-- Validating game joinability based on status and time constraints
-- Enforcing immutability rules for certain game fields when participants are active
-- Preventing duplicate joins and ensuring slot availability
+## Constructor
 
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `GameParticipantRepository` | Repository | Provides access to participant data for authorization checks |
-| `GameShareAccessRepository` | Repository | Manages share-link access for private games |
+| Constructor | Description |
+|-------------|-------------|
+| `GameAuthorizationService(GameParticipantRepository participantRepository, GameShareAccessRepository shareAccessRepository)` | Creates a new instance with the required repository dependencies |
 
 ## Public Methods
 
 ### `assertCanViewGame(Game game, UUID userId)`
 
-Validates whether a user has permission to view a specific game.
+Validates whether a user can view a specific game.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `game` | `Game` | The game entity to check access for |
-| `userId` | `UUID` | The ID of the user requesting access |
+| `userId` | `UUID` | The user's unique identifier |
 
 **Throws:**
-- `GameNotFoundException` if the game is private and the user has no access rights
+- `GameNotFoundException` - If the game is private and the user doesn't have access
 
 **Logic:**
-- Public games are accessible to all users
-- The organizer always has access
-- Active participants have access
-- Users with share-link access have access
-- All other users receive a `GameNotFoundException`
+- Public games are always viewable
+- The organizer can always view their own game
+- Active participants can view the game
+- Users with share-link access can view private games
 
 ### `assertIsOrganizer(Game game, UUID userId)`
 
-Verifies that the specified user is the organizer of the given game.
+Verifies that the specified user is the organizer of the game.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `game` | `Game` | The game entity to check |
-| `userId` | `UUID` | The ID of the user to verify |
+| `game` | `Game` | The game entity |
+| `userId` | `UUID` | The user's unique identifier |
 
 **Throws:**
-- `NotGameOrganizerException` if the user is not the organizer
+- `NotGameOrganizerException` - If the user is not the game organizer
 
 ### `assertGameJoinable(UUID id, Game game)`
 
-Checks whether a game is currently joinable based on its status and end time.
+Checks whether a game is currently joinable.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The game ID (used for error messages) |
-| `game` | `Game` | The game entity to check |
-
-**Throws:**
-- `GameNotJoinableException` if the game is past or inactive
-
-### `assertPrivateAccess(UUID id, UUID userId, Game game)`
-
-Validates that a user has access to a private game.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The game ID |
-| `userId` | `UUID` | The user ID requesting access |
+| `id` | `UUID` | The game's unique identifier |
 | `game` | `Game` | The game entity |
 
 **Throws:**
-- `PrivateGameAccessDeniedException` if the game is private and the user lacks access
+- `GameNotJoinableException` - If the game is past or inactive
+
+### `assertPrivateAccess(UUID id, UUID userId, Game game)`
+
+Validates access to a private game.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The game's unique identifier |
+| `userId` | `UUID` | The user's unique identifier |
+| `game` | `Game` | The game entity |
+
+**Throws:**
+- `PrivateGameAccessDeniedException` - If the user doesn't have access to a private game
 
 ### `assertNotAlreadyJoined(UUID id, UUID userId)`
 
-Ensures that a user has not already joined a game.
+Ensures a user hasn't already joined a game.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The game ID |
-| `userId` | `UUID` | The user ID to check |
+| `id` | `UUID` | The game's unique identifier |
+| `userId` | `UUID` | The user's unique identifier |
 
 **Throws:**
-- `AlreadyJoinedException` if the user is already an active participant
+- `AlreadyJoinedException` - If the user is already an active participant
 
 ### `assertVisibilityUnchanged(UUID id, Game game, UpdateGameRequest request)`
 
-Validates that the game visibility is not being changed after creation.
+Validates that the game visibility cannot be changed after creation.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The game ID |
+| `id` | `UUID` | The game's unique identifier |
 | `game` | `Game` | The current game entity |
 | `request` | `UpdateGameRequest` | The update request containing potential visibility changes |
 
 **Throws:**
-- `GameVisibilityImmutableException` if visibility is being changed
+- `GameVisibilityImmutableException` - If an attempt is made to change visibility
 
 ### `assertSlotsAboveActive(UUID id, Integer newSlots, long activeCount)`
 
-Ensures that the new slot count is not below the current number of active participants.
+Validates that the new slot count is not below the current number of active participants.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The game ID |
+| `id` | `UUID` | The game's unique identifier |
 | `newSlots` | `Integer` | The proposed new slot count |
 | `activeCount` | `long` | The current number of active participants |
 
 **Throws:**
-- `GameSlotsBelowParticipantsException` if new slots are less than active participants
+- `GameSlotsBelowParticipantsException` - If new slots are less than active participants
 
 ### `assertImmutableFields(UUID id, Game game, UpdateGameRequest request, long activeCount)**
 
-Validates that certain game fields cannot be modified when there are active participants.
+Validates that certain game fields cannot be changed when there are active participants.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The game ID |
+| `id` | `UUID` | The game's unique identifier |
 | `game` | `Game` | The current game entity |
 | `request` | `UpdateGameRequest` | The update request |
 | `activeCount` | `long` | The current number of active participants |
 
 **Throws:**
-- `GameImmutableFieldException` if any immutable field is being modified
+- `GameImmutableFieldException` - If an immutable field is being modified while participants exist
 
-**Immutable fields when participants exist:**
+**Immutable fields when participants are active:**
 - `startTime`
 - `endTime`
 - `price`
 - `currency`
-- `pricing` (checked via `assertPricingUnchanged`)
-
-## Private Methods
-
-### `assertPricingUnchanged(UUID id, Game game, UpdateGameRequest request)`
-
-Internal helper method that validates the pricing field has not changed using semantic equality comparison.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The game ID |
-| `game` | `Game` | The current game entity |
-| `request` | `UpdateGameRequest` | The update request |
-
-**Throws:**
-- `GameImmutableFieldException` if pricing has changed
-
-## Error Messages
-
-The class defines several static error message templates used across methods:
-
-| Constant | Message Template |
-|----------|-----------------|
-| `MSG_GAME_NOT_FOUND` | `"Game with ID '%s' not found."` |
-| `MSG_NOT_ORGANIZER` | `"User '%s' is not the organizer of game '%s'."` |
-| `MSG_ALREADY_JOINED` | `"User '%s' has already joined game '%s'."` |
-| `MSG_GAME_NOT_JOINABLE` | `"Game '%s' is not joinable (status=%s, ended=%s)."` |
-| `MSG_PRIVATE_ACCESS_DENIED` | `"Game '%s' is private and user '%s' has no share-link access."` |
-| `MSG_FIELD_IMMUTABLE` | `"Field '%s' cannot be changed on game '%s' because it has active participants."` |
-| `MSG_SLOTS_BELOW` | `"Slots (%d) cannot be below current active participant count (%d) for game '%s'."` |
-| `MSG_VISIBILITY_IMMUTABLE` | `"Visibility cannot be changed after game '%s' is created."` |
-
-## Usage Example
-
-```java
-@Service
-public class GameService {
-    private final GameAuthorizationService authService;
-    
-    public void joinGame(UUID gameId, UUID userId) {
-        Game game = gameRepository.findById(gameId)
-            .orElseThrow(() -> new GameNotFoundException("Game not found"));
-        
-        authService.assertCanViewGame(game, userId);
-        authService.assertGameJoinable(gameId, game);
-        authService.assertNotAlreadyJoined(gameId, userId);
-        authService.assertPrivateAccess(gameId, userId, game);
-        
-        // Proceed with joining logic
-    }
-}
-```
+- `pricing`

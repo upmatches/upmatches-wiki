@@ -1,16 +1,16 @@
 ---
 id: activity-controller
 title: Activity Controller
-sidebar_label: ActivityController
+sidebar_label: Activity Controller
 ---
 
 # Activity Controller
 
-The `ActivityController` class is a REST controller that handles HTTP requests for managing activities in the UpMatches application. It provides endpoints for creating, reading, updating, and deleting activities, following standard RESTful API conventions.
+The `ActivityController` class is a REST controller in the UpMatches application that handles HTTP requests related to activity management. It provides endpoints for creating, reading, updating, and deleting activities, following standard RESTful API conventions.
 
 ## Purpose
 
-This controller serves as the entry point for all activity-related operations. It delegates business logic to dedicated service classes and returns standardized API responses using the `ApiResponse` wrapper. The controller is mapped to the `/api/v1/activities` base path and supports pagination for list operations.
+This controller serves as the entry point for all activity-related operations in the application. It delegates business logic to dedicated service interfaces and returns standardized API responses using the `ApiResponse` wrapper class. The controller is mapped to the `/api/v1/activities` base path and uses Spring's validation framework to ensure request data integrity.
 
 ## Endpoints
 
@@ -26,10 +26,10 @@ Retrieves a paginated list of activities sorted by name.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `page` | Integer | 0 | Page number (zero-indexed) |
+| `page` | Integer | 0 | Page number (zero-based) |
 | `size` | Integer | 20 | Number of items per page |
 
-**Response:** `200 OK` - Returns a `PagedResponse<ActivityResponse>` wrapped in an `ApiResponse`.
+**Response:** `200 OK` - Returns a `PagedResponse<ActivityResponse>` wrapped in an `ApiResponse` with the message "Activities retrieved successfully."
 
 ### Get Activity by ID
 
@@ -45,7 +45,7 @@ Retrieves a single activity by its unique identifier.
 |-----------|------|-------------|
 | `id` | UUID | The unique identifier of the activity |
 
-**Response:** `200 OK` - Returns an `ActivityResponse` wrapped in an `ApiResponse`.
+**Response:** `200 OK` - Returns an `ActivityResponse` wrapped in an `ApiResponse` with the message "Activity retrieved successfully."
 
 ### Create Activity
 
@@ -57,7 +57,7 @@ Creates a new activity.
 
 **Request Body:** `CreateActivityRequest` (validated)
 
-**Response:** `201 Created` - Returns the created `ActivityResponse` wrapped in an `ApiResponse`.
+**Response:** `201 Created` - Returns the created `ActivityResponse` wrapped in an `ApiResponse` with the message "Activity created successfully."
 
 ### Update Activity
 
@@ -65,7 +65,7 @@ Updates an existing activity.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| PUT | `/api/v1/activities/{id}` | Updates a specific activity |
+| PUT | `/api/v1/activities/{id}` | Updates an existing activity |
 
 **Path Parameters:**
 
@@ -75,7 +75,7 @@ Updates an existing activity.
 
 **Request Body:** `UpdateActivityRequest` (validated)
 
-**Response:** `200 OK` - Returns the updated `ActivityResponse` wrapped in an `ApiResponse`.
+**Response:** `200 OK` - Returns the updated `ActivityResponse` wrapped in an `ApiResponse` with the message "Activity updated successfully."
 
 ### Delete Activity
 
@@ -83,7 +83,7 @@ Deletes an activity.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| DELETE | `/api/v1/activities/{id}` | Deletes a specific activity |
+| DELETE | `/api/v1/activities/{id}` | Deletes an activity |
 
 **Path Parameters:**
 
@@ -97,16 +97,16 @@ Deletes an activity.
 
 The controller depends on the following service interfaces:
 
-- `IListActivitiesService` - Handles paginated listing of activities
-- `IGetActivityService` - Handles retrieval of a single activity
-- `ICreateActivityService` - Handles creation of new activities
-- `IUpdateActivityService` - Handles updating existing activities
-- `IDeleteActivityService` - Handles deletion of activities
+- `IListActivitiesService` - Handles paginated activity listing
+- `IGetActivityService` - Handles single activity retrieval
+- `ICreateActivityService` - Handles activity creation
+- `IUpdateActivityService` - Handles activity updates
+- `IDeleteActivityService` - Handles activity deletion
 
 ## Validation
 
-The controller uses Jakarta Bean Validation (`@Valid`) to validate request bodies and custom validation through `ValidationHelper.validatePaginationParameters()` for pagination parameters. The class is also annotated with `@Validated` to enable method-level validation.
+The controller uses Spring's `@Valid` annotation on request bodies and `@Validated` at the class level to ensure incoming data meets validation constraints. Pagination parameters are validated using `ValidationHelper.validatePaginationParameters()`.
 
 ## Error Handling
 
-All endpoints return standardized responses using the `ApiResponse` class. The controller does not handle exceptions directly; error handling is managed by Spring's exception handling mechanisms and the application's global exception handler.
+All endpoints return standardized responses using the `ApiResponse` class. The controller does not handle exceptions directly; error handling is managed by a global exception handler in the application.

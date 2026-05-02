@@ -6,48 +6,38 @@ sidebar_label: JwksController
 
 # JwksController
 
-The `JwksController` is a Spring REST controller that exposes a JSON Web Key Set (JWKS) endpoint for Singpass authentication. It provides public keys in JWKS format, which clients can use to verify the signature of JWTs issued by the application.
+The `JwksController` is a Spring REST controller that exposes a JSON Web Key Set (JWKS) endpoint. This endpoint provides public keys used for verifying JSON Web Tokens (JWTs) issued by the Singpass authentication system. By serving the JWKS at the standard `/.well-known/jwks.json` path, the controller enables clients (such as API gateways or other services) to retrieve the public keys necessary for token validation.
 
 ## Purpose
 
-This controller serves the public keys required for JWT signature verification in a Singpass integration. By exposing the JWKS endpoint at `/.well-known/jwks.json`, it follows the standard OAuth 2.0 and OpenID Connect discovery pattern, allowing clients to dynamically retrieve the public keys needed to validate token signatures.
-
-## Endpoint
-
-| HTTP Method | Path                    | Description                                      |
-|-------------|-------------------------|--------------------------------------------------|
-| GET         | `/.well-known/jwks.json` | Returns the public JWKS JSON for key verification |
+- **Public Key Distribution**: Serves the public keys required to verify JWTs signed by the Singpass identity provider.
+- **Standard Endpoint**: Adheres to the well-known URI convention (`/.well-known/jwks.json`) for JWKS discovery.
+- **Caching Support**: Implements HTTP caching headers to reduce load and improve performance, with a configurable cache duration.
 
 ## Dependencies
 
-- **`ISingpassKeyProvider`**: Interface that provides the public JWKS JSON string. Injected via constructor.
+- `ISingpassKeyProvider`: Interface that provides the JWKS JSON string containing public keys.
+- Spring Web: `@RestController`, `@GetMapping`, `ResponseEntity`, `CacheControl`, `MediaType`.
 
-## Configuration
-
-- **Cache Control**: Responses are cached for 1 hour with public cache directive to improve performance and reduce load.
-- **Content Type**: Returns `application/json` media type.
-
-## Methods
+## Public Methods
 
 ### `getJwks()`
 
-Returns the public JSON Web Key Set (JWKS) as a JSON string.
+Returns the JSON Web Key Set (JWKS) as a JSON string.
 
-**Response:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| *(none)*  |      |             |
 
-| Status | Description                                      |
-|--------|--------------------------------------------------|
-| 200 OK | Returns the JWKS JSON with appropriate caching headers |
+| Return Type | Description |
+|-------------|-------------|
+| `ResponseEntity<String>` | HTTP response containing the JWKS JSON with appropriate caching and content-type headers. |
 
 **Response Headers:**
+- `Cache-Control`: `public, max-age=3600` (1 hour cache)
+- `Content-Type`: `application/json`
 
-| Header          | Value                                          |
-|-----------------|------------------------------------------------|
-| Cache-Control   | `max-age=3600, public`                         |
-| Content-Type    | `application/json`                             |
-
-**Example Response Body:**
-
+**Example Response:**
 ```json
 {
   "keys": [
@@ -62,16 +52,27 @@ Returns the public JSON Web Key Set (JWKS) as a JSON string.
 }
 ```
 
+## Configuration
+
+The controller uses the following constants:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `JWKS_ENDPOINT` | `/.well-known/jwks.json` | The URI path for the JWKS endpoint |
+| `CACHE_MAX_AGE_HOURS` | `1` | Cache duration in hours for the JWKS response |
+
 ## Usage
 
-The controller is automatically registered as a Spring bean due to the `@RestController` annotation. Clients can access the JWKS endpoint at:
+The endpoint is automatically registered by Spring Boot when the application starts. Clients can retrieve the JWKS by making a GET request to:
 
 ```
-GET https://your-domain.com/.well-known/jwks.json
+GET /.well-known/jwks.json
 ```
 
-## Security Considerations
+The response will be cached by intermediaries (CDNs, browsers) for 1 hour, after which they should re-fetch the keys.
 
-- The endpoint is public by design, as JWKS are meant to be publicly accessible for signature verification.
-- Caching is implemented to reduce server load and improve response times.
-- The actual key material is managed by the `ISingpassKeyProvider` implementation, which should handle key rotation and secure storage.
+## Notes
+
+- The actual JWKS content is delegated to the `ISingpassKeyProvider` implementation, which should handle key generation, rotation, and serialization.
+- The cache duration of 1 hour is a reasonable default for most use cases; adjust `CACHE_MAX_AGE_HOURS` based on your key rotation policy.
+- This endpoint should be publicly accessible without authentication, as it is required for token verification.

@@ -6,48 +6,51 @@ sidebar_label: ActivityResponse
 
 # ActivityResponse Record
 
-The `ActivityResponse` record is a Data Transfer Object (DTO) used to represent an `Activity` entity in API responses. It provides a lightweight, immutable representation of an activity, exposing only the fields that are safe and necessary for external clients.
+The `ActivityResponse` record is a Data Transfer Object (DTO) used to expose activity data from the API layer. It provides a simplified, immutable representation of an `Activity` entity, ensuring that internal entity details are not leaked to external consumers.
 
 ## Purpose
 
-- **Encapsulation**: Hides internal entity details while exposing a clean, stable API contract.
-- **Immutability**: As a Java `record`, all fields are final and the object is thread-safe.
-- **Conversion**: Provides a static factory method to convert an `Activity` entity into a response object.
+- **Data Transfer**: Converts `Activity` entities into a lightweight response format suitable for serialization (e.g., JSON).
+- **Encapsulation**: Hides internal entity fields and methods, exposing only the necessary attributes (`id`, `referenceId`, `name`).
+- **Immutability**: As a Java record, all fields are final and the class is thread-safe by default.
 
-## Record Fields
+## Fields
 
-| Field         | Type        | Description                                      |
-|---------------|-------------|--------------------------------------------------|
-| `id`          | `UUID`      | Unique identifier for the activity.              |
-| `referenceId` | `Integer`   | External reference ID (e.g., from a third-party system). |
-| `name`        | `String`    | Human-readable name of the activity.             |
+| Field         | Type      | Description                                      |
+|---------------|-----------|--------------------------------------------------|
+| `id`          | `UUID`    | Unique identifier for the activity.              |
+| `referenceId` | `Integer` | External reference identifier (e.g., from a third-party system). |
+| `name`        | `String`  | Human-readable name of the activity.             |
 
 ## Public Methods
 
 ### `fromActivity(Activity activity)`
 
-Converts an `Activity` entity into an `ActivityResponse` DTO.
+Converts an `Activity` entity into an `ActivityResponse` instance.
 
 **Parameters:**
 
 | Parameter  | Type       | Description                          |
 |------------|------------|--------------------------------------|
-| `activity` | `Activity` | The source entity to convert from.   |
+| `activity` | `Activity` | The source activity entity to convert. |
 
-**Returns:** `ActivityResponse` — a new immutable response object with the same `id`, `referenceId`, and `name` as the provided entity.
+**Returns:**
+
+| Type               | Description                                      |
+|--------------------|--------------------------------------------------|
+| `ActivityResponse` | A new `ActivityResponse` populated with data from the provided `Activity`. |
 
 **Example Usage:**
 
 ```java
-Activity activity = new Activity(UUID.randomUUID(), 12345, "Morning Jog");
+Activity activity = new Activity(UUID.randomUUID(), 1001, "Morning Run");
 ActivityResponse response = ActivityResponse.fromActivity(activity);
 // response.id() -> UUID
-// response.referenceId() -> 12345
-// response.name() -> "Morning Jog"
+// response.referenceId() -> 1001
+// response.name() -> "Morning Run"
 ```
 
 ## Notes
 
-- This record is part of the `com.upmatches.app.features.activity.responses` package.
-- It is designed for use in REST API controllers or service layers where entity objects should not be directly exposed.
-- The `fromActivity` method ensures a consistent mapping between the domain model and the API response layer.
+- The record automatically generates `equals()`, `hashCode()`, `toString()`, and accessor methods (e.g., `id()`, `referenceId()`, `name()`).
+- This class is part of the `com.upmatches.app.features.activity.responses` package and is intended for use in REST API controllers or service layers.

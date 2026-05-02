@@ -11,103 +11,91 @@ The `SingpassKeyProvider` class is a Spring service that manages and provides ac
 ## Purpose
 
 This service is responsible for:
-- Loading and caching Singpass private signing and encryption keys from file paths configured in `SingpassProperties`
-- Providing access to the key IDs for both signing and encryption keys
-- Generating and caching a public JWKS (JSON Web Key Set) containing the public components of both keys
-- Implementing thread-safe lazy initialization for all cached resources
+- Loading and caching Singpass private keys (signing and encryption) from file paths configured in `SingpassProperties`
+- Providing access to the public keys in JWKS (JSON Web Key Set) format
+- Ensuring thread-safe lazy initialization of keys
+- Validating key files exist and contain private components
 
 ## Public Methods
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `getSigningKey()` | `ECKey` | Returns the cached signing key, loading it from the configured file path on first access |
+| `getSigningKey()` | `ECKey` | Returns the cached signing key, loading it from the configured path if not yet loaded |
 | `getSigningKeyId()` | `String` | Returns the key ID (kid) of the signing key |
-| `getEncryptionKey()` | `ECKey` | Returns the cached encryption key, loading it from the configured file path on first access |
-| `getPublicJwksJson()` | `String` | Returns the cached public JWKS JSON string containing both signing and encryption public keys |
+| `getEncryptionKey()` | `ECKey` | Returns the cached encryption key, loading it from the configured path if not yet loaded |
+| `getPublicJwksJson()` | `String` | Returns the public keys in JWKS JSON format, building it from the signing and encryption public keys |
 
-## Method Details
+## Constructor
 
-### `getSigningKey()`
+### `SingpassKeyProvider(SingpassProperties properties)`
 
-Returns the Singpass signing key. Uses double-checked locking for thread-safe lazy initialization.
+Creates a new instance with the provided configuration properties.
 
-**Returns:** `ECKey` - The signing key loaded from the configured private signing key path.
+**Parameters:**
+- `properties` - Configuration properties containing paths to the private key files
 
-**Throws:** `IllegalStateException` if:
-- The signing key file path is not configured
-- The signing key file does not exist at the configured path
-- The signing key file is missing the private component (d)
-- An I/O error occurs while reading the file
-- The file content cannot be parsed as a valid JWK
+## Key Features
 
-### `getSigningKeyId()`
+### Thread-Safe Lazy Loading
+All key access methods use double-checked locking with `volatile` fields to ensure thread-safe lazy initialization while maintaining good performance.
 
-Returns the key ID (kid) of the signing key.
+### Key Validation
+The `loadKey` method performs several validations:
+- Checks that the file path is configured (not null or blank)
+- Verifies the key file exists on the filesystem
+- Ensures the parsed key contains a private component
 
-**Returns:** `String` - The key ID from the signing key.
-
-### `getEncryptionKey()`
-
-Returns the Singpass encryption key. Uses double-checked locking for thread-safe lazy initialization.
-
-**Returns:** `ECKey` - The encryption key loaded from the configured private encryption key path.
-
-**Throws:** `IllegalStateException` if:
-- The encryption key file path is not configured
-- The encryption key file does not exist at the configured path
-- The encryption key file is missing the private component (d)
-- An I/O error occurs while reading the file
-- The file content cannot be parsed as a valid JWK
-
-### `getPublicJwksJson()`
-
-Returns the public JWKS JSON string containing both the signing and encryption public keys. Uses double-checked locking for thread-safe lazy initialization.
-
-**Returns:** `String` - A JSON string representing the JWK Set containing both public keys.
+### Error Handling
+The service throws `IllegalStateException` with descriptive messages for various failure scenarios:
+- Missing key file path configuration
+- Key file not found at specified path
+- Missing private component in key file
+- IO errors reading key file
+- Parse errors parsing JWK format
 
 ## Private Methods
 
 ### `loadKey(String filePath, String use)`
-
-Loads and parses an EC key from a JSON file.
+Loads and parses an EC private key from a JSON file.
 
 **Parameters:**
-- `filePath` - The path to the key file
-- `use` - The intended use of the key ("sig" for signing, "enc" for encryption)
+- `filePath` - Path to the JWK JSON file
+- `use` - Key usage description ("sig" or "enc") for error messages
 
-**Returns:** `ECKey` - The parsed EC key with private component
+**Returns:** `ECKey` - The parsed private key
 
-**Throws:** `IllegalStateException` for various error conditions as described above.
+**Throws:** `IllegalStateException` if validation fails or parsing errors occur
 
 ### `buildPublicJwksJson()`
-
 Builds a JWKS JSON string containing the public components of both the signing and encryption keys.
 
-**Returns:** `String` - A JSON string representing the JWK Set.
+**Returns:** `String` - JWKS JSON representation of public keys
 
 ## Dependencies
 
 - `com.nimbusds.jose.jwk.ECKey` - Nimbus JOSE+JWT library for EC key handling
-- `com.nimbusds.jose.jwk.JWKSet` - Nimbus library for JWK Set operations
-- `com.upmatches.app.features.auth.properties.SingpassProperties` - Configuration properties for Singpass key paths
+- `com.nimbusds.jose.jwk.JWKSet` - Nimbus library for JWK set management
+- `com.upmatches.app.features.auth.properties.SingpassProperties` - Application configuration properties
 - `org.slf4j.Logger` - Logging framework
-- `org.springframework.stereotype.Service` - Spring annotation for service component
+
+## Usage Example
+
+```java
+@Autowired
+private SingpassKeyProvider keyProvider;
+
+public void authenticateWithSingpass() {
+    ECKey signingKey = keyProvider.getSigningKey();
+    String signingKeyId = keyProvider.getSigningKeyId();
+    ECKey encryptionKey = keyProvider.getEncryptionKey();
+    String publicJwks = keyProvider.getPublicJwksJson();
+    
+    // Use keys for Singpass authentication
+}
+```
 
 ## Configuration
 
-The service requires the following configuration properties (typically defined in `SingpassProperties`):
-- `privateSigningKeyPath()` - File path to the private signing key in JWK format
-- `privateEncryptionKeyPath()` - File path to the private encryption key in JWK format
-
-## Thread Safety
-
-The class uses the `volatile` keyword and double-checked locking pattern to ensure thread-safe lazy initialization of all cached resources (`signingKey`, `encryptionKey`, `publicJwksJson`).
-
-## Error Handling
-
-The service provides descriptive error messages for common failure scenarios:
-- Missing key file path configuration
-- Key file not found at specified path
-- Key file missing private component
-- I/O errors reading key file
-- Parse errors for invalid JWK format
+The service expects the following properties to be configured in `SingpassProperties`:
+- `privateSigningKeyPath()` - Path to the signing private key JWK file
+- `privateEncryptionKeyPath()` - Path to the encryption private key JWK file

@@ -6,15 +6,17 @@ sidebar_label: UserAgentClassifier
 
 # UserAgentClassifier
 
-The `UserAgentClassifier` is a Spring `@Component` that provides a simple utility for classifying HTTP `User-Agent` strings into one of three client platforms: **iOS**, **Android**, or **Web**. This is commonly used in share‑link or deep‑linking features to determine the appropriate redirect or fallback behavior based on the user's device.
+The `UserAgentClassifier` class is a Spring `@Component` that provides a simple utility for classifying HTTP `User-Agent` strings into one of three client platforms: **iOS**, **Android**, or **Web**. This is commonly used in share-link or deep-linking workflows to determine the appropriate redirect or fallback behavior based on the user's device.
 
 ## Enum: `ClientPlatform`
 
-| Enum Constant | Description |
-|---------------|-------------|
-| `IOS`         | Represents Apple mobile devices (iPhone, iPad, iPod). |
-| `ANDROID`     | Represents Android devices. |
-| `WEB`         | Represents all other clients (desktop browsers, unknown, or missing User‑Agent). |
+The class defines an inner enum `ClientPlatform` with three constants:
+
+| Constant | Description |
+|----------|-------------|
+| `IOS`    | Represents Apple mobile devices (iPhone, iPad, iPod) |
+| `ANDROID`| Represents Android devices |
+| `WEB`    | Represents all other clients (desktop browsers, unknown, or missing User-Agent) |
 
 ## Public Methods
 
@@ -22,42 +24,38 @@ The `UserAgentClassifier` is a Spring `@Component` that provides a simple utilit
 
 Classifies the given `User-Agent` string into a `ClientPlatform`.
 
-| Parameter   | Type     | Description |
-|-------------|----------|-------------|
-| `userAgent` | `String` | The raw `User-Agent` header value from an HTTP request. May be `null` or blank. |
+| Parameter  | Type     | Description |
+|------------|----------|-------------|
+| `userAgent`| `String` | The HTTP `User-Agent` header value to classify. Can be `null` or blank. |
 
-| Returns          | Description |
-|------------------|-------------|
-| `ClientPlatform` | The detected platform: `ANDROID` if the string contains "Android"; `IOS` if it contains "iPhone", "iPad", or "iPod"; otherwise `WEB`. |
+**Returns:** `ClientPlatform` – one of `IOS`, `ANDROID`, or `WEB`.
 
-**Behavior details:**
-- If `userAgent` is `null` or blank, the method returns `ClientPlatform.WEB`.
-- The check for Android is performed before the iOS check.
-- The method uses simple substring matching (case‑sensitive) against the predefined tokens.
+**Behavior:**
+- If `userAgent` is `null` or blank, returns `WEB`.
+- If the string contains `"Android"` (case-sensitive), returns `ANDROID`.
+- If the string contains `"iPhone"`, `"iPad"`, or `"iPod"` (case-sensitive), returns `IOS`.
+- Otherwise, returns `WEB`.
 
-## Usage Example
+**Example usage:**
 
 ```java
-@Autowired
-private UserAgentClassifier classifier;
+UserAgentClassifier classifier = new UserAgentClassifier();
 
-public void handleRequest(String userAgent) {
-    UserAgentClassifier.ClientPlatform platform = classifier.classify(userAgent);
-    switch (platform) {
-        case IOS:
-            // redirect to App Store or open deep link
-            break;
-        case ANDROID:
-            // redirect to Google Play or open deep link
-            break;
-        case WEB:
-            // show web fallback page
-            break;
-    }
-}
+ClientPlatform platform1 = classifier.classify("Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36");
+// platform1 == ClientPlatform.ANDROID
+
+ClientPlatform platform2 = classifier.classify("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)");
+// platform2 == ClientPlatform.IOS
+
+ClientPlatform platform3 = classifier.classify("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+// platform3 == ClientPlatform.WEB
+
+ClientPlatform platform4 = classifier.classify(null);
+// platform4 == ClientPlatform.WEB
 ```
 
 ## Notes
 
-- The classification is intentionally simple and does not handle all edge cases (e.g., Android tablets, Windows Phone, or custom browsers). For production use with more complex requirements, consider a dedicated User‑Agent parsing library.
-- The component is stateless and thread‑safe.
+- The detection is based on simple substring matching and is **case-sensitive**. For example, `"android"` (lowercase) would not match `"Android"`.
+- The class is stateless and thread-safe.
+- It is annotated with `@Component`, making it eligible for automatic detection and dependency injection in a Spring Boot application.

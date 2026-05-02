@@ -6,48 +6,41 @@ sidebar_label: GameDateAvailabilityResponse
 
 # GameDateAvailabilityResponse
 
-The `GameDateAvailabilityResponse` is a Java record that represents the availability status of a game on a specific date. It is used to communicate whether a particular date has an associated game scheduled, typically in response to queries about game schedules or date availability.
+The `GameDateAvailabilityResponse` is a Java record that represents the availability status of a game for a specific date. It is used as a response object in the game-related features of the application, typically to indicate whether a game exists or is scheduled on a given date.
 
 ## Purpose
 
-This record serves as a lightweight data transfer object (DTO) for conveying two key pieces of information:
-- The date being queried.
-- Whether a game exists on that date.
+This record provides a simple, immutable data carrier for communicating date-based game availability from the backend to the client. It is commonly used in API responses where the client needs to know, for a particular date, whether a game is present (e.g., for calendar views, scheduling, or availability checks).
 
-It is commonly used in REST API responses or internal service layers to provide a clear, immutable representation of date-based game availability.
+## Record Components
 
-## Record Definition
+| Component | Type | Description |
+|-----------|------|-------------|
+| `date` | `LocalDate` | The date for which game availability is being reported. |
+| `hasGame` | `Boolean` | Indicates whether a game exists on the specified date. `true` if a game is present, `false` otherwise. |
 
-```java
-public record GameDateAvailabilityResponse(
-    LocalDate date,
-    Boolean hasGame
-) {}
-```
+## Usage
 
-## Fields
-
-| Field    | Type        | Description                                                                 |
-|----------|-------------|-----------------------------------------------------------------------------|
-| `date`   | `LocalDate` | The specific date being evaluated for game availability.                    |
-| `hasGame`| `Boolean`   | Indicates whether a game is scheduled on the given date (`true` or `false`).|
-
-## Usage Example
+This record is typically returned by service or controller methods that query game schedules or availability. For example:
 
 ```java
-// Creating a response indicating a game exists on 2024-12-25
 GameDateAvailabilityResponse response = new GameDateAvailabilityResponse(
-    LocalDate.of(2024, 12, 25),
+    LocalDate.of(2025, 4, 15),
     true
 );
+```
 
-// Accessing fields
-LocalDate date = response.date();       // 2024-12-25
-Boolean hasGame = response.hasGame();   // true
+The response can then be serialized to JSON (e.g., using Jackson) for API consumption:
+
+```json
+{
+  "date": "2025-04-15",
+  "hasGame": true
+}
 ```
 
 ## Notes
 
-- As a Java record, this class is immutable and provides automatic implementations of `equals()`, `hashCode()`, and `toString()`.
-- The `hasGame` field uses the wrapper type `Boolean` rather than the primitive `boolean`, allowing for `null` values if the availability status is unknown or not applicable.
-- This record is part of the `com.upmatches.app.features.game.responses` package and is intended for use within the game scheduling feature of the application.
+- The record is immutable and thread-safe by design.
+- The `hasGame` field is of type `Boolean` (object) rather than `boolean` (primitive), allowing for `null` values if the availability status is unknown or not applicable.
+- The `date` field uses `java.time.LocalDate`, ensuring proper date handling without time or timezone components.

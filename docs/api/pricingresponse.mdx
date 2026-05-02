@@ -6,65 +6,65 @@ sidebar_label: PricingResponse
 
 # PricingResponse
 
-The `PricingResponse` class is a Java record that serves as a Data Transfer Object (DTO) for exposing pricing information in API responses. It encapsulates various pricing details such as the pricing mode, currency, and different price components (flat, male, female, base, and per-shuttle prices). The class also provides a static factory method to convert a domain `Pricing` object into this response format.
+The `PricingResponse` record is a Data Transfer Object (DTO) used to expose pricing information from the backend to the client. It is designed to be a read-only representation of the domain `Pricing` object, ensuring that internal domain logic is not exposed directly to API consumers.
 
 ## Purpose
 
-- **Data Transfer**: Transfers pricing data from the backend to the client in a structured, immutable format.
-- **Decoupling**: Separates the internal domain model (`Pricing`) from the API response, allowing changes to the domain without affecting the API contract.
-- **Null Safety**: The factory method handles `null` input gracefully by returning `null`.
+- **Decoupling**: Separates the internal domain model (`Pricing`) from the API response layer.
+- **Immutability**: As a Java `record`, all fields are final and the object is immutable after creation.
+- **Null Safety**: The static factory method `fromPricing` safely handles `null` input by returning `null`.
 
-## Record Components
+## Fields
 
-| Component       | Type          | Description                                                                 |
-|-----------------|---------------|-----------------------------------------------------------------------------|
-| `mode`          | `PricingMode` | The pricing mode (e.g., FLAT, PER_SHUTTLE, etc.).                          |
-| `currency`      | `String`      | The currency code (e.g., "USD", "EUR").                                    |
-| `flatPrice`     | `BigDecimal`  | The flat price for the service.                                            |
-| `malePrice`     | `BigDecimal`  | The price for male participants.                                           |
-| `femalePrice`   | `BigDecimal`  | The price for female participants.                                         |
-| `basePrice`     | `BigDecimal`  | The base price before any additional charges.                              |
-| `pricePerShuttle` | `BigDecimal`| The price per shuttle (e.g., per ride or per shuttle service).             |
+| Field | Type | Description |
+|-------|------|-------------|
+| `mode` | `PricingMode` | The pricing mode (e.g., FLAT, PER_SHUTTLE, GENDER_BASED). |
+| `currency` | `String` | The currency code (e.g., "USD", "EUR"). |
+| `flatPrice` | `BigDecimal` | The flat price for the entire service. |
+| `malePrice` | `BigDecimal` | The price for male participants (used in gender-based pricing). |
+| `femalePrice` | `BigDecimal` | The price for female participants (used in gender-based pricing). |
+| `basePrice` | `BigDecimal` | The base price before any adjustments. |
+| `pricePerShuttle` | `BigDecimal` | The price per shuttle (used in per-shuttle pricing). |
 
-## Public Methods
+## Methods
 
 ### `fromPricing(Pricing pricing)`
 
-Creates a `PricingResponse` instance from a domain `Pricing` object.
+Converts a domain `Pricing` object into a `PricingResponse` DTO.
 
 **Parameters:**
 
-| Parameter | Type      | Description                                      |
-|-----------|-----------|--------------------------------------------------|
+| Parameter | Type | Description |
+|-----------|------|-------------|
 | `pricing` | `Pricing` | The domain pricing object to convert. Can be `null`. |
 
 **Returns:**
 
-| Type               | Description                                                                 |
-|--------------------|-----------------------------------------------------------------------------|
-| `PricingResponse`  | A new `PricingResponse` instance populated with data from the `Pricing` object, or `null` if the input is `null`. |
+| Type | Description |
+|------|-------------|
+| `PricingResponse` | A new `PricingResponse` instance, or `null` if the input is `null`. |
 
-**Example Usage:**
+**Example usage:**
 
 ```java
 Pricing domainPricing = new Pricing(
     PricingMode.FLAT,
     new Currency("USD"),
-    new BigDecimal("100.00"),
     new BigDecimal("50.00"),
-    new BigDecimal("40.00"),
-    new BigDecimal("30.00"),
-    new BigDecimal("10.00")
+    null,
+    null,
+    new BigDecimal("50.00"),
+    null
 );
 
 PricingResponse response = PricingResponse.fromPricing(domainPricing);
 // response.mode() == PricingMode.FLAT
 // response.currency() == "USD"
-// response.flatPrice() == 100.00
+// response.flatPrice() == 50.00
 ```
 
 ## Notes
 
-- The record is immutable by design, ensuring thread safety and consistency.
-- The `currency` field is extracted from the `Pricing` object's `currency().value()` method, which returns a `String`.
-- All price fields use `BigDecimal` for precise monetary calculations, avoiding floating-point rounding errors.
+- The `currency` field is extracted from the domain's `Currency` value object using `.value()`.
+- All monetary values are represented as `BigDecimal` to avoid floating-point precision issues.
+- This record is typically used in REST API responses and serialized to JSON automatically by frameworks like Spring Boot.

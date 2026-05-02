@@ -1,41 +1,35 @@
 ---
 id: update-game-request
-title: UpdateGameRequest Record
+title: Update Game Request
 sidebar_label: UpdateGameRequest
 ---
 
-# UpdateGameRequest Record
+# UpdateGameRequest
 
-The `UpdateGameRequest` record is a Java data transfer object (DTO) used to encapsulate the fields that can be updated for an existing game entity. It leverages Jakarta Bean Validation annotations to enforce constraints on the input data, ensuring that only valid updates are processed by the application.
-
-This record is part of the `com.upmatches.app.features.game.requests` package and is designed to work with the game management features of the UpMatches application.
+The `UpdateGameRequest` record is a Java DTO (Data Transfer Object) used to encapsulate the data required for updating an existing game entity in the UpMatches application. It leverages Jakarta Bean Validation annotations to enforce data integrity and business rules before the request reaches the service layer.
 
 ## Purpose
 
-The primary purpose of `UpdateGameRequest` is to provide a structured and validated request payload for updating game details. By using a Java record, the class is immutable, concise, and automatically provides `equals()`, `hashCode()`, and `toString()` methods. The validation annotations ensure that the data meets business rules before being passed to the service layer.
+This record serves as the input contract for the game update endpoint. It allows partial updates by making all fields optional (nullable). Each field that is provided is validated according to the constraints defined in the record declaration.
 
-## Fields
-
-The record contains the following fields, each with specific validation constraints:
+## Record Fields
 
 | Field | Type | Validation | Description |
 |-------|------|------------|-------------|
-| `venueId` | `Long` | None | The identifier of the venue where the game takes place. |
-| `skillLevelFromId` | `Long` | None | The minimum skill level required for participants. |
-| `skillLevelToId` | `Long` | None | The maximum skill level required for participants. |
-| `currency` | `String` | `@Pattern(regexp = "^[A-Z]{3}$")` | A 3-letter ISO-4217 currency code (e.g., USD, EUR). |
-| `price` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer = 8, fraction = 2)` | The price of the game, must be >= 0, with up to 8 digits and 2 decimal places. |
-| `pricing` | `PricingRequest` | `@Valid` | A nested pricing request object that is validated recursively. |
-| `slots` | `Integer` | `@Min(1)`, `@Max(100)` | The number of available slots for the game, between 1 and 100. |
-| `startTime` | `Instant` | None | The start time of the game. |
-| `endTime` | `Instant` | None | The end time of the game. |
-| `visibility` | `GameVisibility` | None | The visibility setting of the game (e.g., PUBLIC, PRIVATE). |
-| `gameType` | `GameType` | None | The type of game (e.g., SOCCER, BASKETBALL). |
-| `remark` | `String` | `@Size(max = 500)` | An optional remark about the game, up to 500 characters. |
+| `venueId` | `Long` | None | Identifier of the venue where the game takes place. |
+| `skillLevelFromId` | `Long` | None | Minimum skill level identifier for participants. |
+| `skillLevelToId` | `Long` | None | Maximum skill level identifier for participants. |
+| `currency` | `String` | `@Pattern(regexp = "^[A-Z]{3}$")` | ISO-4217 three-letter currency code (e.g., USD, EUR). |
+| `price` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price of the game, must be non-negative with up to 8 integer digits and 2 decimal places. |
+| `pricing` | `PricingRequest` | `@Valid` | Nested pricing details object, validated recursively. |
+| `slots` | `Integer` | `@Min(1)`, `@Max(100)` | Number of available slots for the game (1–100). |
+| `startTime` | `Instant` | None | Start time of the game in UTC. |
+| `endTime` | `Instant` | None | End time of the game in UTC. |
+| `visibility` | `GameVisibility` | None | Visibility setting for the game (e.g., PUBLIC, PRIVATE). |
+| `gameType` | `GameType` | None | Type of game (e.g., SOCCER, BASKETBALL). |
+| `remark` | `String` | `@Size(max = 500)` | Optional remark or note about the game, max 500 characters. |
 
 ## Usage Example
-
-Below is an example of how to create an instance of `UpdateGameRequest`:
 
 ```java
 UpdateGameRequest request = new UpdateGameRequest(
@@ -44,30 +38,25 @@ UpdateGameRequest request = new UpdateGameRequest(
     5L,                    // skillLevelToId
     "USD",                 // currency
     new BigDecimal("25.00"), // price
-    new PricingRequest(...), // pricing (nested object)
-    20,                    // slots
+    new PricingRequest(...), // pricing
+    10,                    // slots
     Instant.now(),         // startTime
     Instant.now().plus(2, ChronoUnit.HOURS), // endTime
     GameVisibility.PUBLIC, // visibility
     GameType.SOCCER,       // gameType
-    "Bring your own water bottle." // remark
+    "Bring your own water bottle" // remark
 );
 ```
 
-## Validation Summary
+## Validation Behavior
 
-The record uses Jakarta Bean Validation annotations to enforce the following rules:
-
-- **Currency**: Must be exactly 3 uppercase letters (ISO-4217 format).
-- **Price**: Must be a non-negative decimal with up to 8 integer digits and 2 fraction digits.
-- **Slots**: Must be between 1 and 100 (inclusive).
-- **Remark**: Maximum length of 500 characters.
-- **Pricing**: The nested `PricingRequest` object is validated recursively via `@Valid`.
-
-If any validation fails, a `ConstraintViolationException` will be thrown, which should be handled by the application's exception handling mechanism.
+- All fields are optional (nullable) to support partial updates.
+- When a field is provided, it must pass its associated validation constraints.
+- The `pricing` field is validated recursively via `@Valid`.
+- Validation errors are thrown as `ConstraintViolationException` by the Jakarta Bean Validation framework.
 
 ## Related Components
 
-- **PricingRequest**: A nested record that defines pricing details, validated via `@Valid`.
-- **GameVisibility**: An enum representing the visibility options for a game.
-- **GameType**: An enum representing the different types of games supported by the application.
+- **PricingRequest**: A nested record containing pricing details, validated when provided.
+- **GameVisibility**: Enum defining visibility options (PUBLIC, PRIVATE, etc.).
+- **GameType**: Enum defining game types (SOCCER, BASKETBALL, etc.).

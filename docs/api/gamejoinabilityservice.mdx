@@ -14,7 +14,7 @@ The `GameJoinabilityService` class is a Spring service that determines whether a
 - **Annotations:** `@Service`, `@Transactional(readOnly = true)`
 - **Implements:** `IGameJoinabilityService`
 - **Key Dependencies:**
-  - `GameParticipantRepository` – for checking user participation and overlaps
+  - `GameParticipantRepository` – for checking participant status and overlaps
   - `GameShareAccessRepository` – for verifying private game access
   - `IGameLookupService` – for retrieving user information
 
@@ -26,66 +26,78 @@ Checks if the user's skill levels are incompatible with the game's required skil
 
 | Parameter | Type   | Description |
 |-----------|--------|-------------|
-| `game`    | `Game` | The game entity to check |
-| `user`    | `User` | The user entity to evaluate |
+| `game`    | `Game` | The game to check skill requirements for |
+| `user`    | `User` | The user whose skills are evaluated |
 
-**Returns:** `boolean` – `true` if the user has skill levels that are out of the game's range and no matching skill levels; `false` otherwise.
+**Returns:** `boolean` – `true` if the user has skill levels that are out of the game's range and no matching skills; `false` otherwise.
 
 ### `compute(Game game, long participantCount, UUID userId)`
 
-Computes the joinability response for a single game and user.
+Computes the joinability status for a single game and user.
 
-| Parameter          | Type    | Description |
-|--------------------|---------|-------------|
-| `game`             | `Game`  | The game entity |
-| `participantCount` | `long`  | Current number of participants in the game |
-| `userId`           | `UUID`  | The user's unique identifier |
+| Parameter          | Type   | Description |
+|--------------------|--------|-------------|
+| `game`             | `Game` | The game to evaluate |
+| `participantCount` | `long` | Current number of participants in the game |
+| `userId`           | `UUID` | The user's unique identifier |
 
-**Returns:** `ViewerJoinabilityResponse` – A response object indicating whether the user can join, or `null` if `userId` is `null`.
+**Returns:** `ViewerJoinabilityResponse` – Contains the joinability decision (allowed or blocked) and any warnings. Returns `null` if `userId` is `null`.
 
 ### `computeBatch(List<Game> games, Map<UUID, Long> participantCountsByGameId, UUID userId)`
 
-Computes joinability responses for multiple games in a batch, optimizing database queries.
+Computes joinability status for multiple games in a single batch operation.
 
-| Parameter                    | Type                | Description |
-|------------------------------|---------------------|-------------|
-| `games`                      | `List<Game>`        | List of games to evaluate |
-| `participantCountsByGameId`  | `Map<UUID, Long>`   | Map of game IDs to their participant counts |
-| `userId`                     | `UUID`              | The user's unique identifier |
+| Parameter                   | Type                | Description |
+|-----------------------------|---------------------|-------------|
+| `games`                     | `List<Game>`        | List of games to evaluate |
+| `participantCountsByGameId` | `Map<UUID, Long>`   | Map of game IDs to their participant counts |
+| `userId`                    | `UUID`              | The user's unique identifier |
 
-**Returns:** `Map<UUID, ViewerJoinabilityResponse>` – A map of game IDs to their corresponding joinability responses. Returns an empty map if `games` is null/empty or `userId` is null.
+**Returns:** `Map<UUID, ViewerJoinabilityResponse>` – A map of game IDs to their corresponding joinability responses. Returns an empty map if `games` is empty or `userId` is `null`.
 
 ## Internal Logic
 
-The service evaluates joinability based on the following criteria, in order:
+The service evaluates the following conditions in order to determine joinability:
 
-1. **Already Joined** – If the user is already an active participant, joining is blocked.
-2. **Past or Inactive Game** – Games that have ended or are inactive cannot be joined.
-3. **Private Access Denied** – Private games require explicit access via `GameShareAccessRepository`.
-4. **Game Full** – If the participant count meets or exceeds the game's capacity.
-5. **Time Overlap** – If the user has another active game that overlaps in time.
+1. **Already Joined** – The user is already an active participant.
+2. **Past or Inactive Game** – The game is no longer joinable.
+3. **Private Access Denied** – The game is private and the user has no access.
+4. **Game Full** – The participant limit has been reached.
+5. **Time Overlap** – The game time conflicts with another joined game.
 
-Additionally, the service generates warnings for:
-- **IS_ORGANIZER** – The user is the game organizer (cannot join their own game).
-- **SKILL_MISMATCH** – The user's skill levels do not match the game's requirements.
+Additionally, the service checks for warnings:
+- **Is Organizer** – The user is the game organizer.
+- **Skill Mismatch** – The user's skills do not match the game's requirements.
 
-## Private Records
+## Private Helpers
+
+### `hasSkillMatchableInputs(Game game, User user)`
+
+Validates that both the game and user have the necessary data for skill comparison.
+
+### `tallyUserSkills(User user, UUID activityId, int fromOrder, int toOrder)`
+
+Counts how many of the user's skills fall within or outside the game's required range.
+
+### `isPrivateAccessDenied(Game game, UUID userId, boolean isOrganizer)`
+
+Checks if a private game is inaccessible to the user (unless they are the organizer).
+
+### `hasOverlap(Game game, List<TimeRange> joinedRanges)`
+
+Determines if the game's time range overlaps with any of the user's other joined games.
+
+## Internal Records
 
 ### `SkillLevelTally`
 
-A simple record to hold the result of skill level evaluation.
-
-| Field          | Type      | Description |
-|----------------|-----------|-------------|
-| `hasMatching`  | `boolean` | Whether the user has at least one matching skill level |
-| `hasOutOfRange`| `boolean` | Whether the user has at least one skill level outside the game's range |
+A simple record holding two boolean flags:
+- `hasMatching` – user has at least one skill in the required range
+- `hasOutOfRange` – user has at least one skill outside the required range
 
 ### `TimeRange`
 
-Represents a time interval for overlap detection.
-
-| Field    | Type       | Description |
-|----------|------------|-------------|
-| `gameId` | `UUID`     | The game's unique identifier |
-| `start`  | `Instant`  | Start time of the game |
-| `end`    | `Instant`  | End time of the game |
+A record representing a time interval for a joined game:
+- `gameId` – the game's unique identifier
+- `start` – the start time
+- `end` – the end time

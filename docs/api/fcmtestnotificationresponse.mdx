@@ -6,32 +6,20 @@ sidebar_label: FcmTestNotificationResponse
 
 # FcmTestNotificationResponse
 
-The `FcmTestNotificationResponse` is a Java record that represents the response payload returned after sending a test notification via Firebase Cloud Messaging (FCM). It encapsulates the key details of the sent notification, including the FCM message identifier, the target email address, the notification type, and the content fields (title, body, badge).
+The `FcmTestNotificationResponse` record represents the response payload returned after sending a test notification via Firebase Cloud Messaging (FCM). It encapsulates the key details of the sent notification, including its unique identifier, the recipient email, notification type, and display content.
 
-This record is typically used in the notification feature of the application to confirm that a test notification was successfully dispatched and to provide the caller with the resulting metadata.
+This record is typically used in test or debugging scenarios to confirm that a notification was successfully dispatched and to inspect its properties.
 
-## Record Definition
+## Record Components
 
-```java
-public record FcmTestNotificationResponse(
-    String messageId,
-    String emailId,
-    NotificationType type,
-    String title,
-    String body,
-    Integer badge)
-```
-
-## Constructor Parameters
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `messageId` | `String` | The unique identifier assigned by FCM for the sent notification. |
-| `emailId` | `String` | The email address of the recipient to whom the test notification was sent. |
-| `type` | `NotificationType` | The type of notification (e.g., `PROMOTIONAL`, `TRANSACTIONAL`), defined by the `NotificationType` enum. |
-| `title` | `String` | The title of the notification message. |
-| `body` | `String` | The body content of the notification message. |
-| `badge` | `Integer` | The badge count to display on the app icon (nullable). |
+| Component   | Type             | Description                                                                 |
+|-------------|------------------|-----------------------------------------------------------------------------|
+| `messageId` | `String`         | The unique identifier assigned by FCM to the sent notification message.     |
+| `emailId`   | `String`         | The email address of the recipient user who received the test notification. |
+| `type`      | `NotificationType` | The category or type of the notification (e.g., `PUSH`, `IN_APP`).        |
+| `title`     | `String`         | The title text displayed in the notification.                               |
+| `body`      | `String`         | The body or content text displayed in the notification.                     |
+| `badge`     | `Integer`        | The badge count to display on the app icon (nullable).                      |
 
 ## Public Methods
 
@@ -47,36 +35,44 @@ public static FcmTestNotificationResponse of(
     Integer badge)
 ```
 
-A static factory method that creates a new `FcmTestNotificationResponse` instance.
+Creates a new `FcmTestNotificationResponse` instance with the specified values.
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `messageId` | `String` | The FCM message identifier. |
-| `emailId` | `String` | The recipient email address. |
-| `type` | `NotificationType` | The notification type. |
-| `title` | `String` | The notification title. |
-| `body` | `String` | The notification body. |
-| `badge` | `Integer` | The badge count (nullable). |
+| Parameter   | Type             | Description                                                                 |
+|-------------|------------------|-----------------------------------------------------------------------------|
+| `messageId` | `String`         | The unique identifier assigned by FCM to the sent notification message.     |
+| `emailId`   | `String`         | The email address of the recipient user who received the test notification. |
+| `type`      | `NotificationType` | The category or type of the notification (e.g., `PUSH`, `IN_APP`).        |
+| `title`     | `String`         | The title text displayed in the notification.                               |
+| `body`      | `String`         | The body or content text displayed in the notification.                     |
+| `badge`     | `Integer`        | The badge count to display on the app icon (nullable).                      |
 
-**Returns:** `FcmTestNotificationResponse` — a new instance with the provided values.
+**Returns:** A new `FcmTestNotificationResponse` instance.
 
-## Usage Example
+**Example Usage:**
 
 ```java
 FcmTestNotificationResponse response = FcmTestNotificationResponse.of(
     "fcm_msg_12345",
     "user@example.com",
-    NotificationType.PROMOTIONAL,
-    "Special Offer!",
-    "Check out our latest deals.",
-    5
+    NotificationType.PUSH,
+    "New Match!",
+    "You have a new match with Jane.",
+    1
 );
 ```
 
-## Notes
+## Inherited Record Methods
 
-- The `badge` field is nullable (`Integer`), allowing it to be `null` if no badge count is applicable.
-- The `NotificationType` enum is expected to be defined in the `com.upmatches.app.features.notification.enums` package.
-- This record is immutable and thread-safe by design, as all fields are final.
+As a Java `record`, `FcmTestNotificationResponse` automatically provides:
+
+- **`messageId()`** – Returns the `messageId` value.
+- **`emailId()`** – Returns the `emailId` value.
+- **`type()`** – Returns the `type` value.
+- **`title()`** – Returns the `title` value.
+- **`body()`** – Returns the `body` value.
+- **`badge()`** – Returns the `badge` value.
+- **`toString()`** – Returns a string representation of the record.
+- **`equals(Object o)`** – Compares this record to another for equality based on all components.
+- **`hashCode()`** – Returns a hash code based on all components.

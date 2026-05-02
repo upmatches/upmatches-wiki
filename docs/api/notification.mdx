@@ -8,62 +8,59 @@ sidebar_label: Notification
 
 The `Notification` class is a JPA entity that represents a notification within the UpMatches application. It is mapped to the `notifications` database table and is responsible for storing and managing notification data for users.
 
-## Purpose
+This entity follows a domain-driven design approach, encapsulating notification creation and state management logic within the entity itself. It uses a static factory method for object creation and provides a dedicated method for marking notifications as read.
 
-This entity serves as the core data model for the notification system. It captures all relevant information about a notification, including:
-- The recipient user
-- The type of notification
-- The notification content (title and message)
-- Optional resource references (e.g., a specific match or message)
-- Read status and timestamps
+## Entity Overview
 
-The class provides factory methods for creating new notifications and a method to mark notifications as read.
+The `Notification` entity is designed to be immutable after creation, with the exception of the read status. It leverages Lombok's `@Getter` annotation to provide read-only access to all fields and uses a protected no-argument constructor (required by JPA) to prevent direct instantiation.
 
-## Entity Details
+### Key Design Decisions
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `id` | `UUID` | Primary key, auto-generated using UUID strategy |
-| `recipient` | `User` | The user who receives the notification (Many-to-One relationship) |
-| `type` | `NotificationType` | Enum indicating the notification type (stored as string) |
-| `title` | `String` | Short title of the notification (max 255 characters) |
-| `message` | `String` | Full notification message (TEXT column) |
-| `resourceType` | `String` | Optional type of the related resource (max 64 characters) |
+- **Static Factory Method**: The `create()` method serves as the primary way to instantiate a `Notification`, ensuring all required fields are set and the initial state is correctly configured.
+- **Encapsulated State Management**: The `markRead()` method handles the logic of updating the read status and timestamp, preventing inconsistent state changes.
+- **Automatic Timestamps**: The `@PrePersist` callback automatically sets the `createdAt` timestamp and ensures the `isRead` field has a default value before persistence.
+
+## Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `UUID` | Primary key, automatically generated using UUID strategy |
+| `recipient` | `User` | The user who receives the notification (many-to-one relationship) |
+| `type` | `NotificationType` | The type of notification, stored as a string in the database |
+| `title` | `String` | The notification title (max 255 characters) |
+| `message` | `String` | The notification message body (TEXT column) |
+| `resourceType` | `String` | Optional type of the related resource (e.g., "match", "message") |
 | `resourceId` | `UUID` | Optional ID of the related resource |
 | `isRead` | `Boolean` | Flag indicating whether the notification has been read |
-| `readAt` | `Instant` | Timestamp when the notification was read |
+| `readAt` | `Instant` | Timestamp when the notification was marked as read |
 | `createdAt` | `Instant` | Timestamp when the notification was created (non-updatable) |
 
 ## Public Methods
 
 ### `create(User recipient, NotificationType type, String title, String message, String resourceType, UUID resourceId)`
 
-Static factory method to create a new `Notification` instance.
+Creates a new `Notification` instance with the specified parameters.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `recipient` | `User` | The user who will receive the notification |
 | `type` | `NotificationType` | The type of notification |
 | `title` | `String` | The notification title |
-| `message` | `String` | The notification message body |
-| `resourceType` | `String` | Optional type of the related resource (can be null) |
-| `resourceId` | `UUID` | Optional ID of the related resource (can be null) |
+| `message` | `String` | The notification message |
+| `resourceType` | `String` | The type of related resource (can be null) |
+| `resourceId` | `UUID` | The ID of the related resource (can be null) |
 
 **Returns:** `Notification` - A new notification instance with `isRead` set to `false`.
 
 ### `markRead()`
 
-Marks the notification as read. If the notification is already marked as read, this method does nothing. When called, it sets `isRead` to `true` and records the current timestamp in `readAt`.
+Marks the notification as read. If the notification is already marked as read, this method does nothing. Otherwise, it sets `isRead` to `true` and records the current timestamp in `readAt`.
 
 **Parameters:** None
 
 **Returns:** `void`
-
-## Lifecycle Callbacks
-
-### `onCreate()`
-
-A `@PrePersist` callback that automatically sets the `createdAt` timestamp to the current time and initializes `isRead` to `false` if it is null. This ensures that every notification has a creation timestamp and a default read status before being persisted to the database.
 
 ## Usage Example
 
@@ -74,7 +71,7 @@ Notification notification = Notification.create(
     recipient,
     NotificationType.MATCH,
     "New Match!",
-    "You have a new match with Sarah.",
+    "You have a new match with Jane Doe",
     "match",
     matchId
 );
@@ -86,3 +83,20 @@ notificationRepository.save(notification);
 notification.markRead();
 notificationRepository.save(notification);
 ```
+
+## Database Schema
+
+The entity maps to the `notifications` table with the following columns:
+
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `id` | `UUID` | Primary Key |
+| `recipient_id` | `UUID` | Foreign Key to `users` table, NOT NULL |
+| `type` | `VARCHAR(64)` | NOT NULL |
+| `title` | `VARCHAR(255)` | NOT NULL |
+| `message` | `TEXT` | NOT NULL |
+| `resource_type` | `VARCHAR(64)` | NULLABLE |
+| `resource_id` | `UUID` | NULLABLE |
+| `is_read` | `BOOLEAN` | NOT NULL, default FALSE |
+| `read_at` | `TIMESTAMP` | NULLABLE |
+| `created_at` | `TIMESTAMP` | NOT NULL, non-updatable |

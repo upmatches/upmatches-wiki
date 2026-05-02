@@ -6,73 +6,87 @@ sidebar_label: RestClientConfiguration
 
 # RestClientConfiguration
 
-The `RestClientConfiguration` class is a Spring `@Configuration` class that provides pre-configured `RestClient` beans for interacting with external authentication providers. It centralizes HTTP client configuration, including connection and read timeouts, and ensures that required properties are present before creating the beans.
+The `RestClientConfiguration` class is a Spring `@Configuration` class that provides pre-configured `RestClient` beans for interacting with external authentication providers. It centralizes HTTP client configuration, including timeouts and default headers, ensuring consistent behavior across the application.
 
 ## Purpose
 
 This configuration class creates three distinct `RestClient` beans, each tailored for a specific authentication service:
 
-- **Singpass**: A generic client for form-encoded requests.
-- **Auth0**: A client pre-configured with the Auth0 domain as the base URL.
-- **Apple**: A client for fetching Apple's JWKS (JSON Web Key Set) URI.
+- **Singpass**: Configured with form URL-encoded content type for OAuth2 token exchange.
+- **Auth0**: Configured with a base URL derived from the Auth0 domain property.
+- **Apple**: Configured with a custom request factory but no default base URL (the JWKS URI is used at runtime).
 
-All beans use a 30-second timeout for both connection and read operations.
+All beans share a common timeout of 30 seconds for both connection and read operations.
 
 ## Configuration Details
 
-| Property | Value |
-|----------|-------|
-| `TIMEOUT_MS` | 30000 (30 seconds) |
-| `CONTENT_TYPE` | `Content-Type` |
-| `HTTPS_PREFIX` | `https://` |
+| Property | Value | Description |
+|----------|-------|-------------|
+| `TIMEOUT_MS` | `30000` | Connection and read timeout in milliseconds |
+| `CONTENT_TYPE` | `"Content-Type"` | HTTP header name for content type |
+| `HTTPS_PREFIX` | `"https://"` | Protocol prefix for base URLs |
 
 ## Beans
 
 ### `singpassRestClient`
 
-Creates a `RestClient` bean named `"singpassRestClient"` with a default `Content-Type` header of `application/x-www-form-urlencoded`.
+Creates a `RestClient` bean named `"singpassRestClient"` with:
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None | - | No dependencies |
+- Default `Content-Type` header set to `application/x-www-form-urlencoded`
+- 30-second connection and read timeouts
+- No base URL (URLs are provided at runtime)
 
-**Returns**: `RestClient` - A configured client for Singpass authentication.
+**Returns**: `RestClient` - A configured RestClient instance for Singpass API calls.
 
 ### `auth0RestClient`
 
-Creates a `RestClient` bean named `"auth0RestClient"` with the Auth0 domain as the base URL. The domain is read from `Auth0Properties`.
+Creates a `RestClient` bean named `"auth0RestClient"` with:
+
+- Base URL constructed from the Auth0 domain property (`app.auth0.domain`)
+- 30-second connection and read timeouts
+
+**Parameters**:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `auth0Properties` | `Auth0Properties` | Configuration properties containing the Auth0 domain |
 
-**Returns**: `RestClient` - A configured client for Auth0 authentication.
+**Throws**:
 
-**Throws**: `IllegalStateException` if the Auth0 domain is not configured.
+| Exception | Condition |
+|-----------|-----------|
+| `IllegalStateException` | If the Auth0 domain is null or blank |
+
+**Returns**: `RestClient` - A configured RestClient instance for Auth0 API calls.
 
 ### `appleRestClient`
 
-Creates a `RestClient` bean named `"appleRestClient"` for fetching Apple's JWKS URI. The JWKS URI is read from `AppleProperties`.
+Creates a `RestClient` bean named `"appleRestClient"` with:
+
+- 30-second connection and read timeouts
+- No default headers or base URL (the JWKS URI is used at runtime)
+
+**Parameters**:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `appleProperties` | `AppleProperties` | Configuration properties containing the Apple JWKS URI |
 
-**Returns**: `RestClient` - A configured client for Apple authentication.
+**Throws**:
 
-**Throws**: `IllegalStateException` if the Apple JWKS URI is not configured.
+| Exception | Condition |
+|-----------|-----------|
+| `IllegalStateException` | If the Apple JWKS URI is null or blank |
+
+**Returns**: `RestClient` - A configured RestClient instance for Apple API calls.
 
 ## Private Methods
 
 ### `createRequestFactory()`
 
-Creates a `SimpleClientHttpRequestFactory` with a 30-second timeout for both connection and read operations.
+Creates a `SimpleClientHttpRequestFactory` with configured timeouts.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None | - | No parameters |
-
-**Returns**: `SimpleClientHttpRequestFactory` - A configured request factory with timeouts.
+**Returns**: `SimpleClientHttpRequestFactory` - A request factory with 30-second connection and read timeouts.
 
 ## Usage Example
 
@@ -81,10 +95,17 @@ Creates a `SimpleClientHttpRequestFactory` with a 30-second timeout for both con
 @Qualifier("auth0RestClient")
 private RestClient auth0RestClient;
 
-public void authenticateWithAuth0() {
+public void callAuth0Api() {
     String response = auth0RestClient.get()
-        .uri("/oauth/token")
+        .uri("/userinfo")
         .retrieve()
         .body(String.class);
 }
 ```
+
+## Dependencies
+
+- `AppleProperties` - Configuration properties for Apple authentication
+- `Auth0Properties` - Configuration properties for Auth0 authentication
+- Spring Web `RestClient` - HTTP client for making REST calls
+- Spring `SimpleClientHttpRequestFactory` - HTTP request factory with timeout support

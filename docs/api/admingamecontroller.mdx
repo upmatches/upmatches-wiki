@@ -4,41 +4,29 @@ title: Admin Game Controller
 sidebar_label: AdminGameController
 ---
 
-# AdminGameController
+# Admin Game Controller
 
-The `AdminGameController` is a Spring REST controller that provides administrative endpoints for managing games. It exposes a single endpoint to perform a hard delete of a game by its unique identifier.
+The `AdminGameController` is a REST controller that provides administrative endpoints for managing games in the UpMatches application. It exposes a single endpoint for hard-deleting games from the system, bypassing any soft-delete mechanisms that may be in place for regular users.
 
 ## Purpose
 
-This controller is part of the admin API and is responsible for permanently removing a game from the system. Unlike a soft delete (which marks a record as inactive), a hard delete physically removes the game data from the database.
-
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `IHardDeleteGameService` | Service | Interface defining the business logic for hard deleting a game |
-
-## Constructor
-
-| Constructor | Description |
-|-------------|-------------|
-| `AdminGameController(IHardDeleteGameService hardDeleteGameService)` | Injects the hard delete game service via constructor injection |
+This controller is designed for administrative operations only, specifically for permanently removing game records from the database. Unlike regular deletion endpoints that might mark records as inactive, this controller performs a complete removal of the game entity.
 
 ## Endpoints
 
 ### Hard Delete Game
 
-Permanently removes a game from the system.
+Permanently removes a game from the system by its unique identifier.
 
 **HTTP Method:** `DELETE`
 
-**Endpoint:** `/api/v1/admin/games/{id}`
+**URL Pattern:** `/api/v1/admin/games/{id}`
 
-**Path Parameters:**
+**Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the game to delete |
+| Parameter | Type | Location | Description |
+|-----------|------|----------|-------------|
+| `id` | `UUID` | Path | The unique identifier of the game to be permanently deleted |
 
 **Response:**
 
@@ -54,17 +42,18 @@ DELETE /api/v1/admin/games/550e8400-e29b-41d4-a716-446655440000
 
 **Example Response:**
 
-```
+```http
 HTTP/1.1 204 No Content
 ```
 
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `IHardDeleteGameService` | Service Interface | Service responsible for executing the hard delete operation |
+
 ## Usage Notes
 
-- This endpoint performs a permanent deletion. Once executed, the game data cannot be recovered.
-- The endpoint is intended for administrative use only and should be protected with appropriate authentication and authorization mechanisms.
-- The `IHardDeleteGameService` interface abstracts the underlying data access logic, allowing for different implementations (e.g., direct database deletion, event-driven deletion).
-
-## Related Components
-
-- `IHardDeleteGameService` - Service interface for hard delete operations
-- Game entity - The domain object being deleted
+- This endpoint should be protected with appropriate authentication and authorization mechanisms to ensure only authorized administrators can access it.
+- Hard deletion is irreversible; once a game is deleted, it cannot be recovered.
+- Consider implementing audit logging to track when administrators perform hard deletions.

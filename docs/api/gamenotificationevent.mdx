@@ -6,59 +6,48 @@ sidebar_label: GameNotificationEvent
 
 # GameNotificationEvent
 
-The `GameNotificationEvent` class is a Java record that represents a notification event related to a game within the UpMatches application. It encapsulates the essential data required to trigger and process game-related notifications, such as when a user performs an action on a game (e.g., liking, commenting, or sharing).
+The `GameNotificationEvent` is a Java record class that represents a notification event related to a game within the application. It is part of the notification system and is used to encapsulate the essential data required to process and dispatch game-related notifications to users.
 
-This record is immutable and thread-safe by design, leveraging Java's `record` feature to automatically generate constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods.
+## Purpose
 
-## Package
+This record serves as a data carrier for game notification events. When a game-related action occurs (e.g., a player joins, a game starts, or a game ends), an instance of `GameNotificationEvent` is created and passed through the notification pipeline. The record ensures that all necessary information—such as the game identifier, the acting user, the notification type, and the game title—is available in a structured and immutable format.
 
-`com.upmatches.app.features.notification.events`
+## Record Components
 
-## Record Definition
+The `GameNotificationEvent` record defines the following components:
 
-```java
-public record GameNotificationEvent(
-    UUID gameId,
-    UUID actorId,
-    NotificationType type,
-    String gameTitle
-) {}
-```
-
-## Components
-
-| Component    | Type             | Description                                                                 |
-|--------------|------------------|-----------------------------------------------------------------------------|
-| `gameId`     | `UUID`           | The unique identifier of the game associated with the notification.         |
-| `actorId`    | `UUID`           | The unique identifier of the user who performed the action triggering the notification. |
-| `type`       | `NotificationType` | An enum value indicating the type of notification (e.g., LIKE, COMMENT, SHARE). |
-| `gameTitle`  | `String`         | The title of the game, used for display purposes in the notification message. |
+| Component   | Type             | Description                                                                 |
+|-------------|------------------|-----------------------------------------------------------------------------|
+| `gameId`    | `UUID`           | The unique identifier of the game associated with the notification event.   |
+| `actorId`   | `UUID`           | The unique identifier of the user who triggered the notification event.     |
+| `type`      | `NotificationType` | The type of notification (e.g., GAME_START, GAME_END, PLAYER_JOIN).       |
+| `gameTitle` | `String`         | The title or name of the game for display purposes.                         |
 
 ## Usage
 
-This record is typically used in event-driven architectures where a notification service listens for `GameNotificationEvent` instances and processes them accordingly. Example usage:
+Since `GameNotificationEvent` is a Java record, it automatically provides:
+- A canonical constructor
+- Accessor methods (`gameId()`, `actorId()`, `type()`, `gameTitle()`)
+- `equals()`, `hashCode()`, and `toString()` implementations
+
+This makes it ideal for use in event-driven architectures, message queues, or notification services where immutability and data integrity are important.
+
+### Example
 
 ```java
 GameNotificationEvent event = new GameNotificationEvent(
     UUID.randomUUID(),
     UUID.randomUUID(),
-    NotificationType.LIKE,
-    "Super Adventure"
+    NotificationType.GAME_START,
+    "Chess Match #42"
 );
 
-// Access components
+// Accessing components
 UUID gameId = event.gameId();
-UUID actorId = event.actorId();
-NotificationType type = event.type();
-String gameTitle = event.gameTitle();
+String title = event.gameTitle();
 ```
 
-## Related Types
+## Dependencies
 
-- `NotificationType` – An enum located in `com.upmatches.app.features.notification.enums` that defines the possible notification categories.
-
-## Notes
-
-- The record is immutable; once created, its components cannot be changed.
-- All components are non-nullable by convention; ensure that valid UUIDs and non-null strings are provided.
-- This class is part of the notification feature module and is intended for internal use within the UpMatches application.
+- `com.upmatches.app.features.notification.enums.NotificationType` – An enum that defines the various types of game notifications.
+- `java.util.UUID` – Used for generating and representing universally unique identifiers.

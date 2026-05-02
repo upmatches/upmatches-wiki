@@ -6,166 +6,157 @@ sidebar_label: GameWebFallbackController
 
 # GameWebFallbackController
 
-The `GameWebFallbackController` is a Spring REST controller that serves HTML fallback pages for game share links. When a user opens a game link on a web browser (instead of the Upmatches app), this controller generates a human-readable HTML page with game details, metadata for social sharing, and a smart app banner to encourage users to open the link in the native app.
+The `GameWebFallbackController` is a Spring REST controller that serves server-rendered HTML pages for game share links. When a user opens a game link in a web browser (instead of the Upmatches mobile app), this controller generates a fallback web page with game details, Open Graph meta tags, and smart app banner support to encourage the user to open the link in the native app.
 
 ## Purpose
 
-- **Web Fallback**: Provides a web-based view for game share links when the Upmatches app is not installed or the link is opened in a browser.
-- **SEO & Social Sharing**: Generates Open Graph and Twitter Card meta tags for rich link previews on social media platforms.
-- **Smart App Banner**: Includes an Apple Smart App Banner meta tag to prompt iOS users to open the link in the native app.
-- **Error Handling**: Returns appropriate "not found" pages for invalid or missing game IDs.
+- Provides a human-readable web page for game share links when opened in a browser
+- Handles public, private, and not-found game scenarios
+- Generates SEO-friendly meta tags (Open Graph, Twitter Card, canonical URL)
+- Includes smart app banner for iOS to deep-link into the Upmatches app
+- Escapes all user-generated content to prevent XSS vulnerabilities
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `IGameLookupService` | Service | Interface for looking up game entities by ID |
-| `IShareLinkUrlBuilder` | Service | Builds mobile deep link URLs for share links |
-| `ShareLinkProperties` | Configuration | Configuration properties for share links (e.g., web base URL, App Store app ID) |
+| `IGameLookupService` | Service | Retrieves game entities by ID |
+| `IShareLinkUrlBuilder` | Service | Builds mobile deep-link URLs |
+| `ShareLinkProperties` | Configuration | Provides app store ID and web base URL |
 
-## Public Methods
+## Endpoints
 
-### `gamePage(String id)`
+### GET `/games/{id}`
 
-Serves an HTML page for a game identified by its UUID.
+Returns an HTML page for a game share link.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `String` | The UUID of the game (as a string) |
+| `id` | `String` (path) | UUID of the game |
 
-| Returns | Description |
-|---------|-------------|
-| `ResponseEntity<String>` | HTML response with status 200 (OK) for valid games, or 404 (Not Found) for invalid/missing games |
+**Response:**
 
-**Behavior:**
-1. Parses the `id` parameter as a UUID. If parsing fails, returns a 404 "not found" page.
-2. Looks up the game using `gameLookupService.findGameOrThrow()`. If the game is not found, returns a 404 "not found" page.
-3. Builds the mobile app link and canonical URL.
-4. If the game is public, renders a detailed game page with activity, venue, organizer, time, skill level, slots, and price.
-5. If the game is private, renders a simplified page indicating the game is private.
-6. Returns the HTML response with HTTP 200 status.
+| Status | Description |
+|--------|-------------|
+| `200 OK` | Returns HTML page for public or private game |
+| `404 Not Found` | Returns HTML page when game ID is invalid or game not found |
 
-## Private Methods
+**Response Content-Type:** `text/html`
+
+## Internal Methods
 
 ### `publicGamePage(Game game, String appLink, String canonicalUrl)`
 
-Generates the HTML page for a public game.
+Generates an HTML page for a public game with full details.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `game` | `Game` | The game entity |
-| `appLink` | `String` | The mobile deep link URL |
-| `canonicalUrl` | `String` | The canonical web URL for the game |
+| `game` | `Game` | The public game entity |
+| `appLink` | `String` | Deep link URL for the mobile app |
+| `canonicalUrl` | `String` | Canonical web URL for the game |
 
-| Returns | Description |
-|---------|-------------|
-| `String` | Complete HTML page for the public game |
+**Returns:** `String` - Complete HTML page
 
-**Details:**
-- Escapes all user-generated content (activity name, venue, organizer, etc.) using `HtmlUtils.htmlEscape()`.
-- Formats the start time in Singapore timezone (`Asia/Singapore`) with a human-readable pattern.
-- Builds a title like "Join the [Activity] game on Upmatches".
-- Creates a description combining venue, time, and skill level.
-- Includes a call-to-action button to open the game in the Upmatches app.
+**Page Content:**
+- Title: "Join the {activity} game on Upmatches"
+- Description: "{venue} · {date/time} · {skill level}"
+- Displays: activity, venue, date/time, organizer, skill level, slots, price
+- CTA button: "Open in Upmatches"
+- Note about downloading the app
 
 ### `privateGamePage(String appLink, String canonicalUrl)`
 
-Generates the HTML page for a private game.
+Generates an HTML page for a private game.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `appLink` | `String` | The mobile deep link URL |
-| `canonicalUrl` | `String` | The canonical web URL for the game |
+| `appLink` | `String` | Deep link URL for the mobile app |
+| `canonicalUrl` | `String` | Canonical web URL for the game |
 
-| Returns | Description |
-|---------|-------------|
-| `String` | Complete HTML page for the private game |
+**Returns:** `String` - Complete HTML page
 
-**Details:**
-- Shows a generic title "Open in Upmatches".
-- Displays a message that the game is private and must be opened in the app.
-- Includes a call-to-action button to open the game in the Upmatches app.
+**Page Content:**
+- Title: "Open in Upmatches"
+- Description: "This game is private — open in Upmatches to view it."
+- CTA button: "Open in Upmatches"
 
 ### `notFoundPage()`
 
-Generates the HTML page for a game that was not found or has an invalid ID.
+Generates an HTML page when a game is not found or the ID is invalid.
 
-| Returns | Description |
-|---------|-------------|
-| `String` | Complete HTML page for the "not found" state |
+**Returns:** `String` - Complete HTML page
 
-**Details:**
-- Shows a "Game not found" title.
-- Displays a message that the game may have ended or been removed.
-- Does not include a canonical URL or app link.
+**Page Content:**
+- Title: "Game not found"
+- Description: "This game may have ended or been removed."
 
 ### `basePage(PageMeta meta, String body)`
 
-Builds the complete HTML document with metadata and body content.
+Builds the complete HTML document with head meta tags and body content.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `meta` | `PageMeta` | Metadata record containing title, description, canonical URL, and app link |
-| `body` | `String` | The HTML body content |
+| `meta` | `PageMeta` | Metadata including title, description, canonical URL, and app link |
+| `body` | `String` | HTML body content |
 
-| Returns | Description |
-|---------|-------------|
-| `String` | Complete HTML document |
+**Returns:** `String` - Complete HTML document
 
-**Details:**
-- Generates a full HTML5 document with:
-  - Character set and viewport meta tags
-  - Title and description meta tags
-  - Open Graph (`og:title`, `og:description`, `og:url`, `og:type`) meta tags
-  - Twitter Card meta tags
-  - Canonical link tag (if canonical URL is provided)
-  - Apple Smart App Banner meta tag (if app link and App Store ID are configured)
-  - Inline CSS styling for a mobile-friendly layout
-  - The provided body content
+**Meta Tags Generated:**
+- `<title>` and `<meta name="description">`
+- Open Graph: `og:title`, `og:description`, `og:type`, `og:url`
+- Twitter Card: `twitter:title`, `twitter:description`, `twitter:card`
+- Canonical link (if available)
+- Apple smart app banner (if app ID and link are configured)
 
 ### `buildSmartAppBanner(String appLink)`
 
-Builds the Apple Smart App Banner meta tag.
+Builds the Apple smart app banner meta tag.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `appLink` | `String` | The mobile deep link URL |
+| `appLink` | `String` | Deep link URL for the mobile app |
 
-| Returns | Description |
-|---------|-------------|
-| `String` | The meta tag HTML string, or empty string if app ID or app link is missing |
-
-**Details:**
-- Uses the App Store app ID from `ShareLinkProperties`.
-- Returns an empty string if the app ID or app link is null or blank.
-- Escapes both the app ID and app link for HTML safety.
+**Returns:** `String` - Meta tag HTML or empty string if not applicable
 
 ## Internal Record
 
 ### `PageMeta`
 
-A private record used internally to pass page metadata between methods.
+A private record holding page metadata.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `title` | `String` | The page title |
-| `description` | `String` | The page description |
-| `canonicalUrl` | `String` | The canonical URL (may be null) |
-| `appLink` | `String` | The mobile deep link URL (may be null) |
+| `title` | `String` | Page title |
+| `description` | `String` | Page description |
+| `canonicalUrl` | `String` | Canonical URL (nullable) |
+| `appLink` | `String` | Mobile app deep link (nullable) |
 
-## Configuration Properties
+## Constants
 
-The controller uses `ShareLinkProperties` for configuration:
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `DISPLAY_ZONE` | `Asia/Singapore` | Timezone for displaying dates |
+| `DATE_TIME_FORMATTER` | `EEE, MMM d · h:mm a` | Date/time display format |
+| `TITLE_PUBLIC_PREFIX` | `Join the ` | Prefix for public game page title |
+| `TITLE_PUBLIC_SUFFIX` | ` game on Upmatches` | Suffix for public game page title |
+| `TITLE_GENERIC` | `Open in Upmatches` | Title for private game page |
+| `TITLE_NOT_FOUND` | `Game not found` | Title for not-found page |
+| `DESC_PRIVATE` | `This game is private — open in Upmatches to view it.` | Description for private game |
+| `DESC_NOT_FOUND` | `This game may have ended or been removed.` | Description for not-found game |
+| `CANONICAL_PATH_PREFIX` | `/games/` | Prefix for canonical URL path |
 
-| Property | Description |
-|----------|-------------|
-| `webBaseUrl()` | The base URL for the web application (used to build canonical URLs) |
-| `appStoreAppId()` | The Apple App Store application ID (used for the Smart App Banner) |
+## Security Considerations
 
-## Error Handling
-
-| Scenario | HTTP Status | Response |
-|----------|-------------|----------|
-| Invalid UUID format | 404 Not Found | "Game not found" page |
-| Game not found in database | 404 Not Found | "Game not found" page |
-| Valid game (public or private) | 200 OK | Appropriate game page |
+- All user-generated content (activity name, venue, organizer, etc.) is HTML-escaped using `HtmlUtils.htmlEscape()` to prevent XSS attacks
+- Game IDs are validated as UUIDs before processing
+- Invalid UUIDs return a 404 page instead of throwing exceptions

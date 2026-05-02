@@ -6,68 +6,96 @@ sidebar_label: GetGameDateAvailabilityService
 
 # GetGameDateAvailabilityService
 
-The `GetGameDateAvailabilityService` is a Spring service class responsible for determining the availability of games within a specified date range. It provides a read-only transactional operation that checks which dates in a given range have associated game start times, returning a list of date-availability pairs.
+## Purpose
 
-This service is part of the game features module and implements the `IGetGameDateAvailabilityService` interface. It uses the `GameRepository` to query distinct game start times and processes them against the requested date range.
+The `GetGameDateAvailabilityService` class is a Spring service that provides functionality to check the availability of game dates within a specified date range. It queries the database for distinct game start times and returns a list of dates with their availability status (whether games exist on those dates). This service is particularly useful for calendar views or date pickers where users need to see which dates have scheduled games.
 
-## Key Characteristics
+## Class Details
 
-- **Thread-safe**: Uses `ServiceOperationExecutor` for safe execution of repository operations
-- **Read-only transaction**: Marked with `@Transactional(readOnly = true)` for optimal performance
-- **Time zone aware**: Operates in Singapore Time (SGT, `Asia/Singapore`)
-- **Non-sealed class**: Extends the sealed interface `IGetGameDateAvailabilityService`
-
-## Constructor
-
-| Constructor | Description |
-|-------------|-------------|
-| `GetGameDateAvailabilityService(GameRepository gameRepository)` | Creates a new instance with the required game repository dependency |
+- **Package**: `com.upmatches.app.features.game.services`
+- **Type**: `non-sealed class` implementing `IGetGameDateAvailabilityService`
+- **Annotations**: `@Service`, `@Transactional(readOnly = true)`
+- **Dependencies**: `GameRepository`
 
 ## Public Methods
 
-### `execute(LocalDate fromDate, LocalDate toDate)`
+### `execute`
 
-Determines game availability for each date in the specified range.
+```java
+public List<GameDateAvailabilityResponse> execute(LocalDate fromDate, LocalDate toDate)
+```
+
+Retrieves the availability of game dates within the specified date range.
+
+#### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `fromDate` | `LocalDate` | The start date of the range (inclusive) |
 | `toDate` | `LocalDate` | The end date of the range (inclusive) |
 
-**Returns**: `List<GameDateAvailabilityResponse>` - A list of date-availability pairs for each day in the range
+#### Returns
 
-**Throws**:
-- `IllegalArgumentException` - If `toDate` is before `fromDate`
-- `ResourceNotFoundException` - If the repository query fails (wrapped by `ServiceOperationExecutor`)
+| Type | Description |
+|------|-------------|
+| `List<GameDateAvailabilityResponse>` | A list of `GameDateAvailabilityResponse` objects, each containing a date and a boolean indicating whether games exist on that date |
 
-**Example usage**:
-```java
-GetGameDateAvailabilityService service = new GetGameDateAvailabilityService(gameRepository);
-List<GameDateAvailabilityResponse> availability = service.execute(
-    LocalDate.of(2024, 1, 1),
-    LocalDate.of(2024, 1, 7)
-);
-```
+#### Exceptions
+
+| Exception | Condition |
+|-----------|-----------|
+| `IllegalArgumentException` | If `toDate` is before `fromDate` |
+| `ResourceNotFoundException` | If the database query fails or returns unexpected results |
+
+#### Behavior
+
+1. **Validation**: Checks that `toDate` is not before `fromDate`. Throws `IllegalArgumentException` if validation fails.
+2. **Time Zone Conversion**: Converts the date range to Singapore Time (SGT, `Asia/Singapore`) and converts to `Instant` objects for database querying.
+3. **Database Query**: Retrieves distinct game start times within the specified range using `GameRepository.findDistinctStartTimesBetween()`.
+4. **Date Extraction**: Extracts unique dates from the retrieved start times.
+5. **Response Generation**: Iterates through each day in the date range and creates a `GameDateAvailabilityResponse` indicating whether games exist on that date.
 
 ## Internal Logic
 
-1. **Validation**: Checks that `toDate` is not before `fromDate`
-2. **Time conversion**: Converts the date range to `Instant` objects in SGT timezone (extends end date by one day to include full day)
-3. **Repository query**: Retrieves distinct game start times within the range using `ServiceOperationExecutor`
-4. **Date extraction**: Converts each start time to a `LocalDate` in SGT timezone
-5. **Availability check**: Iterates through each day in the range and creates a `GameDateAvailabilityResponse` indicating whether games exist for that date
+### Time Zone Handling
+
+The service uses a fixed time zone of `Asia/Singapore` (SGT) for all date conversions:
+
+```java
+private static final ZoneId SGT = ZoneId.of("Asia/Singapore");
+```
+
+### Date Range Calculation
+
+The end date is extended by one day to ensure inclusive coverage:
+
+```java
+Instant toInstant = toDate.plusDays(1).atStartOfDay(SGT).toInstant();
+```
+
+### Error Handling
+
+Uses `ServiceOperationExecutor.execute()` to wrap the database operation with standardized error handling and logging, converting any exceptions to `ResourceNotFoundException`.
+
+## Usage Example
+
+```java
+// Inject the service
+private final GetGameDateAvailabilityService availabilityService;
+
+// Check availability for a week
+LocalDate from = LocalDate.of(2024, 1, 1);
+LocalDate to = LocalDate.of(2024, 1, 7);
+List<GameDateAvailabilityResponse> availability = availabilityService.execute(from, to);
+
+// Process results
+availability.forEach(response -> {
+    System.out.println(response.getDate() + ": " + (response.isAvailable() ? "Games available" : "No games"));
+});
+```
 
 ## Dependencies
 
-- `GameRepository` - Data access layer for game entities
-- `ServiceOperationExecutor` - Utility for executing service operations with error handling
-- `GameDateAvailabilityResponse` - Response DTO containing date and availability flag
-- `ResourceNotFoundException` - Custom exception for resource not found scenarios
-
-## Related Components
-
-- **Interface**: `IGetGameDateAvailabilityService`
-- **Repository**: `GameRepository`
-- **Response DTO**: `GameDateAvailabilityResponse`
-- **Exception**: `ResourceNotFoundException`
-- **Utility**: `ServiceOperationExecutor`
+- `GameRepository`: Repository for accessing game data
+- `ServiceOperationExecutor`: Utility for executing service operations with standardized error handling
+- `GameDateAvailabilityResponse`: DTO for returning date availability information

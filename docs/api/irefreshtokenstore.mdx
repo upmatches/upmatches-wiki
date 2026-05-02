@@ -8,7 +8,7 @@ sidebar_label: IRefreshTokenStore
 
 The `IRefreshTokenStore` interface defines the contract for managing refresh tokens in the authentication system. It provides methods for storing, validating, rotating, and revoking refresh tokens associated with user accounts.
 
-This interface is a **sealed interface**, meaning it can only be implemented by the `RefreshTokenStore` class. This design pattern ensures that all refresh token operations go through a single, controlled implementation, enhancing security and maintainability.
+This interface is a **sealed interface**, meaning it can only be implemented by the `RefreshTokenStore` class. This design ensures that all refresh token operations follow a consistent implementation pattern and prevents unauthorized implementations.
 
 ## Interface Definition
 
@@ -22,53 +22,66 @@ public sealed interface IRefreshTokenStore permits RefreshTokenStore {
 
 | Method | Description | Parameters | Returns |
 |--------|-------------|------------|---------|
-| `store` | Stores a new refresh token for a given user | `UUID userId` - The unique identifier of the user<br/>`String refreshToken` - The refresh token string to store | `void` |
-| `validateAndRotate` | Validates a refresh token and rotates it (issues a new one) | `String refreshToken` - The refresh token to validate | `ValidationResult` - Contains the validation outcome and potentially a new token |
+| `store` | Stores a new refresh token for a specific user | `UUID userId` - The unique identifier of the user<br/>`String refreshToken` - The refresh token to store | `void` |
+| `validateAndRotate` | Validates an existing refresh token and generates a new one (rotation) | `String refreshToken` - The refresh token to validate and rotate | `ValidationResult` - Contains the validation status and new token if valid |
 | `revokeAllForUser` | Revokes all refresh tokens associated with a specific user | `UUID userId` - The unique identifier of the user whose tokens should be revoked | `void` |
 
-## Usage Examples
+## Method Details
 
-### Storing a Refresh Token
+### `store(UUID userId, String refreshToken)`
+
+Stores a refresh token in the system, associating it with the specified user. This method is typically called after successful authentication to persist the refresh token for future use.
+
+**Parameters:**
+- `userId` - The UUID of the user who owns the refresh token
+- `refreshToken` - The refresh token string to store
+
+**Returns:** Nothing
+
+### `validateAndRotate(String refreshToken)`
+
+Validates the provided refresh token and, if valid, rotates it by generating a new token. Token rotation is a security best practice that invalidates the old token and issues a new one, reducing the risk of token theft.
+
+**Parameters:**
+- `refreshToken` - The refresh token string to validate
+
+**Returns:** `ValidationResult` - An object containing:
+- Whether the token is valid
+- A new refresh token if validation succeeded
+- Any error information if validation failed
+
+### `revokeAllForUser(UUID userId)`
+
+Revokes all active refresh tokens for the specified user. This method is typically called when:
+- A user changes their password
+- A user logs out from all devices
+- An administrator invalidates a user's sessions
+- Suspicious activity is detected on the account
+
+**Parameters:**
+- `userId` - The UUID of the user whose tokens should be revoked
+
+**Returns:** Nothing
+
+## Usage Example
 
 ```java
-IRefreshTokenStore tokenStore = new RefreshTokenStore();
-UUID userId = UUID.randomUUID();
-String refreshToken = "some-refresh-token-value";
-tokenStore.store(userId, refreshToken);
-```
+// Store a refresh token
+refreshTokenStore.store(userId, "eyJhbGciOiJIUzI1NiIs...");
 
-### Validating and Rotating a Token
-
-```java
-String existingToken = "existing-refresh-token";
-ValidationResult result = tokenStore.validateAndRotate(existingToken);
-
+// Validate and rotate a refresh token
+ValidationResult result = refreshTokenStore.validateAndRotate("eyJhbGciOiJIUzI1NiIs...");
 if (result.isValid()) {
-    // Token is valid, use the new token if rotation occurred
     String newToken = result.getNewToken();
-} else {
-    // Token is invalid or expired
-    throw new SecurityException("Invalid refresh token");
+    // Use the new token
 }
+
+// Revoke all tokens for a user
+refreshTokenStore.revokeAllForUser(userId);
 ```
 
-### Revoking All Tokens for a User
+## Related Types
 
-```java
-UUID userId = UUID.randomUUID();
-tokenStore.revokeAllForUser(userId);
-// All refresh tokens for this user are now invalid
-```
-
-## Related Components
-
-- **RefreshTokenStore**: The sole implementation of this interface
-- **ValidationResult**: Inner class of `RefreshTokenStore` that encapsulates the validation outcome
-- **AuthService**: Typically uses this interface to manage authentication sessions
-
-## Security Considerations
-
-- Refresh tokens should be stored securely (e.g., hashed) in the database
-- Token rotation helps prevent token theft by invalidating old tokens after use
-- Revoking all tokens for a user is useful when a password change or account compromise is detected
-- The sealed interface pattern prevents unauthorized implementations that could bypass security measures
+- `RefreshTokenStore` - The only permitted implementation of this interface
+- `ValidationResult` - The result type returned by the `validateAndRotate` method
+- `UUID` - Used to uniquely identify users in the system

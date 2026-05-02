@@ -6,103 +6,120 @@ sidebar_label: CookieHelper
 
 # CookieHelper
 
-The `CookieHelper` class is a Spring `@Service` component that manages authentication cookies for the UpMatches application. It implements the `ICookieHelper` interface and provides methods to set, clear, and retrieve authentication tokens stored as HTTP cookies.
+The `CookieHelper` class is a Spring `@Service` component responsible for managing authentication-related cookies in a web application. It implements the `ICookieHelper` interface and provides methods to set, clear, and retrieve authentication tokens stored as HTTP cookies.
 
-## Purpose
-
-This helper class handles the lifecycle of three authentication cookies:
+This helper is designed to work with JWT-based authentication, managing three distinct cookies:
 - **accessToken**: HttpOnly cookie containing the JWT access token
 - **refreshToken**: HttpOnly cookie containing the refresh token
 - **tokenExpiry**: JavaScript-readable cookie containing the Unix timestamp of token expiration
 
-The class ensures secure cookie handling by respecting the request's security context (HTTP vs HTTPS) and applying strict SameSite policies.
+## Key Features
+
+- **Secure by default**: Cookies respect the request's security context (HTTPS vs HTTP)
+- **HttpOnly protection**: Access and refresh tokens are inaccessible to JavaScript
+- **SameSite Strict**: All cookies use `SameSite=Strict` to prevent CSRF attacks
+- **Configurable expiration**: Token expiry durations are managed through `JwtProperties`
+- **Clean separation**: Token data is encapsulated in the `TokenData` record
 
 ## Dependencies
 
-| Dependency | Description |
-|------------|-------------|
+| Dependency | Purpose |
+|------------|---------|
 | `JwtProperties` | Configuration properties for JWT token expiry durations |
-| `HttpServletRequest` | Used to determine if the request is secure (HTTPS) |
-| `HttpServletResponse` | Used to add cookies to the response |
+| `HttpServletRequest` | Provides request context for determining secure flag |
+| `HttpServletResponse` | Used to add cookies to the HTTP response |
+| `ResponseCookie` | Spring's fluent API for building cookies |
 
 ## Public Methods
 
-### `setAuthCookies`
+### setAuthCookies
 
-Sets all three authentication cookies on the HTTP response.
+Sets authentication cookies (access token, refresh token, and token expiry) on the HTTP response.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `response` | `HttpServletResponse` | The HTTP response to add cookies to |
-| `request` | `HttpServletRequest` | The HTTP request to determine security context |
-| `tokenData` | `TokenData` | Contains access token, refresh token, and expiration timestamp |
+| `request` | `HttpServletRequest` | The HTTP request used to determine if connection is secure |
+| `tokenData` | `TokenData` | Contains the access token, refresh token, and expiry timestamp |
 
-**Returns:** `void`
+**Behavior:**
+- Creates three cookies with appropriate security settings
+- Access token cookie expires based on `jwtProperties.accessTokenExpiryMinutes()`
+- Refresh token cookie expires based on `jwtProperties.refreshTokenExpiryDays()`
+- Token expiry cookie is JavaScript-readable (not HttpOnly) to allow the SPA to proactively refresh tokens
 
-The method creates three cookies with the following characteristics:
-- **accessToken**: HttpOnly, secure (if HTTPS), SameSite=Strict, path=/, expires based on `jwtProperties.accessTokenExpiryMinutes()`
-- **refreshToken**: HttpOnly, secure (if HTTPS), SameSite=Strict, path=/, expires based on `jwtProperties.refreshTokenExpiryDays()`
-- **tokenExpiry**: Not HttpOnly (JavaScript-readable), secure (if HTTPS), SameSite=Strict, path=/, expires based on `jwtProperties.accessTokenExpiryMinutes()`
+### clearAuthCookies
 
-### `clearAuthCookies`
-
-Clears all three authentication cookies by setting their max age to 0.
+Clears all authentication cookies by setting their values to empty and max age to 0.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `response` | `HttpServletResponse` | The HTTP response to add cleared cookies to |
-| `request` | `HttpServletRequest` | The HTTP request to determine security context |
+| `response` | `HttpServletResponse` | The HTTP response to add clearing cookies to |
+| `request` | `HttpServletRequest` | The HTTP request used to determine if connection is secure |
 
-**Returns:** `void`
+**Behavior:**
+- Sets all three cookies to empty string values
+- Sets `maxAge(0)` to immediately expire the cookies
+- Maintains the same security settings as when setting cookies
 
-This method creates three cookies with empty values and `maxAge(0)` to instruct the browser to delete them immediately.
+### getRefreshTokenFromCookie
 
-### `getRefreshTokenFromCookie`
-
-Retrieves the refresh token value from the request's cookies.
+Retrieves the refresh token value from the incoming HTTP request cookies.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `request` | `HttpServletRequest` | The HTTP request containing cookies |
 
-**Returns:** `String` - The refresh token value, or `null` if no refresh token cookie is found.
+**Returns:** `String` - The refresh token value, or `null` if no refresh token cookie is found
 
-## Inner Types
+**Behavior:**
+- Iterates through all cookies in the request
+- Returns the value of the cookie named "refreshToken"
+- Returns `null` if no cookies exist or no matching cookie is found
 
-### `TokenData`
+## Internal Types
 
-A record class that encapsulates the token data required for setting authentication cookies.
+### TokenData
+
+A Java record that encapsulates the authentication token data.
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `accessToken` | `String` | The JWT access token |
 | `expiresAtUtc` | `Long` | Unix timestamp (UTC) when the access token expires |
-| `refreshToken` | `String` | The refresh token |
-
-## Security Considerations
-
-- **HttpOnly**: Access and refresh tokens are HttpOnly to prevent XSS attacks from accessing them via JavaScript
-- **Secure flag**: Cookies are marked as secure only when the request is made over HTTPS
-- **SameSite Strict**: All cookies use `SameSite=Strict` to prevent CSRF attacks
-- **Token Expiry Cookie**: The `tokenExpiry` cookie is intentionally not HttpOnly so that the SPA can read it and proactively refresh tokens before they expire
+| `refreshToken` | `String` | The refresh token for obtaining new access tokens |
 
 ## Usage Example
 
 ```java
 // Inject the service
-private final CookieHelper cookieHelper;
+@Autowired
+private CookieHelper cookieHelper;
 
 // Setting cookies after successful authentication
 TokenData tokenData = new TokenData(
-    "eyJhbGciOiJIUzI1NiIs...", // access token
-    1700000000L,                  // expires at UTC
-    "dGhpcyBpcyBhIHJlZnJl...",  // refresh token
+    "eyJhbGciOiJIUzI1NiIs...",  // access token
+    1700000000L,                   // expires at UTC
+    "dGhpcyBpcyBhIHJlZnJl...",   // refresh token
 );
 cookieHelper.setAuthCookies(response, request, tokenData);
 
+// Retrieving refresh token for token refresh
+String refreshToken = cookieHelper.getRefreshTokenFromCookie(request);
+
 // Clearing cookies on logout
 cookieHelper.clearAuthCookies(response, request);
-
-// Retrieving refresh token from request
-String refreshToken = cookieHelper.getRefreshTokenFromCookie(request);
 ```
+
+## Security Considerations
+
+1. **HttpOnly cookies**: Access and refresh tokens are protected from XSS attacks by being HttpOnly
+2. **Secure flag**: Cookies are only sent over HTTPS when the request is secure
+3. **SameSite Strict**: Prevents CSRF attacks by restricting cookie sending to same-site requests
+4. **Token expiry cookie**: Deliberately not HttpOnly to allow client-side JavaScript to monitor token expiration and proactively refresh before the access token expires
+
+## Notes
+
+- The class is declared as `non-sealed`, implementing the `ICookieHelper` interface, allowing for future extension if needed
+- The `@Service` annotation makes it a Spring-managed bean, suitable for dependency injection
+- Cookie paths are set to root (`/`) to ensure availability across all application endpoints

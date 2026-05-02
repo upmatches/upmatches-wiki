@@ -1,79 +1,105 @@
 ---
 id: sharelink-controller
-title: ShareLinkController
+title: ShareLinkController - API Endpoint Documentation
 sidebar_label: ShareLinkController
 ---
 
 # ShareLinkController
 
-The `ShareLinkController` is a REST controller that handles HTTP requests related to share links in the UpMatches application. It provides endpoints for creating new share links and resolving existing ones using a unique alphanumeric code.
+The `ShareLinkController` is a REST controller that manages share link operations in the UpMatches application. It provides endpoints for creating new share links and resolving existing ones using a unique alphanumeric code.
 
 ## Purpose
 
-This controller serves as the entry point for share link operations, delegating business logic to dedicated service interfaces (`ICreateShareLinkService` and `IResolveShareLinkService`). It validates input parameters, constructs appropriate API responses, and returns standardized HTTP status codes.
+This controller handles two primary operations:
+- **Creating** a new share link that can be shared with other users
+- **Resolving** an existing share link by its unique 8-character alphanumeric code
 
 ## Endpoints
 
 ### Create Share Link
 
-Creates a new share link based on the provided request body.
+Creates a new share link based on the provided request data.
 
-**HTTP Method:** `POST`  
-**Path:** `/api/v1/share-links`  
-**Request Body:** `CreateShareLinkRequest` (validated)  
-**Response:** `ApiResponse<ShareLinkResponse>` with HTTP 201 (Created)
+**HTTP Method:** `POST`
+
+**Endpoint:** `/api/v1/share-links`
+
+**Request Body:** `CreateShareLinkRequest` (validated)
+
+**Response:** `ApiResponse<ShareLinkResponse>` with HTTP status `201 Created`
 
 ### Resolve Share Link
 
-Resolves an existing share link using its unique 8-character alphanumeric code.
+Resolves an existing share link using its unique code.
 
-**HTTP Method:** `GET`  
-**Path:** `/api/v1/share-links/{code}`  
-**Path Variable:** `code` (must match pattern `^[0-9A-Za-z]{8}$`)  
-**Response:** `ApiResponse<PublicShareLinkResponse>` with HTTP 200 (OK)
+**HTTP Method:** `GET`
+
+**Endpoint:** `/api/v1/share-links/{code}`
+
+**Path Variable:** `code` - An 8-character alphanumeric string (validated with regex pattern `^[0-9A-Za-z]{8}$`)
+
+**Response:** `ApiResponse<PublicShareLinkResponse>` with HTTP status `200 OK`
 
 ## Public Methods
 
 | Method | Parameters | Return Type | Description |
 |--------|------------|-------------|-------------|
-| `createShareLink` | `@Valid @RequestBody CreateShareLinkRequest body`, `HttpServletRequest request` | `ResponseEntity<ApiResponse<ShareLinkResponse>>` | Creates a new share link and returns it with a 201 status code |
-| `resolveShareLink` | `@PathVariable @Pattern(regexp = "^[0-9A-Za-z]{8}$") String code`, `HttpServletRequest request` | `ResponseEntity<ApiResponse<PublicShareLinkResponse>>` | Resolves a share link by its 8-character alphanumeric code and returns it with a 200 status code |
+| `createShareLink` | `@Valid @RequestBody CreateShareLinkRequest body`, `HttpServletRequest request` | `ResponseEntity<ApiResponse<ShareLinkResponse>>` | Creates a new share link and returns the created link details |
+| `resolveShareLink` | `@PathVariable @Pattern(regexp = "^[0-9A-Za-z]{8}$") String code`, `HttpServletRequest request` | `ResponseEntity<ApiResponse<PublicShareLinkResponse>>` | Resolves a share link by its 8-character alphanumeric code |
 
 ## Dependencies
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `ICreateShareLinkService` | Service Interface | Handles the business logic for creating share links |
-| `IResolveShareLinkService` | Service Interface | Handles the business logic for resolving share links |
+The controller depends on two service interfaces:
+
+| Service Interface | Purpose |
+|-------------------|---------|
+| `ICreateShareLinkService` | Handles the business logic for creating share links |
+| `IResolveShareLinkService` | Handles the business logic for resolving share links |
 
 ## Validation
 
-The controller uses Jakarta Bean Validation annotations to ensure input integrity:
+The controller uses Jakarta Bean Validation annotations to ensure data integrity:
 
-- **`CreateShareLinkRequest`**: Validated with `@Valid` annotation
-- **`code` path variable**: Validated with `@Pattern` annotation requiring exactly 8 alphanumeric characters (`^[0-9A-Za-z]{8}$`)
+- **Request Body:** Validated with `@Valid` annotation on `CreateShareLinkRequest`
+- **Code Parameter:** Validated with `@Pattern` annotation requiring exactly 8 alphanumeric characters (`^[0-9A-Za-z]{8}$`)
 
 ## Response Format
 
-All responses are wrapped in an `ApiResponse` object containing:
+Both endpoints return responses wrapped in an `ApiResponse` object with the following structure:
 
-- The response data (either `ShareLinkResponse` or `PublicShareLinkResponse`)
-- A success message
-- The request URI
+- **data:** The response payload (`ShareLinkResponse` or `PublicShareLinkResponse`)
+- **message:** A success message describing the operation result
+- **path:** The request URI for traceability
 
 ## Error Handling
 
-The controller relies on Spring's validation framework to handle invalid inputs. If validation fails, a `MethodArgumentNotValidException` or `ConstraintViolationException` is thrown, which can be handled by a global exception handler.
+The controller leverages Spring's validation framework to handle invalid inputs:
+
+- Invalid request body will return a `400 Bad Request` with validation error details
+- Invalid share link code (not matching the 8-character alphanumeric pattern) will return a `400 Bad Request` with the message "Share link code must be 8 alphanumeric characters."
 
 ## Usage Example
 
-```java
-// Create a share link
-POST /api/v1/share-links
-{
-  // CreateShareLinkRequest body
-}
+### Creating a Share Link
 
-// Resolve a share link
+```http
+POST /api/v1/share-links
+Content-Type: application/json
+
+{
+  // CreateShareLinkRequest payload
+}
+```
+
+### Resolving a Share Link
+
+```http
 GET /api/v1/share-links/ABC12345
 ```
+
+## Notes
+
+- The controller is mapped to the base path `/api/v1/share-links`
+- All endpoints are validated at the class level with `@Validated`
+- The controller uses constructor injection for its dependencies
+- Success messages are defined as constants for consistency

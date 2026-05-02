@@ -6,48 +6,62 @@ sidebar_label: UpmatchesApplication
 
 # UpmatchesApplication
 
-The `UpmatchesApplication` class serves as the main entry point for the Upmatches Spring Boot application. It is responsible for bootstrapping and launching the application, as well as enabling the configuration properties for various authentication and shared features.
+The `UpmatchesApplication` class serves as the entry point for the Upmatches Spring Boot application. It is responsible for bootstrapping and launching the application using Spring Boot's auto-configuration capabilities.
 
 ## Purpose
 
-This class is the core startup class for the Upmatches backend service. It uses Spring Boot's auto-configuration and component scanning to initialize the application context. By annotating the class with `@EnableConfigurationProperties`, it registers multiple property classes that hold configuration values for authentication providers, logging, and share link functionality.
+This class initializes the Spring application context and enables configuration properties for various authentication and feature modules. It acts as the main configuration hub that loads all necessary property classes required by the application's authentication system and shared features.
 
 ## Key Annotations
 
-- **`@SpringBootApplication`**: A convenience annotation that combines `@Configuration`, `@EnableAutoConfiguration`, and `@ComponentScan`. It enables Spring Boot's auto-configuration and component scanning for the package and its sub-packages.
-- **`@EnableConfigurationProperties`**: Enables support for `@ConfigurationProperties` beans. The listed classes will be registered as beans in the application context, allowing their properties to be bound from external configuration sources (e.g., `application.yml` or environment variables).
-
-## Public Methods
-
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `main(String[] args)` | `void` | `String[] args` - Command-line arguments passed to the application | The standard Java entry point. It calls `SpringApplication.run()` to launch the Spring Boot application. |
+| Annotation | Description |
+|------------|-------------|
+| `@SpringBootApplication` | Enables Spring Boot auto-configuration, component scanning, and configuration property binding |
+| `@EnableConfigurationProperties` | Activates support for `@ConfigurationProperties` beans, allowing externalized configuration |
 
 ## Configuration Properties Enabled
 
-The following configuration property classes are enabled via `@EnableConfigurationProperties`:
+The following configuration property classes are registered and bound to their respective property prefixes:
 
-| Property Class | Description |
-|----------------|-------------|
-| `LogAspectProperties` | Configuration for logging aspects |
-| `SingpassProperties` | Configuration for Singpass authentication |
-| `Auth0Properties` | Configuration for Auth0 authentication |
-| `AppleProperties` | Configuration for Apple Sign-In |
-| `AuthDevProperties` | Configuration for development authentication |
-| `JwtProperties` | Configuration for JWT token handling |
-| `InfisicalProperties` | Configuration for Infisical secrets management |
-| `ShareLinkProperties` | Configuration for share link functionality |
+| Property Class | Purpose |
+|----------------|---------|
+| `LogAspectProperties` | Logging aspect configuration |
+| `SingpassProperties` | Singpass authentication settings |
+| `Auth0Properties` | Auth0 authentication provider settings |
+| `AppleProperties` | Apple Sign-In configuration |
+| `AuthDevProperties` | Development authentication settings |
+| `JwtProperties` | JWT token configuration |
+| `InfisicalProperties` | Infisical secrets management settings |
+| `ShareLinkProperties` | Share link feature configuration |
+
+## Public Methods
+
+### `main(String[] args)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `args` | `String[]` | Command-line arguments passed to the application |
+
+**Returns:** `void`
+
+This is the standard Java entry point method. It calls `SpringApplication.run()` to start the Spring Boot application context, which triggers auto-configuration, component scanning, and property binding for all enabled configuration properties.
 
 ## Usage
 
-To run the application, execute the `main` method:
+The application is started by executing the `main` method, typically through a build tool like Maven or Gradle, or directly from an IDE:
 
 ```bash
 # Using Maven
 mvn spring-boot:run
 
-# Using Java directly
-java -jar upmatches-app.jar
+# Using Gradle
+gradle bootRun
 ```
 
-The application will start an embedded web server (default port 8080) and begin accepting requests.
+## Package Structure
+
+The class resides in the `com.upmatches.app` package and imports configuration property classes from the following sub-packages:
+
+- `com.upmatches.app.features.auth.properties` - Authentication-related properties
+- `com.upmatches.app.features.sharelink.properties` - Share link feature properties
+- `com.upmatches.app.shared.logging.properties` - Shared logging configuration

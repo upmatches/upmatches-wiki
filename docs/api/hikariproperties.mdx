@@ -1,47 +1,47 @@
 ---
 id: hikari-properties
-title: HikariProperties
+title: HikariProperties Record
 sidebar_label: HikariProperties
 ---
 
-# HikariProperties
+# HikariProperties Record
 
-## Purpose
+The `HikariProperties` record is a Java data carrier class that encapsulates configuration parameters for a HikariCP connection pool. HikariCP is a high-performance JDBC connection pool library commonly used in Spring Boot applications. This record provides a type-safe and immutable way to define and pass connection pool settings, such as pool size limits, timeouts, and lifecycle thresholds.
 
-The `HikariProperties` class is a Java record that encapsulates configuration properties for a HikariCP connection pool. HikariCP is a high-performance JDBC connection pool library commonly used in Spring Boot applications. This record provides a type-safe and immutable way to define and pass HikariCP connection pool settings, such as pool size limits, timeouts, and connection lifecycle parameters.
+By using a Java record, the class automatically generates a constructor, getter methods, `equals()`, `hashCode()`, and `toString()` methods, reducing boilerplate code and ensuring immutability.
 
-## Record Definition
+## Package
 
-This record is defined in the `com.upmatches.app.shared.database.properties` package and is intended to be used as a configuration holder for HikariCP connection pool settings.
+`com.upmatches.app.shared.database.properties`
 
-## Fields
+## Record Components
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Component | Type | Description |
+|-----------|------|-------------|
 | `maximumPoolSize` | `Integer` | The maximum number of connections that can be created in the pool. |
-| `minimumIdle` | `Integer` | The minimum number of idle connections that HikariCP tries to maintain in the pool. |
+| `minimumIdle` | `Integer` | The minimum number of idle connections that the pool maintains. |
 | `idleTimeout` | `Long` | The maximum time (in milliseconds) that a connection is allowed to sit idle in the pool. |
 | `maxLifetime` | `Long` | The maximum lifetime (in milliseconds) of a connection in the pool. |
-| `connectionTimeout` | `Long` | The maximum time (in milliseconds) that the pool will wait for a connection to become available. |
+| `connectionTimeout` | `Long` | The maximum time (in milliseconds) to wait for a connection from the pool. |
 | `leakDetectionThreshold` | `Long` | The threshold (in milliseconds) for detecting connection leaks. |
-| `initializationFailTimeout` | `Long` | The time (in milliseconds) that the pool will wait for a connection to be validated during initialization. |
+| `initializationFailTimeout` | `Long` | The time (in milliseconds) to wait for the pool to initialize before failing. |
 
 ## Usage Example
 
 ```java
-HikariProperties properties = new HikariProperties(
-    10,      // maximumPoolSize
-    5,       // minimumIdle
-    300000,  // idleTimeout (5 minutes)
-    1800000, // maxLifetime (30 minutes)
-    30000,   // connectionTimeout (30 seconds)
-    0,       // leakDetectionThreshold (disabled)
-    -1       // initializationFailTimeout (fail immediately)
+HikariProperties props = new HikariProperties(
+    10,          // maximumPoolSize
+    5,           // minimumIdle
+    300000L,     // idleTimeout (5 minutes)
+    1800000L,    // maxLifetime (30 minutes)
+    30000L,      // connectionTimeout (30 seconds)
+    0L,          // leakDetectionThreshold (disabled)
+    -1L          // initializationFailTimeout (wait indefinitely)
 );
 ```
 
 ## Notes
 
-- All fields are nullable (`Integer` and `Long` types), allowing for partial configuration where some properties may be left unspecified.
-- The record is immutable and thread-safe by design, making it suitable for use in configuration management.
-- This class is typically used in conjunction with a configuration framework (e.g., Spring Boot's `@ConfigurationProperties`) to bind external configuration values to a structured object.
+- All fields are nullable (`Integer` and `Long` instead of `int` and `long`), allowing for flexible configuration where some values may be omitted or set to defaults by the consuming code.
+- The record is immutable, making it safe for use in concurrent environments.
+- This class is intended to be used as a configuration holder, typically populated from external sources like application properties or YAML files.

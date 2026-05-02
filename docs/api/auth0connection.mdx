@@ -6,34 +6,34 @@ sidebar_label: Auth0Connection
 
 # Auth0Connection Enum
 
-The `Auth0Connection` enum is part of the `com.upmatches.app.features.auth.enums` package. It defines the supported social login providers for authentication via Auth0, mapping each provider to its corresponding Auth0 connection identifier.
+The `Auth0Connection` enum maps social login providers to their corresponding Auth0 connection identifiers. It provides a type-safe way to reference supported authentication providers (Google and Facebook) throughout the application, along with their Auth0-specific connection strings.
 
 ## Purpose
 
-This enum serves as a centralized mapping between human-readable provider names (e.g., "google", "facebook") and their Auth0-specific connection IDs (e.g., "google-oauth2", "facebook"). It provides a clean, type-safe way to work with Auth0 connections throughout the application, reducing the risk of string-based errors.
+This enum serves two primary purposes:
+1. **Provider Mapping**: Associates human-readable provider names (e.g., "google", "facebook") with their Auth0 connection identifiers (e.g., "google-oauth2", "facebook").
+2. **Lookup Utility**: Provides a static method to resolve an `Auth0Connection` instance from a provider string, returning an `Optional` to handle invalid or missing provider values gracefully.
 
-## Enum Values
+## Enum Constants
 
-| Enum Constant | Provider Name | Connection ID |
-|---------------|---------------|---------------|
-| `GOOGLE`      | `google`      | `google-oauth2` |
-| `FACEBOOK`    | `facebook`    | `facebook`      |
+| Constant   | Provider | Connection ID    |
+|------------|----------|------------------|
+| `GOOGLE`   | google   | google-oauth2    |
+| `FACEBOOK` | facebook | facebook         |
 
 ## Public Methods
 
 ### `fromProvider(String provider)`
 
-Resolves a provider name string to its corresponding `Auth0Connection` enum value.
+Resolves an `Auth0Connection` from a provider string.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `provider` | `String` | The provider name to look up (case-insensitive). Can be `null` or blank. |
+| Parameter  | Type     | Description                                      |
+|------------|----------|--------------------------------------------------|
+| `provider` | `String` | The provider name to look up (case-insensitive). |
 
-| Returns | Description |
-|---------|-------------|
-| `Optional<Auth0Connection>` | An `Optional` containing the matching `Auth0Connection` if found, or `Optional.empty()` if the provider is `null`, blank, or not recognized. |
+**Returns**: `Optional<Auth0Connection>` — An `Optional` containing the matching `Auth0Connection` if found, or `Optional.empty()` if the provider is `null`, blank, or not recognized.
 
-**Example usage:**
+**Example**:
 ```java
 Optional<Auth0Connection> connection = Auth0Connection.fromProvider("google");
 // Returns Optional.of(Auth0Connection.GOOGLE)
@@ -44,33 +44,24 @@ Optional<Auth0Connection> invalid = Auth0Connection.fromProvider("twitter");
 
 ### `provider()`
 
-Returns the human-readable provider name associated with this enum constant.
+Returns the human-readable provider name.
 
-| Returns | Description |
-|---------|-------------|
-| `String` | The provider name (e.g., "google", "facebook"). |
+**Returns**: `String` — The provider name (e.g., "google", "facebook").
 
 ### `connectionId()`
 
-Returns the Auth0 connection identifier associated with this enum constant.
+Returns the Auth0 connection identifier.
 
-| Returns | Description |
-|---------|-------------|
-| `String` | The Auth0 connection ID (e.g., "google-oauth2", "facebook"). |
+**Returns**: `String` — The Auth0 connection ID (e.g., "google-oauth2", "facebook").
 
 ## Usage Example
 
 ```java
-// Using the enum to get Auth0 connection details
-Auth0Connection googleConnection = Auth0Connection.GOOGLE;
-String providerName = googleConnection.provider();      // "google"
-String connectionId = googleConnection.connectionId();  // "google-oauth2"
-
-// Safely resolving a provider from user input
-String userInput = "FACEBOOK";
-Auth0Connection.fromProvider(userInput)
-    .ifPresent(conn -> {
-        // Use conn.connectionId() for Auth0 authentication
-        System.out.println("Connecting via: " + conn.connectionId());
+// Look up a connection by provider name
+String providerName = "google";
+Auth0Connection.fromProvider(providerName)
+    .ifPresent(connection -> {
+        String auth0ConnectionId = connection.connectionId();
+        // Use auth0ConnectionId for authentication flow
     });
 ```

@@ -6,15 +6,9 @@ sidebar_label: ListGamesCursorFilterRequest
 
 # ListGamesCursorFilterRequest
 
-The `ListGamesCursorFilterRequest` is a Java record that encapsulates filter parameters for querying a paginated list of games using cursor-based pagination. It provides a structured way to pass filtering criteria such as venue IDs, skill levels, date/time ranges, and geographic location.
+The `ListGamesCursorFilterRequest` is a Java record that encapsulates the filtering criteria for a cursor-based paginated query of games. It provides a structured way to pass optional filter parameters such as venue IDs, skill level IDs, date/time ranges, and a geographic location with a radius.
 
-## Purpose
-
-This record is designed to be used as a request object in API endpoints that retrieve games with filtering capabilities. It supports:
-- Filtering by multiple venues and skill levels
-- Date and time range filtering
-- Geographic location-based filtering with radius
-- Validation constraints to ensure data integrity
+This record is designed to be used as a request body in REST API endpoints, with built-in Jakarta Bean Validation annotations to ensure data integrity.
 
 ## Record Definition
 
@@ -34,29 +28,29 @@ public record ListGamesCursorFilterRequest(
 
 ## Fields
 
-| Field | Type | Constraints | Description |
-|-------|------|-------------|-------------|
-| `venueIds` | `List<Long>` | Max 20 entries | List of venue IDs to filter by |
-| `skillLevelIds` | `List<Long>` | Max 20 entries | List of skill level IDs to filter by |
-| `fromDate` | `LocalDate` | None | Start date for filtering games |
-| `toDate` | `LocalDate` | None | End date for filtering games |
-| `fromTime` | `LocalTime` | None | Start time for filtering games |
-| `toTime` | `LocalTime` | None | End time for filtering games |
-| `latitude` | `BigDecimal` | -90.0 to 90.0 | Latitude coordinate for location-based filtering |
-| `longitude` | `BigDecimal` | -180.0 to 180.0 | Longitude coordinate for location-based filtering |
-| `radiusKm` | `Integer` | 1 to 5 | Search radius in kilometers for location-based filtering |
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `venueIds` | `List<Long>` | `@Size(max = 20)` | List of venue IDs to filter by. Maximum 20 entries. |
+| `skillLevelIds` | `List<Long>` | `@Size(max = 20)` | List of skill level IDs to filter by. Maximum 20 entries. |
+| `fromDate` | `LocalDate` | None | Start date for filtering games. |
+| `toDate` | `LocalDate` | None | End date for filtering games. |
+| `fromTime` | `LocalTime` | None | Start time for filtering games. |
+| `toTime` | `LocalTime` | None | End time for filtering games. |
+| `latitude` | `BigDecimal` | `@DecimalMin(-90.0)`, `@DecimalMax(90.0)` | Latitude coordinate for location-based filtering. |
+| `longitude` | `BigDecimal` | `@DecimalMin(-180.0)`, `@DecimalMax(180.0)` | Longitude coordinate for location-based filtering. |
+| `radiusKm` | `Integer` | `@Min(1)`, `@Max(5)` | Search radius in kilometers for location-based filtering. Must be between 1 and 5. |
 
 ## Methods
 
 ### `hasLocation()`
 
-Returns `true` if all three location fields (`latitude`, `longitude`, and `radiusKm`) are non-null, indicating a complete location filter is provided.
+Returns `true` if all three location fields (`latitude`, `longitude`, and `radiusKm`) are non-null, indicating a complete location-based filter is provided.
 
 **Returns:** `boolean`
 
 ### `hasAnyLocationField()`
 
-Returns `true` if at least one of the location fields (`latitude`, `longitude`, or `radiusKm`) is non-null.
+Returns `true` if at least one of the location fields (`latitude`, `longitude`, or `radiusKm`) is non-null. This can be used to validate that partial location data is not accidentally used.
 
 **Returns:** `boolean`
 
@@ -75,39 +69,38 @@ Returns `true` if the `venueIds` list is non-null and not empty.
 ## Usage Example
 
 ```java
-// Create a filter request with venue and location filtering
+// Create a filter request with location and skill level filters
 ListGamesCursorFilterRequest filter = new ListGamesCursorFilterRequest(
-    List.of(1L, 2L, 3L),           // venueIds
-    null,                           // skillLevelIds
-    LocalDate.of(2024, 1, 1),      // fromDate
-    LocalDate.of(2024, 12, 31),    // toDate
-    null,                           // fromTime
-    null,                           // toTime
-    new BigDecimal("40.7128"),      // latitude
-    new BigDecimal("-74.0060"),     // longitude
-    5                               // radiusKm
+    null,                          // venueIds
+    List.of(1L, 2L, 3L),          // skillLevelIds
+    LocalDate.now(),               // fromDate
+    LocalDate.now().plusDays(7),   // toDate
+    LocalTime.of(9, 0),            // fromTime
+    LocalTime.of(22, 0),           // toTime
+    new BigDecimal("40.7128"),     // latitude
+    new BigDecimal("-74.0060"),    // longitude
+    5                              // radiusKm
 );
 
-// Check if location filtering is available
+// Check if location filter is complete
 if (filter.hasLocation()) {
     // Perform location-based query
 }
 
-// Check if venue filtering is available
-if (filter.hasVenues()) {
-    // Perform venue-based query
+// Check if skill level filter is active
+if (filter.hasSkillLevels()) {
+    // Filter by skill levels
 }
 ```
 
-## Validation
+## Validation Summary
 
-The record uses Jakarta Bean Validation annotations to enforce constraints:
-- `@Size(max = 20)` on `venueIds` and `skillLevelIds` limits the number of entries
-- `@DecimalMin` and `@DecimalMax` on `latitude` and `longitude` ensure valid geographic coordinates
-- `@Min` and `@Max` on `radiusKm` restricts the search radius to 1-5 kilometers
+The record enforces the following validation constraints:
 
-## Notes
+- **venueIds**: Maximum 20 entries
+- **skillLevelIds**: Maximum 20 entries
+- **latitude**: Must be between -90.0 and 90.0
+- **longitude**: Must be between -180.0 and 180.0
+- **radiusKm**: Must be between 1 and 5
 
-- All fields are optional; null values indicate no filtering for that criterion
-- The `hasLocation()` method is useful for ensuring all required location parameters are present before performing geospatial queries
-- The `hasAnyLocationField()` method can be used for validation to ensure partial location data is handled appropriately
+These validations are automatically applied when the record is used with Jakarta Bean Validation (e.g., in a Spring Boot controller with `@Valid` annotation).

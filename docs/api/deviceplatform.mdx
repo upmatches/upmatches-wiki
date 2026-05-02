@@ -4,43 +4,47 @@ title: DevicePlatform Enum
 sidebar_label: DevicePlatform
 ---
 
-## Overview
+# DevicePlatform Enum
 
-The `DevicePlatform` enum defines the supported device platforms for push notifications within the UpMatches application. It is used to specify the target platform when sending notifications, ensuring that messages are delivered to the correct device type.
+The `DevicePlatform` enum defines the supported device platforms for push notifications within the UpMatches application. It is used to specify the target operating system or environment when sending notifications, ensuring that messages are delivered to the correct platform-specific push notification service (e.g., Firebase Cloud Messaging for Android, Apple Push Notification Service for iOS, or Web Push for browsers).
 
-This enum is part of the `com.upmatches.app.features.notification.enums` package and is essential for routing notifications to Android, iOS, or Web clients.
+## Package Location
+
+`com.upmatches.app.features.notification.enums`
 
 ## Enum Values
 
-| Value     | Description                                      |
-|-----------|--------------------------------------------------|
-| `ANDROID` | Represents Android mobile devices.               |
-| `IOS`     | Represents Apple iOS devices (iPhone, iPad).     |
-| `WEB`     | Represents web browser-based clients.            |
+| Value     | Description                                                                 |
+|-----------|-----------------------------------------------------------------------------|
+| `ANDROID` | Represents the Android mobile operating system.                             |
+| `IOS`     | Represents the Apple iOS mobile operating system.                           |
+| `WEB`     | Represents web browser environments (e.g., desktop or mobile web browsers). |
 
 ## Usage
 
-The `DevicePlatform` enum is typically used in notification services to determine the appropriate push notification service (e.g., Firebase Cloud Messaging for Android, Apple Push Notification service for iOS, or Web Push API for browsers).
-
-### Example
+This enum is typically used in notification payloads or configuration objects to indicate the intended recipient platform. For example:
 
 ```java
 DevicePlatform platform = DevicePlatform.ANDROID;
+```
 
+It can also be used in switch statements or conditional logic to route notifications to the appropriate push service:
+
+```java
 switch (platform) {
     case ANDROID:
-        // Send notification via FCM
+        // Send via Firebase Cloud Messaging
         break;
     case IOS:
-        // Send notification via APNs
+        // Send via Apple Push Notification Service
         break;
     case WEB:
-        // Send notification via Web Push
+        // Send via Web Push API
         break;
 }
 ```
 
-## Related Components
+## Related
 
-- **NotificationService**: Uses this enum to route notifications to the correct push service.
-- **PushNotificationRequest**: Contains a `DevicePlatform` field to specify the target platform.
+- [Notification Service](../notification-service) (hypothetical link)
+- [Push Notification Payload](../push-notification-payload) (hypothetical link)

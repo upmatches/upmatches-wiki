@@ -6,34 +6,38 @@ sidebar_label: UserProfileResponse
 
 # UserProfileResponse
 
-The `UserProfileResponse` record is a Data Transfer Object (DTO) used to represent a user's profile information in API responses. It encapsulates all relevant user data, including authentication provider details, contact methods, skill levels, and gaming statistics, ensuring a consistent and secure data structure for client-server communication.
+The `UserProfileResponse` record is a Data Transfer Object (DTO) used to represent a user's profile information in API responses. It encapsulates all relevant user data, including authentication provider details, contact methods, skill levels, and game statistics, providing a comprehensive view of a user's profile.
 
 ## Purpose
 
-This record serves as the response model for user profile endpoints. It transforms a `User` entity into a flat, serializable format suitable for JSON responses, while also computing derived fields such as the authentication provider and aggregated contact methods.
+This record serves as the response model for user profile endpoints. It transforms a `User` entity and associated data into a structured, immutable response format suitable for serialization. The record includes a factory method `fromUser()` that handles the conversion logic, including:
+- Mapping contact methods (WhatsApp, Telegram, Messenger)
+- Determining the authentication provider (Singpass, Apple, Auth0)
+- Converting skill level entities to response objects
+- Including computed statistics (games joined/hosted)
 
 ## Record Components
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `userId` | `UUID` | Unique identifier for the user |
-| `authProvider` | `String` | Authentication provider (e.g., "singpass", "apple", "auth0") |
-| `providerUuid` | `String` | Unique identifier from the authentication provider |
+| `authProvider` | `String` | Authentication provider (singpass, apple, auth0) |
+| `providerUuid` | `String` | UUID from the authentication provider |
 | `name` | `String` | User's display name |
-| `contactMethods` | `List<ContactMethod>` | List of available contact methods (WhatsApp, Telegram, Messenger) |
-| `skillLevels` | `List<SkillLevelResponse>` | User's associated skill levels |
-| `hasCompletedOnboarding` | `Boolean` | Whether the user has completed the onboarding process |
-| `totalGamesJoined` | `Long` | Total number of games the user has joined |
-| `totalGamesHosted` | `Long` | Total number of games the user has hosted |
-| `penaltyPoints` | `Integer` | Accumulated penalty points for the user |
-| `avatarUrl` | `String` | URL to the user's avatar image |
-| `canCreateGame` | `Boolean` | Whether the user is allowed to create new games |
+| `contactMethods` | `List<ContactMethod>` | List of available contact methods |
+| `skillLevels` | `List<SkillLevelResponse>` | User's skill levels |
+| `hasCompletedOnboarding` | `Boolean` | Whether onboarding is complete |
+| `totalGamesJoined` | `Long` | Total number of games joined |
+| `totalGamesHosted` | `Long` | Total number of games hosted |
+| `penaltyPoints` | `Integer` | User's penalty points |
+| `avatarUrl` | `String` | URL to user's avatar image |
+| `canCreateGame` | `Boolean` | Whether user can create new games |
 
 ## Public Methods
 
 ### `fromUser(User user, long totalGamesJoined, long totalGamesHosted)`
 
-Creates a `UserProfileResponse` instance from a `User` entity and aggregated game statistics.
+Creates a `UserProfileResponse` from a `User` entity and game statistics.
 
 **Parameters:**
 
@@ -43,29 +47,24 @@ Creates a `UserProfileResponse` instance from a `User` entity and aggregated gam
 | `totalGamesJoined` | `long` | Total number of games the user has joined |
 | `totalGamesHosted` | `long` | Total number of games the user has hosted |
 
-**Returns:** `UserProfileResponse` - A new instance populated with data from the provided user entity.
+**Returns:** `UserProfileResponse` - A new response instance populated with user data.
 
 **Behavior:**
 - Builds a list of `ContactMethod` objects from non-null contact fields (WhatsApp, Telegram, Messenger)
-- Determines the authentication provider based on priority: Singpass > Apple > Auth0
-- Maps the user's `UserSkillLevel` entities to `SkillLevelResponse` objects
-- Copies all remaining fields directly from the `User` entity
+- Determines the authentication provider priority: Singpass > Apple > Auth0
+- Maps `UserSkillLevel` entities to `SkillLevelResponse` objects
+- Populates all record fields from the user entity and provided statistics
 
 ## Usage Example
 
 ```java
-// Assuming 'user' is a User entity retrieved from the database
-UserProfileResponse profile = UserProfileResponse.fromUser(user, 15L, 8L);
+// Assuming 'user' is a User entity retrieved from database
+UserProfileResponse response = UserProfileResponse.fromUser(
+    user,
+    user.getTotalGamesJoined(),
+    user.getTotalGamesHosted()
+);
 
-// Access fields
-UUID id = profile.userId();
-String provider = profile.authProvider();
-List<ContactMethod> contacts = profile.contactMethods();
+// The response can now be serialized and returned from an API endpoint
+return ResponseEntity.ok(response);
 ```
-
-## Notes
-
-- The record is immutable by design, ensuring thread safety and data integrity
-- Contact methods are only included if they are non-null in the user entity
-- The authentication provider is determined by a priority chain: Singpass takes precedence over Apple, which takes precedence over Auth0
-- Skill levels are transformed from the intermediate `UserSkillLevel` entity to the response-friendly `SkillLevelResponse` format

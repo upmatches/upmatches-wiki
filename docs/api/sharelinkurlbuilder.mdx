@@ -1,86 +1,69 @@
 ---
-id: sharelinkurlbuilder
+id: sharelink-url-builder
 title: ShareLinkUrlBuilder
 sidebar_label: ShareLinkUrlBuilder
 ---
 
 # ShareLinkUrlBuilder
 
-The `ShareLinkUrlBuilder` class is a Spring service that constructs various types of URLs for sharing resources within the application. It implements the `IShareLinkUrlBuilder` interface and provides methods to generate shareable links for web and mobile platforms.
+The `ShareLinkUrlBuilder` class is a Spring service responsible for constructing various types of shareable URLs for resources within the application. It implements the `IShareLinkUrlBuilder` interface and provides methods to generate share URLs, web URLs, and mobile deep-link URLs based on the resource type and identifiers.
 
-## Purpose
-
-This class centralizes URL generation logic for shareable links, ensuring consistency across different platforms (web and mobile) and resource types. It uses configuration properties from `JwtProperties` and `ShareLinkProperties` to build properly formatted URLs.
+This service centralizes URL construction logic, ensuring consistency across different platforms (web and mobile) and reducing duplication. It relies on configuration properties (`JwtProperties` and `ShareLinkProperties`) to obtain base URLs and mobile callback schemes.
 
 ## Constructor
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `jwtProperties` | `JwtProperties` | Configuration properties containing mobile callback scheme |
-| `shareLinkProperties` | `ShareLinkProperties` | Configuration properties containing base URLs |
+| `jwtProperties` | `JwtProperties` | Provides the mobile callback scheme for deep-linking. |
+| `shareLinkProperties` | `ShareLinkProperties` | Provides base URLs for share and web links. |
 
 ## Public Methods
 
 ### `buildShareUrl(String code)`
 
-Builds a generic share URL using the base URL and a unique code.
+Constructs a share URL using the base share URL and the provided code.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `code` | `String` | The unique share code to append to the URL |
+| `code` | `String` | The unique share code to append to the base URL. |
 
-**Returns:** `String` - A complete share URL in the format `{baseUrl}/{code}`
+**Returns:** `String` - The complete share URL in the format `{baseUrl}/{code}`.
+
+**Example:** If `shareLinkProperties.baseUrl()` returns `https://example.com/share` and `code` is `abc123`, the result is `https://example.com/share/abc123`.
+
+---
 
 ### `buildWebUrl(ResourceType resourceType, String resourceId)`
 
-Constructs a web-based URL for a specific resource type and identifier.
+Constructs a web URL for a specific resource type and identifier.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `resourceType` | `ResourceType` | The type of resource being shared (e.g., profile, post) |
-| `resourceId` | `String` | The unique identifier of the resource |
+| `resourceType` | `ResourceType` | The type of resource (e.g., profile, post). Must have a `path()` method returning the URL path segment. |
+| `resourceId` | `String` | The unique identifier of the resource. |
 
-**Returns:** `String` - A web URL in the format `{webBaseUrl}/{resourceType.path}/{resourceId}`
+**Returns:** `String` - The complete web URL in the format `{webBaseUrl}/{resourceType.path()}/{resourceId}`.
+
+**Example:** If `shareLinkProperties.webBaseUrl()` returns `https://example.com`, `resourceType.path()` returns `profile`, and `resourceId` is `user123`, the result is `https://example.com/profile/user123`.
+
+---
 
 ### `buildMobileUrl(ResourceType resourceType, String resourceId)`
 
-Generates a mobile deep link URL using the mobile callback scheme.
+Constructs a mobile deep-link URL for a specific resource type and identifier.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `resourceType` | `ResourceType` | The type of resource being shared (e.g., profile, post) |
-| `resourceId` | `String` | The unique identifier of the resource |
+| `resourceType` | `ResourceType` | The type of resource (e.g., profile, post). Must have a `path()` method returning the URL path segment. |
+| `resourceId` | `String` | The unique identifier of the resource. |
 
-**Returns:** `String` - A mobile deep link URL in the format `{mobileCallbackScheme}://{resourceType.path}/{resourceId}`
+**Returns:** `String` - The complete mobile deep-link URL in the format `{mobileCallbackScheme}://{resourceType.path()}/{resourceId}`.
 
-## Usage Example
+**Example:** If `jwtProperties.mobileCallbackScheme()` returns `myapp`, `resourceType.path()` returns `profile`, and `resourceId` is `user123`, the result is `myapp://profile/user123`.
 
-```java
-// Assuming Spring dependency injection
-@Autowired
-private ShareLinkUrlBuilder urlBuilder;
+## Usage Notes
 
-// Build a generic share URL
-String shareUrl = urlBuilder.buildShareUrl("abc123");
-// Result: "https://example.com/share/abc123"
-
-// Build a web URL for a profile
-String webUrl = urlBuilder.buildWebUrl(ResourceType.PROFILE, "user456");
-// Result: "https://example.com/profile/user456"
-
-// Build a mobile deep link
-String mobileUrl = urlBuilder.buildMobileUrl(ResourceType.POST, "post789");
-// Result: "myapp://post/post789"
-```
-
-## Dependencies
-
-- `JwtProperties` - Provides the mobile callback scheme for deep linking
-- `ShareLinkProperties` - Provides base URLs for web and share links
-- `ResourceType` - Enum defining resource types and their URL path segments
-
-## Notes
-
-- The class is declared as `non-sealed`, allowing further subclassing if needed
-- All methods use string constants for path separators to ensure consistency
-- The service is thread-safe as it has no mutable state
+- The class is annotated with `@Service`, making it a Spring-managed bean that can be injected into other components.
+- It implements the `non-sealed` interface `IShareLinkUrlBuilder`, allowing for future extension or alternative implementations.
+- The `ResourceType` enum is expected to provide a `path()` method that returns the appropriate URL segment for each resource type.
+- All URLs are constructed using constants for path separators (`/`) and mobile scheme separators (`://`), ensuring consistent formatting.

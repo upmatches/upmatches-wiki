@@ -6,77 +6,68 @@ sidebar_label: ResendConfiguration
 
 # ResendConfiguration
 
-The `ResendConfiguration` class is a Spring Boot configuration component responsible for initializing and providing a `Resend` client bean. It conditionally creates the bean based on the presence of a configured API key, enabling or disabling email notification functionality accordingly.
+The `ResendConfiguration` class is a Spring Boot configuration component responsible for initializing the [Resend](https://resend.com) email client. It conditionally creates a `Resend` bean based on the availability of a configured API key, enabling or disabling email notification functionality accordingly.
 
 ## Purpose
 
-This configuration class serves as the bridge between application properties and the Resend email service. It reads configuration from `ResendProperties`, validates the presence of an API key, and either creates a functional `Resend` client or returns `null` to gracefully disable email notifications when the key is missing.
+This configuration class serves as the integration point between the application and the Resend email service. It reads configuration properties via `ResendProperties`, logs the initialization status, and provides a `Resend` bean to the Spring application context only when a valid API key is present.
 
-## Class Overview
+## Dependencies
 
-| Aspect | Description |
-|--------|-------------|
-| **Package** | `com.upmatches.app.features.notification.configurations` |
-| **Annotations** | `@Configuration`, `@EnableConfigurationProperties(ResendProperties.class)` |
-| **Dependencies** | `ResendProperties` (injected via constructor) |
-| **Logging** | Uses SLF4J `Logger` for initialization status messages |
+- **Spring Boot**: `@Configuration`, `@EnableConfigurationProperties`, `@Bean`
+- **Resend SDK**: `com.resend.Resend`
+- **SLF4J**: Logging
+- **ResendProperties**: Custom configuration properties class
 
 ## Public Methods
 
-### `resend()`
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `resend()` | `Resend` | Creates and returns a `Resend` client instance if an API key is configured; returns `null` otherwise. |
 
-Creates and returns a `Resend` client bean based on the configured API key.
+### Method Details
 
-| Property | Value |
-|----------|-------|
-| **Return Type** | `Resend` (or `null`) |
-| **Bean Name** | `resend` (default method name) |
-| **Scope** | Singleton (default Spring bean scope) |
+#### `resend()`
 
-**Behavior:**
-- If `ResendProperties.hasApiKey()` returns `false`, logs an informational message and returns `null`
-- If the API key is present, logs an informational message and returns a new `Resend` instance initialized with the API key
+**Description**:  
+This bean method checks whether the `ResendProperties` instance contains a valid API key. If the key is present, it logs an initialization message and returns a new `Resend` client. If the key is missing, it logs a disabled message and returns `null`, effectively disabling email notifications.
 
-**Example Usage:**
+**Parameters**:  
+None
+
+**Returns**:  
+- `Resend` instance if API key is configured
+- `null` if API key is not configured
+
+**Logging**:
+- **INFO**: `"Resend API key not configured; email notifications disabled."` when API key is missing
+- **INFO**: `"Resend client initialized; email notifications enabled."` when API key is present
+
+## Usage Example
+
 ```java
+// The Resend bean is automatically available for injection
 @Autowired
-private Resend resend;
+private Resend resendClient;
 
-public void sendNotification() {
-    if (resend != null) {
-        // Send email using Resend client
-    } else {
-        // Handle disabled notifications
-    }
+// Use the client to send emails
+if (resendClient != null) {
+    // Send email via Resend API
 }
 ```
 
 ## Configuration Properties
 
-The class relies on `ResendProperties` for configuration. Ensure the following property is defined in your application configuration:
+This class relies on `ResendProperties` for configuration. Ensure the following property is set in your application configuration:
 
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `resend.api-key` | `String` | No | API key for Resend email service. If not provided, email notifications are disabled. |
-
-## Logging Behavior
-
-The class logs the following messages at the `INFO` level:
-
-| Condition | Log Message |
-|-----------|-------------|
-| API key not configured | `"Resend API key not configured; email notifications disabled."` |
-| API key configured | `"Resend client initialized; email notifications enabled."` |
-
-## Dependencies
-
-- **Spring Boot**: `@Configuration`, `@EnableConfigurationProperties`, `@Bean`
-- **Resend Java SDK**: `com.resend.Resend`
-- **SLF4J**: Logging framework
-- **ResendProperties**: Custom configuration properties class
+```yaml
+# application.yml
+resend:
+  api-key: your-resend-api-key-here
+```
 
 ## Notes
 
-- The `resend()` method returns `null` when the API key is missing, so consumers should always check for `null` before using the bean
-- This design allows the application to start and function without email capabilities if the API key is not configured
-- The class is thread-safe as it only reads configuration during bean creation
+- The bean returns `null` when no API key is configured, allowing downstream components to check for availability before use.
+- The class uses SLF4J for logging, making it compatible with various logging frameworks.
+- The `@EnableConfigurationProperties(ResendProperties.class)` annotation ensures that `ResendProperties` is registered as a Spring bean.

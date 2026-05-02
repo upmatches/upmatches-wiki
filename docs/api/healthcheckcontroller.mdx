@@ -6,64 +6,65 @@ sidebar_label: Health Check Controller
 
 # Health Check Controller
 
-The `HealthCheckController` is a REST controller that provides a simple health check endpoint for the UpMatches application. It is used to verify that the service is running and accessible, returning a standardized API response with a status of "OK" and a confirmation message.
+The `HealthCheckController` is a REST controller that provides a simple health check endpoint for the UpMatches application. It is used to verify that the service is running and responsive, which is essential for monitoring, load balancers, and container orchestration platforms (e.g., Kubernetes).
 
 ## Location
 
 - **Package:** `com.upmatches.app.features.health.controllers`
 - **Base URL:** `/api/v1/public/health`
 
-## Public Methods
+## Endpoints
 
-| Method | HTTP Method | Endpoint | Description |
-|--------|-------------|----------|-------------|
-| `healthCheck(HttpServletRequest request)` | `GET` | `/api/v1/public/health` | Returns a health check response indicating the service is running. |
+### GET `/api/v1/public/health`
 
-### `healthCheck`
+Returns a simple health check response indicating that the service is operational.
 
-```java
-public ResponseEntity<ApiResponse<String>> healthCheck(HttpServletRequest request)
-```
-
-**Description:**  
-This method handles GET requests to the health check endpoint. It returns a standardized `ApiResponse` object containing:
-- **Status:** `"OK"`
-- **Message:** `"Service is running"`
-- **Path:** The request URI from the incoming HTTP request
-
-**Parameters:**
+#### Request
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `HttpServletRequest` | The incoming HTTP request, used to extract the request URI for the response. |
+| `request` | `HttpServletRequest` | Injected automatically by Spring. Used to capture the request URI for the response. |
 
-**Returns:**
+#### Response
 
-| Type | Description |
-|------|-------------|
-| `ResponseEntity<ApiResponse<String>>` | HTTP 200 OK response containing the health check data wrapped in an `ApiResponse` object. |
+| Status Code | Description |
+|-------------|-------------|
+| `200 OK` | The service is running. |
 
-## Response Example
+The response body is an `ApiResponse<String>` with the following structure:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `String` | Always `"OK"` |
+| `message` | `String` | Always `"Service is running"` |
+| `data` | `String` | The request URI (e.g., `/api/v1/public/health`) |
+
+#### Example Response
 
 ```json
 {
   "status": "OK",
   "message": "Service is running",
-  "path": "/api/v1/public/health"
+  "data": "/api/v1/public/health"
 }
 ```
 
 ## Usage
 
 This endpoint is typically used by:
-- **Load balancers** to verify service availability
-- **Monitoring tools** (e.g., Prometheus, Grafana) for uptime checks
-- **CI/CD pipelines** to confirm successful deployment
-- **Client applications** to check connectivity before making other API calls
 
-## Dependencies
+- **Monitoring systems** (e.g., Prometheus, Grafana) to check service availability.
+- **Load balancers** (e.g., AWS ELB, Nginx) for health checks.
+- **Container orchestration** (e.g., Kubernetes liveness/readiness probes).
+- **CI/CD pipelines** to verify deployment success.
 
-- `com.upmatches.app.shared.responses.ApiResponse` - Shared response wrapper for consistent API output
-- `jakarta.servlet.http.HttpServletRequest` - Jakarta Servlet API for accessing request details
-- `org.springframework.http.ResponseEntity` - Spring Framework HTTP response entity
-- `org.springframework.web.bind.annotation.*` - Spring Web annotations for REST controller mapping
+## Implementation Details
+
+The controller uses:
+
+- `@RestController` – Marks the class as a REST controller.
+- `@RequestMapping("/api/v1/public/health")` – Maps all requests to the base path.
+- `@GetMapping` – Handles HTTP GET requests.
+- `ApiResponse.success()` – A static factory method that creates a standardized success response.
+
+The response is wrapped in `ResponseEntity.ok()` to return HTTP 200 with the response body.

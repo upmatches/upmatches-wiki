@@ -6,38 +6,50 @@ sidebar_label: ExpelParticipantRequest
 
 # ExpelParticipantRequest
 
-The `ExpelParticipantRequest` class is a Java record used to encapsulate the data required when expelling a participant from a game. It provides a simple, immutable data structure that includes an optional reason for the expulsion.
+The `ExpelParticipantRequest` class is a Java record used to encapsulate the data required when expelling a participant from a game or match. It provides a simple, immutable data structure that includes an optional reason for the expulsion.
 
 ## Purpose
 
-This record is designed to be used as a request body in API endpoints that handle participant expulsion. It ensures that any provided reason does not exceed 280 characters, enforcing a business rule for user-generated content.
+This record is designed to be used as a request body in API endpoints that handle participant expulsion. It ensures that the reason provided does not exceed 280 characters, enforcing a constraint that helps maintain concise and meaningful feedback.
 
 ## Record Structure
 
-| Field    | Type     | Constraints                                                                 | Description                                      |
-|----------|----------|-----------------------------------------------------------------------------|--------------------------------------------------|
-| `reason` | `String` | `@Size(max = 280)` – Must be at most 280 characters. | An optional explanation for why the participant is being expelled. |
+The record is defined with a single component:
 
-## Constructor
-
-The record has an implicit canonical constructor that accepts a single `String` parameter for the `reason` field. The `@Size` validation annotation is applied to this parameter.
+| Field    | Type     | Description                                                                 |
+|----------|----------|-----------------------------------------------------------------------------|
+| `reason` | `String` | An optional reason for expelling the participant. Must be at most 280 characters. |
 
 ## Validation
 
-The `reason` field is validated using Jakarta Bean Validation (`jakarta.validation.constraints.Size`). If a value longer than 280 characters is provided, a validation error with the message "Reason must be at most 280 characters." will be triggered.
+The `reason` field is annotated with `@Size(max = 280)`, which ensures that if a reason is provided, it does not exceed 280 characters. This validation is performed by Jakarta Bean Validation when the request is processed.
 
-## Usage Example
+## Usage
+
+This record is typically used in a controller method that handles participant expulsion. For example:
 
 ```java
-// Creating a valid request with a reason
-ExpelParticipantRequest request = new ExpelParticipantRequest("Violation of community guidelines");
+@PostMapping("/expel")
+public ResponseEntity<Void> expelParticipant(@Valid @RequestBody ExpelParticipantRequest request) {
+    // Process the expulsion
+}
+```
 
-// Creating a request without a reason (null is allowed)
-ExpelParticipantRequest emptyRequest = new ExpelParticipantRequest(null);
+## Example
+
+```java
+// Valid request with a reason
+ExpelParticipantRequest request = new ExpelParticipantRequest("Violated community guidelines");
+
+// Valid request without a reason
+ExpelParticipantRequest request = new ExpelParticipantRequest(null);
+
+// Invalid request (reason too long)
+ExpelParticipantRequest request = new ExpelParticipantRequest("A".repeat(281)); // Will fail validation
 ```
 
 ## Notes
 
-- The `reason` field is optional and can be `null`.
 - The record is immutable, meaning once created, its values cannot be changed.
-- This class is part of the `com.upmatches.app.features.game.requests` package.
+- The `reason` field is optional; if not provided, it will be `null`.
+- Validation is handled by the Jakarta Bean Validation framework, typically triggered by the `@Valid` annotation in the controller.

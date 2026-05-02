@@ -1,27 +1,28 @@
 ---
 id: skill-level-service
-title: SkillLevelService
+title: SkillLevelService Documentation
 sidebar_label: SkillLevelService
 ---
 
 # SkillLevelService
 
-The `SkillLevelService` class is a Spring service component that provides business logic for managing skill levels associated with activities. It implements the `ISkillLevelService` interface and serves as the intermediary between the API layer and the data repositories.
+The `SkillLevelService` class is a Spring service component that provides business logic for managing skill levels associated with activities. It implements the `ISkillLevelService` interface and handles the retrieval of skill levels for specific activities, ensuring proper validation and error handling.
 
 ## Purpose
 
-This service handles the retrieval of skill levels for specific activities. It ensures that:
-- The requested activity exists before fetching its skill levels
-- Skill levels are returned in the correct sort order
-- Appropriate exceptions are thrown when activities are not found
+This service acts as an intermediary between the API layer and the data repositories, encapsulating the logic for:
+- Validating activity existence before querying skill levels
+- Retrieving skill levels ordered by their sort order
+- Converting database entities to response DTOs
+- Handling resource not found scenarios
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
 | `ActivityRepository` | Repository | Used to verify activity existence |
-| `SkillLevelRepository` | Repository | Used to fetch skill levels by activity ID |
-| `ServiceOperationExecutor` | Utility | Handles operation execution with standardized error handling |
+| `SkillLevelRepository` | Repository | Used to query skill level data |
+| `ServiceOperationExecutor` | Utility | Provides standardized operation execution with error handling |
 
 ## Public Methods
 
@@ -44,39 +45,41 @@ public List<SkillLevelResponse> getSkillLevelsByActivity(UUID activityId)
 
 | Type | Description |
 |------|-------------|
-| `List<SkillLevelResponse>` | A list of skill level responses ordered by sort order |
+| `List<SkillLevelResponse>` | A list of skill level response DTOs ordered by sort order |
 
-**Throws:**
+**Exceptions:**
 
 | Exception | Condition |
 |-----------|-----------|
-| `ResourceNotFoundException` | If no activity exists with the provided `activityId` |
+| `ResourceNotFoundException` | Thrown when no activity exists with the provided ID |
 
 **Behavior:**
 
 1. Validates that the activity exists in the database
-2. If the activity does not exist, throws a `ResourceNotFoundException` with a message containing the activity ID
-3. If the activity exists, retrieves all skill levels ordered by their `sortOrder` field
-4. Maps each `SkillLevel` entity to a `SkillLevelResponse` DTO
+2. If the activity does not exist, throws a `ResourceNotFoundException` with a descriptive message
+3. If the activity exists, queries the `SkillLevelRepository` for all skill levels associated with the activity, ordered by their sort order
+4. Maps each skill level entity to a `SkillLevelResponse` DTO
 5. Returns the list of skill level responses
 
 ## Error Handling
 
-The service uses `ServiceOperationExecutor.execute()` with the `RETRIEVE` operation status to ensure consistent error handling across the application. The `ResourceNotFoundException` is mapped as the expected exception type for this operation.
-
-## Constants
-
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `MSG_ACTIVITY_NOT_FOUND` | `"Activity with ID '%s' not found."` | Error message template for missing activities |
+The service uses `ServiceOperationExecutor.execute()` to provide standardized error handling and logging. The operation is wrapped with the `RETRIEVE` operation status, and any `ResourceNotFoundException` thrown during execution is properly propagated.
 
 ## Usage Example
 
 ```java
-// Inject the service
-private final SkillLevelService skillLevelService;
-
-// Retrieve skill levels for an activity
-UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-List<SkillLevelResponse> skillLevels = skillLevelService.getSkillLevelsByActivity(activityId);
+@Service
+public class ActivityService {
+    private final SkillLevelService skillLevelService;
+    
+    public ActivityService(SkillLevelService skillLevelService) {
+        this.skillLevelService = skillLevelService;
+    }
+    
+    public void displaySkillLevels(UUID activityId) {
+        List<SkillLevelResponse> skillLevels = 
+            skillLevelService.getSkillLevelsByActivity(activityId);
+        // Process skill levels...
+    }
+}
 ```

@@ -1,42 +1,43 @@
 ---
 id: infisical-properties
-title: InfisicalProperties
+title: InfisicalProperties Configuration
 sidebar_label: InfisicalProperties
 ---
 
 # InfisicalProperties
 
+The `InfisicalProperties` class is a Spring Boot configuration properties record that maps to the `app.infisical.*` prefix in your application's configuration files (e.g., `application.yml` or `application.properties`). It encapsulates all necessary connection parameters for integrating with the Infisical secrets management platform.
+
 ## Purpose
 
-The `InfisicalProperties` class is a Spring Boot configuration properties record that maps application properties prefixed with `app.infisical` to a structured Java object. It encapsulates the configuration required to connect to the Infisical secrets management service, including authentication credentials, project identification, and environment settings.
-
-This record provides sensible defaults for the host URI, environment, and secret path, ensuring that the application can function with minimal configuration while still allowing full customization when needed.
+This record provides a type-safe way to externalize Infisical configuration settings. By using Spring Boot's `@ConfigurationProperties` annotation, it automatically binds properties from your configuration sources to the record's components. The compact constructor ensures sensible defaults are applied when optional values are not explicitly provided.
 
 ## Configuration Properties
 
-The following table describes the configuration properties that can be set in your `application.properties` or `application.yml` file:
+The following table describes each configurable property:
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `app.infisical.client-id` | String | (required) | The client ID for authentication with Infisical |
-| `app.infisical.client-secret` | String | (required) | The client secret for authentication with Infisical |
-| `app.infisical.project-id` | String | (required) | The project ID in Infisical |
-| `app.infisical.host-uri` | String | `https://app.infisical.com` | The base URI of the Infisical server |
-| `app.infisical.environment` | String | `dev` | The environment to use (e.g., dev, staging, prod) |
-| `app.infisical.secret-path` | String | `/` | The path within the project to retrieve secrets from |
+| `clientId` | `String` | (required) | The client ID used for authentication with Infisical |
+| `clientSecret` | `String` | (required) | The client secret used for authentication with Infisical |
+| `projectId` | `String` | (required) | The unique identifier of the Infisical project |
+| `hostUri` | `String` | `https://app.infisical.com` | The base URI of the Infisical API server |
+| `environment` | `String` | `dev` | The target environment (e.g., dev, staging, prod) |
+| `secretPath` | `String` | `/` | The path within the project where secrets are stored |
 
-## Constructor
+## Default Values
 
-The compact constructor validates and applies default values for optional fields:
+The record applies the following defaults when properties are not explicitly configured:
 
-- **hostUri**: If null or blank, defaults to `https://app.infisical.com`
-- **environment**: If null or blank, defaults to `dev`
-- **secretPath**: If null or blank, defaults to `/`
+- **hostUri**: Defaults to `https://app.infisical.com` if not provided or blank
+- **environment**: Defaults to `dev` if not provided or blank
+- **secretPath**: Defaults to `/` if not provided or blank
 
 ## Usage Example
 
+To use this configuration in your Spring Boot application, add the following to your `application.yml`:
+
 ```yaml
-# application.yml
 app:
   infisical:
     client-id: your-client-id
@@ -47,19 +48,7 @@ app:
     secret-path: /
 ```
 
-```properties
-# application.properties
-app.infisical.client-id=your-client-id
-app.infisical.client-secret=your-client-secret
-app.infisical.project-id=your-project-id
-app.infisical.host-uri=https://app.infisical.com
-app.infisical.environment=dev
-app.infisical.secret-path=/
-```
-
-## Dependency Injection
-
-To use this configuration in your Spring components, inject it via constructor injection:
+Then inject the properties into your service:
 
 ```java
 @Service
@@ -78,6 +67,6 @@ public class InfisicalService {
 
 ## Notes
 
-- This class uses Java records, which automatically generate `equals()`, `hashCode()`, and `toString()` methods.
 - The `@ConfigurationProperties` annotation requires Spring Boot's configuration processor to be enabled for IDE support and metadata generation.
-- Ensure that the `@EnableConfigurationProperties(InfisicalProperties.class)` annotation is added to a configuration class or the main application class to activate property binding.
+- All properties are immutable after construction due to the record's design.
+- The compact constructor validates and applies defaults, ensuring the record always contains valid values.

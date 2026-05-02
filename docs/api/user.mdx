@@ -6,34 +6,42 @@ sidebar_label: User
 
 # User Entity
 
-The `User` entity represents a registered user within the UpMatches application. It serves as the core domain model for user management, supporting multiple authentication providers (Singpass, Auth0, Apple), profile management, skill level tracking, and onboarding completion status.
+The `User` entity represents a user within the UpMatches application. It is a JPA entity mapped to the `users` database table and serves as the central model for user authentication, profile management, and skill level tracking.
 
-This JPA entity is mapped to the `users` database table and uses Lombok's `@Getter` and `@NoArgsConstructor` annotations to reduce boilerplate code. The entity is designed to be immutable where appropriate, with controlled mutation through dedicated methods.
+## Purpose
+
+This class handles:
+- User creation from various identity providers (Singpass, Auth0, Apple)
+- Profile management (name, contact methods, avatar)
+- Skill level associations
+- Login tracking
+- Onboarding completion status
+- Penalty point tracking
 
 ## Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `UUID` | Primary key, auto-generated using UUID strategy |
-| `singpassUuid` | `String` | Unique identifier from Singpass authentication |
-| `auth0Uuid` | `String` | Unique identifier from Auth0 authentication |
-| `appleUuid` | `String` | Unique identifier from Apple authentication |
-| `lastLoginAt` | `Instant` | Timestamp of the user's last login |
+| `id` | `UUID` | Primary key, auto-generated |
+| `singpassUuid` | `String` | Unique identifier from Singpass |
+| `auth0Uuid` | `String` | Unique identifier from Auth0 |
+| `appleUuid` | `String` | Unique identifier from Apple |
+| `lastLoginAt` | `Instant` | Timestamp of last login |
 | `name` | `String` | User's display name |
-| `whatsapp` | `String` | WhatsApp contact identifier |
-| `telegram` | `String` | Telegram contact identifier |
-| `messenger` | `String` | Messenger contact identifier |
-| `avatarUrl` | `String` | URL to the user's avatar image |
+| `whatsapp` | `String` | WhatsApp contact |
+| `telegram` | `String` | Telegram handle |
+| `messenger` | `String` | Messenger contact |
+| `avatarUrl` | `String` | URL to user's avatar image |
 | `email` | `String` | User's email address |
-| `skillLevels` | `Set<UserSkillLevel>` | Collection of user skill levels |
-| `hasCompletedOnboarding` | `boolean` | Flag indicating if onboarding is complete |
+| `skillLevels` | `Set<UserSkillLevel>` | Associated skill levels |
+| `hasCompletedOnboarding` | `boolean` | Onboarding completion status |
 | `penaltyPoints` | `int` | Accumulated penalty points |
-| `createdAt` | `Instant` | Timestamp of user creation (non-updatable) |
-| `updatedAt` | `Instant` | Timestamp of last update |
+| `createdAt` | `Instant` | Record creation timestamp |
+| `updatedAt` | `Instant` | Record update timestamp |
 
 ## Public Methods
 
-### Factory Methods
+### Static Factory Methods
 
 | Method | Parameters | Return Type | Description |
 |--------|------------|-------------|-------------|
@@ -41,76 +49,46 @@ This JPA entity is mapped to the `users` database table and uses Lombok's `@Gett
 | `createFromAuth0` | `String auth0Uuid, String avatarUrl, String email` | `User` | Creates a new user authenticated via Auth0 |
 | `createFromApple` | `String appleUuid, String displayName, String email` | `User` | Creates a new user authenticated via Apple |
 
-### Business Logic Methods
+### Instance Methods
 
 | Method | Parameters | Return Type | Description |
 |--------|------------|-------------|-------------|
-| `canCreateGame` | None | `boolean` | Returns `true` if the user has a Singpass UUID, indicating they can create games |
+| `canCreateGame` | None | `boolean` | Checks if user can create games (requires Singpass) |
 | `updateAvatarUrl` | `String url` | `void` | Updates the user's avatar URL |
-| `applyIdpEmail` | `String email` | `void` | Applies an email from an identity provider if the value is not blank |
-| `recordLogin` | None | `void` | Records the current timestamp as the last login time |
-| `updateProfile` | `ProfileData data` | `void` | Fully updates the user's profile and marks onboarding as complete |
-| `patchProfile` | `PatchData data` | `void` | Partially updates the user's profile, only modifying non-null fields |
+| `applyIdpEmail` | `String email` | `void` | Applies email from identity provider if not null/blank |
+| `recordLogin` | None | `void` | Records the current timestamp as last login |
+| `updateProfile` | `ProfileData data` | `void` | Updates full profile and marks onboarding as complete |
+| `patchProfile` | `PatchData data` | `void` | Partially updates profile fields |
 
-### Inner Records
+## Inner Records
 
-#### `ProfileData`
+### ProfileData
+
+Used for full profile updates during onboarding.
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | `String` | User's display name |
-| `whatsapp` | `String` | WhatsApp contact identifier |
-| `telegram` | `String` | Telegram contact identifier |
-| `messenger` | `String` | Messenger contact identifier |
-| `skillLevels` | `List<SkillLevel>` | List of skill levels to assign |
+| `whatsapp` | `String` | WhatsApp contact |
+| `telegram` | `String` | Telegram handle |
+| `messenger` | `String` | Messenger contact |
+| `skillLevels` | `List<SkillLevel>` | List of skill levels |
 
-#### `PatchData`
+### PatchData
+
+Used for partial profile updates.
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | `String` | User's display name (nullable) |
-| `whatsapp` | `String` | WhatsApp contact identifier (nullable) |
-| `telegram` | `String` | Telegram contact identifier (nullable) |
-| `messenger` | `String` | Messenger contact identifier (nullable) |
-| `skillLevels` | `List<SkillLevel>` | List of skill levels to assign (nullable) |
+| `whatsapp` | `String` | WhatsApp contact (nullable) |
+| `telegram` | `String` | Telegram handle (nullable) |
+| `messenger` | `String` | Messenger contact (nullable) |
+| `skillLevels` | `List<SkillLevel>` | List of skill levels (nullable) |
 
-## Usage Examples
+## Key Behaviors
 
-### Creating a User via Singpass
-
-```java
-User user = User.createFromSingpass("singpass-uuid-123");
-```
-
-### Updating User Profile
-
-```java
-User.ProfileData profileData = new User.ProfileData(
-    "John Doe",
-    "+1234567890",
-    "@johndoe",
-    "john.messenger",
-    skillLevels
-);
-user.updateProfile(profileData);
-```
-
-### Patching User Profile
-
-```java
-User.PatchData patchData = new User.PatchData(
-    "Jane Doe",  // Update name
-    null,        // Keep existing WhatsApp
-    null,        // Keep existing Telegram
-    null,        // Keep existing Messenger
-    null         // Keep existing skill levels
-);
-user.patchProfile(patchData);
-```
-
-## Notes
-
-- The `blankToNull` utility method ensures that blank strings are stored as `null` in the database
-- The `@PrePersist` and `@PreUpdate` callbacks automatically manage `createdAt` and `updatedAt` timestamps
-- Skill levels are managed through a `UserSkillLevel` join entity with cascade operations
-- The `penaltyPoints` field is initialized to `0` by default
+- **Automatic Timestamps**: `createdAt` and `updatedAt` are automatically managed via `@PrePersist` and `@PreUpdate` lifecycle callbacks
+- **Skill Level Management**: Skill levels are replaced entirely during profile updates, not merged
+- **Null Handling**: Blank or null values for contact fields and email are normalized to `null`
+- **Onboarding**: Completing a full profile update automatically marks onboarding as finished

@@ -6,16 +6,14 @@ sidebar_label: RepositoryHelper
 
 # RepositoryHelper
 
-The `RepositoryHelper` class is a **final utility class** that provides static helper methods for common database operations in a Spring Data JPA application. It is designed to reduce boilerplate code when performing CRUD operations on entities, especially those that use both numeric IDs and UUIDs.
+The `RepositoryHelper` class is a **utility class** that provides static helper methods for common repository operations in a Spring Data JPA-based application. It simplifies tasks such as finding entities by ID or UUID, paginated queries, and deletion (both hard and soft delete). The class is designed to reduce boilerplate code and enforce consistent error handling by throwing `ResourceNotFoundException` when entities are not found.
 
-This class is part of the `com.upmatches.app.shared.helpers` package and relies on custom exceptions (`ResourceNotFoundException`) and custom repository interfaces (`UuidRepository`).
+## Features
 
-## Purpose
-
-- **Simplify common repository operations** such as finding, deleting, and soft-deleting entities.
-- **Provide consistent error handling** by throwing `ResourceNotFoundException` when an entity is not found.
-- **Support paginated queries** with sorting and mapping to DTOs.
-- **Enforce utility class pattern** by having a private constructor that throws `IllegalStateException`.
+- **Find by ID or UUID** with automatic exception handling.
+- **Paginated queries** with sorting and mapping.
+- **Hard delete** by ID or UUID.
+- **Soft delete** by ID or UUID with a custom marking function.
 
 ## Public Methods
 
@@ -23,111 +21,107 @@ This class is part of the `com.upmatches.app.shared.helpers` package and relies 
 
 Finds an entity by its primary key (ID) or throws a `ResourceNotFoundException`.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `repository` | `JpaRepository<T, I>` | The Spring Data JPA repository for the entity |
-| `id` | `I` | The primary key of the entity |
-| `entityClass` | `Class<T>` | The entity class (used for error messages) |
-| **Returns** | `T` | The found entity |
-
-**Throws:** `ResourceNotFoundException` if the entity is not found.
+| Parameter    | Type                | Description                                      |
+|--------------|---------------------|--------------------------------------------------|
+| `repository` | `JpaRepository<T, I>` | The Spring Data JPA repository.                |
+| `id`         | `I`                 | The entity's primary key.                        |
+| `entityClass`| `Class<T>`          | The entity class (used for error messages).      |
+| **Returns**  | `T`                 | The found entity.                                |
+| **Throws**   | `ResourceNotFoundException` | If the entity is not found.              |
 
 ### `findByUuidOrThrow`
 
 Finds an entity by its UUID or throws a `ResourceNotFoundException`.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `repository` | `UuidRepository<T>` | A custom repository that supports UUID-based lookups |
-| `uuid` | `UUID` | The UUID of the entity |
-| `entityClass` | `Class<T>` | The entity class (used for error messages) |
-| **Returns** | `T` | The found entity |
-
-**Throws:** `ResourceNotFoundException` if the entity is not found.
+| Parameter    | Type                | Description                                      |
+|--------------|---------------------|--------------------------------------------------|
+| `repository` | `UuidRepository<T>` | A repository that supports UUID-based lookup.    |
+| `uuid`       | `UUID`              | The entity's UUID.                               |
+| `entityClass`| `Class<T>`          | The entity class (used for error messages).      |
+| **Returns**  | `T`                 | The found entity.                                |
+| **Throws**   | `ResourceNotFoundException` | If the entity is not found.              |
 
 ### `findAllPaged`
 
-Retrieves a paginated list of entities, maps them to a different type, and returns a `PagedResponse`.
+Retrieves a paginated, sorted, and mapped list of entities.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `repository` | `JpaRepository<T, ?>` | The Spring Data JPA repository for the entity |
-| `page` | `int` | The page number (0-indexed) |
-| `size` | `int` | The number of items per page |
-| `sortBy` | `String` | The field name to sort by |
-| `sortDirection` | `String` | The sort direction (`"ASC"` or `"DESC"`) |
-| `mapper` | `Function<T, R>` | A function to map entity `T` to response type `R` |
-| **Returns** | `PagedResponse<R>` | A paginated response containing mapped items |
-
-**Throws:** `IllegalArgumentException` if pagination parameters are invalid (validated by `ValidationHelper`).
+| Parameter       | Type                  | Description                                      |
+|-----------------|-----------------------|--------------------------------------------------|
+| `repository`    | `JpaRepository<T, ?>` | The Spring Data JPA repository.                |
+| `page`          | `int`                 | The page number (0-indexed).                     |
+| `size`          | `int`                 | The page size.                                   |
+| `sortBy`        | `String`              | The field name to sort by.                       |
+| `sortDirection` | `String`              | The sort direction (`"ASC"` or `"DESC"`).        |
+| `mapper`        | `Function<T, R>`      | A function to map entities to the response DTO.  |
+| **Returns**     | `PagedResponse<R>`    | A paginated response with mapped data.           |
+| **Throws**      | `IllegalArgumentException` | If pagination parameters are invalid.       |
 
 ### `deleteByIdOrThrow`
 
-Deletes an entity by its primary key. First finds the entity, then deletes it.
+Deletes an entity by its primary key. Throws `ResourceNotFoundException` if not found.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `repository` | `JpaRepository<T, I>` | The Spring Data JPA repository for the entity |
-| `id` | `I` | The primary key of the entity to delete |
-| `entityClass` | `Class<T>` | The entity class (used for error messages) |
-
-**Throws:** `ResourceNotFoundException` if the entity is not found.
+| Parameter    | Type                | Description                                      |
+|--------------|---------------------|--------------------------------------------------|
+| `repository` | `JpaRepository<T, I>` | The Spring Data JPA repository.                |
+| `id`         | `I`                 | The entity's primary key.                        |
+| `entityClass`| `Class<T>`          | The entity class (used for error messages).      |
+| **Throws**   | `ResourceNotFoundException` | If the entity is not found.              |
 
 ### `deleteByUuidOrThrow`
 
-Deletes an entity by its UUID. First finds the entity, then deletes it.
+Deletes an entity by its UUID. Throws `ResourceNotFoundException` if not found.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `repository` | `UuidRepository<T>` | A custom repository that supports UUID-based lookups |
-| `uuid` | `UUID` | The UUID of the entity to delete |
-| `entityClass` | `Class<T>` | The entity class (used for error messages) |
-
-**Throws:** `ResourceNotFoundException` if the entity is not found.
+| Parameter    | Type                | Description                                      |
+|--------------|---------------------|--------------------------------------------------|
+| `repository` | `UuidRepository<T>` | A repository that supports UUID-based lookup.    |
+| `uuid`       | `UUID`              | The entity's UUID.                               |
+| `entityClass`| `Class<T>`          | The entity class (used for error messages).      |
+| **Throws**   | `ResourceNotFoundException` | If the entity is not found.              |
 
 ### `softDeleteByIdOrThrow`
 
-Performs a soft delete on an entity identified by its numeric ID. The actual deletion logic is provided by a `Consumer` callback.
+Performs a soft delete by ID using a custom marking function.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `repository` | `JpaRepository<T, Long>` | The Spring Data JPA repository for the entity |
-| `id` | `Long` | The numeric ID of the entity |
-| `entityClass` | `Class<T>` | The entity class (used for error messages) |
-| `markDeleted` | `Consumer<T>` | A callback that marks the entity as deleted (e.g., sets a `deletedAt` field) |
-
-**Throws:** `ResourceNotFoundException` if the entity is not found.
+| Parameter     | Type                   | Description                                      |
+|---------------|------------------------|--------------------------------------------------|
+| `repository`  | `JpaRepository<T, Long>` | The Spring Data JPA repository (ID must be Long). |
+| `id`          | `Long`                 | The entity's primary key.                        |
+| `entityClass` | `Class<T>`             | The entity class (used for error messages).      |
+| `markDeleted` | `Consumer<T>`          | A function that marks the entity as deleted.     |
+| **Throws**    | `ResourceNotFoundException` | If the entity is not found.              |
 
 ### `softDeleteByUuidOrThrow`
 
-Performs a soft delete on an entity identified by its UUID. The actual deletion logic is provided by a `Consumer` callback.
+Performs a soft delete by UUID using a custom marking function.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `repository` | `UuidRepository<T>` | A custom repository that supports UUID-based lookups |
-| `uuid` | `UUID` | The UUID of the entity |
-| `entityClass` | `Class<T>` | The entity class (used for error messages) |
-| `markDeleted` | `Consumer<T>` | A callback that marks the entity as deleted (e.g., sets a `deletedAt` field) |
-
-**Throws:** `ResourceNotFoundException` if the entity is not found.
+| Parameter     | Type                   | Description                                      |
+|---------------|------------------------|--------------------------------------------------|
+| `repository`  | `UuidRepository<T>`    | A repository that supports UUID-based lookup.    |
+| `uuid`        | `UUID`                 | The entity's UUID.                               |
+| `entityClass` | `Class<T>`             | The entity class (used for error messages).      |
+| `markDeleted` | `Consumer<T>`          | A function that marks the entity as deleted.     |
+| **Throws**    | `ResourceNotFoundException` | If the entity is not found.              |
 
 ## Usage Example
 
 ```java
-// Find a User by ID
+// Find a user by ID
 User user = RepositoryHelper.findByIdOrThrow(userRepository, 1L, User.class);
 
-// Find a Product by UUID
-Product product = RepositoryHelper.findByUuidOrThrow(productRepository, uuid, Product.class);
+// Find a user by UUID
+User user = RepositoryHelper.findByUuidOrThrow(userRepository, uuid, User.class);
 
-// Get paginated DTOs
-PagedResponse<UserDTO> users = RepositoryHelper.findAllPaged(
-    userRepository, 0, 10, "createdAt", "DESC", UserDTO::fromEntity
+// Paginated query with sorting and mapping
+PagedResponse<UserDTO> response = RepositoryHelper.findAllPaged(
+    userRepository, 0, 10, "createdAt", "DESC", user -> new UserDTO(user)
 );
 
-// Soft delete a User
-RepositoryHelper.softDeleteByIdOrThrow(
-    userRepository, 1L, User.class, user -> user.setDeletedAt(LocalDateTime.now())
+// Hard delete by ID
+RepositoryHelper.deleteByIdOrThrow(userRepository, 1L, User.class);
+
+// Soft delete by UUID
+RepositoryHelper.softDeleteByUuidOrThrow(
+    userRepository, uuid, User.class, user -> user.setDeleted(true)
 );
 ```
 
@@ -136,9 +130,11 @@ RepositoryHelper.softDeleteByIdOrThrow(
 - `com.upmatches.app.shared.exceptions.types.ResourceNotFoundException`
 - `com.upmatches.app.shared.repositories.UuidRepository`
 - `com.upmatches.app.shared.responses.PagedResponse`
-- `org.springframework.data.domain.PageRequest`
-- `org.springframework.data.domain.Sort`
-- `org.springframework.data.jpa.repository.JpaRepository`
-- `java.util.UUID`
-- `java.util.function.Consumer`
-- `java.util.function.Function`
+- `com.upmatches.app.shared.helpers.ValidationHelper`
+- Spring Data JPA (`JpaRepository`, `PageRequest`, `Sort`)
+
+## Notes
+
+- This class is **final** and has a **private constructor** to prevent instantiation.
+- All methods are **static** and designed for direct invocation.
+- The `softDeleteByIdOrThrow` method requires the ID type to be `Long`.

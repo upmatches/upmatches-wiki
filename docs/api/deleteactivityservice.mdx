@@ -6,67 +6,64 @@ sidebar_label: DeleteActivityService
 
 # DeleteActivityService
 
-The `DeleteActivityService` class is a Spring service component responsible for deleting an `Activity` entity from the system. It implements the `IDeleteActivityService` interface and provides a transactional, auditable method to safely remove an activity by its unique identifier (UUID).
+The `DeleteActivityService` class is a Spring service component responsible for deleting an `Activity` entity from the system. It implements the `IDeleteActivityService` interface and provides a transactional, auditable method to remove an activity by its unique identifier (UUID).
 
 ## Purpose
 
-This service encapsulates the business logic for deleting activities, ensuring that:
-- The activity exists before attempting deletion
-- The operation is executed within a transactional context
-- The deletion is audited for compliance and tracking purposes
-- Any errors are properly handled and wrapped in appropriate exceptions
+- **Delete an Activity**: Removes an existing activity from the database.
+- **Validation**: Ensures the activity exists before deletion; throws a `ResourceNotFoundException` if not found.
+- **Auditing**: Logs the deletion event with the activity ID for audit trails.
+- **Error Handling**: Uses `ServiceOperationExecutor` to handle operation status and exceptions consistently.
 
 ## Dependencies
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `ActivityRepository` | Repository | Data access layer for Activity entities |
+| Dependency | Description |
+|------------|-------------|
+| `ActivityRepository` | Spring Data JPA repository for `Activity` entity persistence operations. |
 
 ## Public Methods
 
 ### `execute(UUID id)`
 
-Deletes an activity by its unique identifier.
+Deletes an activity identified by the given UUID.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the activity to delete |
+| `id` | `UUID` | The unique identifier of the activity to delete. |
 
-**Return Type:** `void`
+**Returns**: `void`
 
-**Exceptions:**
+**Throws**:
+- `ResourceNotFoundException` – If no activity exists with the given ID.
 
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | If no activity exists with the provided ID |
+**Behavior**:
+1. Looks up the activity by its ID in the database.
+2. If not found, throws a `ResourceNotFoundException` with a descriptive message.
+3. If found, deletes the activity from the database.
+4. The operation is wrapped in `ServiceOperationExecutor.executeVoid` for consistent error handling and status tracking.
+5. The method is annotated with `@Transactional` to ensure atomicity.
+6. The `@Auditable` annotation logs the deletion with action `ACTIVITY_DELETED`, resource type `ACTIVITY`, and the activity ID as the resource identifier.
 
-**Behavior:**
-1. Looks up the activity by its UUID
-2. Throws `ResourceNotFoundException` if the activity is not found
-3. Deletes the activity from the repository
-4. Executes within a transactional context
-5. Records an audit event with action type `ACTIVITY_DELETED`
-
-## Example Usage
+## Usage Example
 
 ```java
 @Autowired
 private DeleteActivityService deleteActivityService;
 
-// Delete an activity
-UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-deleteActivityService.execute(activityId);
+public void removeActivity(UUID activityId) {
+    deleteActivityService.execute(activityId);
+}
 ```
 
 ## Error Handling
 
-The service uses `ServiceOperationExecutor.executeVoid()` to wrap the deletion logic, which provides consistent error handling and operation status tracking. If the activity is not found, a `ResourceNotFoundException` is thrown with a message indicating the missing ID.
+The service uses a custom exception `ResourceNotFoundException` when the activity does not exist. The error message format is:
+```
+Activity with ID '<uuid>' not found.
+```
 
-## Audit Trail
+## Notes
 
-The `@Auditable` annotation ensures that every deletion operation is logged with:
-- **Action:** `ACTIVITY_DELETED`
-- **Resource Type:** `ACTIVITY`
-- **Resource ID:** The UUID of the deleted activity
-
-This provides a complete audit trail for compliance and monitoring purposes.
+- The class is declared as `non-sealed`, allowing further extension if needed.
+- The `ServiceOperationExecutor` handles the `DELETE` operation status and wraps any `ResourceNotFoundException` appropriately.
+- This service is part of the `com.upmatches.app.features.activity.services` package and follows a clean architecture pattern with separation of concerns.

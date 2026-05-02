@@ -6,95 +6,101 @@ sidebar_label: EmailNotificationService
 
 # EmailNotificationService
 
-The `EmailNotificationService` class is a Spring service that implements the `IEmailNotificationService` interface. It is responsible for sending email notifications using the Resend email API. This service handles the entire email composition and delivery process, including HTML rendering, recipient validation, and error handling.
+The `EmailNotificationService` class is a Spring service that implements the `IEmailNotificationService` interface. It is responsible for sending email notifications using the Resend email API. This service handles the complete lifecycle of sending an email notification, including recipient validation, content rendering, and error handling.
 
 ## Purpose
 
-The primary purpose of this service is to:
-- Send email notifications to users based on their notification preferences
-- Compose rich HTML emails using templates and context data
-- Handle edge cases such as missing email addresses or unavailable email service
-- Provide graceful error handling without disrupting the application flow
+This service provides a robust mechanism for sending transactional emails as part of the notification system. It:
+- Validates that recipients have a valid email address before attempting to send
+- Gracefully handles cases where the Resend service is unavailable
+- Renders rich HTML email content using the `EmailContentRenderer` utility
+- Provides comprehensive logging for debugging and monitoring
 
 ## Class Details
 
-| Property | Value |
-|----------|-------|
+| Attribute | Value |
+|-----------|-------|
 | **Package** | `com.upmatches.app.features.notification.services` |
 | **Annotations** | `@Service` |
 | **Modifiers** | `public non-sealed` |
 | **Implements** | `IEmailNotificationService` |
 
-## Dependencies
+## Constructor
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `ResendProperties` | Configuration | Holds email sender configuration (name and address) |
-| `ObjectProvider<Resend>` | Provider | Lazily provides the Resend client instance |
-| `EmailContentRenderer` | Utility | Static helper for building HTML email content |
+### `EmailNotificationService(ResendProperties resendProperties, ObjectProvider<Resend> resendProvider)`
+
+Creates a new instance of the email notification service.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `resendProperties` | `ResendProperties` | Configuration properties for the Resend email service (e.g., sender name, sender address) |
+| `resendProvider` | `ObjectProvider<Resend>` | Provider for lazy initialization of the Resend client instance |
 
 ## Public Methods
 
-### `send(Notification notification, EmailContext context)`
+### `void send(Notification notification, EmailContext context)`
 
 Sends an email notification to the recipient associated with the given notification.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `notification` | `Notification` | The notification entity containing recipient info, title, and message |
-| `context` | `EmailContext` | Optional context data for email rendering (can be null) |
+| `notification` | `Notification` | The notification entity containing recipient information, title, and message |
+| `context` | `EmailContext` | Optional context data for rendering dynamic content (e.g., game URLs, additional details) |
+
+**Behavior:**
+
+1. **Recipient Validation**: Checks if the recipient has a valid email address. If the email is `null` or blank, the method logs a debug message and returns without sending.
+
+2. **Service Availability**: Attempts to obtain a `Resend` instance from the provider. If the service is unavailable, it logs a debug message and returns.
+
+3. **Content Rendering**: Uses `EmailContentRenderer` to build the HTML email content:
+   - Renders a details table based on the notification type and context
+   - Builds a call-to-action button if a game URL is present in the context
+   - Wraps everything in a complete HTML template with the notification title and message
+
+4. **Email Construction**: Creates a `CreateEmailOptions` object with:
+   - **From**: Formatted as `"Sender Name <sender@email.com>"` using properties
+   - **To**: The recipient's email address
+   - **Subject**: The notification title
+   - **HTML**: The rendered HTML content
+
+5. **Sending**: Attempts to send the email via the Resend API. If sending fails, it logs a warning with the notification ID and error message.
 
 **Return Type:** `void`
 
-**Behavior:**
-1. Retrieves the recipient's email address from the notification
-2. Validates the email address is present and non-blank
-3. Attempts to obtain a Resend client instance
-4. Builds the email HTML content using `EmailContentRenderer`:
-   - Renders a details table based on notification type and context
-   - Renders a call-to-action button if a game URL is present
-   - Wraps everything in a complete HTML template
-5. Constructs the email options with sender, recipient, subject, and HTML body
-6. Sends the email via the Resend API
-7. Logs warnings on failure without throwing exceptions
+**Logging:**
+- `DEBUG`: When recipient has no email or Resend is unavailable
+- `WARN`: When email sending fails
 
-**Edge Cases Handled:**
-- **Missing email:** Logs a debug message and returns silently
-- **Unavailable Resend client:** Logs a debug message and returns silently
-- **Null context:** Uses an empty context as fallback
-- **Send failure:** Logs a warning with the error message
+## Dependencies
 
-## Logging
-
-The service uses SLF4J logging with the following log messages:
-
-| Constant | Log Level | Purpose |
-|----------|-----------|---------|
-| `LOG_NO_EMAIL` | DEBUG | Recipient has no email address |
-| `LOG_UNAVAILABLE` | DEBUG | Resend client is not available |
-| `LOG_SEND_FAILED` | WARN | Email sending failed with exception |
+| Dependency | Purpose |
+|------------|---------|
+| `com.resend.Resend` | Resend email API client |
+| `com.resend.services.emails.model.CreateEmailOptions` | Email message options builder |
+| `com.upmatches.app.features.notification.entities.Notification` | Notification entity |
+| `com.upmatches.app.features.notification.models.EmailContext` | Context data for email rendering |
+| `com.upmatches.app.features.notification.properties.ResendProperties` | Configuration properties |
+| `com.upmatches.app.features.notification.utils.EmailContentRenderer` | HTML content rendering utility |
+| `org.slf4j.Logger` | Logging framework |
+| `org.springframework.beans.factory.ObjectProvider` | Lazy dependency injection |
 
 ## Usage Example
 
 ```java
+// The service is typically injected and used in a controller or other service
 @Autowired
-private EmailNotificationService emailNotificationService;
+private EmailNotificationService emailService;
 
-// Create a notification and context
-Notification notification = new Notification();
-notification.setTitle("Game Invitation");
-notification.setMessage("You've been invited to play!");
-notification.setRecipient(user);
-
-EmailContext context = new EmailContext("game-url", "https://example.com/game/123");
-
-// Send the email
-emailNotificationService.send(notification, context);
+// Sending a notification
+Notification notification = notificationRepository.findById(123L);
+EmailContext context = new EmailContext("https://example.com/game/456");
+emailService.send(notification, context);
 ```
 
-## Notes
+## Error Handling
 
-- The class is declared as `non-sealed`, allowing further subclassing if needed
-- The Resend client is obtained via `ObjectProvider` to support lazy initialization and optional availability
-- Email content rendering is delegated to the static utility class `EmailContentRenderer`
-- The sender address is formatted as `"From Name <from@address.com>"` using properties from `ResendProperties`
+The service employs a fail-safe approach:
+- Missing recipient email: Silently skips with debug logging
+- Resend service unavailable: Silently skips with debug logging
+- API call failure: Logs warning but does not throw exceptions, preventing cascading failures

@@ -6,24 +6,24 @@ sidebar_label: ApiResponse
 
 # ApiResponse
 
-The `ApiResponse` class is a generic Java record that provides a standardized structure for all API responses in the UpMatches application. It ensures consistency across the API layer by encapsulating success/failure status, payload data, messages, timestamps, and request paths.
+The `ApiResponse` class is a generic Java record designed to standardize the structure of API responses across the application. It provides a consistent format for both successful and error responses, including a timestamp and the request path for traceability.
 
 ## Purpose
 
-- **Standardization**: All API endpoints return responses in a uniform format.
-- **Serialization Control**: Uses `@JsonInclude(JsonInclude.Include.NON_NULL)` to exclude null fields from JSON output, reducing payload size.
-- **Immutability**: As a Java record, all fields are final and immutable.
-- **Factory Methods**: Provides static factory methods for creating success and error responses with automatic timestamp generation.
+- **Standardization**: Ensures all API endpoints return responses in a uniform JSON structure.
+- **Clarity**: Distinguishes between success and failure via the `success` boolean.
+- **Traceability**: Includes a `timestamp` and `path` to help with debugging and logging.
+- **Flexibility**: The generic type `T` allows any data type to be returned as the payload.
 
 ## Record Components
 
 | Component | Type | Description |
 |-----------|------|-------------|
-| `success` | `Boolean` | Indicates whether the API call was successful (`true`) or failed (`false`) |
-| `data` | `T` | The response payload (generic type). `null` for error responses |
-| `message` | `String` | Human-readable message describing the result or error |
-| `timestamp` | `Instant` | UTC timestamp when the response was created |
-| `path` | `String` | The request path that generated this response |
+| `success` | `Boolean` | Indicates whether the request was successful (`true`) or failed (`false`). |
+| `data` | `T` | The payload of the response. `null` for error responses. |
+| `message` | `String` | A human-readable message describing the result. |
+| `timestamp` | `Instant` | The exact time the response was generated (UTC). |
+| `path` | `String` | The request path that generated this response. |
 
 ## Public Methods
 
@@ -33,16 +33,11 @@ Creates a successful API response.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `data` | `T` | The response payload |
-| `message` | `String` | Success message |
-| `path` | `String` | Request path |
+| `data` | `T` | The response payload. |
+| `message` | `String` | A success message. |
+| `path` | `String` | The request path. |
 
-**Returns**: `ApiResponse<T>` with `success=true`, the provided data, message, current timestamp, and path.
-
-**Example**:
-```java
-ApiResponse<User> response = ApiResponse.success(user, "User found", "/api/users/123");
-```
+**Returns**: `ApiResponse<T>` — a response with `success` set to `true`.
 
 ### `error(String message, String path)`
 
@@ -50,41 +45,21 @@ Creates an error API response.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `message` | `String` | Error description |
-| `path` | `String` | Request path |
+| `message` | `String` | An error message describing what went wrong. |
+| `path` | `String` | The request path. |
 
-**Returns**: `ApiResponse<T>` with `success=false`, `data=null`, the provided message, current timestamp, and path.
+**Returns**: `ApiResponse<T>` — a response with `success` set to `false` and `data` set to `null`.
 
-**Example**:
+## Usage Example
+
 ```java
-ApiResponse<Void> response = ApiResponse.error("User not found", "/api/users/999");
+// Successful response
+ApiResponse<User> response = ApiResponse.success(user, "User found", "/api/users/123");
+
+// Error response
+ApiResponse<Void> errorResponse = ApiResponse.error("User not found", "/api/users/999");
 ```
 
-## Usage Notes
+## JSON Serialization
 
-- The `@JsonInclude(JsonInclude.Include.NON_NULL)` annotation ensures that `data` field is omitted from JSON when it is `null` (error responses).
-- Timestamps are generated automatically using `Instant.now()` at the moment of response creation.
-- The generic type `T` allows the response to carry any type of payload, from simple strings to complex domain objects.
-
-## JSON Serialization Examples
-
-**Success Response**:
-```json
-{
-  "success": true,
-  "data": { "id": 1, "name": "John Doe" },
-  "message": "User found",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "path": "/api/users/1"
-}
-```
-
-**Error Response**:
-```json
-{
-  "success": false,
-  "message": "User not found",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "path": "/api/users/999"
-}
-```
+Due to the `@JsonInclude(JsonInclude.Include.NON_NULL)` annotation, any field that is `null` (such as `data` in error responses) will be omitted from the serialized JSON output. This keeps the response payload clean and minimal.

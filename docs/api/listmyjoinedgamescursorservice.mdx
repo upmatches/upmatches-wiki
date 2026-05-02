@@ -6,53 +6,73 @@ sidebar_label: ListMyJoinedGamesCursorService
 
 # ListMyJoinedGamesCursorService
 
+The `ListMyJoinedGamesCursorService` is a Spring service class responsible for retrieving a paginated list of games that the currently authenticated user has joined. It implements cursor-based pagination to efficiently fetch and navigate through large result sets.
+
 ## Purpose
 
-The `ListMyJoinedGamesCursorService` is a Spring service class responsible for retrieving a paginated list of games that the currently authenticated user has joined. It implements cursor-based pagination to efficiently fetch and navigate through large result sets, returning a `CursorPagedResponse<GameResponse>` containing the game data and a cursor for the next page.
-
-This service is part of the game features module and handles the business logic for fetching joined games with participant counts, ensuring that only the authenticated user's joined games are returned.
-
-## Key Features
-
-- **Cursor-based pagination**: Uses a cursor (encoded start time and game ID) for efficient pagination
-- **Authentication-aware**: Resolves the authenticated user via `IAuthenticatedUserResolver`
-- **Participant counting**: Includes the count of active participants for each returned game
-- **Transactional read-only**: Ensures data consistency without locking
-- **Error handling**: Wraps execution in `ServiceOperationExecutor` for consistent error management
-
-## Public Methods
-
-### `execute(String cursor, int size)`
-
-Retrieves a paginated list of games joined by the authenticated user.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `cursor` | `String` | Encoded cursor string for pagination. Pass `null` or empty for the first page |
-| `size` | `int` | Maximum number of games to return per page |
-
-| Returns | Type | Description |
-|---------|------|-------------|
-| `CursorPagedResponse<GameResponse>` | Object | Contains the list of `GameResponse` objects and an optional `nextCursor` string for the next page |
-
-**Behavior:**
-1. Resolves the authenticated user's UUID
-2. Decodes the cursor to extract the `startTime` and `id` for pagination
-3. Queries the database for games joined by the user after the cursor position
-4. Counts active participants for each returned game
-5. Maps games to `GameResponse` objects with participant counts
-6. Generates the next cursor if more results exist
-7. Returns the paginated response
+This service provides a cursor-based pagination mechanism for fetching games where the authenticated user is a participant. It decodes a cursor token to determine the starting point for the next page of results, fetches the appropriate games from the database, counts active participants for each game, and returns a paginated response with a new cursor for subsequent requests.
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `GameRepository` | Repository | Data access for game entities |
-| `GameParticipantRepository` | Repository | Data access for game participant counts |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
+| `GameRepository` | Repository | Data access layer for game entities |
+| `GameParticipantRepository` | Repository | Data access layer for game participant relationships |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's identity |
 | `GameCursor` | Helper | Encodes and decodes cursor values for pagination |
-| `ServiceOperationExecutor` | Utility | Executes service operations with consistent error handling |
+
+## Public Methods
+
+### `execute(String cursor, int size)`
+
+Retrieves a cursor-paginated list of games that the authenticated user has joined.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `cursor` | `String` | The cursor token for pagination. Pass `null` or empty to fetch the first page. |
+| `size` | `int` | The maximum number of games to return in a single page. |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `CursorPagedResponse<GameResponse>` | A paginated response containing the list of games and a cursor for the next page. The `nextCursor` field will be `null` when there are no more results. |
+
+**Exceptions:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | Thrown if an error occurs during retrieval (wrapped by `ServiceOperationExecutor`). |
+
+**Behavior:**
+
+1. Resolves the authenticated user's ID using `userResolver.requireUserId()`.
+2. Decodes the provided cursor token to extract the `startTime` and `id` of the last game from the previous page.
+3. Queries the database for games joined by the user, starting after the decoded cursor position.
+4. Counts active participants for each retrieved game.
+5. Maps each game entity to a `GameResponse` object, including participant counts.
+6. Generates a new cursor token for the next page if the result set is full.
+7. Returns a `CursorPagedResponse` containing the game list and the next cursor.
+
+## Internal Methods
+
+### `countParticipants(List<Game> games)`
+
+Counts active participants for a list of games.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `games` | `List<Game>` | The list of games to count participants for. |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `Map<UUID, Long>` | A map where keys are game IDs and values are the count of active participants. Returns an empty map if the input list is empty. |
 
 ## Usage Example
 
@@ -60,16 +80,18 @@ Retrieves a paginated list of games joined by the authenticated user.
 // Inject the service
 private final ListMyJoinedGamesCursorService listMyJoinedGamesCursorService;
 
-// Fetch first page of joined games (10 items)
-CursorPagedResponse<GameResponse> firstPage = listMyJoinedGamesCursorService.execute(null, 10);
+// Fetch the first page of joined games
+CursorPagedResponse<GameResponse> firstPage = listMyJoinedGamesCursorService.execute(null, 20);
 
-// Fetch next page using the cursor from the previous response
-CursorPagedResponse<GameResponse> secondPage = listMyJoinedGamesCursorService.execute(firstPage.getNextCursor(), 10);
+// Fetch the next page using the cursor from the previous response
+CursorPagedResponse<GameResponse> nextPage = listMyJoinedGamesCursorService.execute(
+    firstPage.getNextCursor(), 
+    20
+);
 ```
 
 ## Notes
 
-- The service is annotated with `@Transactional(readOnly = true)` to optimize database access for read operations
-- Implements the `IListMyJoinedGamesCursorService` interface as a non-sealed class
-- Uses `ResourceNotFoundException` as the error type when operations fail
-- The `RETRIEVE` operation status is used for logging and monitoring purposes
+- The service is annotated with `@Transactional(readOnly = true)`, ensuring database operations are performed within a read-only transaction context for optimal performance.
+- The class is declared as `non-sealed`, indicating it is part of a sealed interface hierarchy (`IListMyJoinedGamesCursorService`).
+- Cursor-based pagination is more efficient than offset-based pagination for large datasets, as it avoids the performance penalty of skipping rows.

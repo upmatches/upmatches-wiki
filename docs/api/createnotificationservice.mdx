@@ -6,63 +6,71 @@ sidebar_label: CreateNotificationService
 
 # CreateNotificationService
 
-The `CreateNotificationService` class is a Spring service responsible for creating and persisting new notifications in the UpMatches application. It implements the `ICreateNotificationService` interface and provides a transactional method to create a notification for a specific user, associating it with relevant resource metadata.
+The `CreateNotificationService` class is a Spring service component responsible for creating and persisting new notifications within the UpMatches application. It implements the `ICreateNotificationService` interface and provides a transactional method to create a notification for a specific user, associating it with relevant resource metadata.
 
 ## Purpose
 
 This service encapsulates the business logic for notification creation, ensuring that:
-- The recipient user exists in the system before creating the notification.
+- The recipient user exists in the system before creating a notification.
 - A new `Notification` entity is properly constructed with all required fields.
-- The notification is saved to the database within a transactional context.
-- Errors during the save operation are handled gracefully using the `ServiceOperationExecutor`.
+- The notification is persisted to the database within a transactional context.
+- Any errors during the save operation are handled consistently using the `ServiceOperationExecutor`.
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
 | `NotificationRepository` | Repository | Handles persistence of `Notification` entities |
-| `UserRepository` | Repository | Retrieves `User` entities by ID |
+| `UserRepository` | Repository | Retrieves user entities by ID |
 | `ServiceOperationExecutor` | Utility | Executes operations with standardized error handling |
-
-## Constructor
-
-### `CreateNotificationService(NotificationRepository, UserRepository)`
-
-Initializes the service with required repositories.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `notificationRepository` | `NotificationRepository` | Repository for notification persistence |
-| `userRepository` | `UserRepository` | Repository for user lookup |
 
 ## Public Methods
 
-### `execute(UUID, NotificationType, String, String, String, UUID)`
+### `execute`
 
-Creates and persists a new notification for the specified recipient.
+Creates and saves a new notification for a specified recipient user.
+
+```java
+@Transactional
+public Notification execute(
+    UUID recipientId,
+    NotificationType type,
+    String title,
+    String message,
+    String resourceType,
+    UUID resourceId)
+```
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `recipientId` | `UUID` | The unique identifier of the notification recipient |
-| `type` | `NotificationType` | The type/category of the notification |
-| `title` | `String` | The title of the notification |
+| `recipientId` | `UUID` | The unique identifier of the user who will receive the notification |
+| `type` | `NotificationType` | The type/category of the notification (e.g., LIKE, MATCH, MESSAGE) |
+| `title` | `String` | The title or subject of the notification |
 | `message` | `String` | The body content of the notification |
-| `resourceType` | `String` | The type of resource associated with the notification (e.g., "match", "message") |
+| `resourceType` | `String` | The type of resource associated with the notification (e.g., "post", "profile") |
 | `resourceId` | `UUID` | The unique identifier of the associated resource |
 
-**Returns:** `Notification` - The newly created and persisted notification entity.
+**Returns:**
 
-**Throws:** `ResourceNotFoundException` - If the recipient user is not found in the database.
+| Return Type | Description |
+|-------------|-------------|
+| `Notification` | The newly created and persisted `Notification` entity |
 
-**Transactional Behavior:** This method is annotated with `@Transactional`, ensuring that the entire operation (user lookup, notification creation, and save) is executed within a single database transaction. If any step fails, the transaction is rolled back.
+**Throws:**
 
-## Error Handling
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | If no user exists with the provided `recipientId` |
 
-The service handles two distinct error scenarios:
+**Behavior:**
 
-1. **User Not Found:** If the `recipientId` does not correspond to an existing user, a `ResourceNotFoundException` is thrown with a descriptive message: `"User '<recipientId>' not found."`.
-
-2. **Save Operation Failure:** If the notification save operation fails, the `ServiceOperationExecutor` wraps the exception in a `ResourceNotFoundException` for consistent error propagation.
+1. Retrieves the `User` entity by `recipientId` from the database.
+2. If the user is not found, throws a `ResourceNotFoundException` with a descriptive message.
+3. Creates a new `Notification` instance using the static factory method `Notification.create()`.
+4. Persists the notification using `ServiceOperationExecutor.execute()` with the `SAVE` operation status.
+5. Returns the saved `Notification` entity.
 
 ## Usage Example
 
@@ -70,15 +78,24 @@ The service handles two distinct error scenarios:
 @Autowired
 private CreateNotificationService createNotificationService;
 
-public void sendMatchNotification(UUID userId, UUID matchId) {
+public void sendLikeNotification(UUID likedUserId, UUID likerId) {
     Notification notification = createNotificationService.execute(
-        userId,
-        NotificationType.MATCH,
-        "New Match!",
-        "You have a new match. Check it out!",
-        "match",
-        matchId
+        likedUserId,
+        NotificationType.LIKE,
+        "New Like",
+        "Someone liked your profile!",
+        "user",
+        likerId
     );
-    // notification is now persisted and can be used
 }
 ```
+
+## Error Handling
+
+The service uses a two-tier error handling approach:
+1. **User validation**: Ensures the recipient exists before proceeding.
+2. **Operation execution**: Wraps the save operation in `ServiceOperationExecutor` to handle any persistence errors consistently, converting them to `ResourceNotFoundException` if needed.
+
+## Transactional Behavior
+
+The `@Transactional` annotation ensures that the entire operation (user lookup, notification creation, and save) is executed within a single database transaction. If any step fails, the transaction is rolled back, maintaining data consistency.

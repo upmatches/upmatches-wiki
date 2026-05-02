@@ -1,95 +1,84 @@
 ---
 id: singpass-uuid
-title: SingpassUuid
+title: SingpassUuid Value Object
 sidebar_label: SingpassUuid
 ---
 
 # SingpassUuid
 
-The `SingpassUuid` class is a Java record that represents a validated Singpass UUID (Universally Unique Identifier). It ensures that any UUID string used in the application conforms to a specific format expected by the Singpass authentication system.
+A Java record that represents a validated Singpass UUID value object. This class ensures that any UUID string used in the application conforms to the expected Singpass format, including optional prefix components.
 
 ## Purpose
 
-This value object encapsulates a Singpass UUID string and provides validation at construction time. It guarantees that the UUID:
-- Is not null or blank
-- Matches a specific pattern that may include an optional prefix (`s=...` or `u=...`) followed by a standard UUID format
+The `SingpassUuid` record serves as a type-safe wrapper around a Singpass UUID string. It provides:
 
-## Record Components
+- **Validation**: Ensures the UUID matches the required format at construction time
+- **Immutability**: As a Java record, it is inherently immutable
+- **Type safety**: Prevents passing raw strings where a Singpass UUID is expected
+- **Self-documenting**: Makes the code intent clear by using a dedicated type
 
-| Component | Type | Description |
-|-----------|------|-------------|
-| `value` | `String` | The validated Singpass UUID string |
+## Format Specification
+
+The accepted format includes:
+
+- Optional prefix: `s=<value>,u=` (where `<value>` can contain alphanumeric characters and hyphens)
+- Required UUID: Standard 36-character UUID format with 8-4-4-4-12 hexadecimal segments
+
+### Examples of valid formats:
+- `s=ABC123,u=550e8400-e29b-41d4-a716-446655440000`
+- `550e8400-e29b-41d4-a716-446655440000`
+- `s=user-123,u=550e8400-e29b-41d4-a716-446655440000`
 
 ## Constructor
 
-The compact constructor performs validation before assigning the value.
-
-### Parameters
+The compact constructor performs validation on the provided value:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `value` | `String` | The raw UUID string to validate and store |
+| `value` | `String` | The Singpass UUID string to validate and store |
 
-### Throws
+**Throws:**
+- `IllegalArgumentException` if the value is null, blank, or does not match the expected format
 
-| Exception | Condition |
-|-----------|-----------|
-| `IllegalArgumentException` | If the value is null, blank, or does not match the expected format |
+## Methods
 
-## Public Methods
-
-### `create`
-
-```java
-public static SingpassUuid create(final String uuid)
-```
-
-Factory method to create a new `SingpassUuid` instance.
+### `create(String uuid)`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `uuid` | `String` | The UUID string to validate and wrap |
+| `uuid` | `String` | The Singpass UUID string to create an instance for |
 
 | Returns | Description |
 |---------|-------------|
-| `SingpassUuid` | A new validated SingpassUuid instance |
+| `SingpassUuid` | A new validated `SingpassUuid` instance |
 
-### `toString`
+This static factory method provides an alternative way to create `SingpassUuid` instances, making the intent explicit.
 
-```java
-@Override
-public String toString()
-```
-
-Returns the underlying UUID string value.
+### `toString()`
 
 | Returns | Description |
 |---------|-------------|
-| `String` | The validated UUID string |
+| `String` | The original UUID string value |
 
-## Validation Pattern
-
-The class uses the following regular expression pattern to validate UUIDs:
-
-```
-^((s=[A-Za-z0-9\-]+,)?u=)?[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
-```
-
-This pattern accepts:
-- An optional prefix of `s=<value>,` followed by `u=`
-- Or just `u=`
-- Or no prefix at all
-- Followed by a standard UUID in the format `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+Overrides the default `toString()` to return the stored UUID value directly.
 
 ## Usage Example
 
 ```java
-// Valid UUIDs
-SingpassUuid uuid1 = SingpassUuid.create("550e8400-e29b-41d4-a716-446655440000");
-SingpassUuid uuid2 = SingpassUuid.create("u=550e8400-e29b-41d4-a716-446655440000");
-SingpassUuid uuid3 = SingpassUuid.create("s=abc123,u=550e8400-e29b-41d4-a716-446655440000");
+// Valid UUID with prefix
+SingpassUuid uuid1 = SingpassUuid.create("s=ABC123,u=550e8400-e29b-41d4-a716-446655440000");
+
+// Valid UUID without prefix
+SingpassUuid uuid2 = new SingpassUuid("550e8400-e29b-41d4-a716-446655440000");
 
 // Invalid - will throw IllegalArgumentException
-SingpassUuid invalid = SingpassUuid.create(""); // Empty
-SingpassUuid invalid2 = SingpassUuid.create("not-a-uuid"); // Wrong format
+// SingpassUuid invalid = new SingpassUuid("invalid-uuid");
 ```
+
+## Validation Rules
+
+1. The value cannot be null or blank
+2. Leading/trailing whitespace is automatically trimmed
+3. The value must match the pattern:
+   - Optional: `s=<alphanumeric/hyphen>,u=`
+   - Required: Standard UUID format (8-4-4-4-12 hexadecimal digits with hyphens)

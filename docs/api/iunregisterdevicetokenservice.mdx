@@ -4,11 +4,13 @@ title: IUnregisterDeviceTokenService Interface
 sidebar_label: IUnregisterDeviceTokenService
 ---
 
-# IUnregisterDeviceTokenService Interface
+# IUnregisterDeviceTokenService
 
 ## Purpose
 
-The `IUnregisterDeviceTokenService` interface defines the contract for unregistering a device token from push notification services. It follows a sealed interface pattern, restricting implementation to the `UnregisterDeviceTokenService` class. This design ensures that only the intended concrete implementation can fulfill the unregistration contract, providing compile-time safety and clear architectural boundaries.
+The `IUnregisterDeviceTokenService` interface defines the contract for unregistering a device token from the notification system. This is a sealed interface that restricts implementation to the `UnregisterDeviceTokenService` class, ensuring controlled and secure token removal.
+
+This interface is part of the notification feature module and is used to invalidate or remove device tokens that are no longer valid or when a user logs out, helping maintain an up-to-date and clean device token registry.
 
 ## Interface Definition
 
@@ -20,24 +22,29 @@ public sealed interface IUnregisterDeviceTokenService permits UnregisterDeviceTo
 
 ## Methods
 
-| Method | Description | Parameters | Returns |
-|--------|-------------|------------|---------|
-| `execute(String deviceToken)` | Unregisters the specified device token from the notification service, preventing further push notifications from being sent to that device. | `deviceToken` - The unique token identifying the device to be unregistered | `void` |
+### `execute`
 
-## Usage Notes
+| Property | Description |
+|----------|-------------|
+| **Signature** | `void execute(String deviceToken)` |
+| **Parameters** | `deviceToken` – The unique device token string to be unregistered from the notification system |
+| **Returns** | `void` – This method does not return a value |
+| **Description** | Executes the unregistration process for the provided device token. Implementations should handle token removal, database updates, and any necessary cleanup operations |
 
-- The interface is **sealed**, meaning only the `UnregisterDeviceTokenService` class can implement it. This enforces a single, controlled implementation path.
-- The `execute` method performs a void operation; any errors during unregistration should be handled by the implementing class (e.g., throwing runtime exceptions or logging).
-- This interface is part of the `com.upmatches.app.features.notification.services` package, indicating its role in the notification feature layer of the application.
+## Implementation Details
 
-## Example Implementation
+- The interface is declared as `sealed`, meaning only the specified permitted class (`UnregisterDeviceTokenService`) can implement it
+- This design pattern enforces a single, controlled implementation path for device token unregistration
+- The `execute` method is intentionally simple, accepting only the device token as a parameter
+
+## Usage Example
 
 ```java
-public final class UnregisterDeviceTokenService implements IUnregisterDeviceTokenService {
-    @Override
-    public void execute(String deviceToken) {
-        // Implementation logic to unregister the device token
-        // e.g., remove from database, call external API, etc.
-    }
-}
+IUnregisterDeviceTokenService unregisterService = new UnregisterDeviceTokenService();
+unregisterService.execute("device-token-12345");
 ```
+
+## Related Components
+
+- **`UnregisterDeviceTokenService`** – The sole permitted implementation of this interface
+- **Notification feature module** – Part of the `com.upmatches.app.features.notification.services` package

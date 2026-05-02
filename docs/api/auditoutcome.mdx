@@ -6,11 +6,11 @@ sidebar_label: AuditOutcome
 
 # AuditOutcome
 
-The `AuditOutcome` enum is part of the `com.upmatches.app.features.audit.enums` package. It defines the possible outcomes for an audit event within the application.
+The `AuditOutcome` enum is part of the `com.upmatches.app.features.audit.enums` package. It defines the possible outcomes for an audit event within the application. This enum is used to standardize and represent the result of an auditable action, such as a login attempt, data modification, or access control check.
 
 ## Purpose
 
-This enum provides a standardized set of outcomes that can be associated with audit log entries. It is used to categorize the result of an audited action, such as a user login attempt, a data modification request, or an access control check.
+The primary purpose of `AuditOutcome` is to provide a clear, type-safe set of constants that describe the result of an audit event. By using an enum, the application ensures that only valid outcomes are recorded, reducing errors and improving code readability.
 
 ## Enum Constants
 
@@ -18,29 +18,17 @@ This enum provides a standardized set of outcomes that can be associated with au
 |-----------|-----------------------------------------------------------------------------|
 | `SUCCESS` | Indicates that the audited action completed successfully.                   |
 | `FAILURE` | Indicates that the audited action failed due to an error or invalid input.  |
-| `DENIED`  | Indicates that the audited action was denied, typically due to insufficient permissions or security constraints. |
+| `DENIED`  | Indicates that the audited action was denied, typically due to permissions. |
 
 ## Usage
 
-This enum is typically used as a field in an audit log entity or event class. For example:
+This enum is typically used in audit logging components, where each auditable event is recorded with its outcome. For example:
 
 ```java
-public class AuditEvent {
-    private AuditOutcome outcome;
-    // other fields...
-}
+AuditOutcome outcome = AuditOutcome.SUCCESS;
 ```
 
-The enum values can be compared directly:
+## See Also
 
-```java
-if (auditEvent.getOutcome() == AuditOutcome.SUCCESS) {
-    // handle success case
-}
-```
-
-## Related
-
-- Audit event classes that use this enum as a field
-- Security and permission checking logic that produces `DENIED` outcomes
-- Error handling code that produces `FAILURE` outcomes
+- AuditEvent class (if applicable)
+- AuditService interface (if applicable)

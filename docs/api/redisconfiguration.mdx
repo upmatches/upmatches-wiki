@@ -6,64 +6,86 @@ sidebar_label: Redis Configuration
 
 # Redis Configuration
 
-The `RedisConfiguration` class is a Spring Boot configuration component that sets up and exposes a `StringRedisTemplate` bean for interacting with a Redis data store. This configuration ensures that all keys and values stored in Redis are serialized and deserialized as plain strings using `StringRedisSerializer`.
+The `RedisConfiguration` class is a Spring `@Configuration` class that provides a bean definition for a `StringRedisTemplate`. This template is configured to serialize both keys and values as strings, making it suitable for use cases where Redis stores simple string-based data, such as session tokens, user preferences, or cache entries.
 
 ## Purpose
 
-- Provides a centralized Redis template configuration for the application.
-- Ensures consistent string-based serialization for Redis keys, values, hash keys, and hash values.
-- Simplifies dependency injection of a fully configured `StringRedisTemplate` throughout the application.
+- **Centralized Redis Setup**: Defines a single, reusable `StringRedisTemplate` bean for the entire application.
+- **String Serialization**: Ensures all keys and values are serialized as plain strings, avoiding complex object serialization issues.
+- **Consistent Configuration**: Applies the same serialization strategy to hash keys and hash values, maintaining uniformity across Redis operations.
 
-## Public Methods
+## Bean Definitions
 
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `stringRedisTemplate` | `StringRedisTemplate` | `RedisConnectionFactory connFactory` | Creates and configures a `StringRedisTemplate` bean with string serializers for all data types. |
+| Bean Name | Return Type | Description |
+|-----------|-------------|-------------|
+| `stringRedisTemplate` | `StringRedisTemplate` | A pre-configured Redis template for string-based operations. |
 
-## Bean Details
+## Method Details
 
 ### `stringRedisTemplate`
 
-This method creates a `StringRedisTemplate` instance and configures it with the following serializers:
+```java
+@Bean
+public StringRedisTemplate stringRedisTemplate(final RedisConnectionFactory connFactory)
+```
 
-- **Key Serializer**: `StringRedisSerializer` – Ensures Redis keys are stored as strings.
-- **Value Serializer**: `StringRedisSerializer` – Ensures Redis values are stored as strings.
-- **Hash Key Serializer**: `StringRedisSerializer` – Ensures hash field names are stored as strings.
-- **Hash Value Serializer**: `StringRedisSerializer` – Ensures hash field values are stored as strings.
+Creates and configures a `StringRedisTemplate` bean.
 
-The method accepts a `RedisConnectionFactory` parameter, which is automatically injected by Spring Boot based on the application's Redis connection configuration (e.g., `application.properties` or `application.yml`).
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `connFactory` | `RedisConnectionFactory` | The Redis connection factory provided by Spring Boot auto-configuration. |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `StringRedisTemplate` | A fully configured template ready for string-based Redis operations. |
+
+**Configuration Details:**
+
+- **Connection Factory**: Uses the provided `RedisConnectionFactory` to establish connections to the Redis server.
+- **Key Serializer**: `StringRedisSerializer` – ensures all keys are stored as plain strings.
+- **Value Serializer**: `StringRedisSerializer` – ensures all values are stored as plain strings.
+- **Hash Key Serializer**: `StringRedisSerializer` – ensures hash field names are stored as strings.
+- **Hash Value Serializer**: `StringRedisSerializer` – ensures hash field values are stored as strings.
 
 ## Usage Example
 
 ```java
 @Service
-public class TokenService {
+public class SessionService {
     
     private final StringRedisTemplate redisTemplate;
     
-    public TokenService(StringRedisTemplate redisTemplate) {
+    public SessionService(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
     
-    public void storeToken(String key, String token) {
-        redisTemplate.opsForValue().set(key, token);
+    public void saveSession(String sessionId, String userData) {
+        redisTemplate.opsForValue().set(sessionId, userData);
     }
     
-    public String getToken(String key) {
-        return redisTemplate.opsForValue().get(key);
+    public String getSession(String sessionId) {
+        return redisTemplate.opsForValue().get(sessionId);
     }
 }
 ```
 
 ## Dependencies
 
-- `org.springframework.context.annotation.Bean`
-- `org.springframework.context.annotation.Configuration`
-- `org.springframework.data.redis.connection.RedisConnectionFactory`
-- `org.springframework.data.redis.core.StringRedisTemplate`
-- `org.springframework.data.redis.serializer.StringRedisSerializer`
+This configuration requires the following Spring Boot starter dependency:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
 
 ## Notes
 
-- This configuration assumes that all Redis interactions in the application will use string-based serialization. For more complex object serialization, consider using `Jackson2JsonRedisSerializer` or `GenericJackson2JsonRedisSerializer`.
-- The `RedisConnectionFactory` bean must be configured separately, typically through Spring Boot's auto-configuration or explicit bean definition.
+- The `StringRedisTemplate` is a specialization of `RedisTemplate<String, String>` that simplifies string-based operations.
+- All serializers are explicitly set to `StringRedisSerializer` to avoid any default Java serialization behavior.
+- This configuration assumes Redis is used primarily for string data; for complex object storage, consider using `RedisTemplate<Object, Object>` with appropriate serializers.

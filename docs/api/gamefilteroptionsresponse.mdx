@@ -10,47 +10,51 @@ The `GameFilterOptionsResponse` is a Java record that encapsulates the available
 
 ## Purpose
 
-This record serves as a data transfer object (DTO) that aggregates various filter options into a single response. It is typically returned by an API endpoint that provides the available filter choices to the frontend, allowing users to narrow down game searches based on their preferences.
+This record serves as a data transfer object (DTO) that aggregates various filter options into a single response. It is typically returned by an API endpoint that provides the available filtering choices to the client, allowing users to narrow down game searches based on their preferences.
 
 ## Record Structure
 
-As a Java record, `GameFilterOptionsResponse` is an immutable data carrier with automatically generated constructor, accessor methods, `equals()`, `hashCode()`, and `toString()`.
+Since this is a Java record, all fields are implicitly `private final` and the record automatically generates:
+- A canonical constructor
+- Getter methods (e.g., `venues()`, `skillLevels()`)
+- `equals()`, `hashCode()`, and `toString()` methods
 
-### Components
+## Fields
 
-| Component | Type | Description |
-|-----------|------|-------------|
-| `venues` | `List<VenueResponse>` | Available venues for game filtering |
-| `skillLevels` | `List<SkillLevelResponse>` | Available skill levels for game filtering |
-| `availableStartTimes` | `List<String>` | Available start times for games (e.g., "09:00", "10:00") |
-| `gameTypes` | `List<GameType>` | Available game types (e.g., SINGLES, DOUBLES) |
+| Field | Type | Description |
+|-------|------|-------------|
+| `venues` | `List<VenueResponse>` | A list of available venues where games can be played |
+| `skillLevels` | `List<SkillLevelResponse>` | A list of available skill levels for filtering games |
+| `availableStartTimes` | `List<String>` | A list of available start times (as strings) for games |
+| `gameTypes` | `List<GameType>` | A list of available game types for filtering |
 
 ## Usage Example
 
 ```java
-// Creating a filter options response
+// Example of creating a GameFilterOptionsResponse
 GameFilterOptionsResponse filterOptions = new GameFilterOptionsResponse(
-    venues,           // List<VenueResponse>
-    skillLevels,      // List<SkillLevelResponse>
-    startTimes,       // List<String>
-    gameTypes         // List<GameType>
+    venueList,
+    skillLevelList,
+    startTimeList,
+    gameTypeList
 );
 
-// Accessing individual filter options
-List<VenueResponse> availableVenues = filterOptions.venues();
-List<SkillLevelResponse> availableSkillLevels = filterOptions.skillLevels();
-List<String> availableTimes = filterOptions.availableStartTimes();
-List<GameType> availableGameTypes = filterOptions.gameTypes();
+// Accessing fields
+List<VenueResponse> venues = filterOptions.venues();
+List<SkillLevelResponse> skillLevels = filterOptions.skillLevels();
+List<String> startTimes = filterOptions.availableStartTimes();
+List<GameType> gameTypes = filterOptions.gameTypes();
 ```
 
-## Related Components
+## Dependencies
 
-- **VenueResponse**: Represents venue data used in the venues filter
-- **SkillLevelResponse**: Represents skill level data used in the skill levels filter
-- **GameType**: Enum defining different types of games (e.g., SINGLES, DOUBLES)
+This record depends on the following types:
+- `VenueResponse` - from `com.upmatches.app.features.venue.responses`
+- `SkillLevelResponse` - from `com.upmatches.app.features.skilllevels.responses`
+- `GameType` - an enum from `com.upmatches.app.features.game.enums`
 
 ## Notes
 
-- The record is immutable by design, ensuring thread safety and predictable behavior
-- All fields are required and cannot be null (standard Java record behavior)
-- The `availableStartTimes` field uses `String` type to allow flexible time format representation
+- The record is immutable by design, ensuring thread safety and predictable behavior.
+- All fields are required and cannot be `null` unless explicitly allowed by the referenced types.
+- The `availableStartTimes` field uses `String` type, which may represent time in a format like "HH:mm" or "HH:mm:ss".

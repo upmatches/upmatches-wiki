@@ -4,15 +4,22 @@ title: IAppleAuthService Interface
 sidebar_label: IAppleAuthService
 ---
 
-# IAppleAuthService Interface
+# IAppleAuthService
 
-The `IAppleAuthService` interface defines the contract for Apple Identity Token verification within the authentication module. It provides a standardized way to verify Apple-provided identity tokens and extract verified claims from them.
+The `IAppleAuthService` interface defines the contract for Apple Identity Token verification within the authentication module. It provides a single method to verify an Apple-provided identity token and extract verified claims from it.
 
-This interface is part of the `com.upmatches.app.features.auth.services` package and serves as the abstraction layer for Apple Sign-In authentication flow.
+## Purpose
 
-## Sealed Interface
+This sealed interface is designed to enforce a strict implementation hierarchy, ensuring that only the `AppleAuthService` class can implement it. This pattern is used to guarantee that Apple authentication logic is centralized and cannot be extended by unauthorized classes.
 
-`IAppleAuthService` is declared as a **sealed interface**, which means it has a restricted set of implementations. The only permitted implementation is `AppleAuthService`. This design ensures type safety and controlled extensibility within the authentication service hierarchy.
+## Interface Definition
+
+```java
+public sealed interface IAppleAuthService permits AppleAuthService
+```
+
+- **Sealed**: The interface is sealed, meaning only the classes specified in the `permits` clause can implement it.
+- **Permits**: `AppleAuthService` is the sole permitted implementation.
 
 ## Public Methods
 
@@ -25,63 +32,58 @@ This interface is part of the `com.upmatches.app.features.auth.services` package
 #### `verifyIdentityToken`
 
 ```java
-AppleVerifiedClaims verifyIdentityToken(String identityToken)
+AppleVerifiedClaims verifyIdentityToken(String identityToken);
 ```
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `identityToken` | `String` | The JWT identity token received from Apple's authentication service |
+| `identityToken` | `String` | The Apple identity token (JWT) to be verified. |
 
-**Returns:** `AppleVerifiedClaims` - A record containing the verified claims extracted from the identity token
+**Returns:**
 
-**Throws:** Implementation-specific exceptions may be thrown if token verification fails
+| Type | Description |
+|------|-------------|
+| `AppleVerifiedClaims` | A record containing the verified claims from the identity token. |
 
-## AppleVerifiedClaims Record
-
-The `AppleVerifiedClaims` record is a nested data structure within the interface that encapsulates the verified claims from an Apple identity token.
-
-### Record Components
-
-| Component | Type | Description |
-|-----------|------|-------------|
-| `sub` | `String` | The subject identifier - Apple's unique identifier for the user |
-| `email` | `String` | The user's email address as provided by Apple |
-
-### Usage Example
+## Inner Record: `AppleVerifiedClaims`
 
 ```java
-// Example implementation
-public class AppleAuthService implements IAppleAuthService {
-    @Override
-    public AppleVerifiedClaims verifyIdentityToken(String identityToken) {
-        // Token verification logic here
-        // Extract sub and email from the verified token
-        return new AppleVerifiedClaims("user_sub_123", "user@example.com");
-    }
-}
+record AppleVerifiedClaims(String sub, String email) { }
 ```
 
-## Usage
+This record encapsulates the verified claims extracted from an Apple identity token.
 
-The interface is designed to be used in authentication flows where Apple Sign-In is implemented. Typical usage involves:
+### Fields
 
-1. Receiving an identity token from the client-side Apple Sign-In flow
-2. Calling `verifyIdentityToken()` to validate the token
-3. Using the returned `AppleVerifiedClaims` to create or authenticate user sessions
+| Field | Type | Description |
+|-------|------|-------------|
+| `sub` | `String` | The subject identifier (unique Apple user ID). |
+| `email` | `String` | The user's email address as provided by Apple. |
+
+## Usage Example
 
 ```java
-// Service usage
-IAppleAuthService authService = new AppleAuthService();
-String identityToken = "eyJ..."; // Token from Apple
-AppleVerifiedClaims claims = authService.verifyIdentityToken(identityToken);
+// Assuming an implementation of IAppleAuthService
+IAppleAuthService appleAuthService = new AppleAuthService();
+
+// Verify an identity token
+String identityToken = "eyJraWQiOi..."; // Apple JWT token
+IAppleAuthService.AppleVerifiedClaims claims = appleAuthService.verifyIdentityToken(identityToken);
+
+// Access verified claims
 String userId = claims.sub();
-String userEmail = claims.email();
+String email = claims.email();
 ```
 
 ## Implementation Notes
 
-- The sealed interface pattern ensures that only `AppleAuthService` can implement this interface
-- The `AppleVerifiedClaims` record is immutable by design, providing thread-safe data transfer
-- Token verification should include signature validation, expiration checking, and nonce verification in the implementation
+- The `verifyIdentityToken` method should handle token validation including signature verification, expiration checks, and audience validation.
+- The `AppleVerifiedClaims` record is immutable and thread-safe by design.
+- The sealed interface pattern ensures compile-time safety by restricting implementations to the `AppleAuthService` class only.
+
+## Dependencies
+
+- This interface is part of the `com.upmatches.app.features.auth.services` package.
+- The implementation (`AppleAuthService`) is expected to use standard JWT libraries for token verification.

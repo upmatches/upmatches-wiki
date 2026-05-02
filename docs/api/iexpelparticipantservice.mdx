@@ -1,54 +1,58 @@
 ---
-id: iexpelparticipantservice
+id: i-expel-participant-service
 title: IExpelParticipantService Interface
 sidebar_label: IExpelParticipantService
 ---
 
 # IExpelParticipantService Interface
 
+The `IExpelParticipantService` interface defines the contract for expelling a participant from a game within the UpMatches application. It is a **sealed interface**, meaning only the explicitly permitted implementing class (`ExpelParticipantService`) can implement it. This design enforces a controlled and secure implementation hierarchy.
+
 ## Purpose
 
-The `IExpelParticipantService` interface defines the contract for expelling a participant from a game within the UpMatches application. It serves as a sealed interface, restricting its implementation to only the `ExpelParticipantService` class. This design pattern enforces a controlled hierarchy, ensuring that only the designated service class can provide the expulsion logic.
+This interface abstracts the operation of removing a participant from a game session. By defining a single `execute` method, it provides a clear and consistent API for the expulsion logic, allowing the underlying implementation to handle the specifics (e.g., validation, database updates, event publishing) without exposing those details to the caller.
 
-The interface encapsulates the operation of removing a participant from a game session, requiring the game ID, participant ID, and an `ExpelParticipantRequest` object that likely contains additional details about the expulsion (e.g., reason, timestamp).
+## Method Summary
 
-## Interface Definition
+| Method | Description |
+|--------|-------------|
+| `execute(UUID gameId, UUID participantId, ExpelParticipantRequest request)` | Executes the expulsion of a participant from a specified game. |
 
-```java
-public sealed interface IExpelParticipantService permits ExpelParticipantService {
-    void execute(UUID gameId, UUID participantId, ExpelParticipantRequest request);
-}
-```
-
-## Methods
+## Method Details
 
 ### `execute`
 
-| Parameter       | Type                     | Description                                      |
-|-----------------|--------------------------|--------------------------------------------------|
-| `gameId`        | `UUID`                   | The unique identifier of the game from which the participant will be expelled. |
-| `participantId` | `UUID`                   | The unique identifier of the participant to be expelled. |
-| `request`       | `ExpelParticipantRequest`| The request object containing details about the expulsion operation. |
+```java
+void execute(UUID gameId, UUID participantId, ExpelParticipantRequest request)
+```
 
-**Return Type:** `void`
+This method performs the core operation of expelling a participant from a game.
 
-**Description:** Executes the expulsion of a participant from a specified game. The method takes the game's UUID, the participant's UUID, and an `ExpelParticipantRequest` object that provides the necessary context for the operation. The implementation in `ExpelParticipantService` handles the actual business logic, such as validating the request, updating the game state, and persisting changes.
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameId` | `UUID` | The unique identifier of the game from which the participant will be expelled. |
+| `participantId` | `UUID` | The unique identifier of the participant to be expelled. |
+| `request` | `ExpelParticipantRequest` | An object containing additional data or context required for the expulsion (e.g., reason, admin who initiated the action). |
+
+**Returns:** `void` — The method does not return a value. Success or failure is typically communicated through exceptions or side effects (e.g., database updates, event publishing).
 
 ## Usage Example
 
 ```java
-// Assuming service is injected or instantiated
+// Assuming an implementation is injected
 IExpelParticipantService expelService = new ExpelParticipantService();
 
 UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 UUID participantId = UUID.fromString("987fcdeb-51a2-43d7-9abc-123456789012");
-ExpelParticipantRequest request = new ExpelParticipantRequest("Violation of game rules");
+ExpelParticipantRequest request = new ExpelParticipantRequest("Violation of rules");
 
 expelService.execute(gameId, participantId, request);
 ```
 
-## Related Components
+## Implementation Notes
 
-- **`ExpelParticipantService`**: The sole permitted implementation of this interface, containing the concrete expulsion logic.
-- **`ExpelParticipantRequest`**: The request data class that carries expulsion-specific information.
-- **Package**: `com.upmatches.app.features.game.services`
+- The interface is **sealed**, which restricts implementation to the `ExpelParticipantService` class. This ensures that the expulsion logic is centralized and cannot be overridden by unauthorized classes.
+- The `ExpelParticipantRequest` class is expected to be a simple data transfer object (DTO) containing the necessary information for the expulsion operation.
+- The method signature does not declare any checked exceptions, but the implementation may throw runtime exceptions (e.g., `IllegalArgumentException`, `EntityNotFoundException`) to indicate failure conditions.

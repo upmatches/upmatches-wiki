@@ -6,27 +6,23 @@ sidebar_label: IDeleteNotificationService
 
 # IDeleteNotificationService Interface
 
-The `IDeleteNotificationService` interface defines the contract for deleting a notification by its unique identifier. It is a **sealed interface**, meaning only explicitly permitted classes (in this case, `DeleteNotificationService`) can implement it. This design enforces a controlled hierarchy and ensures that the deletion logic is centralized and consistent across the application.
+The `IDeleteNotificationService` interface defines a contract for deleting notifications within the application. It is a **sealed interface**, meaning that only explicitly permitted classes (in this case, `DeleteNotificationService`) can implement it. This design pattern enforces a controlled hierarchy and ensures that the deletion logic is centralized and secure.
 
 ## Purpose
 
-- Provides a single, well-defined method for deleting a notification.
-- Uses a sealed interface to restrict implementation to a specific service class, enhancing security and maintainability.
-- Accepts a `UUID` to uniquely identify the notification to be deleted.
+- **Sealed Contract**: Restricts implementation to a single, known class (`DeleteNotificationService`), preventing unauthorized or accidental implementations.
+- **Single Responsibility**: Provides a single method for deleting a notification by its unique identifier (`UUID`).
+- **Decoupling**: Allows the notification deletion logic to be abstracted away from the caller, promoting loose coupling between components.
 
 ## Method Summary
 
 | Method | Description |
 |--------|-------------|
-| `void execute(UUID id)` | Deletes the notification identified by the given `UUID`. |
+| `void execute(UUID id)` | Deletes a notification identified by the given `UUID`. The method does not return a value. |
 
 ## Method Details
 
-### `execute`
-
-```java
-void execute(UUID id)
-```
+### `execute(UUID id)`
 
 Deletes a notification from the system based on its unique identifier.
 
@@ -34,16 +30,16 @@ Deletes a notification from the system based on its unique identifier.
 
 | Parameter | Type   | Description |
 |-----------|--------|-------------|
-| `id`      | `UUID` | The unique identifier of the notification to delete. |
+| `id`      | `UUID` | The unique identifier of the notification to be deleted. |
 
-**Returns:** `void`
+**Returns:** `void` (no return value)
 
-**Throws:** This method does not declare any checked exceptions. Implementations may throw runtime exceptions (e.g., `IllegalArgumentException` if the `id` is null or if the notification does not exist).
+**Throws:** The method does not declare any checked exceptions, but implementations may throw runtime exceptions (e.g., `IllegalArgumentException` if the `id` is null, or a custom exception if the notification is not found).
 
 ## Usage Example
 
 ```java
-// Assuming you have an instance of IDeleteNotificationService
+// Assuming you have an instance of DeleteNotificationService
 IDeleteNotificationService deleteService = new DeleteNotificationService();
 
 // Delete a notification by its UUID
@@ -53,6 +49,11 @@ deleteService.execute(notificationId);
 
 ## Implementation Notes
 
-- The interface is sealed, so only `DeleteNotificationService` is allowed to implement it.
-- The `execute` method should handle cases where the notification does not exist gracefully (e.g., by logging a warning or throwing a specific runtime exception).
-- Ensure that the `UUID` passed is not null to avoid unexpected behavior.
+- The interface is **sealed**, so only `DeleteNotificationService` can implement it. This ensures that all deletion logic follows the same pattern and can be easily audited.
+- The `execute` method is intentionally simple, accepting only a `UUID` parameter. This keeps the interface focused and easy to use.
+- Implementations should handle cases where the notification does not exist, typically by throwing an appropriate exception (e.g., `NotificationNotFoundException`).
+
+## Related Components
+
+- **`DeleteNotificationService`**: The sole permitted implementation of this interface, containing the actual deletion logic.
+- **Notification Entity**: The data model representing a notification, which is deleted by this service.

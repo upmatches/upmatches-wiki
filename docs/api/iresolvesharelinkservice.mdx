@@ -4,57 +4,46 @@ title: IResolveShareLinkService Interface
 sidebar_label: IResolveShareLinkService
 ---
 
-# IResolveShareLinkService Interface
-
-The `IResolveShareLinkService` interface defines the contract for resolving shared links within the UpMatches application. It provides a single method to process a share link code and return the corresponding public share link data.
+# IResolveShareLinkService
 
 ## Purpose
 
-This sealed interface establishes a clear API boundary for share link resolution. By using Java's `sealed` keyword, it restricts implementation to only the `ResolveShareLinkService` class, ensuring controlled extensibility and preventing unauthorized implementations.
+The `IResolveShareLinkService` interface defines the contract for resolving shared links within the UpMatches application. It serves as the abstraction layer for processing share link codes and returning the corresponding public share link data. This sealed interface restricts implementation to the `ResolveShareLinkService` class, ensuring controlled extension and type safety.
 
 ## Interface Definition
 
 ```java
-public sealed interface IResolveShareLinkService permits ResolveShareLinkService {
-    PublicShareLinkResponse execute(String code);
-}
+public sealed interface IResolveShareLinkService permits ResolveShareLinkService
 ```
 
-## Method Summary
+The interface is declared as `sealed`, meaning only the explicitly permitted class `ResolveShareLinkService` can implement it. This design pattern enforces a single, controlled implementation while maintaining the benefits of interface-based programming.
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `execute(String code)` | `PublicShareLinkResponse` | Resolves a share link code and returns the associated public share link data |
+## Methods
 
-## Parameters
+### `execute`
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `code` | `String` | The unique share link code to be resolved |
+Resolves a share link code and returns the associated public share link response.
 
-## Return Type
+| Parameter | Type     | Description                                      |
+|-----------|----------|--------------------------------------------------|
+| `code`    | `String` | The unique share link code to be resolved.       |
 
-The method returns a `PublicShareLinkResponse` object containing the resolved share link information.
+| Returns                  | Description                                                      |
+|--------------------------|------------------------------------------------------------------|
+| `PublicShareLinkResponse` | The response object containing the resolved public share link data. |
 
-## Implementation Details
-
-- **Sealed Interface**: Only `ResolveShareLinkService` is permitted to implement this interface
-- **Single Responsibility**: The interface focuses solely on the share link resolution operation
-- **Type Safety**: The sealed modifier ensures compile-time safety by restricting implementations
-
-## Usage Example
+**Usage Example:**
 
 ```java
-@Autowired
-private IResolveShareLinkService resolveShareLinkService;
-
-public void handleShareLink(String code) {
-    PublicShareLinkResponse response = resolveShareLinkService.execute(code);
-    // Process the resolved share link data
-}
+IResolveShareLinkService service = new ResolveShareLinkService();
+PublicShareLinkResponse response = service.execute("abc123");
 ```
 
-## Related Components
+## Related Types
 
-- `ResolveShareLinkService` - The sole permitted implementation of this interface
-- `PublicShareLinkResponse` - The response object returned by the `execute` method
+- **`PublicShareLinkResponse`**: The response object returned by the `execute` method, located in `com.upmatches.app.features.sharelink.responses`.
+- **`ResolveShareLinkService`**: The sole permitted implementation of this interface, located in `com.upmatches.app.features.sharelink.services`.
+
+## Package
+
+`com.upmatches.app.features.sharelink.services`

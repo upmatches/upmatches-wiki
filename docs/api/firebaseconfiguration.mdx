@@ -6,60 +6,73 @@ sidebar_label: FirebaseConfiguration
 
 # FirebaseConfiguration
 
-The `FirebaseConfiguration` class is a Spring Boot configuration component responsible for initializing the Firebase Messaging service within the application. It reads Firebase service account credentials either from a JSON string or a file path, configures the Firebase SDK, and provides a `FirebaseMessaging` bean for sending push notifications.
+The `FirebaseConfiguration` class is a Spring Boot configuration component responsible for initializing the Firebase Messaging SDK within the application. It reads Firebase service account credentials either from a JSON string or a file path, configures the Firebase app, and provides a `FirebaseMessaging` bean for sending push notifications.
 
 ## Purpose
 
 - **Conditional Initialization**: Only initializes Firebase if valid credentials are provided (either as a JSON string or a file path).
-- **Graceful Degradation**: If credentials are missing or initialization fails, it logs a warning and returns `null` instead of throwing an exception, allowing the application to continue running without push notification capabilities.
-- **Singleton Management**: Reuses an existing `FirebaseApp` instance if one has already been initialized, preventing duplicate initialization errors.
+- **Graceful Degradation**: If credentials are missing or initialization fails, it logs a warning and returns `null` for the `FirebaseMessaging` bean, allowing the application to continue without push notification functionality.
+- **Singleton Management**: Ensures only one `FirebaseApp` instance is created per JVM, reusing an existing one if already initialized.
 
 ## Dependencies
 
-- `FirebaseProperties` – A configuration properties class (bound via `@EnableConfigurationProperties`) that provides the service account JSON string or file path.
-- `GoogleCredentials` – Used to authenticate with Firebase.
+- `FirebaseProperties` – A configuration properties class (bound via `@EnableConfigurationProperties`) that provides `serviceAccountJson()` and `serviceAccountPath()` methods.
+- `GoogleCredentials` – For authenticating with Firebase using the service account.
 - `FirebaseMessaging` – The bean produced for sending push notifications.
 
 ## Public Methods
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `firebaseMessaging()` | `FirebaseMessaging` | Creates and returns a `FirebaseMessaging` bean. Returns `null` if credentials are missing or initialization fails. |
-
 ### `firebaseMessaging()`
 
-This method is the core bean definition. It performs the following steps:
+Creates and returns a `FirebaseMessaging` bean.
 
-1. **Check Credentials**: Verifies whether the `FirebaseProperties` instance contains a service account JSON string (`hasJson()`) or a file path (`hasPath()`). If neither is present, it logs a message and returns `null`.
-2. **Open Credential Stream**: Calls `openCredentialStream()` to obtain an `InputStream` for the credentials.
-3. **Build Firebase Options**: Creates a `FirebaseOptions` object with the credentials from the stream.
-4. **Initialize Firebase App**: Checks if any `FirebaseApp` instances already exist. If not, it initializes a new one; otherwise, it retrieves the existing instance.
-5. **Return FirebaseMessaging**: Creates and returns a `FirebaseMessaging` instance associated with the initialized app.
-6. **Error Handling**: If an `IOException` occurs during stream opening or Firebase initialization, it logs a warning and returns `null`.
+| Aspect | Details |
+|--------|---------|
+| **Return Type** | `FirebaseMessaging` (or `null` if disabled) |
+| **Description** | Initializes Firebase with the provided credentials and returns a messaging instance. If no credentials are configured, or if initialization fails, returns `null`. |
+| **Logging** | Logs at INFO level when disabled or initialized; logs at WARN level on failure. |
+
+**Behavior**:
+1. Checks if either `serviceAccountJson` or `serviceAccountPath` is set via `FirebaseProperties`.
+2. If neither is set, logs "Firebase service account not configured; push notifications disabled." and returns `null`.
+3. Opens an `InputStream` to the credential source (JSON string or file).
+4. Builds `FirebaseOptions` with the credentials.
+5. Initializes a `FirebaseApp` (reuses existing if already initialized).
+6. Returns `FirebaseMessaging.getInstance(app)`.
+7. On `IOException`, logs the error and returns `null`.
 
 ## Private Methods
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `openCredentialStream()` | `InputStream` | Opens an `InputStream` to the service account credentials. If `properties.hasJson()` is true, it returns a `ByteArrayInputStream` from the JSON string. Otherwise, it returns a `FileInputStream` from the file path. |
+### `openCredentialStream()`
+
+Opens an `InputStream` for the service account credentials.
+
+| Aspect | Details |
+|--------|---------|
+| **Return Type** | `InputStream` |
+| **Parameters** | None |
+| **Throws** | `IOException` if the file cannot be read |
+| **Description** | Returns a `ByteArrayInputStream` if `properties.hasJson()` is true, otherwise returns a `FileInputStream` for the path from `properties.serviceAccountPath()`. |
 
 ## Configuration Properties
 
-The class relies on `FirebaseProperties` which should define the following:
+The class relies on `FirebaseProperties` which should define:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `serviceAccountJson` | `String` | The Firebase service account credentials as a JSON string. |
-| `serviceAccountPath` | `String` | The file system path to the Firebase service account JSON file. |
+| `serviceAccountJson` | `String` | The full JSON content of the Firebase service account key. |
+| `serviceAccountPath` | `String` | File system path to the service account JSON file. |
+
+**Note**: At least one of these must be provided for Firebase to initialize.
 
 ## Usage Example
 
 ```java
-// In application.yml or application.properties
+// In application.yml or application.properties:
 firebase:
   service-account-json: "{ \"type\": \"service_account\", ... }"
   # OR
-  service-account-path: "/path/to/firebase-service-account.json"
+  service-account-path: "/path/to/serviceAccountKey.json"
 ```
 
 The `FirebaseMessaging` bean can then be injected into any Spring component:
@@ -73,26 +86,18 @@ public class NotificationService {
         this.firebaseMessaging = firebaseMessaging;
     }
 
-    public void sendNotification(String token, String title, String body) {
-        if (firebaseMessaging == null) {
-            // Firebase not configured, handle gracefully
-            return;
+    public void sendNotification(Message message) {
+        if (firebaseMessaging != null) {
+            // Send push notification
         }
-        // Send notification using firebaseMessaging
     }
 }
 ```
 
-## Logging Behavior
+## Logging
 
 | Condition | Log Level | Message |
 |-----------|-----------|---------|
 | No credentials configured | INFO | "Firebase service account not configured; push notifications disabled." |
-| Initialization successful | INFO | "Firebase initialized from service account JSON/file; push notifications enabled." |
+| Initialization successful | INFO | "Firebase initialized from {source}; push notifications enabled." (source is "service account JSON" or "service account file") |
 | Initialization failed | WARN | "Failed to initialize Firebase; push notifications disabled: {error message}" |
-
-## Notes
-
-- The class uses `@Configuration` and `@EnableConfigurationProperties` to integrate with Spring's dependency injection.
-- The `FirebaseMessaging` bean can be `null` if Firebase is not configured, so consumers should perform null checks.
-- The `openCredentialStream()` method uses try-with-resources to ensure the stream is properly closed after use.

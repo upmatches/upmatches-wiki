@@ -4,43 +4,79 @@ title: StationImportRequest
 sidebar_label: StationImportRequest
 ---
 
+# StationImportRequest
+
+The `StationImportRequest` class is a Java record used to represent the data required for importing a station into the system. It serves as a Data Transfer Object (DTO) for receiving station import requests, typically from an API endpoint. The record enforces validation constraints on its fields to ensure data integrity before processing.
+
 ## Purpose
 
-The `StationImportRequest` class is a Java record used to represent the data required for importing a station into the system. It serves as a Data Transfer Object (DTO) for incoming station import requests, ensuring that the provided data meets basic validation constraints before being processed.
+This record is designed to:
+- Capture essential station information during import operations.
+- Validate input data using Jakarta Bean Validation annotations.
+- Provide a structured, immutable representation of a station import request.
 
-## Record Definition
+## Record Structure
 
-This record is defined with five components, each representing a field of the station import request. The record automatically generates a constructor, getter methods, `equals()`, `hashCode()`, and `toString()` methods.
+The `StationImportRequest` record contains five fields, each with specific validation constraints:
 
-## Fields
+| Field       | Type        | Validation Constraints | Description |
+|-------------|-------------|------------------------|-------------|
+| `code`      | `String`    | `@NotBlank`, `@Size(max = 50)` | Unique station code (max 50 characters) |
+| `name`      | `String`    | `@NotBlank`, `@Size(max = 150)` | Station name (max 150 characters) |
+| `color`     | `String`    | `@NotBlank`, `@Size(max = 7)` | Station color code (max 7 characters, e.g., hex color) |
+| `latitude`  | `BigDecimal`| `@NotNull` | Latitude coordinate of the station |
+| `longitude` | `BigDecimal`| `@NotNull` | Longitude coordinate of the station |
 
-| Field | Type | Validation Constraints | Description |
-|-------|------|------------------------|-------------|
-| `code` | `String` | `@NotBlank`, `@Size(max = 50)` | A unique identifier code for the station, up to 50 characters. |
-| `name` | `String` | `@NotBlank`, `@Size(max = 150)` | The name of the station, up to 150 characters. |
-| `color` | `String` | `@NotBlank`, `@Size(max = 7)` | A color code associated with the station (e.g., hex color), up to 7 characters. |
-| `latitude` | `BigDecimal` | `@NotNull` | The latitude coordinate of the station. |
-| `longitude` | `BigDecimal` | `@NotNull` | The longitude coordinate of the station. |
+## Constructor
 
-## Validation
-
-The record uses Jakarta Bean Validation annotations to enforce data integrity:
-
-- **`@NotBlank`**: Ensures that `String` fields are not null and contain at least one non-whitespace character.
-- **`@NotNull`**: Ensures that `BigDecimal` fields are not null.
-- **`@Size(max = ...)`**: Restricts the maximum length of `String` fields.
-
-## Usage
-
-This record is typically used in REST API endpoints to receive station import data from clients. For example:
+Since `StationImportRequest` is a Java record, the compiler automatically generates a canonical constructor that accepts all fields in the order they are declared:
 
 ```java
-@PostMapping("/import")
-public ResponseEntity<Void> importStation(@Valid @RequestBody StationImportRequest request) {
-    // Process the import request
-}
+public StationImportRequest(
+    String code,
+    String name,
+    String color,
+    BigDecimal latitude,
+    BigDecimal longitude
+)
 ```
 
-## Package
+## Accessor Methods
 
-The record is located in the package `com.upmatches.app.features.venue.requests`.
+As a record, `StationImportRequest` provides automatically generated accessor methods for each field:
+
+| Method        | Return Type   | Description |
+|---------------|---------------|-------------|
+| `code()`      | `String`      | Returns the station code |
+| `name()`      | `String`      | Returns the station name |
+| `color()`     | `String`      | Returns the station color |
+| `latitude()`  | `BigDecimal`  | Returns the latitude coordinate |
+| `longitude()` | `BigDecimal`  | Returns the longitude coordinate |
+
+## Usage Example
+
+```java
+StationImportRequest request = new StationImportRequest(
+    "STN001",
+    "Central Station",
+    "#FF5733",
+    new BigDecimal("40.7128"),
+    new BigDecimal("-74.0060")
+);
+
+// Access fields
+String code = request.code();
+String name = request.name();
+String color = request.color();
+BigDecimal lat = request.latitude();
+BigDecimal lon = request.longitude();
+```
+
+## Validation Behavior
+
+When used with a Jakarta Bean Validation framework (e.g., Hibernate Validator), the record will automatically validate its fields according to the specified constraints:
+
+- `code`, `name`, and `color` must not be blank and must respect their maximum length limits.
+- `latitude` and `longitude` must not be null.
+
+If validation fails, a `ConstraintViolationException` or similar validation error will be thrown, depending on the validation context.

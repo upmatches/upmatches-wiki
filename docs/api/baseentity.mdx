@@ -4,79 +4,43 @@ title: BaseEntity - Abstract JPA Entity with Auditing and Soft Delete
 sidebar_label: BaseEntity
 ---
 
-# BaseEntity
+## Overview
 
-The `BaseEntity` class is an abstract JPA mapped superclass that provides common fields and behavior for all entities in the application. It includes automatic UUID generation, Spring Data JPA auditing timestamps, user tracking, and soft-delete support.
+`BaseEntity` is an abstract JPA mapped superclass that provides common fields and behavior for all entities in the application. It implements automatic UUID generation, Spring Data JPA auditing (creation/modification timestamps and user tracking), and soft delete functionality.
 
-## Purpose
+By extending this class, all concrete entities inherit a consistent set of fields and lifecycle callbacks, reducing boilerplate and ensuring uniformity across the data model.
 
-- **Standardized Entity Structure**: Ensures every entity has a consistent set of fields (`id`, `uuid`, timestamps, audit trail).
-- **Automatic UUID Generation**: Generates a unique UUID for each entity upon creation.
-- **Auditing**: Leverages Spring Data JPA's `AuditingEntityListener` to automatically populate `createdAt`, `updatedAt`, `createdBy`, and `updatedBy` fields.
-- **Soft Delete**: Provides a non-destructive deletion mechanism via a `deletedAt` timestamp.
+## Key Features
 
-## Annotations
-
-| Annotation | Description |
-|------------|-------------|
-| `@Getter` / `@Setter` | Lombok annotations to generate getters and setters for all fields. |
-| `@MappedSuperclass` | Indicates that this class is a base class for JPA entities; its mapping information is applied to subclasses. |
-| `@EntityListeners(AuditingEntityListener.class)` | Registers the Spring Data JPA auditing listener to automatically populate audit fields. |
+- **Auto-generated UUID**: Each entity gets a unique, non-sequential UUID on creation.
+- **Auditing**: Automatic tracking of creation and last modification timestamps and users (requires Spring Data JPA auditing configuration).
+- **Soft Delete**: Entities can be logically deleted by setting a `deletedAt` timestamp, rather than being physically removed from the database.
+- **Lombok Integration**: Uses `@Getter` and `@Setter` to automatically generate getters and setters for all fields.
 
 ## Fields
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| `id` | `Long` | Primary key, auto-generated via identity strategy | Database-generated unique identifier. |
-| `uuid` | `UUID` | Not null, unique, not updatable | Application-level unique identifier, generated automatically. |
-| `createdAt` | `Instant` | Not null, not updatable | Timestamp of entity creation, set automatically. |
-| `updatedAt` | `Instant` | Not null | Timestamp of last modification, updated automatically. |
-| `createdBy` | `String` | Updatable = false | Username or identifier of the user who created the entity. |
-| `updatedBy` | `String` | None | Username or identifier of the user who last modified the entity. |
-| `deletedAt` | `Instant` | Nullable | Timestamp of soft deletion; `null` indicates the entity is active. |
+| `id` | `Long` | Primary key, auto-generated via identity strategy | Database-generated sequential identifier |
+| `uuid` | `UUID` | Not null, unique, not updatable | Universally unique identifier, generated automatically on persist |
+| `createdAt` | `Instant` | Not null, not updatable | Timestamp of entity creation (set by auditing) |
+| `updatedAt` | `Instant` | Not null | Timestamp of last modification (set by auditing) |
+| `createdBy` | `String` | Nullable, not updatable | Username or identifier of the creator (set by auditing) |
+| `updatedBy` | `String` | Nullable | Username or identifier of the last modifier (set by auditing) |
+| `deletedAt` | `Instant` | Nullable | Timestamp of logical deletion; `null` means active |
 
-## Methods
+## Public Methods
 
-### `onCreate()`
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `isDeleted()` | `boolean` | Returns `true` if the entity has been soft-deleted (`deletedAt` is not null) |
+| `markDeleted()` | `void` | Sets `deletedAt` to the current instant, marking the entity as deleted |
 
-```java
-@PrePersist
-protected void onCreate()
-```
+## Lifecycle Callbacks
 
-**Description**: Lifecycle callback invoked before the entity is persisted. Automatically generates a UUID if one has not been set.
+### `@PrePersist` - `onCreate()`
 
-**Parameters**: None
-
-**Returns**: `void`
-
----
-
-### `isDeleted()`
-
-```java
-public boolean isDeleted()
-```
-
-**Description**: Checks whether the entity has been soft-deleted.
-
-**Parameters**: None
-
-**Returns**: `boolean` - `true` if `deletedAt` is not null, `false` otherwise.
-
----
-
-### `markDeleted()`
-
-```java
-public void markDeleted()
-```
-
-**Description**: Marks the entity as deleted by setting `deletedAt` to the current timestamp.
-
-**Parameters**: None
-
-**Returns**: `void`
+Automatically invoked by JPA before the entity is first persisted. If `uuid` is `null`, it generates a new random UUID. This ensures every entity has a unique UUID even if not explicitly set.
 
 ## Usage Example
 
@@ -93,21 +57,35 @@ public class User extends BaseEntity {
 User user = new User();
 user.setUsername("john_doe");
 user.setEmail("john@example.com");
-// uuid, createdAt, createdBy are automatically populated
+userRepository.save(user); // UUID, createdAt, createdBy are auto-populated
 
 // Soft deleting a user
 user.markDeleted();
-boolean isDeleted = user.isDeleted(); // returns true
+userRepository.save(user); // deletedAt is now set
 ```
 
-## Dependencies
+## Configuration Requirements
 
-- **Spring Data JPA**: For auditing support (`@CreatedDate`, `@LastModifiedDate`, `@CreatedBy`, `@LastModifiedBy`).
-- **Lombok**: For generating boilerplate code (`@Getter`, `@Setter`).
-- **Jakarta Persistence**: For JPA annotations (`@Id`, `@Column`, `@MappedSuperclass`, `@PrePersist`).
+To enable Spring Data JPA auditing for `createdBy` and `updatedBy` fields, you must configure an `AuditorAware` bean in your Spring context:
 
-## Notes
+```java
+@Configuration
+@EnableJpaAuditing
+public class AuditConfig {
+    
+    @Bean
+    public AuditorAware<String> auditorProvider() {
+        return () -> Optional.ofNullable(SecurityContextHolder.getContext())
+                .map(ctx -> ctx.getAuthentication())
+                .map(Authentication::getName)
+                .or(() -> Optional.of("system"));
+    }
+}
+```
 
-- The `uuid` field is generated automatically and cannot be updated after creation.
-- Soft-deleted entities remain in the database but can be filtered out in queries using `WHERE deleted_at IS NULL`.
-- The auditing fields (`createdBy`, `updatedBy`) require a configured `AuditorAware` bean in the Spring context to populate user information.
+## Important Notes
+
+- This class is abstract and cannot be instantiated directly. It must be extended by concrete entity classes.
+- The `uuid` field is set only once during creation and cannot be updated afterward.
+- Soft-deleted entities remain in the database. Queries should typically filter out deleted records using `WHERE deleted_at IS NULL`.
+- The `createdBy` and `updatedBy` fields depend on Spring Security context; if no authenticated user is available, they may remain `null`.

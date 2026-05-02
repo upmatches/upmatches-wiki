@@ -6,74 +6,40 @@ sidebar_label: MeGameController
 
 # MeGameController
 
-The `MeGameController` is a REST controller that provides endpoints for the currently authenticated user to retrieve their game-related data. It exposes two main functionalities: listing games the user has joined and listing games the user is hosting. Both endpoints support cursor-based pagination for efficient data retrieval.
+The `MeGameController` is a REST controller that provides endpoints for authenticated users to retrieve their personal game-related data. It exposes two main operations: fetching games the user has joined and games the user is hosting. Both endpoints use cursor-based pagination for efficient data retrieval.
 
-## Purpose
+## Location
 
-This controller serves as the primary interface for users to view their personal game history and active game participation. It abstracts the complexity of cursor-based pagination and provides a standardized API response format.
+**Package:** `com.upmatches.app.features.user.controllers`
+
+**Base URL:** `/api/v1/me/games`
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `IListMyJoinedGamesCursorService` | Service | Handles business logic for retrieving games the user has joined |
+| `IListMyHostedGamesCursorService` | Service | Handles business logic for retrieving games the user is hosting |
+| `ValidationHelper` | Utility | Validates cursor pagination parameters |
 
 ## Endpoints
 
-### List Joined Games
+### GET `/api/v1/me/games/joined`
 
-Retrieves a paginated list of games that the current user has joined.
+Retrieves a paginated list of games that the current authenticated user has joined.
 
-**HTTP Method:** `GET`  
-**Endpoint:** `/api/v1/me/games/joined`
-
-#### Parameters
+#### Request Parameters
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `cursor` | String | No | - | Cursor for pagination. Used to fetch the next page of results. |
-| `size` | Integer | No | 20 | Number of items per page. Must be between 1 and 100. |
+| `cursor` | `String` | No | `null` | Pagination cursor for fetching the next page of results |
+| `size` | `Integer` | No | `20` | Number of items per page (validated by `ValidationHelper`) |
 
 #### Response
-
-Returns a `200 OK` response with an `ApiResponse` containing a `CursorPagedResponse<GameResponse>` object.
-
-**Success Message:** "Joined games retrieved successfully."
-
-### List Hosted Games
-
-Retrieves a paginated list of games that the current user is hosting.
-
-**HTTP Method:** `GET`  
-**Endpoint:** `/api/v1/me/games/hosted`
-
-#### Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `cursor` | String | No | - | Cursor for pagination. Used to fetch the next page of results. |
-| `size` | Integer | No | 20 | Number of items per page. Must be between 1 and 100. |
-
-#### Response
-
-Returns a `200 OK` response with an `ApiResponse` containing a `CursorPagedResponse<GameResponse>` object.
-
-**Success Message:** "Hosted games retrieved successfully."
-
-## Implementation Details
-
-### Dependencies
-
-The controller relies on two service interfaces:
-
-- `IListMyJoinedGamesCursorService`: Handles the business logic for retrieving joined games with cursor-based pagination.
-- `IListMyHostedGamesCursorService`: Handles the business logic for retrieving hosted games with cursor-based pagination.
-
-### Validation
-
-Both endpoints validate the `size` parameter using `ValidationHelper.validateCursorPaginationParameters(size)`. This ensures the pagination size is within acceptable bounds (typically 1-100).
-
-### Response Format
-
-All responses follow a standardized format using the `ApiResponse` class:
 
 ```json
 {
-  "success": true,
+  "status": "success",
   "message": "Joined games retrieved successfully.",
   "data": {
     "items": [...],
@@ -84,32 +50,71 @@ All responses follow a standardized format using the `ApiResponse` class:
 }
 ```
 
-## Usage Examples
+#### Success Response Codes
 
-### Fetch First Page of Joined Games
+| HTTP Status | Description |
+|-------------|-------------|
+| `200 OK` | Games retrieved successfully |
 
-```bash
-curl -X GET "https://api.example.com/api/v1/me/games/joined?size=10"
+---
+
+### GET `/api/v1/me/games/hosted`
+
+Retrieves a paginated list of games that the current authenticated user is hosting.
+
+#### Request Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `cursor` | `String` | No | `null` | Pagination cursor for fetching the next page of results |
+| `size` | `Integer` | No | `20` | Number of items per page (validated by `ValidationHelper`) |
+
+#### Response
+
+```json
+{
+  "status": "success",
+  "message": "Hosted games retrieved successfully.",
+  "data": {
+    "items": [...],
+    "nextCursor": "string",
+    "hasMore": true
+  },
+  "path": "/api/v1/me/games/hosted"
+}
 ```
 
-### Fetch Next Page Using Cursor
+#### Success Response Codes
 
-```bash
-curl -X GET "https://api.example.com/api/v1/me/games/joined?cursor=eyJpZCI6IjEyMyJ9&size=10"
-```
-
-### Fetch Hosted Games with Custom Page Size
-
-```bash
-curl -X GET "https://api.example.com/api/v1/me/games/hosted?size=50"
-```
+| HTTP Status | Description |
+|-------------|-------------|
+| `200 OK` | Games retrieved successfully |
 
 ## Error Handling
 
-The controller delegates validation to `ValidationHelper`. If the `size` parameter is invalid (e.g., less than 1 or greater than 100), the validation helper will throw an appropriate exception, which should be handled by a global exception handler in the application.
+Both endpoints rely on `ValidationHelper.validateCursorPaginationParameters(size)` to validate the `size` parameter. If validation fails, the helper will throw an appropriate exception that should be handled by a global exception handler.
 
-## Notes
+## Usage Example
 
-- Both endpoints require authentication (implied by the `/me/` path segment).
-- The cursor parameter is opaque to the client; it should be used exactly as returned by the API.
-- The default page size is 20 items, which can be overridden using the `size` parameter.
+### cURL
+
+```bash
+# Get first page of joined games (20 items)
+curl -X GET "https://api.example.com/api/v1/me/games/joined" \
+  -H "Authorization: Bearer <token>"
+
+# Get next page using cursor
+curl -X GET "https://api.example.com/api/v1/me/games/joined?cursor=abc123&size=10" \
+  -H "Authorization: Bearer <token>"
+
+# Get hosted games
+curl -X GET "https://api.example.com/api/v1/me/games/hosted" \
+  -H "Authorization: Bearer <token>"
+```
+
+## Implementation Notes
+
+- Both endpoints require authentication (handled by Spring Security configuration outside this controller).
+- The controller uses constructor injection for its service dependencies.
+- Cursor-based pagination is used instead of traditional offset pagination for better performance with large datasets.
+- The `HttpServletRequest` is injected to capture the request URI for response metadata.

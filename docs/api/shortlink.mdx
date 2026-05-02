@@ -6,58 +6,53 @@ sidebar_label: ShortLink
 
 # ShortLink Entity
 
-The `ShortLink` class is a JPA entity that represents a shortened URL link within the UpMatches application. It maps to the `short_links` database table and is used to store and manage shortened URLs that redirect users to various resources (e.g., user profiles, posts, or other content).
+The `ShortLink` entity represents a shortened URL link within the UpMatches application. It maps to the `short_links` database table and is used to track and manage shortened URLs that redirect users to various resources within the platform.
 
 ## Purpose
 
-This entity serves as the core data model for the URL shortening feature. It stores:
-- A unique short code that forms the shortened URL
-- The type and ID of the resource the link points to
-- Click tracking metrics
-- Audit timestamps for creation and updates
+This entity serves as the core data model for the share link feature, enabling the application to:
+- Store and manage shortened URL codes
+- Track which resources (profiles, matches, etc.) each short link points to
+- Monitor click counts for analytics purposes
+- Associate links with the users who created them
 
-## Fields
+## Entity Details
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Property | Type | Description |
+|----------|------|-------------|
 | `id` | `UUID` | Primary key, auto-generated using UUID strategy |
 | `code` | `String` | Unique short code (max 10 characters) used in the shortened URL |
-| `resourceType` | `ResourceType` | Enum indicating the type of resource (e.g., USER, POST) |
+| `resourceType` | `ResourceType` | Enum indicating the type of resource the link points to |
 | `resourceId` | `String` | UUID of the target resource (max 36 characters) |
-| `clickCount` | `Long` | Counter tracking how many times the short link has been accessed |
-| `createdBy` | `User` | Many-to-one relationship to the User who created the short link |
-| `createdAt` | `Instant` | Timestamp when the entity was first persisted (non-updatable) |
+| `clickCount` | `Long` | Counter tracking how many times the link has been accessed |
+| `createdBy` | `User` | Many-to-one relationship with the User who created the link |
+| `createdAt` | `Instant` | Timestamp when the link was created (non-updatable) |
 | `updatedAt` | `Instant` | Timestamp of the last update |
 
 ## Public Methods
 
 ### `create(String code, ResourceType resourceType, String resourceId, User createdBy)`
 
-Static factory method for creating a new `ShortLink` instance.
+Factory method to create a new `ShortLink` instance.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `code` | `String` | The unique short code for the URL |
 | `resourceType` | `ResourceType` | The type of resource being linked to |
-| `resourceId` | `String` | The ID of the target resource |
-| `createdBy` | `User` | The user who is creating the short link |
+| `resourceId` | `String` | The UUID of the target resource |
+| `createdBy` | `User` | The user creating the link |
 
-**Returns:** `ShortLink` - A new ShortLink instance with `clickCount` initialized to `0`.
+**Returns:** `ShortLink` - A new instance with click count initialized to 0
 
 ## Lifecycle Callbacks
 
 ### `onCreate()`
-- Annotated with `@PrePersist`
-- Sets both `createdAt` and `updatedAt` to the current instant
+
+Automatically called before persisting a new entity. Sets both `createdAt` and `updatedAt` to the current timestamp.
 
 ### `onUpdate()`
-- Annotated with `@PreUpdate`
-- Updates `updatedAt` to the current instant
 
-## Dependencies
-
-- **ResourceType**: Enum defined in `com.upmatches.app.features.sharelink.enums`
-- **User**: Entity defined in `com.upmatches.app.features.user.entities`
+Automatically called before updating an existing entity. Updates the `updatedAt` timestamp to the current time.
 
 ## Usage Example
 
@@ -65,7 +60,7 @@ Static factory method for creating a new `ShortLink` instance.
 // Creating a new short link
 ShortLink link = ShortLink.create(
     "abc123",
-    ResourceType.USER_PROFILE,
+    ResourceType.PROFILE,
     "550e8400-e29b-41d4-a716-446655440000",
     currentUser
 );
@@ -73,3 +68,18 @@ ShortLink link = ShortLink.create(
 // The link is now ready to be persisted via a repository
 shortLinkRepository.save(link);
 ```
+
+## Database Mapping
+
+The entity is mapped to the `short_links` table with the following constraints:
+- `code` column has a unique constraint and cannot be null
+- `resource_type` and `resource_id` columns cannot be null
+- `click_count` defaults to 0 and cannot be null
+- `created_at` is set once and cannot be updated
+- `updated_at` is updated on every modification
+
+## Dependencies
+
+- **ResourceType**: Enum defining the types of resources (e.g., PROFILE, MATCH, etc.)
+- **User**: Entity representing application users
+- **Lombok**: Uses `@Getter` and `@NoArgsConstructor` annotations for boilerplate reduction

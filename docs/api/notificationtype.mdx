@@ -1,57 +1,51 @@
 ---
-id: notification-type-enum
+id: notification-type
 title: NotificationType Enum
 sidebar_label: NotificationType
 ---
 
 # NotificationType Enum
 
-The `NotificationType` enum defines the various types of notifications that can be sent within the application. It is part of the `com.upmatches.app.features.notification.enums` package and is used to categorize and handle different notification events related to game and player activities.
+The `NotificationType` enum defines the various types of notifications that can be sent within the application. It is part of the notification feature module and is used to categorize and handle different notification events related to game sessions and player activities.
 
 ## Purpose
 
-This enum provides a standardized set of notification types that the system can generate. Each constant represents a specific event or action that triggers a notification to be sent to relevant users. By using an enum, the application ensures type safety and consistency when processing notifications.
+This enum provides a standardized set of notification types that the system can generate. Each constant represents a specific event or action that triggers a notification to be sent to relevant users. The enum ensures type safety and consistency when processing notifications throughout the application.
 
 ## Enum Constants
 
 | Constant | Description |
 |----------|-------------|
-| `PLAYER_JOINED` | Notification sent when a player joins a game |
-| `PLAYER_LEFT` | Notification sent when a player leaves a game |
-| `PLAYER_WARNING_MISMATCH` | Notification sent when there is a mismatch warning for a player |
-| `GAME_FULL` | Notification sent when a game reaches its maximum capacity |
-| `GAME_REMINDER_3_DAYS` | Reminder notification sent 3 days before a game |
-| `GAME_REMINDER_1_DAY` | Reminder notification sent 1 day before a game |
-| `GAME_UPDATED` | Notification sent when game details are updated |
-| `GAME_REMOVED` | Notification sent when a game is removed or cancelled |
-| `PLAYER_REMOVED_FROM_GAME` | Notification sent when a player is removed from a game |
+| `PLAYER_JOINED` | Notification sent when a new player joins a game session |
+| `PLAYER_LEFT` | Notification sent when a player leaves a game session |
+| `PLAYER_WARNING_MISMATCH` | Notification indicating a player skill level or attribute mismatch warning |
+| `GAME_FULL` | Notification sent when a game session has reached its maximum capacity |
+| `GAME_REMINDER_3_DAYS` | Reminder notification sent 3 days before a scheduled game |
+| `GAME_REMINDER_1_DAY` | Reminder notification sent 1 day before a scheduled game |
+| `GAME_UPDATED` | Notification sent when game details have been modified |
+| `GAME_REMOVED` | Notification sent when a game session has been cancelled or removed |
+| `PLAYER_REMOVED_FROM_GAME` | Notification sent when a player has been removed from a game session |
 
 ## Usage
 
-The `NotificationType` enum is typically used in conjunction with a notification service or handler to determine the appropriate action, message template, or delivery method for each type of notification.
-
-### Example Usage
+The `NotificationType` enum is typically used in conjunction with notification services and handlers to determine the appropriate action or message template for each notification event. Example usage:
 
 ```java
-// Example of using NotificationType in a notification handler
-public void handleNotification(NotificationType type, NotificationData data) {
+// Example of using NotificationType in a notification service
+public void sendNotification(NotificationType type, Player player, Game game) {
     switch (type) {
         case PLAYER_JOINED:
             // Handle player joined notification
             break;
         case GAME_REMINDER_1_DAY:
-            // Send 1-day reminder
+            // Handle 1-day reminder notification
             break;
-        case GAME_REMOVED:
-            // Notify players that game was removed
-            break;
-        // Handle other cases...
+        // Handle other notification types...
     }
 }
 ```
 
-## Related Components
+## Location
 
-- **Notification Service**: Service that processes and sends notifications based on the `NotificationType`
-- **Notification Data**: Data object containing additional information for each notification type
-- **User Preferences**: May use `NotificationType` to allow users to opt-in/out of specific notification types
+- **Package:** `com.upmatches.app.features.notification.enums`
+- **File:** `NotificationType.java`

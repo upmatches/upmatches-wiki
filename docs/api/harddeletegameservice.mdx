@@ -1,35 +1,28 @@
 ---
 id: hard-delete-game-service
-title: HardDeleteGameService
+title: HardDeleteGameService Documentation
 sidebar_label: HardDeleteGameService
 ---
 
 # HardDeleteGameService
 
-The `HardDeleteGameService` class provides a service for permanently deleting a game entity from the database. This operation is irreversible and is restricted to users with the `ADMIN` authority. The service ensures that the game exists before deletion and wraps the operation in a transactional context with auditing support.
+The `HardDeleteGameService` class is a Spring service component responsible for permanently removing a `Game` entity from the database. Unlike soft deletion, this operation physically deletes the record and cannot be undone. Access is restricted to users with the `ADMIN` authority, and the operation is audited for compliance and traceability.
 
 ## Purpose
 
-- **Permanent Deletion**: Removes a game record entirely from the database (hard delete), as opposed to a soft delete.
-- **Authorization**: Only users with the `ADMIN` authority can perform this operation.
-- **Auditing**: The deletion action is logged with details about the resource and the affected game ID.
-- **Error Handling**: Throws a `ResourceNotFoundException` if the game does not exist.
+- **Permanent Deletion**: Physically removes a game record from the database.
+- **Admin-Only Access**: Ensures only authorized administrators can perform hard deletions.
+- **Audit Trail**: Logs the deletion event with details about the resource and the user who performed the action.
+- **Transactional Safety**: Wraps the deletion in a database transaction to maintain data integrity.
 
 ## Class Details
 
-| Property       | Value                                                                 |
-|----------------|-----------------------------------------------------------------------|
-| **Package**    | `com.upmatches.app.features.game.services`                            |
-| **Modifiers**  | `public non-sealed`                                                   |
-| **Implements** | `IHardDeleteGameService`                                              |
-| **Annotations**| `@Service`                                                            |
-
-## Dependencies
-
-| Dependency          | Type                | Description                                      |
-|---------------------|---------------------|--------------------------------------------------|
-| `GameRepository`    | Repository          | Handles database operations for `Game` entities. |
-| `IGameLookupService`| Service             | Provides lookup functionality for game entities. |
+| Aspect | Description |
+|--------|-------------|
+| **Package** | `com.upmatches.app.features.game.services` |
+| **Type** | `non-sealed class` implementing `IHardDeleteGameService` |
+| **Annotations** | `@Service` |
+| **Dependencies** | `GameRepository`, `IGameLookupService` |
 
 ## Constructor
 
@@ -37,44 +30,38 @@ The `HardDeleteGameService` class provides a service for permanently deleting a 
 
 Initializes the service with the required dependencies.
 
-**Parameters:**
-
-| Parameter        | Type                | Description                          |
-|------------------|---------------------|--------------------------------------|
-| `gameRepository` | `GameRepository`    | Repository for game data access.     |
-| `lookupService`  | `IGameLookupService`| Service for looking up game entities.|
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameRepository` | `GameRepository` | Repository for performing database operations on `Game` entities |
+| `lookupService` | `IGameLookupService` | Service for looking up game entities, including soft-deleted ones |
 
 ## Public Methods
 
 ### `execute(UUID id)`
 
-Permanently deletes a game entity identified by its UUID.
+Permanently deletes a game from the database.
 
-**Annotations:**
-
-- `@Transactional` – Ensures the operation is executed within a database transaction.
-- `@PreAuthorize("hasAuthority('ADMIN')")` – Restricts access to users with the `ADMIN` authority.
-- `@Auditable(action = "GAME_HARD_DELETED", resourceType = "GAME", resourceIdExpression = "#args[0]")` – Logs the deletion action with the game ID.
-
-**Parameters:**
-
-| Parameter | Type   | Description                        |
-|-----------|--------|------------------------------------|
-| `id`      | `UUID` | The unique identifier of the game. |
-
-**Throws:**
-
-| Exception                    | Condition                                      |
-|------------------------------|------------------------------------------------|
-| `ResourceNotFoundException`  | If no game exists with the given ID.           |
+| Aspect | Details |
+|--------|---------|
+| **Access Modifier** | `public` |
+| **Return Type** | `void` |
+| **Parameters** | `id` (`UUID`) – The unique identifier of the game to delete |
+| **Annotations** | `@Transactional`, `@PreAuthorize("hasAuthority('ADMIN')")`, `@Auditable(action = "GAME_HARD_DELETED", resourceType = "GAME", resourceIdExpression = "#args[0]")` |
 
 **Behavior:**
 
-1. Uses `lookupService.findGameIgnoringDeletedOrThrow(id)` to verify the game exists (including soft-deleted records).
-2. Calls `ServiceOperationExecutor.executeVoid()` to perform the deletion via `gameRepository.delete(game)`.
-3. If the game is not found, a `ResourceNotFoundException` is thrown.
+1. **Lookup**: Retrieves the game entity using `lookupService.findGameIgnoringDeletedOrThrow(id)`. This method will throw a `ResourceNotFoundException` if the game does not exist.
+2. **Deletion**: Calls `gameRepository.delete(game)` to physically remove the entity from the database.
+3. **Execution**: Uses `ServiceOperationExecutor.executeVoid()` to wrap the deletion operation, providing consistent error handling and logging.
 
-## Usage Example
+**Exceptions:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | Thrown if no game exists with the given ID |
+| `AccessDeniedException` | Thrown if the current user does not have the `ADMIN` authority |
+
+**Example Usage:**
 
 ```java
 @Autowired
@@ -82,11 +69,23 @@ private HardDeleteGameService hardDeleteGameService;
 
 public void deleteGame(UUID gameId) {
     hardDeleteGameService.execute(gameId);
+    // Game is permanently removed from the database
 }
 ```
 
-## Notes
+## Dependencies
 
-- This service performs a **hard delete**, meaning the record is permanently removed from the database. Use with caution.
-- The `findGameIgnoringDeletedOrThrow` method in `IGameLookupService` is used to locate the game regardless of its soft-delete status, ensuring that even previously soft-deleted games can be hard deleted.
-- The `ServiceOperationExecutor.executeVoid` method handles the execution and exception mapping, converting any persistence errors into `ResourceNotFoundException`.
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameRepository` | Bean | Spring Data JPA repository for `Game` entities |
+| `IGameLookupService` | Bean | Service interface for game lookup operations |
+| `ServiceOperationExecutor` | Utility | Helper class for executing service operations with standardized error handling |
+
+## Security
+
+- **Authorization**: The `@PreAuthorize("hasAuthority('ADMIN')")` annotation ensures only users with the `ADMIN` authority can invoke this method.
+- **Auditing**: The `@Auditable` annotation automatically logs the deletion event, capturing the action type (`GAME_HARD_DELETED`), resource type (`GAME`), and the ID of the deleted game.
+
+## Transaction Management
+
+The `@Transactional` annotation ensures that the deletion operation is executed within a database transaction. If any exception occurs during the process, the transaction is rolled back, preventing partial deletions or inconsistent data states.

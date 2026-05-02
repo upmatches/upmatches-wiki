@@ -11,22 +11,22 @@ The `GetActivityService` class is a Spring service component responsible for ret
 ## Purpose
 
 This service encapsulates the business logic for fetching an activity by ID. It handles:
-- Database lookup using the `ActivityRepository`
+- Database lookup via `ActivityRepository`
 - Error handling when the activity is not found (throws `ResourceNotFoundException`)
 - Conversion of the entity to a response DTO
-- Execution within a read-only transaction for performance optimization
+- Execution within a read-only transaction context for performance optimization
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `ActivityRepository` | Constructor Injection | Spring Data JPA repository for `Activity` entities |
+| `ActivityRepository` | Constructor Injection | Repository for accessing activity data in the database |
 
 ## Public Methods
 
 ### `execute(UUID id)`
 
-Retrieves an activity by its unique identifier and returns a response DTO.
+Retrieves an activity by its unique identifier and returns the corresponding response DTO.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -46,30 +46,26 @@ private GetActivityService getActivityService;
 public void someMethod() {
     UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
     ActivityResponse response = getActivityService.execute(activityId);
-    // Use response...
+    // Use response data...
 }
 ```
 
 ## Error Handling
 
-The service uses `ServiceOperationExecutor` to wrap the retrieval operation with standardized error handling. If the activity is not found, it throws a `ResourceNotFoundException` with a message formatted as:
-
-```
-Activity with ID '<uuid>' not found.
-```
+The service throws a `ResourceNotFoundException` with a formatted message when the requested activity ID does not exist in the database. The error message follows the pattern: `"Activity with ID '{uuid}' not found."`
 
 ## Transactional Behavior
 
 The `execute` method is annotated with `@Transactional(readOnly = true)`, which:
-- Ensures the database operation runs within a transaction context
-- Optimizes performance by allowing the database to use read-only optimizations
-- Prevents any unintended write operations
+- Optimizes database access for read operations
+- Prevents unintended data modifications
+- Improves performance by allowing database-level read optimizations
 
 ## Implementation Details
 
-The service follows a clean architecture pattern:
-1. **Repository Layer**: `ActivityRepository` handles database access
-2. **Service Layer**: `GetActivityService` contains business logic
-3. **Response Layer**: `ActivityResponse` provides a DTO for API responses
+The service uses `ServiceOperationExecutor.execute()` to wrap the retrieval logic with standardized operation tracking and error handling. This utility method:
+- Executes the provided lambda function
+- Associates the operation with the `RETRIEVE` status
+- Wraps any `ResourceNotFoundException` appropriately
 
-The `non-sealed` modifier indicates this class can be extended by other classes in the same module, providing flexibility for future enhancements.
+The class is declared as `non-sealed`, allowing it to be extended by other service implementations if needed.

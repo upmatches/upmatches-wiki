@@ -1,52 +1,55 @@
 ---
 id: postal-code
-title: PostalCode
+title: PostalCode Value Object
 sidebar_label: PostalCode
 ---
 
-# PostalCode
+# PostalCode Value Object
 
-The `PostalCode` class is a Java record that represents a validated postal code value object. It ensures that any postal code stored within the system is a non-empty, 6-digit numeric string. This class is part of the `com.upmatches.app.features.venue.valueobjects` package and is designed to be immutable and self-validating.
+The `PostalCode` class is a Java record that represents a validated postal code value object. It ensures that any postal code used within the system conforms to a strict 6-digit numeric format, providing type safety and validation at the point of creation.
 
 ## Purpose
 
-The primary purpose of the `PostalCode` record is to encapsulate the concept of a postal code in a type-safe manner. By using a dedicated value object, the application avoids primitive obsession and ensures that all postal codes adhere to a consistent format (exactly 6 digits). The validation logic is centralized within the record, preventing invalid data from propagating through the system.
+This value object is designed to encapsulate postal code data with built-in validation. By using a record, the class automatically provides `equals()`, `hashCode()`, and `toString()` methods based on the `value` field. The validation logic ensures that only properly formatted 6-digit postal codes can be instantiated, preventing invalid data from entering the system.
+
+## Constructor Validation
+
+The compact constructor performs the following validations:
+
+1. **Null/Empty Check**: Throws `IllegalArgumentException` if the input is null or blank
+2. **Format Validation**: Throws `IllegalArgumentException` if the input does not match the pattern `^\d{6}$` (exactly 6 digits)
 
 ## Public Methods
 
-| Method | Description | Parameters | Return Type |
-| :--- | :--- | :--- | :--- |
-| `PostalCode(String value)` | Compact constructor that validates and creates a new `PostalCode` instance. | `value` - The postal code string to validate. | `PostalCode` |
-| `create(String postalCode)` | Static factory method to create a `PostalCode` instance. | `postalCode` - The postal code string to validate. | `PostalCode` |
-| `toString()` | Returns the string representation of the postal code. | None | `String` |
-
-## Validation Rules
-
-The `PostalCode` record enforces the following validation rules during construction:
-
-1.  **Non-empty**: The provided `value` must not be `null` or blank.
-2.  **Format**: The `value` must match the regular expression `^\d{6}$`, meaning it must consist of exactly 6 digits.
-
-If either validation rule is violated, an `IllegalArgumentException` is thrown with a descriptive message.
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `create(String postalCode)` | `PostalCode` | `postalCode` - The postal code string to validate and wrap | Static factory method that creates a new `PostalCode` instance |
+| `toString()` | `String` | None | Returns the raw postal code value |
 
 ## Usage Example
 
 ```java
 // Valid postal code
-PostalCode code = PostalCode.create("123456");
-System.out.println(code.toString()); // Output: 123456
+PostalCode validCode = PostalCode.create("123456");
+System.out.println(validCode.toString()); // Output: 123456
 
-// Invalid postal code (empty)
-try {
-    PostalCode invalidCode = PostalCode.create("");
-} catch (IllegalArgumentException e) {
-    System.out.println(e.getMessage()); // Output: Postal code cannot be empty.
-}
-
-// Invalid postal code (non-digit characters)
-try {
-    PostalCode invalidCode = PostalCode.create("12A456");
-} catch (IllegalArgumentException e) {
-    System.out.println(e.getMessage()); // Output: Postal code must be a 6-digit number.
-}
+// Invalid postal code (throws IllegalArgumentException)
+PostalCode invalidCode = PostalCode.create("12345"); // Only 5 digits
+PostalCode invalidCode2 = PostalCode.create("ABCDEF"); // Non-numeric characters
+PostalCode invalidCode3 = PostalCode.create(""); // Empty string
 ```
+
+## Validation Rules
+
+| Rule | Description | Example |
+|------|-------------|---------|
+| Required | Postal code cannot be null or blank | `null` or `""` → Exception |
+| Format | Must be exactly 6 digits | `123456` → Valid |
+| Characters | Only numeric characters allowed | `12A456` → Exception |
+
+## Error Handling
+
+The class throws `IllegalArgumentException` with descriptive messages for validation failures:
+
+- `"Postal code cannot be empty."` - When null or blank input is provided
+- `"Postal code must be a 6-digit number."` - When the format doesn't match the required pattern

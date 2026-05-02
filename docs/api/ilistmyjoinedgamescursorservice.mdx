@@ -1,57 +1,66 @@
 ---
 id: ilistmyjoinedgamescursorservice
-title: IListMyJoinedGamesCursorService
+title: IListMyJoinedGamesCursorService Interface
 sidebar_label: IListMyJoinedGamesCursorService
 ---
 
 # IListMyJoinedGamesCursorService
 
+The `IListMyJoinedGamesCursorService` is a **sealed interface** that defines the contract for retrieving a cursor-paginated list of games the current user has joined. It is part of the game features package and is designed to be implemented only by the `ListMyJoinedGamesCursorService` class.
+
 ## Purpose
 
-The `IListMyJoinedGamesCursorService` interface defines a contract for retrieving a cursor-based paginated list of games that the current user has joined. It uses a sealed interface pattern to restrict implementation to `ListMyJoinedGamesCursorService`, ensuring controlled extensibility and type safety.
+This interface provides a standardized way to fetch joined games with cursor-based pagination. By using a sealed interface, the design enforces a controlled implementation hierarchy, ensuring that only the permitted class (`ListMyJoinedGamesCursorService`) can fulfill this contract. This pattern is useful for maintaining a clear and secure service layer in the application.
 
-This service is designed to support efficient, cursor-based pagination for large result sets, where traditional offset-based pagination may be less performant or inconsistent.
+## Method Summary
 
-## Interface Definition
+| Method | Description |
+|--------|-------------|
+| `execute(String cursor, int size)` | Retrieves a cursor-paginated response containing games the user has joined. |
 
-```java
-public sealed interface IListMyJoinedGamesCursorService permits ListMyJoinedGamesCursorService {
-    CursorPagedResponse<GameResponse> execute(String cursor, int size);
-}
-```
-
-## Methods
+## Method Details
 
 ### `execute`
 
-Retrieves a cursor-paginated list of games joined by the current user.
+```java
+CursorPagedResponse<GameResponse> execute(String cursor, int size)
+```
 
-| Parameter | Type     | Description                                                                 |
-|-----------|----------|-----------------------------------------------------------------------------|
-| `cursor`  | `String` | The cursor indicating the starting point for the next page of results. Pass `null` or empty string to retrieve the first page. |
-| `size`    | `int`    | The maximum number of items to return in the response. Must be a positive integer. |
+Executes the query to fetch a page of joined games based on the provided cursor and page size.
 
-**Returns:** `CursorPagedResponse<GameResponse>` — A paginated response containing a list of `GameResponse` objects and a cursor for the next page (if more results exist).
+**Parameters:**
 
-**Throws:** Implementation-specific exceptions may be thrown (e.g., `IllegalArgumentException` for invalid size values, or service-level exceptions for data access failures).
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `cursor` | `String` | The cursor indicating the starting point for the page. Can be `null` or empty to fetch the first page. |
+| `size` | `int` | The maximum number of items to return in the response. |
 
-## Usage Example
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `CursorPagedResponse<GameResponse>` | A paginated response containing a list of `GameResponse` objects and the next cursor for subsequent requests. |
+
+## Implementation Notes
+
+- The interface is **sealed**, meaning only the `ListMyJoinedGamesCursorService` class is allowed to implement it.
+- The `CursorPagedResponse` and `GameResponse` types are defined elsewhere in the `com.upmatches.app.features.game.responses` package.
+- The `cursor` parameter follows standard cursor-based pagination semantics: an empty or `null` cursor typically indicates the first page, while subsequent pages use the cursor returned in the previous response.
+
+## Example Usage
 
 ```java
 IListMyJoinedGamesCursorService service = new ListMyJoinedGamesCursorService();
 
-// Get the first page of 20 games
+// Fetch the first page of 20 joined games
 CursorPagedResponse<GameResponse> firstPage = service.execute(null, 20);
 
-// Use the cursor from the response to get the next page
-String nextCursor = firstPage.getNextCursor();
-if (nextCursor != null) {
-    CursorPagedResponse<GameResponse> secondPage = service.execute(nextCursor, 20);
-}
+// Fetch the next page using the cursor from the previous response
+CursorPagedResponse<GameResponse> nextPage = service.execute(firstPage.getNextCursor(), 20);
 ```
 
-## Implementation Notes
+## See Also
 
-- The interface is `sealed`, meaning only `ListMyJoinedGamesCursorService` is permitted to implement it. This ensures that all implementations follow the same contract and behavior.
-- Cursor-based pagination is preferred over offset-based pagination for large, frequently updated datasets because it provides consistent results even when data changes between requests.
-- The `cursor` parameter should be treated as an opaque string; clients should not attempt to parse or modify it.
+- `ListMyJoinedGamesCursorService` - The permitted implementation of this interface.
+- `CursorPagedResponse` - The response wrapper for cursor-based pagination.
+- `GameResponse` - The data transfer object for game information.

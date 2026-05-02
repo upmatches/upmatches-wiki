@@ -1,88 +1,102 @@
 ---
-id: iauth0authservice
-title: IAuth0AuthService Interface Documentation
+id: iauth0-auth-service
+title: IAuth0AuthService Interface
 sidebar_label: IAuth0AuthService
 ---
 
-# IAuth0AuthService
+# IAuth0AuthService Interface
 
-The `IAuth0AuthService` is a sealed interface that defines the contract for Auth0 authentication operations within the application. It provides methods for generating authorization URLs and exchanging authorization codes for verified claims. The interface is sealed to permit only `Auth0AuthService` as its implementation, ensuring controlled inheritance and type safety.
+The `IAuth0AuthService` interface defines the contract for Auth0 authentication operations within the application. It provides methods for generating authorization URLs and exchanging authorization codes for verified user claims.
 
-## Interface Definition
+This is a **sealed interface** that permits only the `Auth0AuthService` class to implement it, ensuring controlled inheritance and a well-defined authentication service hierarchy.
 
-```java
-public sealed interface IAuth0AuthService permits Auth0AuthService
-```
+## Purpose
 
-## Methods
+- **Standardize Auth0 authentication flow** by defining a clear contract for authorization URL generation and token exchange
+- **Ensure type safety** with sealed interface pattern, restricting implementation to a single concrete class
+- **Encapsulate verified claims** through the inner record `Auth0VerifiedClaims`, providing a structured representation of authenticated user data
 
-### `getAuthorizationUrl`
+## Inner Record: Auth0VerifiedClaims
 
-Generates the authorization URL for initiating the OAuth 2.0 authentication flow with Auth0.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `state` | `String` | A random string used to maintain state between the request and callback, preventing CSRF attacks |
-| `nonce` | `String` | A random string used to associate a client session with an ID token, preventing replay attacks |
-| `codeVerifier` | `String` | A cryptographically random string used in PKCE (Proof Key for Code Exchange) flow |
-| `connection` | `String` | The Auth0 connection type (e.g., "google-oauth2", "facebook", "Username-Password-Authentication") |
-
-**Returns:** `String` - The fully constructed authorization URL to redirect the user to Auth0's authentication page.
-
-### `exchangeAuthorizationCode`
-
-Exchanges an authorization code for verified claims from Auth0 after successful user authentication.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `authorizationCode` | `String` | The authorization code received from Auth0 after user authentication |
-| `codeVerifier` | `String` | The same code verifier used in the authorization request for PKCE verification |
-| `nonce` | `String` | The same nonce used in the authorization request for ID token validation |
-
-**Returns:** `Auth0VerifiedClaims` - A record containing the verified claims from Auth0.
-
-## Inner Record: `Auth0VerifiedClaims`
-
-A record that encapsulates the verified claims returned from Auth0 after successful authentication.
+The `Auth0VerifiedClaims` record represents the verified claims extracted from an Auth0 ID token after successful authentication.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sub` | `String` | The subject identifier (unique user ID from Auth0) |
+| `sub` | `String` | The Auth0 user identifier (subject claim) |
 | `pictureUrl` | `String` | URL to the user's profile picture |
-| `email` | `String` | The user's email address |
+| `email` | `String` | User's email address |
+
+## Methods
+
+### getAuthorizationUrl
+
+Generates the Auth0 authorization URL for initiating the OAuth 2.0 authentication flow.
+
+```java
+String getAuthorizationUrl(
+    String state,
+    String nonce,
+    String codeVerifier,
+    String connection)
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `state` | `String` | Anti-CSRF state parameter for protecting against cross-site request forgery |
+| `nonce` | `String` | Cryptographic nonce for replay attack prevention |
+| `codeVerifier` | `String` | PKCE code verifier for secure authorization code exchange |
+| `connection` | `String` | Auth0 connection type (e.g., "google-oauth2", "facebook", "Username-Password-Authentication") |
+
+**Returns:** `String` - The fully constructed authorization URL to redirect the user to Auth0.
+
+### exchangeAuthorizationCode
+
+Exchanges an authorization code for verified user claims after successful authentication.
+
+```java
+Auth0VerifiedClaims exchangeAuthorizationCode(
+    String authorizationCode,
+    String codeVerifier,
+    String nonce)
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `authorizationCode` | `String` | The authorization code received from Auth0 callback |
+| `codeVerifier` | `String` | PKCE code verifier used in the initial authorization request |
+| `nonce` | `String` | Cryptographic nonce used in the initial authorization request |
+
+**Returns:** `Auth0VerifiedClaims` - A record containing the verified user claims (sub, pictureUrl, email).
 
 ## Usage Example
 
 ```java
-public class AuthServiceExample {
-    private final IAuth0AuthService authService;
-    
-    public AuthServiceExample(IAuth0AuthService authService) {
-        this.authService = authService;
-    }
-    
-    public String initiateLogin() {
-        String state = generateRandomState();
-        String nonce = generateRandomNonce();
-        String codeVerifier = generateCodeVerifier();
-        String connection = "google-oauth2";
-        
-        return authService.getAuthorizationUrl(state, nonce, codeVerifier, connection);
-    }
-    
-    public IAuth0AuthService.Auth0VerifiedClaims handleCallback(
-            String authorizationCode, 
-            String codeVerifier, 
-            String nonce) {
-        return authService.exchangeAuthorizationCode(authorizationCode, codeVerifier, nonce);
-    }
-}
+// Generate authorization URL
+String authUrl = authService.getAuthorizationUrl(
+    state,
+    nonce,
+    codeVerifier,
+    "google-oauth2"
+);
+
+// Exchange authorization code for claims
+Auth0VerifiedClaims claims = authService.exchangeAuthorizationCode(
+    authorizationCode,
+    codeVerifier,
+    nonce
+);
+
+String userId = claims.sub();
+String email = claims.email();
+String picture = claims.pictureUrl();
 ```
 
 ## Implementation Notes
 
 - The interface is sealed, meaning only `Auth0AuthService` can implement it
-- The `Auth0VerifiedClaims` record is immutable and provides type-safe access to user claims
-- PKCE (Proof Key for Code Exchange) is used for secure authorization code exchange
-- The `nonce` parameter helps prevent replay attacks on ID tokens
-- The `state` parameter helps prevent CSRF attacks during the OAuth flow
+- All methods are expected to throw appropriate exceptions (e.g., `IllegalArgumentException`, `AuthenticationException`) in case of invalid parameters or authentication failures
+- The `Auth0VerifiedClaims` record is immutable and thread-safe by design

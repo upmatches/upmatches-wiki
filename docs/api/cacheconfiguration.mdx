@@ -1,90 +1,58 @@
 ---
 id: cache-configuration
 title: Cache Configuration
-sidebar_label: Cache Configuration
+sidebar_label: CacheConfiguration
 ---
 
 # Cache Configuration
 
-The `CacheConfiguration` class provides a centralized configuration for Redis-based caching in the application. It enables Spring's caching abstraction and configures a `RedisCacheManager` bean with sensible defaults, including a 30-minute time-to-live (TTL) for cached entries and key serialization using `StringRedisSerializer`.
+## Purpose
 
-This configuration is conditionally activated only when the property `spring.cache.type` is set to `redis`, allowing the application to fall back to other caching strategies (e.g., in-memory) when Redis is not available.
+The `CacheConfiguration` class provides a Spring Boot configuration for enabling Redis-based caching in the application. It is conditionally activated only when the `spring.cache.type` property is set to `redis`, ensuring that the Redis cache manager is only configured when Redis is the chosen caching strategy.
 
-## Annotations
+This configuration sets up a default Redis cache manager with a 30-minute time-to-live (TTL) for cached entries, uses string serialization for cache keys, and prevents caching of null values to optimize storage and performance.
 
-| Annotation | Description |
-|---|---|
-| `@Configuration` | Marks this class as a Spring configuration source. |
-| `@EnableCaching` | Enables Spring's annotation-driven cache management. |
-| `@ConditionalOnProperty` | Activates this configuration only when `spring.cache.type=redis` is set. |
+## Key Features
+
+- **Conditional Activation**: Only loads when Redis is configured as the cache type
+- **Default TTL**: All cached entries expire after 30 minutes
+- **String Key Serialization**: Cache keys are serialized as strings for compatibility
+- **Null Value Prevention**: Null values are not cached, reducing unnecessary storage
 
 ## Public Methods
 
-### `cacheManager`
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `cacheManager` | `RedisCacheManager` | `RedisConnectionFactory connectionFactory` | Creates and configures the Redis cache manager with default settings including TTL, key serialization, and null value handling |
 
-Creates and configures a `RedisCacheManager` bean that manages Redis-backed caches.
+## Configuration Properties
 
-```java
-@Bean
-public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory)
-```
+The following Spring Boot property controls when this configuration is active:
 
-**Parameters:**
-
-| Parameter | Type | Description |
-|---|---|---|
-| `connectionFactory` | `RedisConnectionFactory` | The Redis connection factory provided by Spring Boot auto-configuration. |
-
-**Returns:**
-
-| Return Type | Description |
-|---|---|
-| `RedisCacheManager` | A fully configured Redis cache manager instance. |
-
-**Configuration Details:**
-
-- **Default TTL:** 30 minutes (`Duration.ofMinutes(30)`)
-- **Key Serialization:** Uses `StringRedisSerializer` for cache keys
-- **Null Values:** Caching null values is disabled (`disableCachingNullValues()`)
+| Property | Value | Description |
+|----------|-------|-------------|
+| `spring.cache.type` | `redis` | Activates the Redis cache configuration |
 
 ## Usage Example
 
-To use this caching configuration, ensure your `application.properties` or `application.yml` includes:
+To enable Redis caching in your application, add the following to your `application.properties` or `application.yml`:
 
 ```properties
 spring.cache.type=redis
 ```
 
-Then, enable caching on any service method using Spring's caching annotations:
-
-```java
-@Service
-public class UserService {
-    
-    @Cacheable(value = "users", key = "#userId")
-    public User getUserById(Long userId) {
-        // Expensive database lookup
-        return userRepository.findById(userId).orElse(null);
-    }
-}
-```
+Once enabled, you can use Spring's caching annotations (e.g., `@Cacheable`, `@CacheEvict`, `@CachePut`) in your services, and they will automatically use the configured Redis cache manager with the default 30-minute TTL.
 
 ## Dependencies
 
-This configuration requires the following Spring Boot starters:
+This configuration requires the following dependencies in your project:
 
-- `spring-boot-starter-cache`
-- `spring-boot-starter-data-redis`
+- Spring Boot Cache Starter
+- Spring Data Redis
+- Redis server (running and accessible)
 
-Add them to your `pom.xml`:
+## Notes
 
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-cache</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-redis</artifactId>
-</dependency>
-```
+- The default TTL of 30 minutes can be overridden on a per-cache basis using Spring's cache configuration properties
+- String serialization for keys ensures compatibility across different Redis clients
+- Disabling null value caching prevents cache pollution from null returns

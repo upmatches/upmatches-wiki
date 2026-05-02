@@ -1,57 +1,61 @@
 ---
 id: soft-delete-game-service
-title: SoftDeleteGameService
+title: SoftDeleteGameService Documentation
 sidebar_label: SoftDeleteGameService
 ---
 
 # SoftDeleteGameService
 
-The `SoftDeleteGameService` class is a Spring service responsible for performing a soft delete operation on a `Game` entity. Instead of permanently removing a game from the database, this service marks the game as deleted, allowing for potential recovery or audit trails. It ensures that only the authorized organizer of the game can perform this action and publishes a notification event upon successful deletion.
-
 ## Purpose
 
-- **Soft Deletion**: Marks a game as deleted without physically removing it from the database.
-- **Authorization**: Verifies that the requesting user is the organizer of the game.
-- **Audit Logging**: Records the soft delete action via the `@Auditable` annotation.
-- **Notification**: Publishes a `GameNotificationEvent` to notify other parts of the system about the removal.
+The `SoftDeleteGameService` class is a Spring service responsible for performing a soft delete operation on a `Game` entity. Instead of permanently removing a game from the database, this service marks the game as deleted, cancels it, and publishes a notification event to inform other parts of the system about the deletion.
+
+This class implements the `ISoftDeleteGameService` interface and is annotated with `@Service`, making it a Spring-managed bean. It is declared as `non-sealed`, indicating it is part of a sealed interface hierarchy.
 
 ## Dependencies
 
-| Dependency | Description |
-|------------|-------------|
-| `GameRepository` | Repository for persisting game entities. |
-| `IAuthenticatedUserResolver` | Resolves the currently authenticated user's ID. |
-| `IGameLookupService` | Service for looking up games by ID. |
-| `IGameAuthorizationService` | Service for checking user authorization (e.g., organizer check). |
-| `ApplicationEventPublisher` | Spring's event publisher for sending application events. |
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameRepository` | Repository | Data access layer for `Game` entities |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID |
+| `IGameLookupService` | Service | Provides game lookup functionality |
+| `IGameAuthorizationService` | Service | Handles authorization checks for game operations |
+| `ApplicationEventPublisher` | Spring Event | Publishes application events for notification purposes |
 
 ## Public Methods
 
 ### `execute(UUID id)`
 
-Performs the soft delete operation on the game identified by the given ID.
+Performs a soft delete operation on a game identified by the given UUID.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the game to soft delete. |
+| `id` | `UUID` | The unique identifier of the game to soft delete |
 
 **Return Type:** `void`
 
 **Behavior:**
 
-1. **Resolve User**: Retrieves the ID of the currently authenticated user.
-2. **Find Game**: Looks up the game by its ID; throws `ResourceNotFoundException` if not found.
-3. **Authorize**: Checks that the authenticated user is the organizer of the game; throws an authorization exception if not.
-4. **Soft Delete**: Calls `game.cancel()` and `game.markDeleted()` to update the game's state.
-5. **Persist**: Saves the updated game entity using `ServiceOperationExecutor` with a `DELETE` operation status.
-6. **Notify**: Publishes a `GameNotificationEvent` with the game ID, user ID, notification type `GAME_REMOVED`, and the game's activity name (if available).
+1. **Authentication:** Retrieves the currently authenticated user's ID using `userResolver.requireUserId()`.
+2. **Game Lookup:** Finds the game by its ID using `lookupService.findGameOrThrow(id)`. Throws a `ResourceNotFoundException` if the game does not exist.
+3. **Authorization:** Verifies that the authenticated user is the organizer of the game using `authorizationService.assertIsOrganizer(game, userId)`. Throws an authorization exception if the user is not the organizer.
+4. **State Changes:**
+   - Calls `game.cancel()` to cancel the game.
+   - Calls `game.markDeleted()` to mark the game as deleted (soft delete).
+5. **Persistence:** Saves the updated game entity to the database using `ServiceOperationExecutor.execute()` with the `DELETE` operation status.
+6. **Notification:** Publishes a `GameNotificationEvent` with:
+   - The game's ID
+   - The user's ID
+   - `NotificationType.GAME_REMOVED`
+   - The game's activity name (if available)
+
+**Annotations:**
+- `@Transactional`: Ensures the entire operation is executed within a database transaction.
+- `@Auditable`: Records an audit log entry with action `"GAME_SOFT_DELETED"`, resource type `"GAME"`, and the game ID extracted from the method argument.
 
 **Exceptions:**
-
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | If the game with the given ID does not exist. |
-| `AuthorizationException` (implied) | If the authenticated user is not the organizer of the game. |
+- `ResourceNotFoundException`: Thrown if the game is not found or if the database save operation fails.
+- Authorization exceptions: Thrown if the authenticated user is not the game organizer.
 
 ## Usage Example
 
@@ -59,14 +63,14 @@ Performs the soft delete operation on the game identified by the given ID.
 @Autowired
 private SoftDeleteGameService softDeleteGameService;
 
-public void removeGame(UUID gameId) {
+public void deleteGame(UUID gameId) {
     softDeleteGameService.execute(gameId);
+    // Game is now soft-deleted and a notification has been published
 }
 ```
 
 ## Notes
 
-- The class is declared as `non-sealed`, meaning it can be extended by other classes in the same package or module.
-- The `@Transactional` annotation ensures that the entire operation is performed within a single database transaction.
-- The `@Auditable` annotation logs the action with the game ID as the resource identifier.
-- The `ServiceOperationExecutor` handles any persistence errors and wraps them in a `ResourceNotFoundException` if the save fails.
+- This service implements a soft delete pattern, meaning the game record remains in the database but is marked as deleted.
+- The service publishes a notification event after successful deletion, allowing other components (e.g., email services, real-time updates) to react to the deletion.
+- The `ServiceOperationExecutor` provides standardized error handling and logging for database operations.

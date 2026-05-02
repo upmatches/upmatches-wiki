@@ -1,24 +1,22 @@
 ---
 id: game-bookmark-controller
-title: Game Bookmark Controller
-sidebar_label: Game Bookmark Controller
+title: GameBookmarkController
+sidebar_label: GameBookmarkController
 ---
 
-# Game Bookmark Controller
+# GameBookmarkController
 
 The `GameBookmarkController` is a REST controller that manages game bookmarks for the UpMatches application. It provides endpoints for creating, listing, and deleting game bookmarks, allowing users to save and manage their favorite games.
 
 ## Location
 
-`com.upmatches.app.features.game.controllers.GameBookmarkController`
+**Package:** `com.upmatches.app.features.game.controllers`
 
-## Base URL
-
-`/api/v1/game-bookmarks`
+**Base URL:** `/api/v1/game-bookmarks`
 
 ## Dependencies
 
-The controller depends on three service interfaces:
+The controller relies on three service interfaces:
 - `ICreateGameBookmarkService` - Handles bookmark creation
 - `IDeleteGameBookmarkService` - Handles bookmark deletion
 - `IListGameBookmarksService` - Handles bookmark listing with cursor-based pagination
@@ -27,32 +25,24 @@ The controller depends on three service interfaces:
 
 ### Create Game Bookmark
 
-Creates a new bookmark for a specific game.
+Creates a new bookmark for a game.
 
 ```
 POST /api/v1/game-bookmarks
 ```
 
-**Request Body:**
+**Request Body:** `CreateGameBookmarkRequest` (validated)
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `gameId` | UUID | Yes | The unique identifier of the game to bookmark |
+| Field | Type | Description |
+|-------|------|-------------|
+| `gameId` | UUID | The ID of the game to bookmark |
 
-**Response:**
-
-| Status Code | Description |
-|-------------|-------------|
-| `201 Created` | Bookmark created successfully |
-
-**Response Body:**
+**Response:** `201 Created`
 
 ```json
 {
   "data": {
-    "id": "uuid",
-    "gameId": "uuid",
-    "createdAt": "timestamp"
+    // GameBookmarkResponse object
   },
   "message": "Game bookmarked successfully.",
   "path": "/api/v1/game-bookmarks"
@@ -72,28 +62,14 @@ GET /api/v1/game-bookmarks?cursor={cursor}&size={size}
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `cursor` | String | No | - | Cursor for pagination (opaque string) |
-| `size` | Integer | No | 20 | Number of items per page (max 100) |
+| `size` | Integer | No | 20 | Number of items per page (validated) |
 
-**Response:**
-
-| Status Code | Description |
-|-------------|-------------|
-| `200 OK` | Bookmarks retrieved successfully |
-
-**Response Body:**
+**Response:** `200 OK`
 
 ```json
 {
   "data": {
-    "items": [
-      {
-        "id": "uuid",
-        "gameId": "uuid",
-        "createdAt": "timestamp"
-      }
-    ],
-    "nextCursor": "opaque-cursor-string",
-    "hasMore": true
+    // CursorPagedResponse<GameBookmarkResponse> object
   },
   "message": "Game bookmarks retrieved successfully.",
   "path": "/api/v1/game-bookmarks"
@@ -110,51 +86,37 @@ DELETE /api/v1/game-bookmarks/{gameId}
 
 **Path Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `gameId` | UUID | Yes | The unique identifier of the game to unbookmark |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameId` | UUID | The ID of the game to unbookmark |
 
-**Response:**
-
-| Status Code | Description |
-|-------------|-------------|
-| `204 No Content` | Bookmark deleted successfully |
+**Response:** `204 No Content`
 
 ## Error Handling
 
-The controller uses standard HTTP status codes for error responses:
+- **400 Bad Request:** Returned when validation fails (e.g., invalid pagination size)
+- **404 Not Found:** May be returned by services if the game or bookmark doesn't exist
+- **409 Conflict:** May be returned if attempting to create a duplicate bookmark
 
-| Status Code | Description |
-|-------------|-------------|
-| `400 Bad Request` | Invalid request parameters (e.g., invalid cursor, size out of range) |
-| `404 Not Found` | Game or bookmark not found |
-| `409 Conflict` | Bookmark already exists (for create operation) |
+## Usage Example
 
-## Usage Examples
+```java
+// Create a bookmark
+CreateGameBookmarkRequest request = new CreateGameBookmarkRequest(gameId);
+ResponseEntity<ApiResponse<GameBookmarkResponse>> response = 
+    controller.createGameBookmark(request, httpServletRequest);
 
-### Create a Bookmark
+// List bookmarks with pagination
+ResponseEntity<ApiResponse<CursorPagedResponse<GameBookmarkResponse>>> listResponse = 
+    controller.listGameBookmarks("cursor123", 10, httpServletRequest);
 
-```bash
-curl -X POST http://localhost:8080/api/v1/game-bookmarks \
-  -H "Content-Type: application/json" \
-  -d '{"gameId": "123e4567-e89b-12d3-a456-426614174000"}'
-```
-
-### List Bookmarks
-
-```bash
-curl "http://localhost:8080/api/v1/game-bookmarks?size=10"
-```
-
-### Delete a Bookmark
-
-```bash
-curl -X DELETE http://localhost:8080/api/v1/game-bookmarks/123e4567-e89b-12d3-a456-426614174000
+// Delete a bookmark
+ResponseEntity<Void> deleteResponse = controller.deleteGameBookmark(gameId);
 ```
 
 ## Notes
 
-- The controller uses cursor-based pagination for listing bookmarks, which is more efficient than offset-based pagination for large datasets.
-- The `size` parameter is validated to ensure it doesn't exceed reasonable limits (typically max 100).
-- All responses include the request path for debugging and logging purposes.
-- The delete operation returns `204 No Content` with no response body.
+- The controller uses cursor-based pagination for efficient retrieval of large bookmark collections
+- All responses follow a standard `ApiResponse` wrapper format
+- The `ValidationHelper.validateCursorPaginationParameters()` method ensures pagination parameters are within acceptable bounds
+- Service implementations handle the actual business logic and data persistence

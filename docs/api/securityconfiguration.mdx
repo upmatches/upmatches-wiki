@@ -1,110 +1,126 @@
 ---
 id: security-configuration
-title: Security Configuration
-sidebar_label: Security Configuration
+title: SecurityConfiguration
+sidebar_label: SecurityConfiguration
 ---
 
-# Security Configuration
+# SecurityConfiguration
 
-The `SecurityConfiguration` class is a Spring Security configuration that sets up authentication, authorization, CORS, and JWT decoding for the application. It defines which endpoints are publicly accessible, configures stateless session management, and implements a custom bearer token resolver that can extract JWT tokens from either the `Authorization` header or a cookie named `accessToken`.
+The `SecurityConfiguration` class is a Spring Security configuration component that defines the security policies for the UpMatches application. It configures authentication, authorization, CORS, session management, and JWT decoding using Singpass (Singapore's national digital identity) as the identity provider.
 
-## Public Endpoints
+## Purpose
 
-The following endpoints are configured to be accessible without authentication:
+This class serves as the central security configuration for the application, handling:
 
-| Pattern | HTTP Method | Description |
-|---------|-------------|-------------|
-| `/actuator/**` | Any | Actuator endpoints for monitoring and management |
-| `/v3/api-docs/**` | Any | OpenAPI documentation |
-| `/swagger-ui/**` | Any | Swagger UI interface |
-| `/api/v1/auth/login/**` | Any | Authentication login |
-| `/api/v1/auth/refresh` | Any | Token refresh |
-| `/api/v1/auth/logout` | Any | Logout |
-| `/api/v1/auth/dev/**` | Any | Development authentication endpoints |
-| `/internal/dev/**` | Any | Internal development endpoints |
-| `/callback/**` | Any | OAuth callbacks |
-| `/.well-known/jwks.json` | Any | JWKS endpoint |
-| `/.well-known/apple-app-site-association` | GET | Apple App Site Association |
-| `/games/**` | GET | Game web fallback |
-| `/s/*` | GET | Share link redirect |
-| `/api/v1/public/**` | Any | Public API endpoints |
-| `/api/v1/share-links/{8-char-id}` | GET | Share link resolution (regex pattern) |
-| `/api/v1/games` | GET | List games |
-| `/api/v1/games/cursor` | GET | Games with cursor pagination |
-| `/api/v1/games/filter-options` | GET | Game filter options |
-| `/api/v1/games/date-availability` | GET | Game date availability |
-| `/api/v1/games/*` | GET | Game by ID |
-| `/api/v1/venues` | GET | List venues |
-| `/api/v1/activities` | GET | List activities |
-| `/api/v1/activities/*` | GET | Activity by ID |
+- **Authentication**: Uses OAuth2 resource server with JWT tokens for API security
+- **Authorization**: Defines which endpoints are public and which require authentication
+- **CORS**: Configures Cross-Origin Resource Sharing for web clients
+- **Session Management**: Enforces stateless session management
+- **Token Resolution**: Supports JWT tokens from both Authorization headers and cookies
 
-## Beans
+## Public Methods
 
-### `securityFilterChain`
+### `securityFilterChain(HttpSecurity http)`
 
 Configures the main security filter chain for the application.
-
-**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `http` | `HttpSecurity` | The HTTP security configuration object |
 
-**Returns:** `SecurityFilterChain`
+**Returns**: `SecurityFilterChain` - The configured security filter chain
 
-**Configuration:**
+**Configuration Details**:
 - Disables CSRF protection
 - Enables CORS with default configuration
 - Sets session management to stateless
-- Configures authorization rules (see Public Endpoints table)
-- Enables OAuth2 resource server with JWT support
-- Uses custom bearer token resolver with cookie fallback
+- Defines public endpoints (see Public Endpoints section)
+- Requires authentication for all other requests
+- Configures OAuth2 resource server with JWT support
+- Uses cookie fallback for bearer token resolution
 
-### `jwtDecoder`
+### `jwtDecoder(ISingpassKeyProvider keyProvider)`
 
-Creates a JWT decoder that verifies tokens using the Singpass signing key.
-
-**Parameters:**
+Creates a JWT decoder that validates tokens using Singpass public keys.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `keyProvider` | `ISingpassKeyProvider` | Provider for the Singpass signing key |
+| `keyProvider` | `ISingpassKeyProvider` | Provider for Singpass signing keys |
 
-**Returns:** `JwtDecoder`
+**Returns**: `JwtDecoder` - A configured JWT decoder using ES256 algorithm
 
-**Implementation:**
-- Creates a `JWKSet` from the public key obtained from the `ISingpassKeyProvider`
-- Configures a `JWSVerificationKeySelector` using the ES256 algorithm
-- Creates a `DefaultJWTProcessor` with the key selector
-- Returns a `NimbusJwtDecoder` wrapping the processor
+### `cookieFallbackBearerTokenResolver()`
 
-### `cookieFallbackBearerTokenResolver`
+Creates a bearer token resolver that first checks the Authorization header, then falls back to cookies.
 
-Creates a custom bearer token resolver that first checks the `Authorization` header for a Bearer token, and if not found, falls back to checking cookies for an `accessToken` cookie.
+**Returns**: `BearerTokenResolver` - A resolver that extracts JWT tokens from headers or cookies
 
-**Returns:** `BearerTokenResolver`
-
-**Behavior:**
-1. Checks the `Authorization` header for a token starting with `Bearer `
-2. If found, extracts and returns the token (removing the `Bearer ` prefix)
-3. If not found, checks cookies for one named `accessToken`
-4. Returns the cookie value if found, otherwise returns `null`
-
-### `corsConfigurationSource`
+### `corsConfigurationSource(String allowedOrigins)`
 
 Configures CORS settings for the application.
 
-**Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `allowedOrigins` | `String` | Semicolon-separated list of allowed origins (default: `http://localhost:3002`) |
 
-| Parameter | Type | Description | Default |
-|-----------|------|-------------|---------|
-| `allowedOrigins` | `String` | Semicolon-separated list of allowed origins | `http://localhost:3002` |
+**Returns**: `CorsConfigurationSource` - The CORS configuration source
 
-**Returns:** `CorsConfigurationSource`
+## Public Endpoints
 
-**Configuration:**
-- Parses the `allowedOrigins` string by splitting on semicolons
-- Allows all HTTP methods (`*`)
-- Allows all headers (`*`)
-- Enables credentials (cookies, authorization headers)
-- Applies configuration to all paths (`/**`)
+The following endpoints are publicly accessible without authentication:
+
+| Pattern | HTTP Method | Description |
+|---------|-------------|-------------|
+| `/actuator/**` | All | Actuator endpoints for monitoring |
+| `/v3/api-docs/**` | All | OpenAPI documentation |
+| `/swagger-ui/**` | All | Swagger UI interface |
+| `/api/v1/auth/login/**` | All | Authentication login |
+| `/api/v1/auth/refresh` | All | Token refresh |
+| `/api/v1/auth/logout` | All | Authentication logout |
+| `/api/v1/auth/dev/**` | All | Development authentication endpoints |
+| `/internal/dev/**` | All | Internal development endpoints |
+| `/callback/**` | All | OAuth callback endpoints |
+| `/.well-known/jwks.json` | All | JSON Web Key Set |
+| `/.well-known/apple-app-site-association` | GET | Apple App Site Association |
+| `/games/**` | GET | Game web fallback |
+| `/s/*` | GET | Share link redirect |
+| `/api/v1/public/**` | All | Public API endpoints |
+| `/api/v1/share-links/[0-9A-Za-z]{8}` | GET | Share link resolution (regex) |
+| `/api/v1/games` | GET | Games list |
+| `/api/v1/games/cursor` | GET | Games cursor pagination |
+| `/api/v1/games/filter-options` | GET | Games filter options |
+| `/api/v1/games/date-availability` | GET | Games date availability |
+| `/api/v1/games/*` | GET | Games by ID |
+| `/api/v1/venues` | GET | Venues list |
+| `/api/v1/activities` | GET | Activities list |
+| `/api/v1/activities/*` | GET | Activities by ID |
+
+## Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `BEARER_PREFIX_LENGTH` | `7` | Length of "Bearer " prefix |
+| `ACCESS_TOKEN_COOKIE` | `"accessToken"` | Cookie name for access token |
+| `ORIGINS_DELIMITER` | `";"` | Delimiter for allowed origins |
+| `WILDCARD` | `"*"` | Wildcard character |
+| `ALL_PATHS_PATTERN` | `"/**"` | Pattern matching all paths |
+
+## Dependencies
+
+- **Spring Security**: For security configuration and OAuth2 resource server
+- **Nimbus JOSE + JWT**: For JWT processing and verification
+- **Singpass Key Provider**: Custom service for obtaining Singpass signing keys
+
+## Usage Example
+
+```java
+// The configuration is automatically applied when Spring Security is enabled
+// No manual instantiation required
+```
+
+## Notes
+
+- The application uses ES256 (ECDSA using P-256 and SHA-256) for JWT signing
+- CORS allows credentials (cookies) to be sent with requests
+- The bearer token resolver provides flexibility for different client types (web, mobile)
+- All authenticated endpoints require a valid JWT token from Singpass

@@ -4,59 +4,62 @@ title: AtLeastOneContactMethod Annotation
 sidebar_label: AtLeastOneContactMethod
 ---
 
-# AtLeastOneContactMethod Annotation
+# AtLeastOneContactMethod
+
+The `AtLeastOneContactMethod` annotation is a custom Jakarta Bean Validation constraint that ensures at least one contact method is provided for a user. It is designed to be applied to fields that represent a collection or set of contact methods, validating that the collection is not empty.
 
 ## Purpose
 
-The `AtLeastOneContactMethod` annotation is a custom Jakarta Bean Validation constraint used to ensure that at least one contact method (such as email, phone, or social media handle) is provided for a user entity. This annotation is applied at the field level and triggers validation logic defined in the associated `AtLeastOneContactMethodValidator` class.
+This annotation addresses the common requirement in user registration and profile management systems where a user must provide at least one way to be contacted (e.g., email, phone number, or messaging handle). By enforcing this rule at the validation layer, it prevents incomplete user profiles from being persisted to the database.
 
-This annotation is particularly useful in user registration or profile update scenarios where you want to guarantee that users provide at least one way to be contacted, without mandating a specific contact method.
+## Usage
 
-## Annotation Details
-
-| Attribute | Value |
-|-----------|-------|
-| **Package** | `com.upmatches.app.features.user.validators` |
-| **Target** | Field-level (`ElementType.FIELD`) |
-| **Retention** | Runtime (`RetentionPolicy.RUNTIME`) |
-| **Constraint Validator** | `AtLeastOneContactMethodValidator` |
-| **Default Message** | Defined in `AtLeastOneContactMethodValidator.DEFAULT_VALIDATION_MESSAGE` |
-
-## Public API
-
-### Annotation Attributes
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `message` | `String` | `AtLeastOneContactMethodValidator.DEFAULT_VALIDATION_MESSAGE` | The validation error message to display when the constraint is violated |
-| `groups` | `Class<?>[]` | `{}` | Allows specifying validation groups for partial validation |
-| `payload` | `Class<? extends Payload>[]` | `{}` | Used by clients to assign custom payload objects to a constraint |
-
-## Usage Example
+Apply this annotation to any field that holds a collection of contact methods:
 
 ```java
-import com.upmatches.app.features.user.validators.AtLeastOneContactMethod;
+@AtLeastOneContactMethod
+private Set<ContactMethod> contactMethods;
+```
 
-public class UserProfile {
+## Annotation Elements
 
+| Element | Type | Default | Description |
+|---------|------|---------|-------------|
+| `message` | `String` | `AtLeastOneContactMethodValidator.DEFAULT_VALIDATION_MESSAGE` | The error message to display when validation fails. The default message is defined in the validator class. |
+| `groups` | `Class<?>[]` | `{}` | Allows specifying validation groups for partial validation scenarios. |
+| `payload` | `Class<? extends Payload>[]` | `{}` | Used by Bean Validation clients to associate metadata with a constraint declaration. |
+
+## Validation Behavior
+
+The annotation delegates validation to the `AtLeastOneContactMethodValidator` class. The validator checks that the annotated field:
+
+1. Is not `null`
+2. Contains at least one element
+
+If either condition is not met, the validation fails and the specified error message is returned.
+
+## Example
+
+```java
+public class UserRegistrationRequest {
+    
+    @NotBlank(message = "Name is required")
+    private String name;
+    
     @AtLeastOneContactMethod
-    private ContactInfo contactInfo;
-
+    private List<@Valid ContactMethod> contactMethods;
+    
     // getters and setters
 }
 ```
 
-## Validation Behavior
-
-The annotation delegates validation to the `AtLeastOneContactMethodValidator` class, which implements `ConstraintValidator<AtLeastOneContactMethod, ContactInfo>`. The validator checks that at least one contact method (e.g., email, phone number, or social media handle) is non-null and non-empty within the annotated `ContactInfo` object.
-
 ## Dependencies
 
-- **Jakarta Bean Validation API** (e.g., `jakarta.validation-api`)
-- **Hibernate Validator** or any other Bean Validation implementation
+This annotation requires:
+- Jakarta Bean Validation API (e.g., `jakarta.validation-api`)
+- A Bean Validation implementation (e.g., Hibernate Validator)
 
-## Notes
+## Related Components
 
-- The annotation is documented (`@Documented`) so it appears in generated JavaDoc.
-- The default validation message is centralized in the validator class for consistency.
-- This annotation is designed to work with a `ContactInfo` class that contains multiple contact method fields.
+- **Validator**: `AtLeastOneContactMethodValidator` - Contains the actual validation logic
+- **Package**: `com.upmatches.app.features.user.validators`

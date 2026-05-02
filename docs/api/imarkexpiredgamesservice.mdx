@@ -4,61 +4,59 @@ title: IMarkExpiredGamesService Interface
 sidebar_label: IMarkExpiredGamesService
 ---
 
-# IMarkExpiredGamesService
-
-The `IMarkExpiredGamesService` is a **sealed interface** that defines the contract for marking expired games within the UpMatches application. It serves as the abstraction layer for the business logic that identifies and updates the status of games that have passed their expiration time.
+# IMarkExpiredGamesService Interface
 
 ## Purpose
 
-This interface is part of the game management feature and provides a single, focused operation: executing the process of marking games as expired. By using a sealed interface, the design enforces a controlled hierarchy, allowing only the `MarkExpiredGamesService` class to implement this contract. This ensures that the expiration logic is centralized and cannot be extended arbitrarily.
+The `IMarkExpiredGamesService` interface defines a contract for marking expired games within the system. It is a **sealed interface**, meaning only the explicitly permitted implementing class (`MarkExpiredGamesService`) can implement it. This design enforces a controlled hierarchy and ensures that the logic for marking games as expired is centralized and not extended arbitrarily.
+
+The primary responsibility of this interface is to expose a single operation that, when executed, identifies and updates the status of games that have passed their expiration point. This is typically used in batch processing or scheduled tasks to maintain data integrity and reflect the current state of games.
 
 ## Interface Definition
 
 ```java
+package com.upmatches.app.feature.game.services;
+
 public sealed interface IMarkExpiredGamesService permits MarkExpiredGamesService {
+
     int execute();
+
 }
 ```
 
-## Method Summary
+## Public Methods
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `execute()` | `int` | Executes the process of marking expired games and returns the number of games that were updated. |
+| `execute()` | `int` | Executes the process of marking expired games. Returns the number of games that were marked as expired during the operation. |
 
-## Method Details
+### Method Details
 
-### `execute()`
+#### `execute()`
 
-```java
-int execute();
-```
+- **Description**: Triggers the business logic to identify all games that have expired and update their status accordingly. The exact criteria for expiration (e.g., based on end date, time, or other conditions) is defined in the implementing class.
+- **Return Value**: An integer representing the count of games that were successfully marked as expired. A return value of `0` indicates no games were expired during this execution.
+- **Usage**: This method is designed to be called by a scheduler or a batch job to perform periodic cleanup or status updates.
 
-This method performs the core operation of the service. It is responsible for:
+## Sealed Interface Permits
 
-- Identifying games that have passed their expiration date/time.
-- Updating the status of those games to "expired" or a similar terminal state.
-- Returning the count of games that were successfully marked as expired.
+This interface uses the `sealed` keyword to restrict implementation. The only permitted subclass is:
 
-**Returns:** An integer representing the number of games that were marked as expired during the execution.
+- `MarkExpiredGamesService`
 
-## Usage Example
+This ensures that all expiration logic is contained within a single, well-defined implementation, preventing unauthorized or accidental extensions.
+
+## Example Usage
 
 ```java
 // Assuming dependency injection provides the implementation
-IMarkExpiredGamesService markExpiredService = new MarkExpiredGamesService();
-
-int expiredCount = markExpiredService.execute();
+IMarkExpiredGamesService service = new MarkExpiredGamesService();
+int expiredCount = service.execute();
 System.out.println("Marked " + expiredCount + " games as expired.");
 ```
 
-## Implementation Notes
+## Notes
 
-- The interface is **sealed**, meaning only the explicitly permitted class (`MarkExpiredGamesService`) can implement it.
-- The `execute()` method is intentionally simple, returning only a count. Any side effects (database updates, logging, etc.) are handled within the implementation.
-- This design follows the **Command Pattern**, encapsulating the expiration logic into a single executable action.
-
-## Related Components
-
-- **`MarkExpiredGamesService`**: The sole implementation of this interface, containing the actual business logic for marking games as expired.
-- **Game Entity**: The domain object that represents a game and contains the expiration status field.
+- The interface is part of the `com.upmatches.app.feature.game.services` package, indicating it belongs to the game feature module.
+- The sealed interface pattern is a Java 17+ feature that enhances encapsulation and maintainability.
+- For production use, the implementation should be injected via a dependency injection framework (e.g., Spring, Micronaut) rather than instantiated directly.

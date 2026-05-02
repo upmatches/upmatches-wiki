@@ -6,67 +6,93 @@ sidebar_label: AuthDevProperties
 
 # AuthDevProperties
 
-The `AuthDevProperties` class is a Spring Boot configuration properties record that maps to the `app.auth.dev` prefix in your application's configuration files (e.g., `application.yml` or `application.properties`). It centralizes development-specific authentication settings, providing a type-safe way to configure features like token page visibility and mint endpoint availability.
+The `AuthDevProperties` class is a Spring Boot configuration properties record that maps to the `app.auth.dev` configuration prefix. It is designed to manage development-specific authentication settings, such as enabling or disabling certain endpoints and controlling access to a token page.
 
-## Purpose
-
-This record is designed to manage development-only authentication flags and host allowlists. It ensures that certain features (like a token page or mint endpoint) are only enabled when explicitly set to `true`, and that host lists are never null (defaulting to an empty list). This helps prevent accidental exposure of development features in production environments.
+This record provides a centralized and type-safe way to configure development features for authentication, ensuring that default values are applied when properties are not explicitly set.
 
 ## Configuration Prefix
 
-- **Prefix:** `app.auth.dev`
-- **Example YAML:**
-  ```yaml
-  app:
-    auth:
-      dev:
-        token-page-enabled: true
-        mint-endpoint-enabled: false
-        token-page-allowed-hosts:
-          - localhost
-          - 127.0.0.1
-  ```
-
-## Constructor Behavior
-
-The compact constructor performs two key validations:
-
-1. **Boolean coercion:** Both `tokenPageEnabled` and `mintEndpointEnabled` are normalized using `Boolean.TRUE.equals()`, ensuring that only an explicit `true` value results in `true`; any other value (including `null`) becomes `false`.
-2. **Null-safe list:** If `tokenPageAllowedHosts` is `null`, it defaults to an empty, immutable list. Otherwise, it creates an immutable copy via `List.copyOf()`.
+All properties are prefixed with `app.auth.dev` in your application configuration files (e.g., `application.yml` or `application.properties`).
 
 ## Properties
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `tokenPageEnabled` | `Boolean` | `false` | Enables or disables the token page in development mode. Only `true` enables it. |
-| `mintEndpointEnabled` | `Boolean` | `false` | Enables or disables the mint endpoint in development mode. Only `true` enables it. |
-| `tokenPageAllowedHosts` | `List<String>` | `[]` | A list of allowed hosts for the token page. Never `null`; defaults to an empty list. |
+| `tokenPageEnabled` | `Boolean` | `false` | Enables or disables the token page. If not set, defaults to `false`. |
+| `mintEndpointEnabled` | `Boolean` | `false` | Enables or disables the mint endpoint. If not set, defaults to `false`. |
+| `tokenPageAllowedHosts` | `List<String>` | `[]` (empty list) | A list of allowed hosts for the token page. If not set, defaults to an empty, immutable list. |
 
-## Usage Example
+## Constructor Behavior
+
+The compact constructor of this record performs the following normalization:
+
+- **`tokenPageEnabled`**: Converts any non-`true` value (including `null`) to `false` using `Boolean.TRUE.equals()`.
+- **`mintEndpointEnabled`**: Same logic as `tokenPageEnabled`; defaults to `false` if not explicitly `true`.
+- **`tokenPageAllowedHosts`**: If the provided list is `null`, it defaults to an empty list. Otherwise, it creates an immutable copy of the list using `List.copyOf()`.
+
+## Example Configuration
+
+### application.yml
+
+```yaml
+app:
+  auth:
+    dev:
+      token-page-enabled: true
+      mint-endpoint-enabled: false
+      token-page-allowed-hosts:
+        - localhost
+        - 127.0.0.1
+```
+
+### application.properties
+
+```properties
+app.auth.dev.token-page-enabled=true
+app.auth.dev.mint-endpoint-enabled=false
+app.auth.dev.token-page-allowed-hosts[0]=localhost
+app.auth.dev.token-page-allowed-hosts[1]=127.0.0.1
+```
+
+## Usage
+
+This record is typically injected into other Spring components using `@EnableConfigurationProperties` or by declaring it as a bean. For example:
 
 ```java
-// Inject the properties into a service
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@EnableConfigurationProperties(AuthDevProperties.class)
+public class AuthDevConfig {
+    // AuthDevProperties is automatically bound and available for injection
+}
+```
+
+Then, you can inject it into any Spring-managed bean:
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 @Service
-public class AuthDevService {
+public class AuthService {
+
     private final AuthDevProperties authDevProperties;
 
-    public AuthDevService(AuthDevProperties authDevProperties) {
+    @Autowired
+    public AuthService(AuthDevProperties authDevProperties) {
         this.authDevProperties = authDevProperties;
     }
 
-    public boolean isTokenPageAccessible(String host) {
-        return authDevProperties.tokenPageEnabled() &&
-               authDevProperties.tokenPageAllowedHosts().contains(host);
+    public boolean isTokenPageEnabled() {
+        return authDevProperties.tokenPageEnabled();
     }
 }
 ```
 
-## Dependencies
-
-- **Spring Boot:** Requires `spring-boot-starter` for `@ConfigurationProperties` support.
-- **Java:** Requires Java 16+ for record support.
-
 ## Notes
 
-- This class is immutable after construction due to the use of a Java record and `List.copyOf()`.
-- The `@ConfigurationProperties` annotation requires Spring Boot's configuration processor for IDE support (add `spring-boot-configuration-processor` as a dependency).
+- The record is immutable after construction, ensuring thread safety.
+- The `List.copyOf()` call in the constructor guarantees that the internal list cannot be modified externally.
+- This class is part of the `com.upmatches.app.features.auth.properties` package and is intended for development environments only.

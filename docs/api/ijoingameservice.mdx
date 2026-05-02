@@ -6,46 +6,51 @@ sidebar_label: IJoinGameService
 
 # IJoinGameService Interface
 
-The `IJoinGameService` interface defines the contract for joining a game within the UpMatches application. It serves as the abstraction layer for the game joining functionality, ensuring that any implementation adheres to a standardized method signature.
+The `IJoinGameService` interface defines the contract for joining a game within the application. It is a sealed interface, meaning only explicitly permitted classes (in this case, `JoinGameService`) can implement it. This design enforces a controlled hierarchy and ensures that the join game logic is centralized and secure.
 
-This interface is declared as `sealed`, meaning it restricts which classes or interfaces can implement it. In this case, only `JoinGameService` is permitted to provide the concrete implementation.
+## Purpose
 
-## Interface Definition
+This interface provides a single method to execute the join game operation. It abstracts the implementation details, allowing different join strategies or future extensions while maintaining a consistent API. The use of a sealed interface enhances type safety and makes the codebase easier to reason about.
 
-```java
-public sealed interface IJoinGameService permits JoinGameService {
+## Method Summary
 
-    GameParticipantResponse execute(UUID id);
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `execute` | `GameParticipantResponse` | `UUID id` | Executes the join game operation for the game identified by the given UUID. Returns a response containing participant details. |
 
-}
-```
-
-## Methods
+## Method Details
 
 ### `execute`
 
-The single method defined by this interface. It processes a request to join a game based on the provided unique identifier.
+```java
+GameParticipantResponse execute(UUID id)
+```
 
-| Parameter | Type   | Description                                                                 |
-|-----------|--------|-----------------------------------------------------------------------------|
-| `id`      | `UUID` | The unique identifier of the game or participant request to join.           |
+This method processes the request to join a game. It takes a unique identifier for the game and returns a `GameParticipantResponse` object that contains information about the participant who joined.
 
-| Returns                   | Description                                                                 |
-|---------------------------|-----------------------------------------------------------------------------|
-| `GameParticipantResponse` | A response object containing the result of the join operation.              |
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to join. |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `GameParticipantResponse` | A response object containing details about the game participant after a successful join operation. |
 
 ## Usage Example
 
 ```java
-// Assuming an implementation is injected
+// Assuming you have an instance of IJoinGameService
 IJoinGameService joinGameService = new JoinGameService();
-
-UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+UUID gameId = UUID.randomUUID();
 GameParticipantResponse response = joinGameService.execute(gameId);
 ```
 
-## Implementation Details
+## Implementation Notes
 
-The only permitted implementation of this interface is `JoinGameService`. This sealed design ensures that all game joining logic flows through a single, controlled implementation, promoting consistency and maintainability.
-
-For the concrete implementation details, refer to the `JoinGameService` class documentation.
+- The interface is sealed, so only `JoinGameService` is allowed to implement it.
+- The `execute` method is the sole contract method and must be implemented by the permitted class.
+- The `GameParticipantResponse` class is expected to contain relevant participant data (e.g., player ID, join timestamp, game state).

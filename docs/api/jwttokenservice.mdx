@@ -10,18 +10,12 @@ The `JwtTokenService` class is a Spring service responsible for generating JWT a
 
 ## Purpose
 
-This service handles the core token generation logic:
-- Creates signed JWT access tokens with user identity claims and authentication provider information
-- Generates cryptographically secure random refresh tokens
-- Enforces single authentication provider per user (Singpass, Auth0, or Apple)
-- Uses configurable token expiry times from application properties
+This service handles token generation for multiple authentication providers (Singpass, Auth0, and Apple). It ensures that a user can only have one authentication provider at a time and generates cryptographically secure refresh tokens.
 
 ## Dependencies
 
-| Dependency | Description |
-|------------|-------------|
-| `SigningKeyProvider` | Provides the ECDSA signing key and key ID for JWT signing |
-| `JwtProperties` | Configuration properties for JWT issuer, audience, and token expiry |
+- **SigningKeyProvider**: Provides the ECDSA signing key and key ID for JWT signing
+- **JwtProperties**: Configuration properties for JWT (issuer, audience, token expiry)
 
 ## Public Methods
 
@@ -32,13 +26,15 @@ Generates a signed JWT access token for a user.
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `userId` | `UUID` | The unique identifier of the user |
-| `singpassUuid` | `String` | Singpass user identifier (nullable) |
-| `auth0Uuid` | `String` | Auth0 user identifier (nullable) |
-| `appleUuid` | `String` | Apple user identifier (nullable) |
+| `singpassUuid` | `String` | UUID from Singpass authentication (nullable) |
+| `auth0Uuid` | `String` | UUID from Auth0 authentication (nullable) |
+| `appleUuid` | `String` | UUID from Apple authentication (nullable) |
 
-**Returns:** `AccessTokenResult` - A record containing the serialized JWT token string and the expiration timestamp in UTC seconds.
+**Returns**: `AccessTokenResult` - A record containing:
+- `token` (`String`): The serialized JWT access token
+- `expiresAtUtc` (`Long`): Unix timestamp (seconds) when the token expires
 
-**Throws:**
+**Throws**:
 - `IllegalArgumentException` if more than one authentication provider UUID is provided
 - `IllegalStateException` if JWT signing fails
 
@@ -50,50 +46,31 @@ Generates a cryptographically secure random refresh token.
 |-----------|------|-------------|
 | None | | |
 
-**Returns:** `String` - A Base64 URL-encoded random string of 32 bytes (256 bits).
+**Returns**: `String` - A Base64 URL-encoded refresh token (32 random bytes, 43 characters)
 
-## Internal Records
+## Internal Implementation Details
 
-### `AccessTokenResult`
+### Token Claims
 
-A record that holds the result of access token generation.
+The generated access token includes the following claims:
+- `sub`: User UUID
+- `iss`: Issuer (from `JwtProperties`)
+- `aud`: Audience (from `JwtProperties`)
+- `iat`: Issued at time
+- `nbf`: Not before time
+- `exp`: Expiration time
+- Provider-specific claims (only one of the following):
+  - `singpass_uuid` + `auth_provider: "singpass"`
+  - `auth0_uuid` + `auth_provider: "auth0"`
+  - `apple_uuid` + `auth_provider: "apple"`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `token` | `String` | The serialized JWT access token |
-| `expiresAtUtc` | `Long` | Token expiration time in UTC epoch seconds |
+### Provider Validation
 
-### `ProviderClaim`
+The `applyProviderClaims` method ensures that only one authentication provider UUID is provided. If multiple provider UUIDs are non-null and non-blank, it throws an `IllegalArgumentException`.
 
-A private record used internally to track authentication provider claims.
+### Token Signing
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `uuidClaim` | `String` | The JWT claim name for the provider UUID |
-| `provider` | `String` | The provider identifier (e.g., "singpass", "auth0", "apple") |
-| `value` | `String` | The actual UUID value |
-
-## Token Structure
-
-### Access Token Claims
-
-| Claim | Description |
-|-------|-------------|
-| `sub` | User UUID (subject) |
-| `iss` | Issuer from configuration |
-| `aud` | Audience from configuration |
-| `iat` | Issued at time |
-| `nbf` | Not before time |
-| `exp` | Expiration time |
-| `auth_provider` | Authentication provider name (if applicable) |
-| `singpass_uuid` | Singpass user UUID (if applicable) |
-| `auth0_uuid` | Auth0 user UUID (if applicable) |
-| `apple_uuid` | Apple user UUID (if applicable) |
-
-### Refresh Token
-
-- 32 random bytes encoded as Base64 URL without padding
-- No expiration or claims (managed separately by the application)
+Tokens are signed using ES256 (ECDSA with P-256 curve) algorithm. The signing key is obtained from the `SigningKeyProvider` and the key ID (`kid`) is included in the JWT header.
 
 ## Usage Example
 
@@ -109,24 +86,23 @@ AccessTokenResult result = jwtTokenService.generateAccessToken(
     null
 );
 
+String accessToken = result.token();
+Long expiresAt = result.expiresAtUtc();
+
 // Generate refresh token
 String refreshToken = jwtTokenService.generateRefreshToken();
 ```
 
 ## Configuration
 
-The service requires the following properties to be configured:
-
-```yaml
-jwt:
-  issuer: "https://your-issuer.com"
-  audience: "https://your-api.com"
-  access-token-expiry-minutes: 15
-```
+The service requires the following configuration via `JwtProperties`:
+- `accessTokenExpiryMinutes`: Token expiration time in minutes
+- `issuer`: JWT issuer claim value
+- `audience`: JWT audience claim value
 
 ## Notes
 
-- The service is conditionally loaded only when a `SigningKeyProvider` bean exists in the application context
-- The class is declared as `non-sealed`, allowing future extension if needed
-- Token signing uses ES256 algorithm with ECDSA keys provided by the `SigningKeyProvider`
-- Multiple authentication provider UUIDs for the same user will result in an `IllegalArgumentException`
+- The service is conditionally loaded with `@ConditionalOnBean(SigningKeyProvider.class)`
+- The class is declared as `non-sealed`, allowing it to be extended if needed
+- Refresh tokens are generated using `SecureRandom` for cryptographic security
+- Token expiry is calculated in seconds from the current time

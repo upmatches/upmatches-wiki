@@ -6,15 +6,19 @@ sidebar_label: StationResponse
 
 # StationResponse
 
-The `StationResponse` record is a Data Transfer Object (DTO) used to represent a transit station in API responses. It encapsulates the essential station information along with its associated transit lines, providing a clean, immutable view of the data for clients.
+The `StationResponse` record is a Data Transfer Object (DTO) used to represent a transit station in API responses. It encapsulates the essential station information along with its associated transit lines, providing a clean, immutable view of the station data for clients.
 
 ## Purpose
 
-This record serves as the response model for station-related endpoints. It transforms the internal `Station` entity into a lightweight, serializable format suitable for JSON or other response formats. By using a Java record, it automatically provides `equals()`, `hashCode()`, `toString()`, and accessor methods, reducing boilerplate code.
+This record serves as the response model for station-related endpoints. It transforms the internal `Station` entity into a lightweight, serializable format that includes:
+- Basic station identification and location data
+- A list of associated transit lines (each represented as a `TransitLineResponse`)
 
-## Record Components
+The static factory method `fromStation()` handles the conversion from the domain entity to this response DTO, including the mapping of nested `StationLine` entities to their corresponding response objects.
 
-| Component | Type | Description |
+## Constructor Parameters
+
+| Parameter | Type | Description |
 |-----------|------|-------------|
 | `id` | `Long` | Unique identifier for the station |
 | `name` | `String` | Human-readable name of the station |
@@ -26,46 +30,21 @@ This record serves as the response model for station-related endpoints. It trans
 
 ### `fromStation(Station station)`
 
-Converts a `Station` entity into a `StationResponse` DTO.
+| Aspect | Details |
+|--------|---------|
+| **Return Type** | `StationResponse` |
+| **Description** | Factory method that converts a `Station` entity into a `StationResponse` DTO. It maps the station's basic fields directly and transforms each `StationLine` entity into a `TransitLineResponse` using the `TransitLineResponse.fromStationLine()` method. |
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `station` | `Station` | The station entity to convert |
+| `station` | `Station` | The domain entity to convert |
 
-**Returns:** `StationResponse` - A new response object containing the station's data and its associated transit lines.
-
-**Behavior:**
-- Iterates over the station's `stationLines` collection
-- Maps each `StationLine` entity to a `TransitLineResponse` using the `TransitLineResponse.fromStationLine()` factory method
-- Collects the results into an immutable list
-- Constructs and returns a new `StationResponse` with the station's ID, name, coordinates, and transit lines
-
-## Usage Example
+**Example Usage:**
 
 ```java
-// Assuming you have a Station entity
 Station station = stationRepository.findById(1L).orElseThrow();
-
-// Convert to response DTO
 StationResponse response = StationResponse.fromStation(station);
-
-// The response is now ready for serialization
-// {
-//   "id": 1,
-//   "name": "Central Station",
-//   "latitude": 40.7128,
-//   "longitude": -74.0060,
-//   "transitLines": [
-//     { "id": 101, "name": "Red Line", "color": "#FF0000" },
-//     { "id": 102, "name": "Blue Line", "color": "#0000FF" }
-//   ]
-// }
+// response now contains the station data with all transit lines mapped
 ```
-
-## Dependencies
-
-- `Station` - The entity class representing a station in the database
-- `TransitLineResponse` - The DTO for transit line responses
-- `BigDecimal` - Used for precise geographic coordinate representation

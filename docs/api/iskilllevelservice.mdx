@@ -6,11 +6,11 @@ sidebar_label: ISkillLevelService
 
 # ISkillLevelService Interface
 
-The `ISkillLevelService` interface defines the contract for retrieving skill level data associated with specific activities. It serves as the abstraction layer between the presentation layer and the concrete implementation (`SkillLevelService`), promoting loose coupling and testability within the application.
+The `ISkillLevelService` interface defines the contract for retrieving skill levels associated with specific activities. It serves as the abstraction layer between the controller and the concrete implementation (`SkillLevelService`), promoting loose coupling and testability within the application's skill level management module.
 
 ## Sealed Interface
 
-This interface is declared as `sealed`, meaning only the explicitly permitted class (`SkillLevelService`) can implement it. This design ensures controlled extension and provides compile-time safety for the service hierarchy.
+This interface is declared as `sealed`, meaning only explicitly permitted classes can implement it. In this case, the only permitted implementation is `SkillLevelService`. This design pattern ensures controlled extensibility and provides compile-time safety when working with the service layer.
 
 ## Methods
 
@@ -22,11 +22,11 @@ Retrieves a list of skill level responses for a given activity.
 |--------------|------------|--------------------------------------------------|
 | `activityId` | `UUID`     | The unique identifier of the activity to query.  |
 
-| Returns                | Description                                                      |
-|------------------------|------------------------------------------------------------------|
-| `List<SkillLevelResponse>` | A list of `SkillLevelResponse` objects representing the skill levels associated with the specified activity. |
+| Returns                      | Description                                                                 |
+|------------------------------|-----------------------------------------------------------------------------|
+| `List<SkillLevelResponse>`   | A list of `SkillLevelResponse` objects representing the skill levels found. |
 
-**Example usage:**
+**Example Usage:**
 
 ```java
 ISkillLevelService skillLevelService = new SkillLevelService();

@@ -1,47 +1,47 @@
 ---
-id: operation-status
+id: operation-status-enum
 title: OperationStatus Enum
 sidebar_label: OperationStatus
 ---
 
 # OperationStatus Enum
 
-The `OperationStatus` enum is a shared enumeration within the `com.upmatches.app.shared.enums` package. It defines a set of standard operation types that can be used across the application to indicate the nature of a database or service operation being performed.
+The `OperationStatus` enum is a simple enumeration defined in the `com.upmatches.app.shared.enums` package. It represents the different types of operations that can be performed within the application, typically used to indicate the nature of a database or service operation.
 
 ## Purpose
 
-This enum provides a type-safe way to represent common CRUD (Create, Read, Update, Delete) operations, along with a catch-all `OTHER` value. It is typically used in logging, auditing, or request/response objects to specify what kind of operation is being executed or has been completed.
+This enum provides a standardized set of operation types that can be used throughout the application to describe what kind of action is being taken. It helps in maintaining consistency when handling different CRUD (Create, Read, Update, Delete) operations and other miscellaneous actions.
 
 ## Enum Constants
 
 | Constant | Description |
 |----------|-------------|
-| `RETRIEVE` | Indicates a read or fetch operation (e.g., getting data from a database). |
-| `SAVE` | Indicates a create or insert operation (e.g., persisting new data). |
-| `UPDATE` | Indicates a modification operation (e.g., updating existing data). |
-| `DELETE` | Indicates a removal operation (e.g., deleting data). |
-| `OTHER` | A fallback value for any operation not covered by the standard CRUD types. |
+| `RETRIEVE` | Represents a read or fetch operation (e.g., getting data from a database or API). |
+| `SAVE` | Represents a create or persist operation (e.g., inserting a new record). |
+| `UPDATE` | Represents a modification operation (e.g., updating an existing record). |
+| `DELETE` | Represents a removal operation (e.g., deleting a record). |
+| `OTHER` | Represents any operation that does not fit into the standard CRUD categories. |
 
 ## Usage Example
 
 ```java
-OperationStatus status = OperationStatus.SAVE;
+OperationStatus status = OperationStatus.RETRIEVE;
 
 switch (status) {
     case RETRIEVE:
-        System.out.println("Performing a retrieve operation.");
+        // Handle retrieve logic
         break;
     case SAVE:
-        System.out.println("Performing a save operation.");
+        // Handle save logic
         break;
     case UPDATE:
-        System.out.println("Performing an update operation.");
+        // Handle update logic
         break;
     case DELETE:
-        System.out.println("Performing a delete operation.");
+        // Handle delete logic
         break;
     case OTHER:
-        System.out.println("Performing an unspecified operation.");
+        // Handle other operations
         break;
 }
 ```
@@ -49,5 +49,5 @@ switch (status) {
 ## Notes
 
 - This enum is immutable and thread-safe by design.
-- It can be serialized and deserialized using standard Java serialization or JSON frameworks like Jackson.
-- The `OTHER` constant provides flexibility for future extensions without breaking existing code.
+- It is commonly used in conjunction with operation logging, auditing, or routing logic.
+- The `OTHER` constant provides flexibility for future operation types that may not be covered by the standard CRUD set.

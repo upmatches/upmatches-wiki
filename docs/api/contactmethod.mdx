@@ -4,42 +4,61 @@ title: ContactMethod Record
 sidebar_label: ContactMethod
 ---
 
-## Overview
+# ContactMethod Record
 
-The `ContactMethod` record is a simple data carrier used within the user requests feature of the UpMatches application. It encapsulates a single contact method entry, pairing a **name** (e.g., "Email", "Phone", "WhatsApp") with its corresponding **value** (e.g., "user@example.com", "+1234567890").
+The `ContactMethod` record is a simple data carrier used within the user requests feature of the UpMatches application. It encapsulates a single contact method entry, pairing a descriptive name (e.g., "Email", "Phone", "Instagram") with its corresponding value (e.g., "user@example.com", "+1234567890", "@username").
 
-This record is immutable, thread-safe, and provides automatic implementations of `equals()`, `hashCode()`, and `toString()`.
-
-## Package
-
-`com.upmatches.app.features.user.requests`
+This record is typically used to represent user-provided contact information during profile setup, updates, or when submitting requests that require contact details.
 
 ## Record Definition
 
 ```java
-public record ContactMethod(String name, String value) {}
+package com.upmatches.app.features.user.requests;
+
+public record ContactMethod(String name, String value) {
+
+}
 ```
 
-## Constructor & Components
+## Components
 
-The record automatically generates a canonical constructor and accessor methods for both components.
+The `ContactMethod` record automatically provides the following components, accessible via auto-generated accessor methods:
 
 | Component | Type     | Description                                      |
 |-----------|----------|--------------------------------------------------|
-| `name`    | `String` | The label or type of the contact method (e.g., "Email", "Phone"). |
-| `value`   | `String` | The actual contact information (e.g., email address, phone number). |
+| `name`    | `String` | The label or type of the contact method (e.g., "Email", "Phone", "Social Media"). |
+| `value`   | `String` | The actual contact information (e.g., email address, phone number, username). |
+
+## Auto-generated Methods
+
+As a Java `record`, `ContactMethod` automatically generates the following methods:
+
+| Method                    | Return Type | Description                                                                 |
+|---------------------------|-------------|-----------------------------------------------------------------------------|
+| `name()`                  | `String`    | Returns the name of the contact method.                                     |
+| `value()`                 | `String`    | Returns the value of the contact method.                                    |
+| `toString()`              | `String`    | Returns a string representation of the record, including both fields.       |
+| `equals(Object o)`        | `boolean`   | Compares this record to another object for equality based on both fields.   |
+| `hashCode()`              | `int`       | Returns a hash code value based on both fields.                             |
+| `ContactMethod(String name, String value)` | Constructor | Creates a new instance with the specified name and value. |
 
 ## Usage Example
 
 ```java
-ContactMethod email = new ContactMethod("Email", "jane.doe@example.com");
-ContactMethod phone = new ContactMethod("Phone", "+1-555-123-4567");
+// Create a contact method instance
+ContactMethod email = new ContactMethod("Email", "john.doe@example.com");
+ContactMethod phone = new ContactMethod("Phone", "+1234567890");
 
-System.out.println(email.name());   // Output: Email
-System.out.println(email.value());  // Output: jane.doe@example.com
+// Access fields
+String type = email.name();   // "Email"
+String address = email.value(); // "john.doe@example.com"
+
+// String representation
+System.out.println(email); // ContactMethod[name=Email, value=john.doe@example.com]
 ```
 
 ## Notes
 
-- This record is intended to be used as part of a larger request object or collection within the user profile update flow.
-- Validation of the `name` and `value` fields (e.g., ensuring non-null, proper format) should be handled by the calling code or a dedicated validator.
+- This record is immutable by design, ensuring thread safety and data integrity.
+- No additional validation or business logic is defined within the record itself; validation should be handled by the consuming service or controller layer.
+- The record is located in the `com.upmatches.app.features.user.requests` package, indicating its use in request-related operations for the user feature.

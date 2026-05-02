@@ -6,47 +6,34 @@ sidebar_label: SendFcmTestNotificationRequest
 
 # SendFcmTestNotificationRequest
 
-The `SendFcmTestNotificationRequest` is a Java record that serves as a data transfer object (DTO) for sending test Firebase Cloud Messaging (FCM) notifications. It encapsulates all the necessary fields required to construct and send a test push notification to a specific device or email address.
+The `SendFcmTestNotificationRequest` record is a Java data transfer object (DTO) used to encapsulate the payload for sending a test Firebase Cloud Messaging (FCM) notification. It is designed for testing notification delivery to either a specific device token or an email address.
 
-This record is designed to be used in conjunction with validation constraints to ensure that the request payload is complete and valid before processing. It supports both device token-based and email-based notification delivery, with the requirement that at least one of these targets is provided.
+This record leverages Jakarta Bean Validation annotations to enforce constraints on its fields, ensuring that the request data is valid before processing. A custom validation method, `isTargetProvided()`, ensures that at least one of `deviceToken` or `email` is supplied.
 
-## Record Definition
+## Purpose
 
-```java
-public record SendFcmTestNotificationRequest(
-    String deviceToken,
-    String email,
-    NotificationType type,
-    String gameTitle,
-    String venue,
-    Integer courtCount,
-    LocalDate date,
-    LocalTime startTime,
-    LocalTime endTime,
-    String skillLevel,
-    String gameUrl,
-    Integer badge
-)
-```
+- **Notification Testing**: Allows developers to send test push notifications to a device or email for debugging and verification purposes.
+- **Data Validation**: Enforces business rules (e.g., field lengths, required fields, and target presence) using standard validation annotations.
+- **Immutability**: As a Java record, it provides a concise, immutable data carrier with automatically generated constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods.
 
 ## Fields
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| `deviceToken` | `String` | `@Size(max = 512)` | The FCM device token to send the notification to. Must not exceed 512 characters. |
-| `email` | `String` | `@Email`, `@Size(max = 254)` | The email address to send the notification to. Must be a valid email format and not exceed 254 characters. |
-| `type` | `NotificationType` | `@NotNull` | The type of notification to send. Must not be null. |
-| `gameTitle` | `String` | `@NotBlank`, `@Size(max = 120)` | The title of the game. Must not be blank and must not exceed 120 characters. |
-| `venue` | `String` | `@Size(max = 120)` | The venue where the game takes place. Must not exceed 120 characters. |
-| `courtCount` | `Integer` | `@Min(1)`, `@Max(20)` | The number of courts for the game. Must be between 1 and 20 (inclusive). |
+| `deviceToken` | `String` | `@Size(max = 512)` | The FCM device token to send the notification to. Optional if `email` is provided. |
+| `email` | `String` | `@Email`, `@Size(max = 254)` | The email address to send the notification to. Optional if `deviceToken` is provided. |
+| `type` | `NotificationType` | `@NotNull` | The type of notification (e.g., game invite, reminder). |
+| `gameTitle` | `String` | `@NotBlank`, `@Size(max = 120)` | The title of the game associated with the notification. |
+| `venue` | `String` | `@Size(max = 120)` | The venue where the game takes place. |
+| `courtCount` | `Integer` | `@Min(1)`, `@Max(20)` | The number of courts for the game. |
 | `date` | `LocalDate` | None | The date of the game. |
 | `startTime` | `LocalTime` | None | The start time of the game. |
 | `endTime` | `LocalTime` | None | The end time of the game. |
-| `skillLevel` | `String` | `@Size(max = 60)` | The skill level required for the game. Must not exceed 60 characters. |
-| `gameUrl` | `String` | `@Size(max = 2048)` | The URL to the game details page. Must not exceed 2048 characters. |
-| `badge` | `Integer` | `@Min(0)`, `@Max(999)` | The badge number to display on the app icon. Must be between 0 and 999 (inclusive). |
+| `skillLevel` | `String` | `@Size(max = 60)` | The required skill level for the game. |
+| `gameUrl` | `String` | `@Size(max = 2048)` | A URL linking to the game details. |
+| `badge` | `Integer` | `@Min(0)`, `@Max(999)` | A badge number to display on the notification icon. |
 
-## Validation Methods
+## Methods
 
 ### `isTargetProvided()`
 
@@ -55,38 +42,40 @@ public record SendFcmTestNotificationRequest(
 public boolean isTargetProvided()
 ```
 
-This custom validation method ensures that at least one of the two target fields (`deviceToken` or `email`) is provided and non-blank. The validation will fail if both fields are null or blank.
-
-**Returns:** `boolean` - `true` if either `deviceToken` or `email` is provided and non-blank; `false` otherwise.
+- **Purpose**: Validates that at least one of `deviceToken` or `email` is non-null and non-blank.
+- **Returns**: `true` if either `deviceToken` or `email` is provided; `false` otherwise.
+- **Usage**: This method is automatically invoked by the Bean Validation framework when the object is validated (e.g., with `@Valid` in a controller). If it returns `false`, a validation error with the message "Either deviceToken or email must be provided" is raised.
 
 ## Usage Example
 
 ```java
-// Create a request with a device token
+// Creating a valid request with a device token
 SendFcmTestNotificationRequest request = new SendFcmTestNotificationRequest(
-    "fcm-device-token-123",
+    "fcm_device_token_12345",
     null,
-    NotificationType.GAME_REMINDER,
+    NotificationType.GAME_INVITE,
     "Sunday Pickup Basketball",
-    "Community Sports Center",
+    "Community Center Gym",
     2,
-    LocalDate.of(2024, 3, 15),
-    LocalTime.of(14, 0),
-    LocalTime.of(16, 0),
+    LocalDate.of(2025, 4, 15),
+    LocalTime.of(10, 0),
+    LocalTime.of(12, 0),
     "Intermediate",
     "https://example.com/game/123",
     5
 );
 
-// The request will pass validation because deviceToken is provided
+// Validation (assuming a Validator is used)
+ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+Validator validator = factory.getValidator();
+Set<ConstraintViolation<SendFcmTestNotificationRequest>> violations = validator.validate(request);
+// violations should be empty if the request is valid
 ```
 
 ## Validation Summary
 
-The record enforces the following validation rules:
-
-- **Target Requirement:** At least one of `deviceToken` or `email` must be provided (non-blank).
-- **Email Format:** If `email` is provided, it must be a valid email address.
-- **Field Lengths:** String fields have maximum length constraints to prevent excessively large payloads.
-- **Numeric Ranges:** `courtCount` must be between 1 and 20, and `badge` must be between 0 and 999.
-- **Required Fields:** `type` and `gameTitle` are required (non-null and non-blank respectively).
+- **Required**: `type` and `gameTitle` must not be null/blank.
+- **Conditional**: Either `deviceToken` or `email` must be provided (enforced by `isTargetProvided()`).
+- **Length Constraints**: Most string fields have maximum length limits to prevent excessively large payloads.
+- **Range Constraints**: `courtCount` must be between 1 and 20; `badge` must be between 0 and 999.
+- **Format**: `email` must be a valid email address format.

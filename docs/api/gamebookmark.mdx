@@ -6,40 +6,31 @@ sidebar_label: GameBookmark
 
 # GameBookmark
 
-The `GameBookmark` entity represents a user's bookmark for a specific game. It is a JPA entity mapped to the `game_bookmarks` table and enforces a unique constraint on the combination of `game_id` and `user_id`, ensuring that a user can bookmark a game only once.
+The `GameBookmark` entity represents a user's bookmark for a specific game within the application. It is a JPA entity mapped to the `game_bookmarks` database table and enforces a unique constraint on the combination of `game_id` and `user_id`, ensuring that a user can bookmark a particular game only once.
 
 ## Purpose
 
-This entity is used to persist and manage the relationship between a `User` and a `Game` when the user bookmarks a game. It stores the timestamp of when the bookmark was created and provides a static factory method for creating new bookmark instances.
+This entity is used to persist and manage the relationship between users and games they wish to bookmark. It captures the moment when the bookmark was created and provides a static factory method for safe object creation.
 
 ## Entity Details
 
-| Field          | Type     | Description                                                                 |
-|----------------|----------|-----------------------------------------------------------------------------|
-| `id`           | `UUID`   | Primary key, auto-generated using UUID strategy.                            |
-| `game`         | `Game`   | Many-to-one relationship to the `Game` entity. Cannot be null.              |
-| `user`         | `User`   | Many-to-one relationship to the `User` entity. Cannot be null.              |
-| `bookmarkedAt` | `Instant`| Timestamp of when the bookmark was created. Set automatically on persist.   |
+| Property       | Type      | Description                                                                 |
+|----------------|-----------|-----------------------------------------------------------------------------|
+| `id`           | `UUID`    | Primary key, auto-generated using UUID strategy.                            |
+| `game`         | `Game`    | The bookmarked game (Many-to-One relationship).                             |
+| `user`         | `User`    | The user who created the bookmark (Many-to-One relationship).               |
+| `bookmarkedAt` | `Instant` | Timestamp indicating when the bookmark was created (set automatically).     |
 
-## Table Constraints
+## Database Mapping
 
 - **Table name**: `game_bookmarks`
-- **Unique constraint**: `(game_id, user_id)` – prevents duplicate bookmarks for the same game by the same user.
+- **Unique constraint**: Ensures no duplicate bookmarks for the same game and user combination (`game_id`, `user_id`).
 
 ## Public Methods
 
-### `create(Game game, User user)`
-
-Creates a new `GameBookmark` instance with the specified game and user.
-
-| Parameter | Type   | Description                          |
-|-----------|--------|--------------------------------------|
-| `game`    | `Game` | The game to be bookmarked.           |
-| `user`    | `User` | The user who is bookmarking the game.|
-
-**Returns**: `GameBookmark` – a new bookmark entity instance.
-
-**Note**: The `bookmarkedAt` field is automatically set to the current time when the entity is persisted (via the `@PrePersist` callback).
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `create` | `GameBookmark` | `Game game`, `User user` | Static factory method that creates a new `GameBookmark` instance with the provided game and user. The `bookmarkedAt` field is automatically set upon persistence via the `@PrePersist` callback. |
 
 ## Usage Example
 
@@ -51,8 +42,8 @@ GameBookmark bookmark = GameBookmark.create(game, user);
 gameBookmarkRepository.save(bookmark);
 ```
 
-## Dependencies
+## Notes
 
-- **Lombok**: Uses `@Getter` and `@NoArgsConstructor(access = AccessLevel.PROTECTED)` to generate getters and a protected no-arg constructor.
-- **Jakarta Persistence**: Standard JPA annotations for entity mapping.
-- **Java Time**: Uses `java.time.Instant` for timestamp storage.
+- The `bookmarkedAt` field is set automatically before the entity is persisted and cannot be updated after creation.
+- The `@NoArgsConstructor(access = AccessLevel.PROTECTED)` annotation ensures that direct instantiation is restricted, encouraging the use of the static `create()` method.
+- The unique constraint on `(game_id, user_id)` prevents duplicate bookmarks at the database level.

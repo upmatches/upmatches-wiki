@@ -10,35 +10,47 @@ The `UnreadCountResponse` class is a Java record that serves as a simple data tr
 
 ## Purpose
 
-This record provides a lightweight, immutable container for a single `Long` value representing the count of unread notifications. By using a record, the class automatically generates constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods, reducing boilerplate code. The static factory method `of()` offers a convenient way to create instances.
+This record provides a standardized way to communicate the count of unread notifications between different layers of the application, such as from a service to a controller or from a controller back to the client. By using a record, the class automatically inherits `equals()`, `hashCode()`, `toString()`, and a canonical constructor, reducing boilerplate code.
+
+## Record Components
+
+| Component | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `count`   | `Long` | The number of unread notifications for the user. |
 
 ## Public Methods
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `of(Long count)` | `UnreadCountResponse` | Static factory method that creates a new `UnreadCountResponse` instance with the specified unread count. |
-| `count()` | `Long` | Auto-generated accessor method that returns the unread count value. |
+| Method                                                      | Return Type             | Description                                                                 |
+|-------------------------------------------------------------|-------------------------|-----------------------------------------------------------------------------|
+| `of(Long count)`                                            | `UnreadCountResponse`   | Static factory method that creates a new `UnreadCountResponse` instance with the given count. |
 
-## Parameters
+### Method Details
 
-### `of(Long count)`
+#### `of(Long count)`
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `count` | `Long` | The number of unread notifications. Must not be null. |
+Creates a new `UnreadCountResponse` instance.
 
-## Usage Example
+**Parameters:**
+
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `count`   | `Long` | The number of unread notifications.              |
+
+**Returns:**
+
+| Type                   | Description                                      |
+|------------------------|--------------------------------------------------|
+| `UnreadCountResponse`  | A new `UnreadCountResponse` instance with the specified count. |
+
+**Example Usage:**
 
 ```java
-// Create an UnreadCountResponse with 5 unread notifications
 UnreadCountResponse response = UnreadCountResponse.of(5L);
-
-// Access the count value
-Long unreadCount = response.count(); // returns 5L
+// response.count() returns 5
 ```
 
-## Notes
+## Usage Notes
 
-- This record is immutable by design, ensuring thread safety and predictability.
-- The `count` field is declared as `Long` (object type) rather than `long` (primitive) to allow for null values if needed, though in practice it should always be provided.
-- The static factory method `of()` provides a clean, expressive way to instantiate the record without using the `new` keyword directly.
+- The `count` field is immutable and cannot be changed after the record is created.
+- The `of()` static factory method provides a convenient way to instantiate the record without using the `new` keyword.
+- This record is typically used in REST API responses to return the unread notification count to the client.

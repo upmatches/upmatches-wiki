@@ -1,5 +1,5 @@
 ---
-id: database-type
+id: database-type-enum
 title: DatabaseType Enum
 sidebar_label: DatabaseType
 ---
@@ -10,57 +10,65 @@ The `DatabaseType` enum provides a centralized mapping between JDBC URL prefixes
 
 ## Purpose
 
-This enum simplifies database connection configuration by:
+This enum simplifies database configuration by:
 - Associating each supported database type with its JDBC URL prefix and driver class name.
 - Providing a utility method to resolve a `DatabaseType` from a given JDBC URL string.
-- Eliminating hard-coded driver class names and prefixes throughout the codebase.
+- Eliminating hard-coded driver class names and URL prefixes throughout the codebase.
 
 ## Enum Constants
 
-| Constant      | JDBC Prefix (from `DatabaseConstant`) | Driver Class Name              |
-|---------------|----------------------------------------|--------------------------------|
-| `H2`          | `JDBC_H2`                              | `org.h2.Driver`                |
-| `POSTGRESQL`  | `JDBC_POSTGRESQL`                      | `org.postgresql.Driver`        |
-| `MYSQL`       | `JDBC_MYSQL`                           | `com.mysql.cj.jdbc.Driver`     |
+| Constant     | JDBC Prefix (from `DatabaseConstant`) | Driver Class Name            |
+|--------------|---------------------------------------|------------------------------|
+| `H2`         | `JDBC_H2`                             | `org.h2.Driver`              |
+| `POSTGRESQL` | `JDBC_POSTGRESQL`                     | `org.postgresql.Driver`      |
+| `MYSQL`      | `JDBC_MYSQL`                          | `com.mysql.cj.jdbc.Driver`   |
 
 ## Public Methods
 
-### `fromJdbcUrl`
+### `fromJdbcUrl(String jdbcUrl)`
 
-Resolves a `DatabaseType` from a JDBC URL string by matching its prefix.
+Resolves a `DatabaseType` from a JDBC URL string by matching the URL's prefix.
 
 | Parameter | Type     | Description                                      |
 |-----------|----------|--------------------------------------------------|
-| `jdbcUrl` | `String` | The JDBC URL to evaluate (e.g., `jdbc:mysql://...`). Can be `null`. |
+| `jdbcUrl` | `String` | The JDBC URL to analyze (e.g., `jdbc:mysql://...`). Can be `null`. |
 
-| Returns    | Description                                                                 |
-|------------|-----------------------------------------------------------------------------|
-| `DatabaseType` | The matching enum constant, or `null` if the URL is `null` or no prefix matches. |
+**Returns:** `DatabaseType` – The matching enum constant, or `null` if the URL is `null` or does not match any known prefix.
 
-**Example usage:**
+**Example:**
 ```java
 DatabaseType type = DatabaseType.fromJdbcUrl("jdbc:postgresql://localhost:5432/mydb");
 // Returns DatabaseType.POSTGRESQL
 ```
 
-### `getPrefix`
+### `getPrefix()`
 
 Returns the JDBC URL prefix associated with this database type.
 
-| Returns | Description                          |
-|---------|--------------------------------------|
-| `String` | The JDBC prefix (e.g., `jdbc:mysql`). |
+| Returns | Type     | Description                                      |
+|---------|----------|--------------------------------------------------|
+| `String`| The JDBC prefix (e.g., `jdbc:mysql:`) used to identify the database type from a URL. |
 
-### `getDriverClassName`
+### `getDriverClassName()`
 
 Returns the fully qualified class name of the JDBC driver for this database type.
 
-| Returns | Description                          |
-|---------|--------------------------------------|
-| `String` | The driver class name (e.g., `org.postgresql.Driver`). |
+| Returns | Type     | Description                                      |
+|---------|----------|--------------------------------------------------|
+| `String`| The driver class name (e.g., `org.postgresql.Driver`). |
 
-## Internal Details
+## Usage Example
 
-- The enum constructor accepts a `String prefix` and `String driverClassName`, which are stored as private final fields.
-- The `fromJdbcUrl` method iterates over all enum values and checks if the provided URL starts with the enum's prefix. The first match is returned.
-- The prefix constants (`JDBC_H2`, `JDBC_MYSQL`, `JDBC_POSTGRESQL`) are imported from `com.upmatches.app.shared.database.constants.DatabaseConstant`.
+```java
+String url = "jdbc:h2:mem:test";
+DatabaseType dbType = DatabaseType.fromJdbcUrl(url);
+if (dbType != null) {
+    System.out.println("Driver: " + dbType.getDriverClassName());
+    // Output: Driver: org.h2.Driver
+}
+```
+
+## Notes
+
+- The enum relies on constants from `DatabaseConstant` (e.g., `JDBC_H2`, `JDBC_MYSQL`, `JDBC_POSTGRESQL`) for the prefix values.
+- If an unsupported or `null` JDBC URL is provided, `fromJdbcUrl` returns `null` rather than throwing an exception.

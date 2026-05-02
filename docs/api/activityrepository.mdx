@@ -10,35 +10,37 @@ The `ActivityRepository` interface provides database access operations for the `
 
 ## Purpose
 
-This repository serves as the data access layer for activity management within the application. By extending `JpaRepository<Activity, UUID>`, it automatically provides:
+This repository serves as the data access layer for managing `Activity` entities in the application. By extending `JpaRepository<Activity, UUID>`, it automatically inherits methods for:
 
-- Standard create, read, update, and delete operations
-- Pagination and sorting support
-- Batch operations
-- Fluent query method generation
+- Saving and updating activities
+- Finding activities by their UUID primary key
+- Deleting activities
+- Counting activities
+- Checking existence by ID
 
-The custom methods defined in this interface enable efficient lookups by reference ID and name validation, which are common requirements in activity management workflows.
+The custom methods defined in this interface enable efficient lookups by business-specific identifiers and validation checks.
 
 ## Methods
 
-### Inherited Methods
+### Inherited from JpaRepository
 
-The following methods are inherited from `JpaRepository` and `CrudRepository`:
+The following standard CRUD methods are available without explicit declaration:
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `findById(UUID id)` | `Optional<Activity>` | Retrieves an activity by its UUID primary key |
-| `findAll()` | `List<Activity>` | Returns all activities |
-| `save(Activity entity)` | `Activity` | Saves or updates an activity |
-| `deleteById(UUID id)` | `void` | Deletes an activity by its UUID |
-| `count()` | `long` | Returns the total number of activities |
+| Method | Description |
+|--------|-------------|
+| `findAll()` | Returns all activities |
+| `findById(UUID id)` | Finds an activity by its UUID |
+| `save(Activity activity)` | Persists a new or existing activity |
+| `deleteById(UUID id)` | Deletes an activity by its UUID |
+| `count()` | Returns the total number of activities |
+| `existsById(UUID id)` | Checks if an activity exists by UUID |
 
-### Custom Methods
+### Custom Query Methods
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
-| `findByReferenceId(Integer referenceId)` | `Optional<Activity>` | `referenceId` - The unique reference identifier for the activity | Finds an activity by its business reference ID. Returns an empty `Optional` if no matching activity exists. |
-| `existsByName(String name)` | `boolean` | `name` - The name to check for existence | Checks whether an activity with the given name already exists in the database. Returns `true` if found, `false` otherwise. |
+| `findByReferenceId(Integer referenceId)` | `Optional<Activity>` | `referenceId` - The business reference identifier | Retrieves an activity by its reference ID, returning an empty Optional if not found |
+| `existsByName(String name)` | `boolean` | `name` - The activity name to check | Returns `true` if an activity with the given name already exists |
 
 ## Usage Example
 

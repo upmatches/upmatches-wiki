@@ -4,26 +4,26 @@ title: AuditCategory Enum
 sidebar_label: AuditCategory
 ---
 
-# AuditCategory Enum
+# AuditCategory
 
 The `AuditCategory` enum defines the categories of audit events within the application. It is used to classify and filter audit log entries based on the type of operation being performed.
 
 ## Purpose
 
-This enum provides a standardized set of audit categories to ensure consistent logging across the application. Each category represents a distinct area of system activity that may require monitoring, compliance tracking, or security auditing.
+This enum provides a standardized set of categories for audit logging, enabling consistent classification of security-relevant events. Each constant represents a distinct category of operations that may be audited for compliance, security monitoring, or debugging purposes.
 
-## Enum Values
+## Enum Constants
 
-| Value | Description |
-|-------|-------------|
+| Constant | Description |
+|----------|-------------|
 | `WRITE` | Represents data write operations (e.g., create, update, delete). |
 | `AUTH` | Represents authentication events (e.g., login, logout, token refresh). |
-| `AUTHZ` | Represents authorization events (e.g., access control checks, permission evaluations). |
+| `AUTHZ` | Represents authorization events (e.g., access granted, access denied). |
 | `SENSITIVE_READ` | Represents read operations on sensitive data (e.g., PII, financial records). |
 
 ## Usage
 
-This enum is typically used in conjunction with an audit logging system to tag log entries with their corresponding category. Example usage:
+This enum is typically used in conjunction with an audit logging framework to tag log entries with their corresponding category. Example usage:
 
 ```java
 AuditCategory category = AuditCategory.WRITE;

@@ -6,95 +6,90 @@ sidebar_label: Auth0Uuid
 
 # Auth0Uuid
 
-The `Auth0Uuid` class is a Java record that represents a validated Auth0 user identifier. It serves as a value object within the application's domain layer, ensuring that any Auth0 UUID used throughout the system conforms to a specific format before it can be instantiated.
+The `Auth0Uuid` class is a Java record that represents a validated Auth0 user identifier. It serves as a type-safe value object that encapsulates the format and validation logic for Auth0 UUIDs, which typically follow a pattern like `provider|user-id`.
 
 ## Purpose
 
-Auth0 user identifiers typically follow a pattern that combines a provider name with a unique user ID, separated by a pipe character (`|`). This class encapsulates that format and provides:
-
-- **Validation**: Ensures the UUID matches the expected pattern on construction.
-- **Immutability**: As a Java record, instances are immutable and thread-safe.
-- **Type Safety**: Prevents primitive obsession by providing a dedicated type for Auth0 UUIDs.
-
-## Format
-
-The expected format is validated using the regular expression:
-
-```
-^[a-zA-Z0-9\-]+\|[a-zA-Z0-9@._\-]+$
-```
-
-This pattern requires:
-- One or more alphanumeric characters, hyphens, or digits before the pipe
-- A pipe character (`|`) as separator
-- One or more alphanumeric characters, hyphens, digits, `@`, `.`, or underscores after the pipe
-
-**Examples of valid formats:**
-- `auth0|5a8f9b2c1d3e4f`
-- `google-oauth2|1234567890`
-- `facebook|user@example.com`
+This value object ensures that any Auth0 UUID used throughout the application conforms to the expected format. By wrapping the raw string in a dedicated type, the codebase gains:
+- **Type safety**: Prevents accidental mixing of Auth0 UUIDs with other string identifiers
+- **Validation**: Automatically validates format upon construction
+- **Immutability**: As a Java record, instances are immutable and thread-safe
 
 ## Constructor
 
-### `Auth0Uuid(String value)`
-
-Creates a new `Auth0Uuid` instance after validating the input.
+The compact constructor performs validation on the provided `value` parameter:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `value` | `String` | The raw Auth0 UUID string to validate and store |
+| `value` | `String` | The Auth0 UUID string to validate and store |
+
+**Validation rules:**
+1. The value cannot be `null` or blank (whitespace-only)
+2. The value is trimmed of leading/trailing whitespace
+3. The value must match the pattern: `^[a-zA-Z0-9\\-]+\\|[a-zA-Z0-9@._\\-]+$`
 
 **Throws:**
-- `IllegalArgumentException` if the value is `null`, blank, or does not match the expected format.
+- `IllegalArgumentException` if validation fails
 
 ## Methods
 
 ### `create(String uuid)`
 
-Static factory method for creating an `Auth0Uuid` instance.
+Factory method to create an `Auth0Uuid` instance.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `uuid` | `String` | The Auth0 UUID string to create an instance from |
+| `uuid` | `String` | The Auth0 UUID string |
 
-**Returns:** `Auth0Uuid` - A new validated instance.
+| Returns | Description |
+|---------|-------------|
+| `Auth0Uuid` | A new validated Auth0Uuid instance |
 
 **Example:**
 ```java
-Auth0Uuid userId = Auth0Uuid.create("auth0|abc123def456");
+Auth0Uuid uuid = Auth0Uuid.create("auth0|abc123def456");
 ```
 
 ### `toString()`
 
 Returns the string representation of the Auth0 UUID.
 
-**Returns:** `String` - The original validated UUID value.
+| Returns | Description |
+|---------|-------------|
+| `String` | The original UUID value |
 
-**Example:**
-```java
-Auth0Uuid userId = Auth0Uuid.create("google-oauth2|user@example.com");
-System.out.println(userId.toString()); // Output: google-oauth2|user@example.com
+## Format Pattern
+
+The expected format for an Auth0 UUID is:
+
 ```
+provider|user-identifier
+```
+
+Where:
+- **Provider**: One or more alphanumeric characters, hyphens, or dashes
+- **Separator**: A pipe character (`|`)
+- **User identifier**: One or more alphanumeric characters, hyphens, dashes, `@`, `.`, or underscores
+
+**Valid examples:**
+- `auth0|abc123`
+- `google-oauth2|user@example.com`
+- `facebook|1234567890`
+- `windowslive|user_name@outlook.com`
+
+**Invalid examples:**
+- `abc123` (missing provider and pipe)
+- `|user123` (missing provider)
+- `auth0|` (missing user identifier)
+- `auth0|user name` (contains space)
 
 ## Usage Example
 
 ```java
-// Valid creation
-Auth0Uuid validUuid = Auth0Uuid.create("auth0|5a8f9b2c1d3e4f");
+// Creating a valid Auth0 UUID
+Auth0Uuid uuid = Auth0Uuid.create("auth0|5a8b9c0d1e2f3g4h5i6j7k8l");
+System.out.println(uuid); // Output: auth0|5a8b9c0d1e2f3g4h5i6j7k8l
 
 // This will throw IllegalArgumentException
-try {
-    Auth0Uuid invalidUuid = Auth0Uuid.create("invalid-format");
-} catch (IllegalArgumentException e) {
-    System.err.println("Invalid UUID format: " + e.getMessage());
-}
-
-// Access the value
-String uuidValue = validUuid.value();
+Auth0Uuid invalid = Auth0Uuid.create("invalid-format");
 ```
-
-## Notes
-
-- The class is defined as a Java `record`, which automatically provides `equals()`, `hashCode()`, and a compact constructor.
-- The `value` accessor method is automatically generated by the record definition.
-- Input is automatically trimmed before validation to handle whitespace.

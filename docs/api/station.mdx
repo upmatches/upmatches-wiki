@@ -6,65 +6,57 @@ sidebar_label: Station
 
 # Station Entity
 
-The `Station` class is a JPA entity representing a physical transit station or stop within the venue system. It stores the station's geographic coordinates (latitude and longitude) and maintains a one-to-many relationship with `StationLine` entities, which link the station to specific transit lines.
+The `Station` class is a JPA entity that represents a physical transit station or stop within the venue management system. It maps to the `stations` database table and stores essential geographic and identification information for each station.
 
 ## Purpose
 
-This entity serves as the core data model for managing station information in a transit or venue management application. It provides:
-- Persistent storage of station metadata (name, coordinates)
-- Association management between stations and transit lines
-- A factory method for creating new station instances
-- Support for adding transit lines to a station
+This entity serves as the core data model for managing transit stations. It captures:
+- Station identification and naming
+- Geographic coordinates (latitude/longitude)
+- Associated transit lines through a one-to-many relationship with `StationLine`
 
-## Entity Details
+## Class Overview
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `id` | `Long` | Auto-generated primary key |
-| `name` | `String` | Station name (max 150 characters, required) |
-| `latitude` | `BigDecimal` | Geographic latitude (precision 13, scale 10, required) |
-| `longitude` | `BigDecimal` | Geographic longitude (precision 13, scale 10, required) |
-| `stationLines` | `List<StationLine>` | Collection of associated station-line mappings |
+The entity uses Lombok's `@Getter` annotation to automatically generate getter methods for all fields. It implements a factory method pattern for object creation and provides a method to associate transit lines with the station.
 
-## Public Methods
+## Fields
+
+| Field | Type | Database Column | Constraints | Description |
+|-------|------|-----------------|-------------|-------------|
+| `id` | `Long` | `id` | Primary Key, Auto-generated | Unique identifier for the station |
+| `name` | `String` | `name` | Not null, max 150 characters | Display name of the station |
+| `latitude` | `BigDecimal` | `latitude` | Not null, precision 13, scale 10 | Geographic latitude coordinate |
+| `longitude` | `BigDecimal` | `longitude` | Not null, precision 13, scale 10 | Geographic longitude coordinate |
+| `stationLines` | `List<StationLine>` | N/A (OneToMany) | Cascade ALL, orphan removal | Collection of station-line associations |
+
+## Methods
 
 ### `create(String name, BigDecimal latitude, BigDecimal longitude)`
 
-Factory method to create a new `Station` instance.
-
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `name` | `String` | The name of the station |
+| `name` | `String` | The display name for the station |
 | `latitude` | `BigDecimal` | The geographic latitude coordinate |
 | `longitude` | `BigDecimal` | The geographic longitude coordinate |
 
-**Returns:** `Station` - A new station entity with the specified properties.
+**Returns:** `Station` - A new Station instance with the specified properties.
+
+This static factory method creates a new Station entity with the provided name and geographic coordinates. It ensures proper initialization of the station's core attributes.
 
 ### `addLine(TransitLine transitLine, Integer stationNumber)`
-
-Associates a transit line with this station by creating a `StationLine` mapping.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `transitLine` | `TransitLine` | The transit line to associate with this station |
-| `stationNumber` | `Integer` | The station number or order on the transit line |
+| `stationNumber` | `Integer` | The station's number/order on the specified transit line |
 
 **Returns:** `void`
 
-## Database Mapping
-
-The entity is mapped to the `stations` database table with the following column mappings:
-
-| Column | Database Type | Constraints |
-|--------|---------------|-------------|
-| `id` | `BIGINT` | Primary key, auto-increment |
-| `name` | `VARCHAR(150)` | NOT NULL |
-| `latitude` | `DECIMAL(13,10)` | NOT NULL |
-| `longitude` | `DECIMAL(13,10)` | NOT NULL |
+This method creates a new `StationLine` association between the current station and the provided transit line. The `stationNumber` parameter indicates the station's position or sequence number on that line. The new association is automatically added to the station's collection of station lines.
 
 ## Relationships
 
-- **One-to-Many with StationLine**: The `stationLines` field uses `CascadeType.ALL` and `orphanRemoval = true`, meaning all operations (persist, merge, remove) are cascaded to associated `StationLine` entities, and orphaned `StationLine` records are automatically deleted when removed from the collection.
+- **One-to-Many with StationLine**: A station can be associated with multiple transit lines through the `stationLines` collection. The relationship is mapped by the `station` field in the `StationLine` entity and configured with cascade ALL operations and orphan removal.
 
 ## Usage Example
 
@@ -76,13 +68,20 @@ Station station = Station.create(
     new BigDecimal("-74.0060000")
 );
 
-// Add a transit line
+// Associate with a transit line
 TransitLine lineA = transitLineRepository.findById(1L).orElseThrow();
 station.addLine(lineA, 1);
 ```
 
-## Notes
+## Database Schema
 
-- The protected no-argument constructor is required by JPA and should not be used directly.
-- The class uses Lombok's `@Getter` annotation to generate getters for all fields.
-- Geographic coordinates use `BigDecimal` with high precision (13 digits total, 10 decimal places) for accurate positioning.
+The entity maps to the `stations` table with the following structure:
+
+```sql
+CREATE TABLE stations (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    latitude DECIMAL(13,10) NOT NULL,
+    longitude DECIMAL(13,10) NOT NULL
+);
+```

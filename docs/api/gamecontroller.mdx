@@ -6,7 +6,7 @@ sidebar_label: GameController
 
 # GameController
 
-The `GameController` class is a REST controller that handles all game-related HTTP requests in the UpMatches application. It provides endpoints for creating, retrieving, updating, and deleting games, as well as managing game participants and filtering game listings.
+The `GameController` class is a REST controller that handles all game-related HTTP requests in the UpMatches application. It provides endpoints for creating, reading, updating, and deleting games, as well as managing game participants and filtering game listings.
 
 ## Base URL
 
@@ -18,7 +18,9 @@ All endpoints are prefixed with `/api/v1/games`.
 
 Creates a new game with the specified details.
 
-**Endpoint:** `POST /api/v1/games`
+**HTTP Method:** `POST`
+
+**Endpoint:** `/api/v1/games`
 
 **Request Body:** `CreateGameRequest` (validated)
 
@@ -26,42 +28,33 @@ Creates a new game with the specified details.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| body | CreateGameRequest | Game creation details |
-| request | HttpServletRequest | HTTP request object |
+| body | CreateGameRequest | Game creation details (validated) |
 
 **Response Body:**
 ```json
 {
-  "data": {
-    "id": "uuid",
-    "title": "string",
-    "description": "string",
-    "gameType": "string",
-    "venueId": "number",
-    "skillLevelId": "number",
-    "date": "date",
-    "time": "time",
-    "maxParticipants": "number",
-    "currentParticipants": "number",
-    "status": "string"
-  },
+  "data": GameResponse,
   "message": "Game created successfully.",
   "path": "/api/v1/games"
 }
 ```
 
+---
+
 ### List Games
 
 Retrieves a paginated list of games with optional filtering.
 
-**Endpoint:** `GET /api/v1/games`
+**HTTP Method:** `GET`
+
+**Endpoint:** `/api/v1/games`
 
 **Query Parameters:**
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | cursor | String | No | - | Pagination cursor |
-| size | Integer | No | 20 | Page size (max 100) |
+| size | Integer | No | 20 | Page size (max validated) |
 | venueIds | List<Long> | No | - | Filter by venue IDs |
 | skillLevelIds | List<Long> | No | - | Filter by skill level IDs |
 | fromDate | LocalDate | No | - | Filter by start date |
@@ -74,34 +67,24 @@ Retrieves a paginated list of games with optional filtering.
 
 **Response:** `200 OK`
 
+**Response Body:**
 ```json
 {
-  "data": {
-    "items": [
-      {
-        "id": "uuid",
-        "title": "string",
-        "gameType": "string",
-        "venueId": "number",
-        "date": "date",
-        "time": "time",
-        "currentParticipants": "number",
-        "maxParticipants": "number"
-      }
-    ],
-    "nextCursor": "string",
-    "hasMore": true
-  },
+  "data": CursorPagedResponse<GameResponse>,
   "message": "Games retrieved successfully.",
   "path": "/api/v1/games"
 }
 ```
 
+---
+
 ### Get Filter Options
 
-Retrieves available filter options for game search.
+Retrieves available filter options for game listings.
 
-**Endpoint:** `GET /api/v1/games/filter-options`
+**HTTP Method:** `GET`
+
+**Endpoint:** `/api/v1/games/filter-options`
 
 **Query Parameters:**
 
@@ -120,36 +103,24 @@ Retrieves available filter options for game search.
 
 **Response:** `200 OK`
 
+**Response Body:**
 ```json
 {
-  "data": {
-    "venues": [
-      {
-        "id": "number",
-        "name": "string",
-        "address": "string"
-      }
-    ],
-    "skillLevels": [
-      {
-        "id": "number",
-        "name": "string",
-        "description": "string"
-      }
-    ],
-    "gameTypes": ["string"],
-    "availableDates": ["date"]
-  },
+  "data": GameFilterOptionsResponse,
   "message": "Game filter options retrieved successfully.",
   "path": "/api/v1/games/filter-options"
 }
 ```
 
+---
+
 ### Get Date Availability
 
-Retrieves available dates for games within a date range.
+Retrieves game availability for a date range.
 
-**Endpoint:** `GET /api/v1/games/date-availability`
+**HTTP Method:** `GET`
+
+**Endpoint:** `/api/v1/games/date-availability`
 
 **Query Parameters:**
 
@@ -160,25 +131,24 @@ Retrieves available dates for games within a date range.
 
 **Response:** `200 OK`
 
+**Response Body:**
 ```json
 {
-  "data": [
-    {
-      "date": "2024-01-15",
-      "availableGames": 5,
-      "totalGames": 10
-    }
-  ],
+  "data": [GameDateAvailabilityResponse],
   "message": "Game date availability retrieved successfully.",
   "path": "/api/v1/games/date-availability"
 }
 ```
 
+---
+
 ### Get Game
 
 Retrieves a specific game by its ID.
 
-**Endpoint:** `GET /api/v1/games/{id}`
+**HTTP Method:** `GET`
+
+**Endpoint:** `/api/v1/games/{id}`
 
 **Path Parameters:**
 
@@ -188,38 +158,24 @@ Retrieves a specific game by its ID.
 
 **Response:** `200 OK`
 
+**Response Body:**
 ```json
 {
-  "data": {
-    "id": "uuid",
-    "title": "string",
-    "description": "string",
-    "gameType": "string",
-    "venueId": "number",
-    "skillLevelId": "number",
-    "date": "date",
-    "time": "time",
-    "maxParticipants": "number",
-    "currentParticipants": "number",
-    "status": "string",
-    "participants": [
-      {
-        "userId": "uuid",
-        "username": "string",
-        "joinedAt": "datetime"
-      }
-    ]
-  },
+  "data": GameResponse,
   "message": "Game retrieved successfully.",
   "path": "/api/v1/games/{id}"
 }
 ```
 
+---
+
 ### Update Game
 
-Updates an existing game.
+Updates an existing game with new details.
 
-**Endpoint:** `PUT /api/v1/games/{id}`
+**HTTP Method:** `PUT`
+
+**Endpoint:** `/api/v1/games/{id}`
 
 **Path Parameters:**
 
@@ -231,31 +187,24 @@ Updates an existing game.
 
 **Response:** `200 OK`
 
+**Response Body:**
 ```json
 {
-  "data": {
-    "id": "uuid",
-    "title": "string",
-    "description": "string",
-    "gameType": "string",
-    "venueId": "number",
-    "skillLevelId": "number",
-    "date": "date",
-    "time": "time",
-    "maxParticipants": "number",
-    "currentParticipants": "number",
-    "status": "string"
-  },
+  "data": GameResponse,
   "message": "Game updated successfully.",
   "path": "/api/v1/games/{id}"
 }
 ```
 
+---
+
 ### Soft Delete Game
 
 Soft deletes a game (marks as inactive).
 
-**Endpoint:** `DELETE /api/v1/games/{id}`
+**HTTP Method:** `DELETE`
+
+**Endpoint:** `/api/v1/games/{id}`
 
 **Path Parameters:**
 
@@ -265,11 +214,15 @@ Soft deletes a game (marks as inactive).
 
 **Response:** `204 No Content`
 
+---
+
 ### Join Game
 
 Allows the current user to join a game.
 
-**Endpoint:** `POST /api/v1/games/{id}/participants`
+**HTTP Method:** `POST`
+
+**Endpoint:** `/api/v1/games/{id}/participants`
 
 **Path Parameters:**
 
@@ -279,25 +232,24 @@ Allows the current user to join a game.
 
 **Response:** `201 Created`
 
+**Response Body:**
 ```json
 {
-  "data": {
-    "userId": "uuid",
-    "username": "string",
-    "gameId": "uuid",
-    "joinedAt": "datetime",
-    "status": "string"
-  },
+  "data": GameParticipantResponse,
   "message": "Joined game successfully.",
   "path": "/api/v1/games/{id}/participants"
 }
 ```
 
+---
+
 ### Leave Game
 
 Allows the current user to leave a game.
 
-**Endpoint:** `DELETE /api/v1/games/{id}/participants/me`
+**HTTP Method:** `DELETE`
+
+**Endpoint:** `/api/v1/games/{id}/participants/me`
 
 **Path Parameters:**
 
@@ -307,11 +259,15 @@ Allows the current user to leave a game.
 
 **Response:** `204 No Content`
 
+---
+
 ### List Game Participants
 
-Retrieves all participants of a specific game.
+Retrieves all participants for a specific game.
 
-**Endpoint:** `GET /api/v1/games/{id}/participants`
+**HTTP Method:** `GET`
+
+**Endpoint:** `/api/v1/games/{id}/participants`
 
 **Path Parameters:**
 
@@ -321,26 +277,24 @@ Retrieves all participants of a specific game.
 
 **Response:** `200 OK`
 
+**Response Body:**
 ```json
 {
-  "data": [
-    {
-      "userId": "uuid",
-      "username": "string",
-      "joinedAt": "datetime",
-      "status": "string"
-    }
-  ],
+  "data": [GameParticipantResponse],
   "message": "Game participants retrieved successfully.",
   "path": "/api/v1/games/{id}/participants"
 }
 ```
 
+---
+
 ### Expel Participant
 
-Expels a participant from a game.
+Removes a participant from a game (admin action).
 
-**Endpoint:** `DELETE /api/v1/games/{gameId}/participants/{participantId}`
+**HTTP Method:** `DELETE`
+
+**Endpoint:** `/api/v1/games/{gameId}/participants/{participantId}`
 
 **Path Parameters:**
 
@@ -351,38 +305,34 @@ Expels a participant from a game.
 
 **Request Body (optional):** `ExpelParticipantRequest`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| reason | String | Reason for expulsion |
-
 **Response:** `204 No Content`
 
-## Error Responses
+---
 
-All endpoints may return the following error responses:
+## Error Handling
 
-| Status Code | Description |
-|-------------|-------------|
-| 400 | Bad Request - Invalid input parameters |
-| 401 | Unauthorized - Authentication required |
-| 403 | Forbidden - Insufficient permissions |
-| 404 | Not Found - Resource not found |
-| 409 | Conflict - Resource conflict (e.g., game full) |
-| 422 | Unprocessable Entity - Validation errors |
-| 500 | Internal Server Error |
+All endpoints return appropriate HTTP status codes:
+- `200 OK` - Successful retrieval/update
+- `201 Created` - Successful creation
+- `204 No Content` - Successful deletion
+- `400 Bad Request` - Invalid input parameters
+- `404 Not Found` - Resource not found
+- `500 Internal Server Error` - Server error
 
 ## Dependencies
 
 The controller depends on the following service interfaces:
 
-- `ICreateGameService`
-- `IListGamesCursorService`
-- `IGetGameService`
-- `IGetGameFilterOptionsService`
-- `IGetGameDateAvailabilityService`
-- `IUpdateGameService`
-- `ISoftDeleteGameService`
-- `IJoinGameService`
-- `ILeaveGameService`
-- `IListGameParticipantsService`
-- `IExpelParticipantService`
+| Service Interface | Purpose |
+|-------------------|---------|
+| ICreateGameService | Creates new games |
+| IListGamesCursorService | Lists games with cursor pagination |
+| IGetGameService | Retrieves individual games |
+| IGetGameFilterOptionsService | Gets filter options |
+| IGetGameDateAvailabilityService | Gets date availability |
+| IUpdateGameService | Updates existing games |
+| ISoftDeleteGameService | Soft deletes games |
+| IJoinGameService | Handles game joining |
+| ILeaveGameService | Handles game leaving |
+| IListGameParticipantsService | Lists game participants |
+| IExpelParticipantService | Handles participant expulsion |

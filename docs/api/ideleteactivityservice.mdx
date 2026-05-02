@@ -6,58 +6,49 @@ sidebar_label: IDeleteActivityService
 
 # IDeleteActivityService Interface
 
-The `IDeleteActivityService` interface defines the contract for deleting an activity within the application. It follows a command-like pattern where the service encapsulates the logic required to remove an activity identified by its unique identifier.
+The `IDeleteActivityService` interface defines the contract for deleting an activity within the application. It is a sealed interface, meaning only explicitly permitted classes (in this case, `DeleteActivityService`) can implement it. This design enforces a controlled and secure implementation hierarchy, ensuring that the deletion logic is centralized and cannot be extended arbitrarily.
 
-This interface is declared as `sealed`, meaning only explicitly permitted classes can implement it. In this case, the only permitted implementation is `DeleteActivityService`. This design enforces a controlled hierarchy and ensures that deletion logic is centralized and not extended arbitrarily.
+## Purpose
+
+The primary purpose of this interface is to abstract the operation of deleting an activity identified by its unique ID. By defining a single method `execute`, it provides a clear and consistent API for performing deletions, allowing the underlying implementation to handle specifics such as database operations, validation, and error handling.
 
 ## Interface Definition
 
 ```java
-package com.upmatches.app.features.activity.services;
-
-import java.util.UUID;
-
 public sealed interface IDeleteActivityService permits DeleteActivityService {
-
     void execute(UUID id);
-
 }
 ```
 
-## Method Summary
+## Methods
 
-| Method | Description |
-|--------|-------------|
-| `void execute(UUID id)` | Deletes the activity identified by the given UUID. |
+| Method | Description | Parameters | Returns |
+|--------|-------------|------------|---------|
+| `execute(UUID id)` | Executes the deletion of an activity identified by the given unique identifier. | `id` - The UUID of the activity to delete. | `void` |
 
-## Method Details
+## Usage
 
-### `execute`
+The interface is intended to be injected into other components (e.g., controllers, services) that need to delete activities. The actual deletion logic is implemented in the `DeleteActivityService` class.
 
-```java
-void execute(UUID id)
-```
-
-Deletes an activity from the system based on its unique identifier.
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the activity to be deleted. |
-
-**Returns:** `void` — This method does not return a value. Implementations should handle errors internally or throw appropriate runtime exceptions.
-
-**Usage Example:**
+### Example
 
 ```java
-IDeleteActivityService deleteService = new DeleteActivityService();
-UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-deleteService.execute(activityId);
+// Assuming IDeleteActivityService is injected
+public class ActivityController {
+    private final IDeleteActivityService deleteActivityService;
+
+    public ActivityController(IDeleteActivityService deleteActivityService) {
+        this.deleteActivityService = deleteActivityService;
+    }
+
+    public void deleteActivity(UUID activityId) {
+        deleteActivityService.execute(activityId);
+    }
+}
 ```
 
 ## Implementation Notes
 
-- The interface is `sealed`, restricting implementation to `DeleteActivityService` only.
-- The `execute` method is intentionally simple, accepting only the activity's UUID and performing the deletion without returning a result.
-- Implementations should ensure proper error handling, such as throwing an exception if the activity does not exist or if the deletion fails due to business rules.
+- The interface is sealed, so only `DeleteActivityService` is allowed to implement it.
+- The `execute` method does not return a value; any errors or exceptions should be handled within the implementation.
+- The use of `UUID` ensures globally unique identification of activities.

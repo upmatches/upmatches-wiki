@@ -6,56 +6,47 @@ sidebar_label: NotificationResponse
 
 # NotificationResponse
 
-The `NotificationResponse` class is a Java record that serves as a Data Transfer Object (DTO) for representing notification data in API responses. It encapsulates the essential fields of a `Notification` entity and provides a static factory method to convert from the entity to this response format.
+The `NotificationResponse` record is a Data Transfer Object (DTO) used to represent a notification in API responses. It encapsulates all relevant fields of a `Notification` entity in a read-only, serializable format, ensuring that internal entity details are not exposed directly to clients.
 
-## Purpose
+This record is typically returned by REST controllers when clients request notification data, providing a clean and immutable view of the notification.
 
-- **API Response Representation**: Provides a clean, immutable representation of notification data for REST API responses.
-- **Data Transformation**: Converts `Notification` entity objects into a format suitable for serialization (e.g., JSON).
-- **Separation of Concerns**: Decouples the internal entity model from the external API contract.
+## Record Components
 
-## Record Fields
+The following table describes each component (field) of the `NotificationResponse` record:
 
-| Field        | Type      | Description                                      |
-|--------------|-----------|--------------------------------------------------|
-| `id`         | `UUID`    | Unique identifier for the notification           |
-| `type`       | `String`  | Notification type (e.g., "LIKE", "MATCH")        |
-| `title`      | `String`  | Short title of the notification                  |
-| `message`    | `String`  | Detailed message content                         |
-| `resourceType` | `String` | Type of resource associated (e.g., "USER", "POST") |
-| `resourceId` | `UUID`    | ID of the associated resource                    |
-| `isRead`     | `Boolean` | Whether the notification has been read           |
-| `readAt`     | `Instant` | Timestamp when the notification was read         |
-| `createdAt`  | `Instant` | Timestamp when the notification was created      |
+| Field          | Type         | Description                                                                 |
+|----------------|--------------|-----------------------------------------------------------------------------|
+| `id`           | `UUID`       | Unique identifier of the notification.                                      |
+| `type`         | `String`     | The type of notification (e.g., "LIKE", "MESSAGE", "MATCH").                |
+| `title`        | `String`     | Short title or subject of the notification.                                 |
+| `message`      | `String`     | Detailed message content of the notification.                               |
+| `resourceType` | `String`     | The type of resource associated with the notification (e.g., "USER", "POST").|
+| `resourceId`   | `UUID`       | Identifier of the related resource.                                         |
+| `isRead`       | `Boolean`    | Whether the notification has been read by the user.                         |
+| `readAt`       | `Instant`    | Timestamp when the notification was read (nullable).                        |
+| `createdAt`    | `Instant`    | Timestamp when the notification was created.                                |
 
 ## Public Methods
 
-### `fromNotification(Notification notification)`
+### `fromNotification`
 
-Converts a `Notification` entity into a `NotificationResponse` DTO.
+```java
+public static NotificationResponse fromNotification(Notification notification)
+```
+
+Creates a `NotificationResponse` instance from a `Notification` entity. This is the primary factory method used to convert domain entities into API response objects.
 
 **Parameters:**
 
-| Parameter      | Type           | Description                          |
-|----------------|----------------|--------------------------------------|
-| `notification` | `Notification` | The entity to convert to a response  |
+| Parameter      | Type           | Description                              |
+|----------------|----------------|------------------------------------------|
+| `notification` | `Notification` | The notification entity to convert.      |
 
-**Returns:**
+**Returns:** `NotificationResponse` — A new response object populated with data from the given notification.
 
-| Type                   | Description                                      |
-|------------------------|--------------------------------------------------|
-| `NotificationResponse` | A new instance populated with entity data        |
-
-**Example Usage:**
+**Example usage:**
 
 ```java
 Notification notification = notificationService.findById(notificationId);
 NotificationResponse response = NotificationResponse.fromNotification(notification);
 ```
-
-## Usage Notes
-
-- This record is immutable by design, making it thread-safe and suitable for caching.
-- The `type` field is converted from an enum to a string representation for API consumption.
-- All timestamps use `java.time.Instant` for precise time representation.
-- The `isRead` field uses `Boolean` (object) rather than `boolean` (primitive) to allow null values if the read status is unknown.

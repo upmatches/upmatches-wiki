@@ -8,45 +8,19 @@ sidebar_label: RegisterDeviceTokenService
 
 ## Purpose
 
-The `RegisterDeviceTokenService` class is a Spring service responsible for registering or updating device tokens for push notifications. It handles the logic of associating a device token with an authenticated user, either by updating an existing token record or creating a new one.
+The `RegisterDeviceTokenService` class is a Spring service responsible for registering or updating device tokens for push notifications. It ensures that each device token is uniquely associated with an authenticated user, handling both new registrations and updates to existing tokens (e.g., when the platform changes).
 
-This service ensures that:
-- Only authenticated users can register device tokens
-- Existing tokens are updated with the latest platform information
-- New tokens are created with proper user association
-- All operations are executed within a transactional context
+This service is part of the notification feature in the UpMatches application, enabling push notification delivery to user devices.
 
-## Class Details
+## Class Overview
 
-| Property | Value |
-|----------|-------|
-| **Package** | `com.upmatches.app.features.notification.services` |
-| **Type** | `non-sealed class` |
-| **Implements** | `IRegisterDeviceTokenService` |
-| **Annotations** | `@Service` |
-| **Transactional** | Yes |
-
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `DeviceTokenRepository` | Repository | Handles persistence of device tokens |
-| `UserRepository` | Repository | Handles persistence of user entities |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
-
-## Constructor
-
-### `RegisterDeviceTokenService(DeviceTokenRepository, UserRepository, IAuthenticatedUserResolver)`
-
-Initializes the service with required dependencies.
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `deviceTokenRepository` | `DeviceTokenRepository` | Repository for device token operations |
-| `userRepository` | `UserRepository` | Repository for user operations |
-| `userResolver` | `IAuthenticatedUserResolver` | Service to resolve authenticated user |
+- **Package:** `com.upmatches.app.features.notification.services`
+- **Annotations:** `@Service`
+- **Modifier:** `non-sealed` (implements `IRegisterDeviceTokenService`)
+- **Dependencies:**
+  - `DeviceTokenRepository` – persistence for device tokens
+  - `UserRepository` – persistence for user entities
+  - `IAuthenticatedUserResolver` – resolves the currently authenticated user
 
 ## Public Methods
 
@@ -54,34 +28,46 @@ Initializes the service with required dependencies.
 
 Registers or updates a device token for the currently authenticated user.
 
-**Parameters:**
-
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `RegisterDeviceTokenRequest` | Contains the device token and platform information |
-
-**Return Type:** `void`
+| `request` | `RegisterDeviceTokenRequest` | Contains the device token string and platform identifier |
 
 **Behavior:**
-
-1. Resolves the authenticated user's ID using `userResolver.requireUserId()`
-2. Checks if a device token already exists for the user with the same token value
-3. If the token exists:
-   - Updates the existing token's platform and timestamp using `touch(request.platform())`
-   - Saves the updated token
-4. If the token does not exist:
-   - Retrieves the user entity from the database
-   - Creates a new `DeviceToken` entity using `DeviceToken.create(user, request.deviceToken(), request.platform())`
-   - Saves the new token
+1. Resolves the authenticated user's ID via `userResolver.requireUserId()`.
+2. Checks if a device token already exists for this user with the same token string.
+3. **If the token exists:** Updates the existing token's platform and timestamp via `touch()`, then saves it.
+4. **If the token does not exist:** Retrieves the user entity, creates a new `DeviceToken`, and persists it.
 
 **Exceptions:**
+- `ResourceNotFoundException` – thrown if the authenticated user cannot be found in the database.
 
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | Thrown when the authenticated user is not found in the database |
+**Transactional:** Yes (`@Transactional`)
 
-**Transactional Behavior:** The entire method executes within a single database transaction, ensuring atomicity of the operation.
+## Dependencies
 
-## Error Handling
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `DeviceTokenRepository` | Repository | Handles CRUD operations for `DeviceToken` entities |
+| `UserRepository` | Repository | Handles CRUD operations for `User` entities |
+| `IAuthenticatedUserResolver` | Service | Provides the current authenticated user's ID |
+| `ServiceOperationExecutor` | Utility | Wraps repository operations with consistent error handling |
 
-The service uses `ServiceOperationExecutor.execute()` to wrap save operations, providing consistent error handling and logging for database operations. If the user is not found during token creation, a `ResourceNotFoundException` is thrown with a descriptive message containing the user ID.
+## Usage Example
+
+```java
+// Inject the service
+private final RegisterDeviceTokenService registerDeviceTokenService;
+
+// Register a device token
+RegisterDeviceTokenRequest request = new RegisterDeviceTokenRequest(
+    "fcm-token-abc123",
+    Platform.IOS
+);
+registerDeviceTokenService.execute(request);
+```
+
+## Notes
+
+- The service uses `ServiceOperationExecutor` to wrap save operations, ensuring consistent error handling and logging.
+- The `touch()` method on `DeviceToken` updates the last-modified timestamp and potentially the platform, allowing the same token to be reused across platform changes.
+- The `non-sealed` modifier indicates this class can be extended but is not intended for general inheritance (sealed class hierarchy).

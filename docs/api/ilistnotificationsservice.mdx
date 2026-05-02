@@ -6,67 +6,68 @@ sidebar_label: IListNotificationsService
 
 # IListNotificationsService
 
-The `IListNotificationsService` interface defines the contract for retrieving a paginated list of notifications. It is part of the notification feature within the UpMatches application and follows a sealed interface pattern to restrict implementation to a single concrete class.
+The `IListNotificationsService` interface defines the contract for retrieving a paginated list of notifications within the UpMatches application. It follows a sealed interface pattern to restrict implementation to a single concrete service class, ensuring controlled extensibility and a clear service boundary.
 
 ## Purpose
 
-This interface provides a standardized way to fetch notifications with pagination support. By using a sealed interface, the design ensures that only the designated implementation (`ListNotificationsService`) can fulfill this contract, promoting encapsulation and controlled extensibility.
+This interface abstracts the operation of fetching notifications with pagination support. By using a sealed interface, the design enforces that only `ListNotificationsService` can implement this contract, which improves maintainability and prevents unintended implementations across the codebase.
 
 ## Interface Definition
 
 ```java
 public sealed interface IListNotificationsService permits ListNotificationsService {
+
     PagedResponse<NotificationResponse> execute(Pageable pageable);
+
 }
 ```
 
-### Key Characteristics
+## Method Summary
 
-- **Sealed Interface**: The `sealed` keyword restricts which classes can implement this interface. Only `ListNotificationsService` is permitted.
-- **Single Method Contract**: Defines a single `execute` method that accepts pagination parameters and returns a paginated response of notification data.
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `execute` | `PagedResponse<NotificationResponse>` | `Pageable pageable` | Retrieves a paginated list of notifications based on the provided pagination information. |
 
-## Method Documentation
+## Parameters
 
-### `execute`
+### `execute(Pageable pageable)`
 
-Retrieves a paginated list of notifications.
+- **pageable** (`org.springframework.data.domain.Pageable`): A Spring Data object that encapsulates pagination and sorting parameters (e.g., page number, page size, sort direction).
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sort criteria |
+## Return Type
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| Success | `PagedResponse<NotificationResponse>` | A paginated response containing a list of `NotificationResponse` objects with metadata (page number, page size, total elements, total pages) |
+- **`PagedResponse<NotificationResponse>`**: A generic wrapper that contains:
+  - The list of `NotificationResponse` objects for the current page.
+  - Pagination metadata such as total elements, total pages, current page number, and page size.
+
+## Sealed Interface Constraint
+
+The `permits` clause restricts implementation to `ListNotificationsService` only. This ensures:
+- Single responsibility: Only one service handles notification listing.
+- Compile-time safety: The compiler enforces the implementation restriction.
+- Clear architecture: Developers immediately know where to find the implementation.
 
 ## Usage Example
 
 ```java
-// Inject the service
-private final IListNotificationsService listNotificationsService;
+@Autowired
+private IListNotificationsService listNotificationsService;
 
-// Create a pageable request
-Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
-
-// Execute the query
-PagedResponse<NotificationResponse> notifications = listNotificationsService.execute(pageable);
-
-// Access paginated results
-List<NotificationResponse> items = notifications.getContent();
-int totalPages = notifications.getTotalPages();
-long totalElements = notifications.getTotalElements();
+public void displayNotifications(int page, int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    PagedResponse<NotificationResponse> response = listNotificationsService.execute(pageable);
+    // Process the paginated response
+}
 ```
+
+## Dependencies
+
+- `com.upmatches.app.features.notification.responses.NotificationResponse`
+- `com.upmatches.app.shared.responses.PagedResponse`
+- `org.springframework.data.domain.Pageable`
 
 ## Related Components
 
-| Component | Description |
-|-----------|-------------|
-| `ListNotificationsService` | The sole permitted implementation of this interface |
-| `NotificationResponse` | The DTO representing a single notification |
-| `PagedResponse` | Generic wrapper for paginated API responses |
-
-## Design Notes
-
-- The sealed interface pattern ensures that the notification listing logic is centralized and cannot be extended arbitrarily.
-- The use of `PagedResponse` provides consistent pagination metadata across the application.
-- The `Pageable` parameter allows clients to control pagination and sorting without modifying the service implementation.
+- **ListNotificationsService**: The sole permitted implementation of this interface.
+- **NotificationResponse**: The DTO representing a single notification.
+- **PagedResponse**: Generic pagination wrapper used across the application.

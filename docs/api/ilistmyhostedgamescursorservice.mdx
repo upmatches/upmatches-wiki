@@ -6,57 +6,50 @@ sidebar_label: IListMyHostedGamesCursorService
 
 # IListMyHostedGamesCursorService
 
-The `IListMyHostedGamesCursorService` is a **sealed interface** that defines the contract for retrieving a cursor-based, paginated list of games hosted by the currently authenticated user. It serves as the abstraction layer for the `ListMyHostedGamesCursorService` implementation.
+The `IListMyHostedGamesCursorService` is a **sealed interface** that defines the contract for retrieving a cursor-paginated list of games hosted by the current user. It is part of the game features package and works with cursor-based pagination to efficiently fetch large result sets.
 
-## Purpose
+This interface is sealed to permit only the `ListMyHostedGamesCursorService` implementation, ensuring controlled extension and a clear single point of implementation.
 
-This interface is part of the game management feature within the application. It provides a standardized way to fetch a user's hosted games using cursor-based pagination, which is more efficient and reliable than traditional offset-based pagination for large, frequently updated datasets.
+## Interface Definition
 
-## Sealed Interface
+```java
+public sealed interface IListMyHostedGamesCursorService 
+    permits ListMyHostedGamesCursorService
+```
 
-The interface is declared as `sealed`, meaning only the explicitly permitted class (`ListMyHostedGamesCursorService`) can implement it. This design enforces a single, controlled implementation and prevents unauthorized extensions.
-
-## Method Summary
-
-| Method | Description |
-|--------|-------------|
-| `execute(String cursor, int size)` | Retrieves a paginated list of games hosted by the current user, starting from the specified cursor position. |
-
-## Method Details
+## Methods
 
 ### `execute`
 
-```java
-CursorPagedResponse<GameResponse> execute(String cursor, int size)
-```
-
-Executes the query to fetch a cursor-based paginated list of the current user's hosted games.
-
-**Parameters:**
+Retrieves a cursor-paginated list of games hosted by the current user.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `cursor` | `String` | The cursor indicating the starting point for the page. Pass `null` or empty string to retrieve the first page. |
+| `cursor` | `String` | The cursor string indicating the starting point for pagination. Pass `null` or empty string to retrieve the first page. |
 | `size` | `int` | The maximum number of items to return in the response. Must be a positive integer. |
 
-**Returns:**
+| Returns | Description |
+|---------|-------------|
+| `CursorPagedResponse<GameResponse>` | A paginated response containing a list of `GameResponse` objects, along with cursor information for subsequent requests. |
 
-| Type | Description |
-|------|-------------|
-| `CursorPagedResponse<GameResponse>` | A paginated response containing a list of `GameResponse` objects and a cursor for the next page (if available). |
-
-**Usage Example:**
+## Usage Example
 
 ```java
-// Get the first page of hosted games (10 items)
-CursorPagedResponse<GameResponse> firstPage = service.execute(null, 10);
+// Inject the service
+private final IListMyHostedGamesCursorService listMyHostedGamesService;
 
-// Get the next page using the cursor from the previous response
-CursorPagedResponse<GameResponse> nextPage = service.execute(firstPage.getNextCursor(), 10);
+// Retrieve the first page of hosted games
+CursorPagedResponse<GameResponse> firstPage = listMyHostedGamesService.execute(null, 20);
+
+// Use the cursor from the response to get the next page
+String nextCursor = firstPage.getNextCursor();
+if (nextCursor != null) {
+    CursorPagedResponse<GameResponse> nextPage = listMyHostedGamesService.execute(nextCursor, 20);
+}
 ```
 
 ## Related Types
 
-- **`CursorPagedResponse<T>`**: A generic wrapper that contains the list of items and the cursor for the next page.
-- **`GameResponse`**: The data transfer object representing a game's details.
-- **`ListMyHostedGamesCursorService`**: The sole permitted implementation of this interface.
+- `CursorPagedResponse<GameResponse>` - The response wrapper containing paginated results and cursor metadata.
+- `GameResponse` - The data transfer object representing a game.
+- `ListMyHostedGamesCursorService` - The sole permitted implementation of this interface.

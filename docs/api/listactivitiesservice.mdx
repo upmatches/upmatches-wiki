@@ -6,9 +6,11 @@ sidebar_label: ListActivitiesService
 
 # ListActivitiesService
 
-The `ListActivitiesService` class is a Spring service component responsible for retrieving a paginated list of activities from the database. It implements the `IListActivitiesService` interface and provides a single public method to fetch activities with pagination support.
+The `ListActivitiesService` class is a Spring service component responsible for retrieving a paginated list of activities from the database. It implements the `IListActivitiesService` interface and provides a transactional, read-only operation to fetch activities with pagination support.
 
-This service uses the `ActivityRepository` to query the database and transforms the results into `ActivityResponse` objects using a functional mapping approach. The execution is wrapped in a `ServiceOperationExecutor` to handle common cross-cutting concerns such as error handling and logging.
+## Purpose
+
+This service encapsulates the business logic for listing activities, leveraging Spring Data's pagination capabilities to return results in a structured, page-based format. It uses the `ServiceOperationExecutor` utility to handle common cross-cutting concerns such as error handling and operation status tracking.
 
 ## Class Details
 
@@ -34,50 +36,43 @@ Creates a new instance of the service with the required repository dependency.
 
 ### `execute(Pageable pageable)`
 
-Retrieves a paginated list of activities from the database and returns them as a `PagedResponse` of `ActivityResponse` objects.
+Retrieves a paginated list of activities from the database.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sort parameters |
 
-| Returns | Description |
-|---------|-------------|
-| `PagedResponse<ActivityResponse>` | A paginated response containing activity data and pagination metadata |
+| Returns | Type | Description |
+|---------|------|-------------|
+| Success | `PagedResponse<ActivityResponse>` | A paginated response containing activity data |
+| Error | Throws `ResourceNotFoundException` | If no activities are found or an error occurs during retrieval |
 
-**Transactional Behavior:** This method is marked with `@Transactional(readOnly = true)` to optimize database access for read-only operations.
-
-**Error Handling:** The method uses `ServiceOperationExecutor.execute()` which wraps the operation with:
-- `RETRIEVE` operation status for logging/monitoring
-- `ResourceNotFoundException` as the fallback exception type if the operation fails
+**Transactional Behavior:** This method is marked as `@Transactional(readOnly = true)`, ensuring it runs within a read-only database transaction for optimal performance.
 
 **Example Usage:**
 
 ```java
 // Create a pageable request for page 0 with 10 items per page
-Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+Pageable pageable = PageRequest.of(0, 10);
 
 // Execute the service
-PagedResponse<ActivityResponse> activities = listActivitiesService.execute(pageable);
+PagedResponse<ActivityResponse> response = listActivitiesService.execute(pageable);
 
-// Access paginated results
-List<ActivityResponse> items = activities.getContent();
-int totalPages = activities.getTotalPages();
-long totalElements = activities.getTotalElements();
+// Access paginated data
+List<ActivityResponse> activities = response.getContent();
+int totalPages = response.getTotalPages();
+long totalElements = response.getTotalElements();
 ```
+
+## Error Handling
+
+The service uses `ServiceOperationExecutor.execute()` to handle errors consistently. If the repository returns no results or an error occurs during retrieval, a `ResourceNotFoundException` is thrown with the `RETRIEVE` operation status.
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
 | `ActivityRepository` | Repository | Spring Data JPA repository for activity entities |
-| `ServiceOperationExecutor` | Utility | Executes service operations with standardized error handling and logging |
-| `PagedResponse` | Response | Generic wrapper for paginated API responses |
-| `ActivityResponse` | Response | DTO for activity data returned to clients |
-
-## Related Components
-
-- **Interface:** `IListActivitiesService`
-- **Repository:** `ActivityRepository`
-- **Response DTO:** `ActivityResponse`
-- **Exception:** `ResourceNotFoundException`
-- **Enum:** `OperationStatus.RETRIEVE`
+| `ServiceOperationExecutor` | Utility | Handles common service operation patterns (error handling, status tracking) |
+| `PagedResponse` | Response DTO | Generic wrapper for paginated API responses |
+| `ActivityResponse` | Response DTO | Data transfer object for activity data |

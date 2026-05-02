@@ -6,107 +6,144 @@ sidebar_label: EmailContentRenderer
 
 # EmailContentRenderer
 
-The `EmailContentRenderer` class is a utility for generating HTML email content for the Upmatches application. It provides methods to create structured email bodies with consistent styling, including title, body text, details tables, and call-to-action buttons.
+The `EmailContentRenderer` class is a utility for generating HTML email content for the Upmatches application. It provides methods to create structured, styled email templates with consistent formatting, including headers, body text, detail tables, and call-to-action buttons.
 
-This class is designed to work with `NotificationType` and `EmailContext` objects to produce context-aware email content, such as game reminders and other notifications.
+This class is designed to work with `NotificationType` and `EmailContext` objects to produce context-aware email content, such as game reminders and notifications.
 
 ## Features
 
 - Generates HTML email content with a consistent wrapper template
-- Creates styled details tables for notification data
-- Builds call-to-action buttons with customizable URLs
-- Supports different notification types with varying detail requirements
 - Escapes HTML to prevent XSS vulnerabilities
-- Formats dates and times in a human-readable format (English locale)
+- Creates styled detail tables for email content
+- Builds call-to-action buttons with customizable URLs
+- Supports different notification types with varying detail levels
+- Formats dates, times, and court counts in a human-readable format
 
 ## Public Methods
 
-### `wrap(String title, String body, String detailsHtml, String ctaHtml)`
+### `wrap`
 
-Generates a complete HTML email body wrapped in a styled container.
+Generates a complete HTML email wrapper with the provided components.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `title` | `String` | The email title (will be HTML-escaped) |
 | `body` | `String` | The email body text (will be HTML-escaped) |
-| `detailsHtml` | `String` | Pre-rendered HTML for the details section (optional) |
-| `ctaHtml` | `String` | Pre-rendered HTML for the call-to-action button (optional) |
+| `detailsHtml` | `String` | Pre-formatted HTML for the details section |
+| `ctaHtml` | `String` | Pre-formatted HTML for the call-to-action button |
 
-**Returns:** `String` - The complete HTML email content.
+**Returns:** `String` - The complete HTML email content
 
-**Example:**
-```java
-String emailHtml = EmailContentRenderer.wrap(
-    "Game Reminder",
-    "Your game is coming up soon!",
-    detailsTableHtml,
-    ctaButtonHtml
-);
-```
+### `buildCtaButton`
 
-### `buildCtaButton(String gameUrl)`
-
-Creates an HTML call-to-action button linking to a game page.
+Creates an HTML call-to-action button linking to a game URL.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `gameUrl` | `String` | The URL for the game (will be HTML-escaped) |
 
-**Returns:** `String` - HTML for a styled button link, or empty string if URL is null/blank.
+**Returns:** `String` - HTML for the button, or empty string if URL is null/blank
 
-**Example:**
-```java
-String buttonHtml = EmailContentRenderer.buildCtaButton("https://upmatches.com/game/123");
-```
+### `buildDetailsTable`
 
-### `buildDetailsTable(NotificationType type, EmailContext context)`
-
-Generates an HTML table with notification-specific details based on the notification type.
+Generates an HTML table with details based on the notification type and context.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `type` | `NotificationType` | The type of notification (determines which fields to display) |
-| `context` | `EmailContext` | The context object containing notification data |
+| `type` | `NotificationType` | The type of notification |
+| `context` | `EmailContext` | The email context containing relevant data |
 
-**Returns:** `String` - HTML table with details rows, or empty string if type or context is null.
+**Returns:** `String` - HTML table with details, or empty string if parameters are null
 
-**Behavior by Notification Type:**
+## Usage Examples
 
-- **GAME_REMINDER_3_DAYS**: Displays only Date and Courts fields
-- **All other types**: Displays Game, Venue, Date, Time, and Skill level fields
+### Basic Email Generation
 
-**Example:**
 ```java
 EmailContext context = new EmailContext(
     "Soccer Match",
-    "Central Park",
+    "Central Park Field 3",
     LocalDate.of(2024, 3, 15),
     LocalTime.of(14, 0),
     LocalTime.of(16, 0),
     "Intermediate",
     2
 );
-String detailsHtml = EmailContentRenderer.buildDetailsTable(
-    NotificationType.GAME_INVITATION,
+
+String details = EmailContentRenderer.buildDetailsTable(
+    NotificationType.GAME_REMINDER_1_DAY,
+    context
+);
+
+String cta = EmailContentRenderer.buildCtaButton("https://upmatches.com/game/123");
+
+String emailHtml = EmailContentRenderer.wrap(
+    "Game Reminder",
+    "Your game is tomorrow!",
+    details,
+    cta
+);
+```
+
+### Game Reminder (3 Days Before)
+
+For `GAME_REMINDER_3_DAYS` notifications, the details table only includes the date and court count:
+
+```java
+EmailContext context = new EmailContext(
+    null,  // gameTitle not needed
+    null,  // venue not needed
+    LocalDate.of(2024, 3, 18),
+    null,  // startTime not needed
+    null,  // endTime not needed
+    null,  // skillLevel not needed
+    3
+);
+
+String details = EmailContentRenderer.buildDetailsTable(
+    NotificationType.GAME_REMINDER_3_DAYS,
     context
 );
 ```
 
-## Private Helper Methods
+## Internal Methods
 
-The class includes several private methods for internal formatting:
+The following private methods support the public API:
 
-- `formatDate(LocalDate date)` - Formats a date as "Thursday, 15 March 2024"
-- `formatTimeRange(LocalTime startTime, LocalTime endTime)` - Formats time range as "2:00 PM – 4:00 PM"
-- `formatCourts(Integer count)` - Formats court count as "2 courts" or "1 court"
-- `appendRowIfPresent(StringBuilder rows, String label, String value)` - Adds a table row if the value is non-null and non-blank
-- `appendRow(StringBuilder rows, String label, String value)` - Adds a table row with HTML-escaped label and value
+| Method | Description |
+|--------|-------------|
+| `appendRowIfPresent` | Appends a table row only if the value is non-null and non-blank |
+| `appendRow` | Appends a formatted table row with HTML-escaped label and value |
+| `formatDate` | Formats a `LocalDate` to "EEEE, d MMM yyyy" pattern (e.g., "Monday, 15 March 2024") |
+| `formatTimeRange` | Formats a time range (e.g., "2:00 PM – 4:00 PM") or a single time |
+| `formatCourts` | Formats court count with singular/plural (e.g., "1 court" or "3 courts") |
 
-## Usage Notes
+## Constants
 
-- All user-provided strings are HTML-escaped to prevent XSS attacks
-- The class is designed as a utility with a private constructor and static methods
-- The email wrapper includes a footer with "Sent by Upmatches." text
-- The CTA button uses a blue (#1a73e8) background with white text
-- Details tables have a light gray (#f6f7f9) background for labels and white for values
-- The class uses English locale for date and time formatting
+The class uses several constants for template strings and labels:
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `EMAIL_WRAPPER` | HTML template | Main email container with styling |
+| `CTA_BUTTON_TEMPLATE` | HTML template | Call-to-action button |
+| `DETAILS_TABLE_OPEN` | `<table>` tag | Opens the details table |
+| `DETAILS_TABLE_CLOSE` | `</table>` tag | Closes the details table |
+| `DETAILS_ROW_TEMPLATE` | HTML template | Individual row in details table |
+| `LABEL_GAME` | "Game" | Label for game name |
+| `LABEL_VENUE` | "Venue" | Label for venue |
+| `LABEL_DATE` | "Date" | Label for date |
+| `LABEL_TIME` | "Time" | Label for time |
+| `LABEL_SKILL` | "Skill level" | Label for skill level |
+| `LABEL_COURTS` | "Courts" | Label for court count |
+
+## Security Considerations
+
+- All user-provided text is HTML-escaped using `HtmlUtils.htmlEscape()` to prevent XSS attacks
+- The class is `final` and has a private constructor to prevent instantiation
+- Null and blank checks are performed on all inputs to prevent errors
+
+## Dependencies
+
+- `org.springframework.web.util.HtmlUtils` - For HTML escaping
+- `com.upmatches.app.features.notification.enums.NotificationType` - Notification type enum
+- `com.upmatches.app.features.notification.models.EmailContext` - Email context model

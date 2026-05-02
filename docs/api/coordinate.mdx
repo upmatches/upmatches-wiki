@@ -11,21 +11,30 @@ The `Coordinate` class is a Java record that represents a geographic coordinate 
 ## Purpose
 
 - **Encapsulation of Geographic Data**: Provides a structured way to handle latitude and longitude values.
-- **Validation**: Ensures that latitude and longitude are within valid ranges (-90 to 90 for latitude, -180 to 180 for longitude).
+- **Validation**: Ensures that latitude is between -90 and 90, and longitude is between -180 and 180.
 - **Immutability**: As a Java record, `Coordinate` is immutable, making it safe for use in concurrent environments and as a key in collections.
 
 ## Public Methods
 
 | Method | Description | Parameters | Return Type |
 |--------|-------------|------------|-------------|
-| `Coordinate(BigDecimal latitude, BigDecimal longitude)` | Constructor that validates and creates a new `Coordinate` instance. | `latitude` - The latitude value (must be between -90 and 90).<br/>`longitude` - The longitude value (must be between -180 and 180). | `Coordinate` |
-| `create(BigDecimal latitude, BigDecimal longitude)` | Static factory method to create a `Coordinate` instance. | `latitude` - The latitude value.<br/>`longitude` - The longitude value. | `Coordinate` |
+| `create(BigDecimal latitude, BigDecimal longitude)` | Static factory method to create a new `Coordinate` instance. | `latitude` - The latitude value (must be between -90 and 90). `longitude` - The longitude value (must be between -180 and 180). | `Coordinate` |
 | `toString()` | Returns a string representation of the coordinate in the format "latitude, longitude". | None | `String` |
+
+## Constructor
+
+The canonical constructor of the `Coordinate` record performs validation:
+
+- **Null Check**: Throws `IllegalArgumentException` if either `latitude` or `longitude` is `null`.
+- **Range Validation**: 
+  - Latitude must be between -90 and 90 (inclusive).
+  - Longitude must be between -180 and 180 (inclusive).
 
 ## Usage Example
 
 ```java
 import java.math.BigDecimal;
+import com.upmatches.app.features.venue.valueobjects.Coordinate;
 
 public class Example {
     public static void main(String[] args) {
@@ -38,10 +47,8 @@ public class Example {
 }
 ```
 
-## Validation Rules
+## Notes
 
-- **Latitude**: Must be between -90 and 90 (inclusive).
-- **Longitude**: Must be between -180 and 180 (inclusive).
-- **Null Values**: Both latitude and longitude must not be null.
-
-If any validation fails, an `IllegalArgumentException` is thrown with a descriptive message.
+- The `SEPARATOR` constant is used in the `toString()` method to format the output as "latitude, longitude".
+- The class uses `BigDecimal` for precise decimal arithmetic, which is important for geographic calculations.
+- This value object is part of the `com.upmatches.app.features.venue.valueobjects` package.

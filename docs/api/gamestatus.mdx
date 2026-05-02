@@ -6,36 +6,37 @@ sidebar_label: GameStatus
 
 # GameStatus Enum
 
-The `GameStatus` enum defines the possible states a game can be in within the UpMatches application. It is used to track the lifecycle of a game from its creation to its conclusion.
+The `GameStatus` enum defines the possible states a game can be in within the UpMatches application. It is used to track the lifecycle of a game from its creation through completion or cancellation.
 
-## Purpose
+## Package Location
 
-This enum provides a type-safe way to represent the current status of a game. It ensures that only valid status values are used throughout the application, preventing errors from string-based status handling.
+`com.upmatches.app.features.game.enums`
 
 ## Enum Values
 
-| Value       | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `SCHEDULED` | The game has been created and is scheduled to take place at a future time.  |
-| `STARTED`   | The game is currently in progress.                                          |
-| `EXPIRED`   | The game has ended or its scheduled time has passed without being started.  |
-| `CANCELLED` | The game has been cancelled before it started.                              |
+| Value | Description |
+|-------|-------------|
+| `SCHEDULED` | The game has been created and scheduled for a future date/time. |
+| `STARTED` | The game is currently in progress. |
+| `EXPIRED` | The game has ended or passed its scheduled time without being completed. |
+| `CANCELLED` | The game was cancelled before it started. |
 
 ## Usage
 
-This enum is typically used in game-related entities and services to manage game state transitions. For example:
+This enum is typically used in game-related entities and services to determine the current state of a game and control what actions are allowed. For example:
+
+- A game can only transition from `SCHEDULED` to `STARTED` when the scheduled time arrives.
+- A game in `STARTED` state cannot be cancelled.
+- `EXPIRED` and `CANCELLED` are terminal states.
+
+## Example
 
 ```java
-GameStatus currentStatus = game.getStatus();
+GameStatus status = GameStatus.SCHEDULED;
 
-if (currentStatus == GameStatus.SCHEDULED) {
-    // Allow players to join
-} else if (currentStatus == GameStatus.STARTED) {
-    // Track live game events
+if (status == GameStatus.STARTED) {
+    // Allow gameplay actions
+} else if (status == GameStatus.CANCELLED) {
+    // Notify players
 }
 ```
-
-## Location
-
-- **Package:** `com.upmatches.app.features.game.enums`
-- **File:** `GameStatus.java`

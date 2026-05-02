@@ -6,26 +6,30 @@ sidebar_label: AppleLoginResponse
 
 # AppleLoginResponse
 
-The `AppleLoginResponse` class is a Java record that represents the response payload returned after a successful Apple Sign-In authentication. It encapsulates the essential tokens and metadata required to manage the user's session and determine if the user is new to the application.
+The `AppleLoginResponse` class is a Java record that represents the response payload returned after a successful Apple Sign-In authentication. It encapsulates the tokens and metadata required to manage the user's session and determine if the user is new to the application.
 
 ## Purpose
 
-This record is used to deserialize the authentication response from Apple's identity provider. It provides a structured way to access the access token, refresh token, token expiration timestamp, and a flag indicating whether the user has just registered for the first time.
+This record is used to deserialize and transfer authentication data from the Apple Identity Provider (IdP) to the client application. It provides a structured way to handle:
+- **Access Token**: Used for authenticating API requests.
+- **Refresh Token**: Used to obtain new access tokens when the current one expires.
+- **Expiration Time**: The timestamp when the access token expires.
+- **New User Flag**: Indicates whether this is the user's first login via Apple.
 
 ## Record Components
 
 | Component      | Type      | Description                                                                 |
 |----------------|-----------|-----------------------------------------------------------------------------|
-| `accessToken`  | `String`  | The short-lived access token used for API authorization.                    |
-| `refreshToken` | `String`  | The long-lived refresh token used to obtain new access tokens.             |
-| `expiresAt`    | `Long`    | The Unix timestamp (in seconds) when the access token expires.             |
-| `isNewUser`    | `Boolean` | A flag indicating whether this is the user's first login (`true`) or an existing user (`false`). |
+| `accessToken`  | `String`  | The OAuth 2.0 access token issued by Apple.                                 |
+| `refreshToken` | `String`  | The OAuth 2.0 refresh token used to obtain new access tokens.               |
+| `expiresAt`    | `Long`    | The Unix timestamp (in seconds) when the access token expires.              |
+| `isNewUser`    | `Boolean` | `true` if the user is logging in for the first time via Apple; `false` otherwise. |
 
 ## Public Methods
 
 ### `of`
 
-A static factory method that creates a new `AppleLoginResponse` instance with the provided values.
+Creates a new `AppleLoginResponse` instance with the provided values.
 
 **Signature:**
 ```java
@@ -40,26 +44,39 @@ public static AppleLoginResponse of(
 
 | Parameter      | Type      | Description                                                                 |
 |----------------|-----------|-----------------------------------------------------------------------------|
-| `accessToken`  | `String`  | The short-lived access token.                                              |
-| `refreshToken` | `String`  | The long-lived refresh token.                                              |
-| `expiresAt`    | `Long`    | The Unix timestamp (in seconds) for token expiration.                      |
-| `isNewUser`    | `Boolean` | Whether the user is new (`true`) or returning (`false`).                   |
+| `accessToken`  | `String`  | The OAuth 2.0 access token issued by Apple.                                 |
+| `refreshToken` | `String`  | The OAuth 2.0 refresh token used to obtain new access tokens.               |
+| `expiresAt`    | `Long`    | The Unix timestamp (in seconds) when the access token expires.              |
+| `isNewUser`    | `Boolean` | `true` if the user is logging in for the first time via Apple; `false` otherwise. |
 
-**Returns:**
-- `AppleLoginResponse` – A new instance of the record with the specified values.
+**Returns:** A new `AppleLoginResponse` instance.
 
 **Example Usage:**
 ```java
 AppleLoginResponse response = AppleLoginResponse.of(
     "eyJhbGciOiJSUzI1NiIs...",
-    "rT3fG8hK9l...",
+    "rT7hG8kL9mN0bV1cX2z...",
     1712345678L,
     true
 );
 ```
 
+## Inherited Methods
+
+Since `AppleLoginResponse` is a Java record, it automatically inherits the following methods from `java.lang.Record`:
+
+| Method            | Return Type | Description                                      |
+|-------------------|-------------|--------------------------------------------------|
+| `accessToken()`   | `String`    | Returns the access token component.              |
+| `refreshToken()`  | `String`    | Returns the refresh token component.             |
+| `expiresAt()`     | `Long`      | Returns the expiration timestamp component.      |
+| `isNewUser()`     | `Boolean`   | Returns the new user flag component.             |
+| `toString()`      | `String`    | Returns a string representation of the record.   |
+| `equals(Object)`  | `boolean`   | Compares this record to another object.          |
+| `hashCode()`      | `int`       | Returns a hash code value for this record.       |
+
 ## Notes
 
-- This class is a Java **record**, which means it automatically provides `equals()`, `hashCode()`, `toString()`, and accessor methods (e.g., `accessToken()`, `refreshToken()`, `expiresAt()`, `isNewUser()`).
-- The `of` method is a convenience factory method that mirrors the canonical constructor, making it easier to create instances in a fluent style.
-- The `isNewUser` field is particularly useful for onboarding flows, allowing the application to show a welcome screen or tutorial for first-time users.
+- The `of` static factory method is a convenience method that delegates to the canonical constructor of the record.
+- The `isNewUser` field is particularly useful for onboarding flows where new users may need to complete additional profile setup.
+- All fields are immutable and cannot be modified after creation, ensuring thread safety.

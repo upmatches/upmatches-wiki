@@ -10,18 +10,17 @@ The `SkillLevelResponse` class is a Java record used as a Data Transfer Object (
 
 ## Purpose
 
-- **API Response DTO**: Encapsulates skill level data returned from REST endpoints.
-- **Data Hiding**: Prevents leaking internal entity details (e.g., JPA annotations, relationships) to clients.
-- **Immutability**: As a Java record, all fields are final and the class is thread-safe.
-- **Conversion Utility**: Provides a static factory method to convert from the `SkillLevel` entity.
+- **Encapsulation**: Separates the internal entity structure from the API contract.
+- **Immutability**: As a record, all fields are final and the class is thread-safe.
+- **Convenience**: Provides a static factory method to easily convert from the `SkillLevel` entity.
 
-## Record Fields
+## Fields
 
-| Field       | Type      | Description                                      |
-|-------------|-----------|--------------------------------------------------|
-| `id`        | `Long`    | Unique identifier for the skill level.           |
-| `name`      | `String`  | Human-readable name of the skill level.          |
-| `sortOrder` | `Integer` | Numeric order used for sorting/display purposes. |
+| Field      | Type      | Description                                      |
+|------------|-----------|--------------------------------------------------|
+| `id`       | `Long`    | Unique identifier for the skill level.           |
+| `name`     | `String`  | Human-readable name of the skill level.          |
+| `sortOrder`| `Integer` | Numeric value used for ordering/sorting purposes.|
 
 ## Public Methods
 
@@ -33,11 +32,11 @@ Converts a `SkillLevel` entity into a `SkillLevelResponse` DTO.
 
 | Parameter    | Type         | Description                          |
 |--------------|--------------|--------------------------------------|
-| `skillLevel` | `SkillLevel` | The entity to convert (non-null).    |
+| `skillLevel` | `SkillLevel` | The entity to convert from. Must not be `null`. |
 
-**Returns:** `SkillLevelResponse` — a new instance populated with the entity's `id`, `name`, and `sortOrder`.
+**Returns:** `SkillLevelResponse` — a new instance populated with the entity's data.
 
-**Example Usage:**
+**Example usage:**
 
 ```java
 SkillLevel entity = new SkillLevel(1L, "Beginner", 1);
@@ -49,6 +48,6 @@ SkillLevelResponse response = SkillLevelResponse.fromSkillLevel(entity);
 
 ## Notes
 
-- This record is automatically generated with `equals()`, `hashCode()`, `toString()`, and accessor methods (e.g., `id()`, `name()`, `sortOrder()`).
-- The `fromSkillLevel` method performs a shallow copy; the `name` and `sortOrder` fields are immutable strings and integers, so no deep copy is necessary.
-- Ensure the `SkillLevel` entity is not null before calling `fromSkillLevel` to avoid `NullPointerException`.
+- The record automatically provides accessor methods (`id()`, `name()`, `sortOrder()`), `equals()`, `hashCode()`, and `toString()`.
+- This class is part of the `com.upmatches.app.features.skilllevels.responses` package.
+- It is designed to be used in REST API responses where only the essential skill level information is needed.

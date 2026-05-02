@@ -6,15 +6,30 @@ sidebar_label: DatabaseProperties
 
 # DatabaseProperties
 
-The `DatabaseProperties` class is a Spring Boot configuration properties record that maps to the `spring.datasource` prefix in application configuration files (e.g., `application.yml` or `application.properties`). It provides a type-safe way to access database connection settings including JDBC URL, credentials, driver class, and HikariCP connection pool configuration.
+The `DatabaseProperties` class is a Spring Boot configuration properties record that maps to the `spring.datasource` prefix in application configuration files (e.g., `application.yml` or `application.properties`). It provides a type-safe way to access database connection settings, including HikariCP connection pool configuration.
 
 ## Purpose
 
-This record centralizes database connection configuration into a single, immutable data structure. By using Spring Boot's `@ConfigurationProperties` annotation, it automatically binds properties from external configuration sources, enabling clean separation of configuration from code and supporting IDE autocompletion for configuration keys.
+This record centralizes database connection configuration by binding properties from external configuration sources to a structured Java object. It supports:
+
+- Standard JDBC connection parameters (URL, username, password, driver class)
+- Nested HikariCP connection pool settings via the `HikariProperties` record
 
 ## Configuration Prefix
 
-All properties are prefixed with `spring.datasource`. For example, in `application.yml`:
+All properties are prefixed with `spring.datasource` in your configuration files.
+
+## Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `url` | `String` | JDBC URL for the database connection |
+| `username` | `String` | Database username |
+| `password` | `String` | Database password |
+| `driverClassName` | `String` | Fully qualified JDBC driver class name |
+| `hikari` | `HikariProperties` | Nested HikariCP connection pool configuration |
+
+## Example Configuration
 
 ```yaml
 spring:
@@ -22,33 +37,18 @@ spring:
     url: jdbc:mysql://localhost:3306/mydb
     username: dbuser
     password: dbpass
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driverClassName: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 5
+      maximumPoolSize: 10
+      minimumIdle: 5
+      connectionTimeout: 30000
+      idleTimeout: 600000
+      maxLifetime: 1800000
 ```
 
-## Public API
+## Usage
 
-### Record Components
-
-| Component | Type | Description |
-|-----------|------|-------------|
-| `url` | `String` | JDBC URL for the database connection |
-| `username` | `String` | Database authentication username |
-| `password` | `String` | Database authentication password |
-| `driverClassName` | `String` | Fully qualified JDBC driver class name |
-| `hikari` | `HikariProperties` | Nested HikariCP connection pool configuration (annotated with `@NestedConfigurationProperty`) |
-
-### Inherited Methods
-
-As a Java record, `DatabaseProperties` automatically provides:
-
-- **Constructor**: All-args constructor with parameters matching the component order
-- **Accessor methods**: `url()`, `username()`, `password()`, `driverClassName()`, `hikari()`
-- **`equals()`**, **`hashCode()`**, **`toString()`**: Standard implementations based on all components
-
-## Usage Example
+Inject the `DatabaseProperties` bean into any Spring-managed component:
 
 ```java
 @Service
@@ -60,12 +60,14 @@ public class DatabaseService {
     }
 
     public void printConnectionInfo() {
-        System.out.println("Connecting to: " + databaseProperties.url());
-        System.out.println("Pool size: " + databaseProperties.hikari().maximumPoolSize());
+        System.out.println("Database URL: " + databaseProperties.url());
+        System.out.println("Max pool size: " + databaseProperties.hikari().maximumPoolSize());
     }
 }
 ```
 
 ## Related Classes
 
-- **HikariProperties**: Nested configuration class for HikariCP connection pool settings (defined separately in the same package)
+- **HikariProperties**: Nested configuration record for HikariCP connection pool settings
+- **@ConfigurationProperties**: Spring Boot annotation that enables property binding
+- **@NestedConfigurationProperty**: Indicates that the field contains nested configuration properties

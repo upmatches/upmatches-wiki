@@ -6,75 +6,54 @@ sidebar_label: VenueImportRequest
 
 # VenueImportRequest
 
-The `VenueImportRequest` class is a Java record that serves as a Data Transfer Object (DTO) for importing venue data into the system. It encapsulates all necessary information required to create or update a venue, including its location, identification, and associated stations.
+The `VenueImportRequest` class is a Java record that serves as a Data Transfer Object (DTO) for importing venue data into the system. It encapsulates all necessary information about a venue, including its external identifier, location details, and associated stations. The class uses Jakarta Bean Validation annotations to enforce data integrity and ensure that incoming data meets the required constraints before processing.
 
 ## Purpose
 
-This record is designed to validate and transport venue import data from external sources (such as CSV files, APIs, or bulk uploads) into the application's domain layer. It ensures that all required fields are present and conform to specified constraints before processing.
+- **Data Transfer**: Provides a structured format for receiving venue import requests from external systems or APIs.
+- **Validation**: Enforces mandatory fields and size constraints to prevent invalid or incomplete data from entering the system.
+- **Immutability**: As a Java record, it automatically generates constructor, getters, `equals()`, `hashCode()`, and `toString()` methods, ensuring thread-safety and consistency.
 
-## Record Definition
+## Record Components
 
-```java
-public record VenueImportRequest(
-    @NotBlank @Size(max = 50) String sourceId,
-    @NotNull Integer activityId,
-    @NotBlank @Size(max = 200) String name,
-    @NotBlank @Size(max = 500) String address,
-    @NotNull BigDecimal latitude,
-    @NotNull BigDecimal longitude,
-    @NotNull Integer postalCode,
-    @NotNull @Size(max = 50) @Valid List<StationImportRequest> stations
-) {}
-```
-
-## Fields
-
-| Field | Type | Constraints | Description |
-|-------|------|-------------|-------------|
-| `sourceId` | `String` | `@NotBlank`, max 50 characters | External identifier for the venue from the source system |
+| Component | Type | Validation | Description |
+|-----------|------|------------|-------------|
+| `sourceId` | `String` | `@NotBlank`, `@Size(max = 50)` | External identifier for the venue from the source system |
 | `activityId` | `Integer` | `@NotNull` | Identifier for the activity associated with the venue |
-| `name` | `String` | `@NotBlank`, max 200 characters | Name of the venue |
-| `address` | `String` | `@NotBlank`, max 500 characters | Physical address of the venue |
-| `latitude` | `BigDecimal` | `@NotNull` | Geographic latitude coordinate |
-| `longitude` | `BigDecimal` | `@NotNull` | Geographic longitude coordinate |
-| `postalCode` | `Integer` | `@NotNull` | Postal or ZIP code of the venue |
-| `stations` | `List<StationImportRequest>` | `@NotNull`, max 50 items, `@Valid` | List of station import requests associated with the venue |
+| `name` | `String` | `@NotBlank`, `@Size(max = 200)` | Name of the venue |
+| `address` | `String` | `@NotBlank`, `@Size(max = 500)` | Physical address of the venue |
+| `latitude` | `BigDecimal` | `@NotNull` | Latitude coordinate of the venue location |
+| `longitude` | `BigDecimal` | `@NotNull` | Longitude coordinate of the venue location |
+| `postalCode` | `Integer` | `@NotNull` | Postal code of the venue's location |
+| `stations` | `List<StationImportRequest>` | `@NotNull`, `@Size(max = 50)`, `@Valid` | List of station import requests associated with the venue |
 
-## Validation Constraints
+## Validation Rules
 
-The record uses Jakarta Bean Validation annotations to enforce data integrity:
-
-- **`@NotBlank`**: Ensures the field is not null and contains at least one non-whitespace character
-- **`@NotNull`**: Ensures the field is not null
-- **`@Size(max = ...)`**: Limits the maximum length or size of the field
-- **`@Valid`**: Triggers cascading validation on the nested `StationImportRequest` objects
+- **`sourceId`**: Must not be blank and must not exceed 50 characters.
+- **`activityId`**: Must not be null.
+- **`name`**: Must not be blank and must not exceed 200 characters.
+- **`address`**: Must not be blank and must not exceed 500 characters.
+- **`latitude`**: Must not be null.
+- **`longitude`**: Must not be null.
+- **`postalCode`**: Must not be null.
+- **`stations`**: Must not be null, must contain at most 50 elements, and each element must pass its own validation (indicated by `@Valid`).
 
 ## Usage Example
 
 ```java
-// Creating a VenueImportRequest instance
+// Create a new VenueImportRequest
 VenueImportRequest request = new VenueImportRequest(
-    "EXT-001",
-    123,
+    "EXT-12345",
+    1,
     "Central Park Sports Complex",
     "123 Main Street, New York, NY 10001",
-    new BigDecimal("40.785091"),
-    new BigDecimal("-73.968285"),
+    new BigDecimal("40.7128"),
+    new BigDecimal("-74.0060"),
     10001,
-    List.of(
-        new StationImportRequest("Station A", "Description A"),
-        new StationImportRequest("Station B", "Description B")
-    )
+    List.of(new StationImportRequest(...))
 );
 ```
 
 ## Related Classes
 
-- **`StationImportRequest`**: A nested record representing individual station data within the venue import request. This class must also be defined with appropriate validation constraints.
-
-## Notes
-
-- The record is immutable by design, ensuring thread safety and data consistency
-- All fields are required for successful validation
-- The `stations` list is limited to a maximum of 50 entries to prevent excessively large import requests
-- Geographic coordinates (`latitude` and `longitude`) use `BigDecimal` for precise decimal representation
+- **`StationImportRequest`**: Represents individual station data within a venue import request. The `@Valid` annotation ensures that each station in the list is validated according to its own constraints.

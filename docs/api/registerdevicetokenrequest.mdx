@@ -1,69 +1,46 @@
 ---
 id: register-device-token-request
-title: Register Device Token Request
+title: RegisterDeviceTokenRequest
 sidebar_label: RegisterDeviceTokenRequest
 ---
 
-# Register Device Token Request
+# RegisterDeviceTokenRequest
 
-The `RegisterDeviceTokenRequest` is a Java record class used to encapsulate the data required for registering a device token in the UpMatches application. It serves as a Data Transfer Object (DTO) for the notification system, ensuring that incoming requests contain valid and properly formatted device registration information.
+The `RegisterDeviceTokenRequest` class is a Java record that serves as a Data Transfer Object (DTO) for registering a device token for push notifications. It encapsulates the necessary information required to associate a device with a user's notification preferences.
 
 ## Purpose
 
-This record is designed to:
-- Capture device token registration data from client applications
-- Enforce validation constraints on input data
-- Provide a type-safe representation of device platform information
-- Facilitate seamless integration with Jakarta Bean Validation
+This record is used to receive and validate incoming requests to register a device token. It ensures that the provided data meets the required constraints before being processed by the application's notification service.
 
-## Record Definition
+## Record Structure
 
-```java
-public record RegisterDeviceTokenRequest(
-    @NotBlank
-    @Size(max = 512)
-    String deviceToken,
-    @NotNull
-    DevicePlatform platform
-)
-```
+The record defines two fields:
 
-## Fields
-
-| Field | Type | Validation | Description |
-|-------|------|------------|-------------|
+| Field | Type | Validation Constraints | Description |
+|-------|------|------------------------|-------------|
 | `deviceToken` | `String` | `@NotBlank`, `@Size(max = 512)` | The unique token identifying the device for push notifications. Must not be blank and cannot exceed 512 characters. |
-| `platform` | `DevicePlatform` | `@NotNull` | The operating system platform of the device (e.g., iOS, Android). Must not be null. |
+| `platform` | `DevicePlatform` | `@NotNull` | The platform of the device (e.g., iOS, Android). Must not be null. |
 
-## Validation Constraints
+## Usage
 
-The record applies the following Jakarta Bean Validation constraints:
-
-- **`@NotBlank` on `deviceToken`**: Ensures the token is not null and contains at least one non-whitespace character
-- **`@Size(max = 512)` on `deviceToken`**: Limits the token length to a maximum of 512 characters to prevent excessively large payloads
-- **`@NotNull` on `platform`**: Guarantees that a valid platform enum value is always provided
-
-## Usage Example
+This record is typically used as a request body in a REST API endpoint for registering device tokens. For example:
 
 ```java
-// Creating a new registration request
-RegisterDeviceTokenRequest request = new RegisterDeviceTokenRequest(
-    "fcm-token-abc123xyz789",
-    DevicePlatform.ANDROID
-);
-
-// Accessing fields
-String token = request.deviceToken();
-DevicePlatform platform = request.platform();
+@PostMapping("/register-device-token")
+public ResponseEntity<?> registerDeviceToken(@Valid @RequestBody RegisterDeviceTokenRequest request) {
+    // Process the registration
+}
 ```
+
+## Validation
+
+The record leverages Jakarta Bean Validation annotations to enforce data integrity:
+
+- **`@NotBlank`** on `deviceToken`: Ensures the token is not null and contains at least one non-whitespace character.
+- **`@Size(max = 512)`** on `deviceToken`: Limits the token length to 512 characters to prevent excessively large payloads.
+- **`@NotNull`** on `platform`: Guarantees that a platform is always specified.
 
 ## Related Components
 
-- **`DevicePlatform`**: An enum located in `com.upmatches.app.features.notification.enums` that defines supported device platforms
-- **Package**: `com.upmatches.app.features.notification.requests`
-
-## Notes
-
-- This record is immutable by design, ensuring thread-safety and data integrity
-- The validation annotations are processed automatically when used with Jakarta Bean Validation (e.g., in Spring Boot controllers with `@Valid`)
-- The maximum token length of 512 characters accommodates various push notification service token formats (FCM, APNs, etc.)
+- **`DevicePlatform`**: An enum that defines the supported device platforms (e.g., `IOS`, `ANDROID`).
+- **Notification Service**: The service that processes the registration request and stores the device token.

@@ -6,74 +6,78 @@ sidebar_label: ListGameBookmarksService
 
 # ListGameBookmarksService
 
-## Purpose
+The `ListGameBookmarksService` class is a Spring service that provides cursor-based pagination for retrieving a user's game bookmarks. It implements the `IListGameBookmarksService` interface and is marked as a `non-sealed` class, allowing further extension.
 
-The `ListGameBookmarksService` is a Spring service class responsible for retrieving a paginated list of game bookmarks for the currently authenticated user. It implements cursor-based pagination to efficiently fetch bookmarks along with the count of active participants for each bookmarked game.
-
-This service is part of the game features module and provides read-only access to bookmark data, ensuring that only the authenticated user's bookmarks are returned.
+This service handles the complete lifecycle of fetching bookmarked games for an authenticated user, including:
+- Decoding the cursor for pagination
+- Retrieving bookmarks with cursor-based pagination
+- Enriching bookmark data with active participant counts
+- Encoding the next cursor for subsequent requests
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `GameBookmarkRepository` | Repository | Data access for bookmark entities |
-| `GameParticipantRepository` | Repository | Data access for participant counts |
+| `GameBookmarkRepository` | Repository | Data access for game bookmarks |
+| `GameParticipantRepository` | Repository | Data access for game participants |
 | `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
 | `GameCursor` | Helper | Encodes/decodes cursor values for pagination |
-| `ServiceOperationExecutor` | Utility | Executes service operations with standardized error handling |
 
-## Public Methods
+## Constructor
 
-### `execute(String cursor, int size)`
+### `ListGameBookmarksService(GameBookmarkRepository, GameParticipantRepository, IAuthenticatedUserResolver, GameCursor)`
 
-Retrieves a cursor-paginated list of game bookmarks for the authenticated user, including the count of active participants for each bookmarked game.
+Initializes the service with all required dependencies via constructor injection.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `cursor` | `String` | The pagination cursor from a previous response, or `null` for the first page |
-| `size` | `int` | The maximum number of bookmarks to return per page |
+| `bookmarkRepository` | `GameBookmarkRepository` | Repository for bookmark data access |
+| `participantRepository` | `GameParticipantRepository` | Repository for participant data access |
+| `userResolver` | `IAuthenticatedUserResolver` | Resolves the authenticated user's identity |
+| `gameCursor` | `GameCursor` | Helper for cursor encoding/decoding |
 
-**Returns:**
+## Public Methods
 
-| Type | Description |
-|------|-------------|
-| `CursorPagedResponse<GameBookmarkResponse>` | A paginated response containing the list of bookmark responses and the next cursor value |
+### `execute(String cursor, int size)`
 
-**Behavior:**
+Retrieves a paginated list of game bookmarks for the authenticated user, enriched with active participant counts.
 
-1. Resolves the authenticated user's UUID
-2. Decodes the provided cursor string (if present) to extract the start time and ID for pagination
-3. Fetches bookmarks from the repository using cursor-based pagination
-4. Collects all game IDs from the retrieved bookmarks
-5. Queries the participant repository for active participant counts per game ID
-6. Maps each bookmark to a `GameBookmarkResponse` enriched with the participant count
-7. Generates the next cursor if there are more results (i.e., the number of bookmarks equals the requested page size)
-8. Returns the paginated response wrapped in a standardized service operation executor
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `cursor` | `String` | Encoded cursor string for pagination. Pass `null` or empty for the first page. |
+| `size` | `int` | Maximum number of bookmarks to return per page |
+
+**Returns:** `CursorPagedResponse<GameBookmarkResponse>` - A paginated response containing:
+- `content`: List of `GameBookmarkResponse` objects with bookmark details and participant counts
+- `nextCursor`: Encoded cursor string for the next page, or `null` if there are no more results
 
 **Exceptions:**
 
 | Exception | Condition |
 |-----------|-----------|
-| `ResourceNotFoundException` | Thrown if the authenticated user cannot be resolved or if the operation fails |
+| `ResourceNotFoundException` | Thrown if the authenticated user cannot be resolved or if an error occurs during retrieval |
 
-## Example Usage
+**Behavior:**
+
+1. **Authentication**: Resolves the authenticated user's UUID via `userResolver.requireUserId()`
+2. **Cursor Decoding**: Decodes the provided cursor string to extract the start time and ID for pagination
+3. **Bookmark Retrieval**: Fetches bookmarks using cursor-based pagination from `bookmarkRepository.findByUserIdCursor()`
+4. **Participant Counts**: For all retrieved game IDs, queries active participant counts in a single batch operation
+5. **Response Mapping**: Maps each bookmark to a `GameBookmarkResponse`, including the participant count
+6. **Next Cursor**: If the result set is full (equals the requested size), encodes the last bookmark's timestamp and ID as the next cursor
+
+**Transactional Behavior:** The method is marked with `@Transactional(readOnly = true)` to optimize database access and ensure consistency during reads.
+
+**Example Usage:**
 
 ```java
-// First page request
-CursorPagedResponse<GameBookmarkResponse> firstPage = 
-    listGameBookmarksService.execute(null, 20);
+// First page: 20 bookmarks
+CursorPagedResponse<GameBookmarkResponse> firstPage = service.execute(null, 20);
 
-// Subsequent page request using cursor from previous response
-CursorPagedResponse<GameBookmarkResponse> nextPage = 
-    listGameBookmarksService.execute(firstPage.getNextCursor(), 20);
+// Subsequent page using cursor from previous response
+CursorPagedResponse<GameBookmarkResponse> nextPage = service.execute(firstPage.getNextCursor(), 20);
 ```
-
-## Notes
-
-- This service is annotated with `@Transactional(readOnly = true)`, ensuring database read optimization
-- The service implements the `IListGameBookmarksService` interface as a non-sealed class
-- Cursor-based pagination uses the bookmark's creation timestamp and ID for stable ordering
-- Participant counts are fetched in a single batch query for efficiency
-- The `ServiceOperationExecutor` wraps the operation with standardized logging and error handling

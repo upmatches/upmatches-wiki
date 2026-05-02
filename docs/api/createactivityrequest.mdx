@@ -6,45 +6,35 @@ sidebar_label: CreateActivityRequest
 
 # CreateActivityRequest
 
-The `CreateActivityRequest` class is a Java record used as a Data Transfer Object (DTO) for creating a new activity. It encapsulates the input data required when a user submits a request to create an activity, ensuring that the provided name is valid according to the defined constraints.
+The `CreateActivityRequest` class is a Java record used as a Data Transfer Object (DTO) for creating a new activity in the UpMatches application. It encapsulates the input data required when a user submits a request to create an activity, ensuring that the provided data meets basic validation constraints before being processed by the service layer.
 
 ## Purpose
 
-This record serves as the request payload for activity creation endpoints. By using Jakarta Bean Validation annotations, it enforces input validation at the API boundary, preventing invalid or malicious data from reaching the service layer.
+This record serves as the request payload for activity creation endpoints. By using a Java record, the class automatically generates constructors, getters, `equals()`, `hashCode()`, and `toString()` methods, reducing boilerplate code. The validation annotations ensure that the activity name is not blank and does not exceed 100 characters.
 
-## Record Definition
-
-```java
-public record CreateActivityRequest(
-    @NotBlank
-    @Size(max = 100)
-    String name
-) {}
-```
-
-## Fields
+## Record Fields
 
 | Field | Type   | Validation Constraints | Description |
 |-------|--------|------------------------|-------------|
-| `name`| String | `@NotBlank`<br/>`@Size(max = 100)` | The name of the activity. Must not be blank and cannot exceed 100 characters. |
+| `name`| String | `@NotBlank`, `@Size(max = 100)` | The name of the activity to be created. Must not be blank and must be at most 100 characters long. |
 
 ## Validation Details
 
-- **`@NotBlank`**: Ensures the `name` field is not null and contains at least one non-whitespace character.
+- **`@NotBlank`**: Ensures the `name` field is not `null` and contains at least one non-whitespace character.
 - **`@Size(max = 100)`**: Limits the `name` field to a maximum of 100 characters.
 
 ## Usage Example
 
 ```java
-// Valid request
-CreateActivityRequest validRequest = new CreateActivityRequest("Morning Yoga");
+// Creating a valid request
+CreateActivityRequest request = new CreateActivityRequest("Morning Yoga");
 
-// Invalid request (blank name)
-CreateActivityRequest invalidRequest = new CreateActivityRequest("   ");
+// Creating an invalid request (blank name)
+CreateActivityRequest invalidRequest = new CreateActivityRequest(""); // Will fail validation
 ```
 
 ## Related Components
 
-- **Package**: `com.upmatches.app.features.activity.requests`
-- **Validation Framework**: Jakarta Bean Validation (Jakarta Validation API)
-- **Typical Consumer**: Activity creation controller or service layer
+- **Controller**: Typically used in a REST controller method annotated with `@PostMapping` to accept the request body.
+- **Service**: Passed to a service layer method that processes the creation logic.
+- **Validation**: Validation is triggered automatically when the record is used with `@Valid` annotation in a Spring controller.

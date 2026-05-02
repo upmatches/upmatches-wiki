@@ -4,40 +4,52 @@ title: IMintDevTokenService Interface
 sidebar_label: IMintDevTokenService
 ---
 
-# IMintDevTokenService Interface
+# IMintDevTokenService
+
+The `IMintDevTokenService` is a **sealed interface** that defines the contract for minting developer tokens within the authentication module of the UpMatches application. It serves as the abstraction layer for token generation, ensuring that only the permitted implementation (`MintDevTokenService`) can fulfill this contract.
 
 ## Purpose
 
-The `IMintDevTokenService` interface defines a contract for minting (creating) development tokens associated with a specific user. It serves as a sealed interface, restricting its implementation to only the `MintDevTokenService` class. This pattern enforces a controlled hierarchy and ensures that token generation logic follows a single, well-defined path within the application's authentication and authorization module.
+This interface is designed to encapsulate the logic for creating a new developer token associated with a specific user. By using a sealed interface, the design enforces a controlled hierarchy where only explicitly allowed classes can implement the token minting behavior, promoting security and maintainability.
 
-## Interface Definition
-
-```java
-public sealed interface IMintDevTokenService permits MintDevTokenService {
-    TokenResponse execute(UUID userId);
-}
-```
-
-## Methods
+## Method Summary
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
-| `execute` | `TokenResponse` | `UUID userId` | Executes the token minting operation for the specified user. Returns a `TokenResponse` containing the generated token details. |
+| `execute` | `TokenResponse` | `UUID userId` | Executes the token minting process for the given user identifier and returns the resulting token response. |
 
-## Usage Notes
+## Method Details
 
-- The interface is **sealed**, meaning only `MintDevTokenService` is allowed to implement it. This design choice prevents unauthorized extensions and centralizes token minting logic.
-- The `userId` parameter is of type `UUID`, ensuring a unique and universally identifiable user reference.
-- The return type `TokenResponse` is expected to encapsulate the minted token data (e.g., token string, expiration, etc.).
-
-## Example Implementation Skeleton
+### `execute`
 
 ```java
-public final class MintDevTokenService implements IMintDevTokenService {
-    @Override
-    public TokenResponse execute(UUID userId) {
-        // Implementation logic for token minting
-        return new TokenResponse(/* ... */);
-    }
-}
+TokenResponse execute(UUID userId);
 ```
+
+- **Description**: Initiates the token minting workflow for the specified user. The implementation is responsible for generating a new developer token, persisting it if necessary, and returning a `TokenResponse` object containing the token details.
+- **Parameters**:
+  - `userId` (`UUID`): The unique identifier of the user for whom the token is being minted.
+- **Returns**: `TokenResponse` – An object containing the generated token information (e.g., token string, expiration, etc.).
+- **Throws**: No checked exceptions are declared; however, implementations may throw runtime exceptions (e.g., `IllegalArgumentException` if `userId` is null).
+
+## Permitted Implementations
+
+The only class allowed to implement this interface is:
+
+- `MintDevTokenService` – located in the same package (`com.upmatches.app.features.auth.services`).
+
+## Usage Example
+
+```java
+// Assuming MintDevTokenService is injected or instantiated
+IMintDevTokenService tokenService = new MintDevTokenService();
+UUID userId = UUID.randomUUID();
+TokenResponse response = tokenService.execute(userId);
+// Use the response (e.g., return to client, store, etc.)
+```
+
+## Notes
+
+- The interface is declared as `sealed`, which restricts implementation to the explicitly permitted class. This is a Java 17+ feature that enhances type safety and domain modeling.
+- The `TokenResponse` class is expected to be defined in the `com.upmatches.app.features.auth.responses` package.
+- This interface is part of the authentication feature and should be used within the service layer to maintain separation of concerns.

@@ -8,18 +8,9 @@ sidebar_label: GetGameFilterOptionsService
 
 ## Purpose
 
-The `GetGameFilterOptionsService` class is a Spring service that retrieves and returns available filter options for games based on a given set of criteria. It is designed to support a game discovery or search feature, allowing users to narrow down games by venue, skill level, start time, and game type.
+The `GetGameFilterOptionsService` class is a Spring service that retrieves and aggregates distinct filter options (venues, skill levels, start times, and game types) from a set of games matching a user's filter criteria. It is designed to populate filter dropdowns or selection UI components in a game discovery application.
 
-The service performs a database query using the provided filters (date range, time range, location, skill levels, venues, game type) and returns a `GameFilterOptionsResponse` containing distinct lists of venues, skill levels, start times, and game types that match the filtered game set.
-
-## Key Features
-
-- **Location-based filtering**: Computes a bounding box from latitude, longitude, and radius to filter games within a geographic area.
-- **Date and time range filtering**: Supports filtering games within a specified date range (up to 90 days) and time range.
-- **Skill level and venue filtering**: Allows filtering by specific skill levels and venues.
-- **Game type filtering**: Supports filtering by game type.
-- **Validation**: Enforces cross-field validation rules (e.g., location fields must be provided together, date range limits, skill level count limits).
-- **Performance**: Limits the number of games sampled to 500 for performance reasons.
+The service performs a database query based on the provided filter request, then extracts unique values for each filter dimension from the resulting game list. It also handles geospatial bounding box calculations for location-based filtering and enforces validation rules on the input request.
 
 ## Public Methods
 
@@ -30,188 +21,108 @@ The service performs a database query using the provided filters (date range, ti
 public GameFilterOptionsResponse execute(GameFilterOptionsRequest filter)
 ```
 
-Executes the filter options retrieval process.
+Executes the filter options retrieval process. Validates the input request, runs a database query to find matching games, and returns a response containing distinct venues, skill levels, start times, and game types.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `filter` | `GameFilterOptionsRequest` | The filter criteria including date range, time range, location, skill levels, venues, and game type. |
+| `filter` | `GameFilterOptionsRequest` | The filter criteria including date range, time range, location, venue IDs, skill level IDs, and game type |
 
-| Returns | Description |
-|---------|-------------|
-| `GameFilterOptionsResponse` | Contains distinct lists of venues, skill levels, start times, and game types that match the filtered game set. |
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `GameFilterOptionsResponse` | Contains four lists: `venues` (List of VenueResponse), `skillLevels` (List of SkillLevelResponse), `startTimes` (List of String in "HH:mm" format), and `gameTypes` (List of GameType) |
 
 **Throws:**
-- `IllegalArgumentException` if validation fails (e.g., missing location fields, invalid date range, too many skill levels).
-- `ResourceNotFoundException` if no games match the filter criteria.
+
+| Exception | Condition |
+|-----------|-----------|
+| `IllegalArgumentException` | If validation fails (e.g., date range exceeds 90 days, location fields are incomplete, or skill level IDs exceed 20) |
+| `ResourceNotFoundException` | If no games match the filter criteria |
 
 ## Internal Methods
 
 ### `runQuery`
 
-```java
-private List<Game> runQuery(UUID userId, GameFilterOptionsRequest f)
-```
-
-Executes the database query to retrieve games matching the filter criteria.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `userId` | `UUID` | The authenticated user's ID (may be null). |
-| `f` | `GameFilterOptionsRequest` | The filter criteria. |
-
-| Returns | Description |
-|---------|-------------|
-| `List<Game>` | A list of games matching the filter criteria (limited to 500). |
+Executes the database query using `gameRepository.findVisibleForFilterOptions()` with the processed filter parameters. Converts date/time fields to appropriate formats and computes a bounding box for location-based filtering.
 
 ### `distinctVenues`
 
-```java
-private List<VenueResponse> distinctVenues(List<Game> games)
-```
-
-Extracts distinct venues from the list of games.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `games` | `List<Game>` | The list of games. |
-
-| Returns | Description |
-|---------|-------------|
-| `List<VenueResponse>` | A list of distinct venues. |
+Extracts unique venues from the game list, preserving insertion order. Returns a list of `VenueResponse` objects.
 
 ### `distinctSkillLevels`
 
-```java
-private List<SkillLevelResponse> distinctSkillLevels(List<Game> games)
-```
-
-Extracts distinct skill levels from the list of games (both from and to skill levels).
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `games` | `List<Game>` | The list of games. |
-
-| Returns | Description |
-|---------|-------------|
-| `List<SkillLevelResponse>` | A list of distinct skill levels sorted by sort order. |
+Extracts unique skill levels from both `skillLevelFrom` and `skillLevelTo` fields of each game. Sorts by `sortOrder` and returns a list of `SkillLevelResponse` objects.
 
 ### `distinctStartTimes`
 
-```java
-private List<String> distinctStartTimes(List<Game> games)
-```
-
-Extracts distinct start times from the list of games, formatted as "HH:mm".
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `games` | `List<Game>` | The list of games. |
-
-| Returns | Description |
-|---------|-------------|
-| `List<String>` | A sorted list of distinct start times. |
+Extracts unique start times from the game list, formats them as "HH:mm" strings, sorts them, and returns a list.
 
 ### `distinctGameTypes`
 
-```java
-private List<GameType> distinctGameTypes(List<Game> games)
-```
-
-Extracts distinct game types from the list of games.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `games` | `List<Game>` | The list of games. |
-
-| Returns | Description |
-|---------|-------------|
-| `List<GameType>` | A sorted list of distinct game types. |
+Extracts unique game types from the game list, sorts them, and returns a list of `GameType` enum values.
 
 ### `toMinutes`
 
-```java
-private Integer toMinutes(LocalTime time)
-```
-
-Converts a `LocalTime` to total minutes since midnight.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `time` | `LocalTime` | The time to convert (may be null). |
-
-| Returns | Description |
-|---------|-------------|
-| `Integer` | The total minutes, or null if input is null. |
+Converts a `LocalTime` to total minutes since midnight. Returns `null` if the input is `null`.
 
 ### `validateCrossFields`
 
-```java
-private void validateCrossFields(GameFilterOptionsRequest f)
-```
-
-Validates cross-field constraints in the filter request.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `f` | `GameFilterOptionsRequest` | The filter request to validate. |
-
-**Throws:**
-- `IllegalArgumentException` if validation fails.
+Validates the filter request:
+- Ensures location fields (latitude, longitude, radiusKm) are all provided together
+- Validates that `toDate` is not before `fromDate`
+- Ensures the date range does not exceed 90 days
+- Limits skill level IDs to a maximum of 20
 
 ### `computeBoundingBox`
 
-```java
-private BoundingBox computeBoundingBox(GameFilterOptionsRequest f)
-```
-
-Computes a bounding box (latitude and longitude ranges) from a center point and radius.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `f` | `GameFilterOptionsRequest` | The filter request containing latitude, longitude, and radius. |
-
-| Returns | Description |
-|---------|-------------|
-| `BoundingBox` | A record containing latMin, latMax, lngMin, lngMax. |
-
-## Internal Record
-
-### `BoundingBox`
-
-```java
-private record BoundingBox(BigDecimal latMin, BigDecimal latMax, BigDecimal lngMin, BigDecimal lngMax)
-```
-
-Represents a geographic bounding box.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `latMin` | `BigDecimal` | Minimum latitude (may be null for empty box). |
-| `latMax` | `BigDecimal` | Maximum latitude (may be null for empty box). |
-| `lngMin` | `BigDecimal` | Minimum longitude (may be null for empty box). |
-| `lngMax` | `BigDecimal` | Maximum longitude (may be null for empty box). |
-
-**Static Methods:**
-- `empty()`: Returns an empty bounding box (all fields null).
-
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `GameRepository` | Repository | Data access for game entities. |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user. |
-| `ServiceOperationExecutor` | Utility | Executes service operations with standardized error handling. |
+Calculates a geographic bounding box based on the provided latitude, longitude, and radius. Uses the Haversine approximation with a fixed conversion factor of 111.045 km per degree of latitude.
 
 ## Constants
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `SGT` | `ZoneId.of("Asia/Singapore")` | Singapore time zone. |
-| `KM_PER_DEGREE_LAT` | `111.045` | Approximate kilometers per degree of latitude. |
-| `MINUTES_PER_HOUR` | `60` | Minutes in an hour. |
-| `MIN_COS_LAT` | `1e-6` | Minimum cosine of latitude to avoid division by zero. |
-| `MC` | `MathContext(16, HALF_UP)` | Math context for BigDecimal operations. |
-| `HOUR_MINUTE` | `"HH:mm"` | Time format pattern. |
-| `MAX_DATE_RANGE_DAYS` | `90` | Maximum allowed date range in days. |
-| `MAX_SKILL_LEVEL_IDS` | `20` | Maximum number of skill level IDs allowed. |
-| `MAX_GAMES_SAMPLED` | `500` | Maximum number of games to sample for performance. |
+| `SGT` | `ZoneId.of("Asia/Singapore")` | Singapore time zone for date/time conversions |
+| `KM_PER_DEGREE_LAT` | `111.045` | Approximate kilometers per degree of latitude |
+| `MINUTES_PER_HOUR` | `60` | Minutes in one hour |
+| `MIN_COS_LAT` | `1e-6` | Minimum cosine of latitude to prevent division by zero |
+| `MC` | `MathContext(16, HALF_UP)` | Math context for BigDecimal calculations |
+| `HOUR_MINUTE` | `"HH:mm"` | Time format pattern |
+| `MAX_DATE_RANGE_DAYS` | `90` | Maximum allowed date range in days |
+| `MAX_SKILL_LEVEL_IDS` | `20` | Maximum number of skill level IDs allowed |
+| `MAX_GAMES_SAMPLED` | `500` | Maximum number of games to sample for filter options |
+
+## Dependencies
+
+- `GameRepository` - Data access layer for game entities
+- `IAuthenticatedUserResolver` - Resolves the currently authenticated user (optional)
+- `ServiceOperationExecutor` - Utility for executing service operations with standardized error handling
+
+## Usage Example
+
+```java
+// Create a filter request
+GameFilterOptionsRequest filter = new GameFilterOptionsRequest(
+    LocalDate.now(),
+    LocalDate.now().plusDays(7),
+    LocalTime.of(9, 0),
+    LocalTime.of(22, 0),
+    null, // latitude
+    null, // longitude
+    null, // radiusKm
+    null, // venueIds
+    null, // skillLevelIds
+    null  // gameType
+);
+
+// Execute the service
+GameFilterOptionsResponse options = getGameFilterOptionsService.execute(filter);
+
+// Use the options to populate UI filters
+List<VenueResponse> venues = options.venues();
+List<SkillLevelResponse> skillLevels = options.skillLevels();
+List<String> startTimes = options.startTimes();
+List<GameType> gameTypes = options.gameTypes();
+```

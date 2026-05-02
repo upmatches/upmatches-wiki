@@ -8,46 +8,66 @@ sidebar_label: DevFcmTestNotificationController
 
 ## Purpose
 
-The `DevFcmTestNotificationController` is a development-only REST controller designed for testing Firebase Cloud Messaging (FCM) notifications in a development environment. It provides an endpoint that allows developers to send test push notifications without affecting production systems.
+The `DevFcmTestNotificationController` is a development-only REST controller designed for testing Firebase Cloud Messaging (FCM) notifications in a development environment. It provides an endpoint that allows developers to send test FCM notifications without affecting production systems.
 
-This controller is only active when the Spring profile `dev` is enabled, ensuring it cannot be accidentally used in production environments.
+This controller is only active when the Spring profile `"dev"` is enabled, ensuring it cannot be accidentally used in production environments.
 
-## Endpoint
+## Profile Restriction
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/internal/dev/fcm-test-notifications` | Sends a test FCM notification |
+| Profile | Behavior |
+|---------|----------|
+| `dev`   | Controller is active and endpoints are accessible |
+| Any other profile | Controller is disabled and endpoints return 404 |
 
-## Public Methods
+## Endpoints
 
-### `sendTestNotification`
+### Send Test Notification
 
 Sends a test FCM notification using the provided request body.
 
+**HTTP Method:** `POST`
+
+**URL Pattern:** `/internal/dev/fcm-test-notifications`
+
 **Request Body:** `SendFcmTestNotificationRequest` (validated)
 
-**Response:** `ResponseEntity<ApiResponse<FcmTestNotificationResponse>>`
+**Response:** `ApiResponse<FcmTestNotificationResponse>`
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `body` | `SendFcmTestNotificationRequest` | The request payload containing test notification details (validated) |
-| `request` | `HttpServletRequest` | The HTTP request object used to generate the response URI |
+#### Request Parameters
 
-**Response Structure:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `body` | `SendFcmTestNotificationRequest` | Yes | The test notification request payload |
+| `request` | `HttpServletRequest` | Yes (injected) | The HTTP request object for URI generation |
+
+#### Response Structure
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `data` | `FcmTestNotificationResponse` | The response data from the test notification service |
+| `data` | `FcmTestNotificationResponse` | The response from the FCM test notification service |
 | `message` | `String` | Success message: "Dev FCM test notification sent successfully." |
 | `path` | `String` | The request URI path |
 
-**Example Response (200 OK):**
+#### Example Request
+
+```http
+POST /internal/dev/fcm-test-notifications HTTP/1.1
+Content-Type: application/json
+
+{
+  "token": "device-fcm-token",
+  "title": "Test Notification",
+  "body": "This is a test message"
+}
+```
+
+#### Example Response
 
 ```json
 {
   "data": {
-    "notificationId": "abc123",
-    "status": "sent"
+    "messageId": "12345-abcde",
+    "success": true
   },
   "message": "Dev FCM test notification sent successfully.",
   "path": "/internal/dev/fcm-test-notifications"
@@ -58,14 +78,26 @@ Sends a test FCM notification using the provided request body.
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `ISendFcmTestNotificationService` | Service | Interface for executing the test notification logic |
+| `ISendFcmTestNotificationService` | Service | Interface for sending FCM test notifications |
 
-## Profile Restriction
+## Constructor
 
-This controller is annotated with `@Profile("dev")`, meaning it will only be instantiated and available when the Spring profile `dev` is active. This prevents accidental usage in production environments.
+```java
+public DevFcmTestNotificationController(ISendFcmTestNotificationService sendFcmTestNotificationService)
+```
+
+Creates a new controller instance with the required service dependency.
 
 ## Security Considerations
 
-- The endpoint is mapped under `/internal/dev/` path, indicating it is intended for internal development use only
-- The `@Profile("dev")` annotation provides an additional layer of protection against production usage
-- Input validation is enforced via `@Valid` annotation on the request body
+- This endpoint is only available in the `dev` profile
+- It is mapped under `/internal/` path, suggesting it should not be exposed externally
+- Input validation is enforced via `@Valid` annotation
+- The endpoint is designed for development testing only and should not be used in production
+
+## Related Components
+
+- `SendFcmTestNotificationRequest` - Request DTO for test notification parameters
+- `FcmTestNotificationResponse` - Response DTO containing notification result
+- `ISendFcmTestNotificationService` - Service interface for executing test notifications
+- `ApiResponse` - Generic API response wrapper

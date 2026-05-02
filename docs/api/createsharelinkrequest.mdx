@@ -1,77 +1,63 @@
 ---
 id: create-share-link-request
-title: CreateShareLinkRequest
+title: CreateShareLinkRequest Record
 sidebar_label: CreateShareLinkRequest
 ---
 
 # CreateShareLinkRequest
 
-The `CreateShareLinkRequest` class is a Java record that serves as a Data Transfer Object (DTO) for creating share links within the UpMatches application. It encapsulates the necessary input parameters required to generate a new shareable link for a specific resource.
+The `CreateShareLinkRequest` is a Java record class that serves as a Data Transfer Object (DTO) for creating share links within the UpMatches application. It encapsulates the required input parameters for generating a new shareable link to a specific resource.
 
 ## Purpose
 
-This record defines the contract for incoming API requests to create share links. It ensures that all required fields are provided and validated before processing. The class leverages Jakarta Bean Validation annotations to enforce data integrity at the application boundary.
+This record defines the structure and validation rules for incoming requests to create share links. It ensures that all necessary information is provided and formatted correctly before processing the share link creation logic.
 
 ## Record Structure
 
-The record contains two fields that must be provided when creating a share link:
+The record contains two fields that define the target resource for the share link:
 
-| Field | Type | Validation | Description |
-|-------|------|------------|-------------|
-| `resourceType` | `ResourceType` | `@NotNull` | The type of resource being shared (e.g., profile, post, event) |
-| `resourceId` | `String` | `@NotBlank`, `@Pattern` | The unique identifier of the resource, must be a valid UUID |
+| Field | Type | Description |
+|-------|------|-------------|
+| `resourceType` | `ResourceType` | The type of resource being shared (e.g., user profile, post, event) |
+| `resourceId` | `String` | The unique identifier of the resource, validated as a UUID |
 
-## Validation Constants
+## Validation Constraints
 
-The class defines several static constants used for validation messages and patterns:
+The record implements Jakarta Bean Validation annotations to ensure data integrity:
 
-| Constant | Value | Purpose |
-|----------|-------|---------|
-| `MSG_RESOURCE_TYPE_REQUIRED` | "Resource type is required." | Error message when resource type is null |
-| `MSG_RESOURCE_ID_REQUIRED` | "Resource ID is required." | Error message when resource ID is blank |
-| `MSG_INVALID_UUID` | "Resource ID must be a valid UUID." | Error message when resource ID doesn't match UUID format |
+| Field | Constraint | Message |
+|-------|------------|---------|
+| `resourceType` | `@NotNull` | "Resource type is required." |
+| `resourceId` | `@NotBlank` | "Resource ID is required." |
+| `resourceId` | `@Pattern` | "Resource ID must be a valid UUID." |
+
+## Constants
+
+The record defines several static constants for validation messages and patterns:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `MSG_RESOURCE_TYPE_REQUIRED` | `"Resource type is required."` | Error message when resource type is null |
+| `MSG_RESOURCE_ID_REQUIRED` | `"Resource ID is required."` | Error message when resource ID is blank |
+| `MSG_INVALID_UUID` | `"Resource ID must be a valid UUID."` | Error message when resource ID doesn't match UUID pattern |
 | `UUID_PATTERN` | `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$` | Regular expression for UUID validation |
-
-## Constructor Parameters
-
-### `resourceType`
-- **Type**: `ResourceType` (enum)
-- **Validation**: `@NotNull`
-- **Description**: Specifies the category of resource for which the share link is being created. This enum value determines how the link will be processed and what type of content it will point to.
-
-### `resourceId`
-- **Type**: `String`
-- **Validation**: `@NotBlank` and `@Pattern(regexp = UUID_PATTERN)`
-- **Description**: The unique identifier of the specific resource. Must be a valid UUID in the standard 8-4-4-4-12 format (e.g., `123e4567-e89b-12d3-a456-426614174000`).
 
 ## Usage Example
 
 ```java
 // Creating a valid request
 CreateShareLinkRequest request = new CreateShareLinkRequest(
-    ResourceType.PROFILE,
-    "123e4567-e89b-12d3-a456-426614174000"
+    ResourceType.POST,
+    "550e8400-e29b-41d4-a716-446655440000"
 );
 
-// This would fail validation
-CreateShareLinkRequest invalidRequest = new CreateShareLinkRequest(
-    null,  // resourceType is null - validation error
-    "invalid-id"  // not a valid UUID - validation error
-);
+// Accessing fields
+ResourceType type = request.resourceType();
+String id = request.resourceId();
 ```
-
-## Validation Behavior
-
-When this record is used in a Spring Boot controller with `@Valid` annotation, the following validations are automatically applied:
-
-1. **Resource Type Validation**: If `resourceType` is `null`, the system returns a validation error with the message "Resource type is required."
-2. **Resource ID Validation**: 
-   - If `resourceId` is blank (null, empty, or whitespace), the system returns "Resource ID is required."
-   - If `resourceId` doesn't match the UUID pattern, the system returns "Resource ID must be a valid UUID."
 
 ## Dependencies
 
-- `jakarta.validation.constraints.NotBlank` - For non-blank string validation
-- `jakarta.validation.constraints.NotNull` - For non-null object validation
-- `jakarta.validation.constraints.Pattern` - For regex pattern matching
-- `com.upmatches.app.features.sharelink.enums.ResourceType` - Enum defining available resource types
+- **Package**: `com.upmatches.app.features.sharelink.requests`
+- **Enum**: `ResourceType` from `com.upmatches.app.features.sharelink.enums`
+- **Validation**: Jakarta Bean Validation (`jakarta.validation.constraints`)

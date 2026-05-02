@@ -4,34 +4,38 @@ title: IHardDeleteGameService Interface
 sidebar_label: IHardDeleteGameService
 ---
 
-# IHardDeleteGameService Interface
+# IHardDeleteGameService
+
+The `IHardDeleteGameService` interface defines a contract for permanently deleting a game entity from the system. It is a **sealed interface**, meaning only the explicitly permitted class (`HardDeleteGameService`) can implement it. This design enforces a strict, single-implementation pattern for the hard-delete operation.
 
 ## Purpose
 
-The `IHardDeleteGameService` interface defines a contract for permanently deleting a game entity from the system. It follows a sealed interface pattern, restricting implementation to the `HardDeleteGameService` class only. This design ensures that the hard deletion logic is centralized and cannot be extended by unauthorized implementations.
+- Provides a clear, type-safe contract for hard-deleting a game by its unique identifier.
+- Uses Java's sealed interface feature to restrict implementation to a single service class, ensuring consistency and preventing unintended extensions.
+- Follows the command pattern, where the `execute` method encapsulates the entire deletion operation.
 
 ## Interface Definition
 
 ```java
-public sealed interface IHardDeleteGameService permits HardDeleteGameService
+public sealed interface IHardDeleteGameService permits HardDeleteGameService {
+    void execute(UUID id);
+}
 ```
-
-The interface is declared as `sealed`, meaning only the specified class (`HardDeleteGameService`) is allowed to implement it. This provides compile-time safety and enforces a controlled hierarchy for the deletion operation.
 
 ## Method Summary
 
 | Method | Description |
 |--------|-------------|
-| `void execute(UUID id)` | Permanently deletes a game entity identified by the provided UUID. |
+| `void execute(UUID id)` | Permanently deletes the game identified by the given UUID. |
 
 ## Method Details
 
 ### `execute(UUID id)`
 
-- **Purpose**: Initiates the hard deletion process for a game entity.
-- **Parameter**: `id` - A `UUID` representing the unique identifier of the game to be permanently removed.
-- **Return Type**: `void` - The method does not return a value.
-- **Behavior**: Implementations should perform the actual deletion logic, which typically involves removing the game record from the database or storage system without the possibility of recovery.
+- **Purpose**: Initiates the hard-delete process for a specific game.
+- **Parameter**: `id` – The unique identifier of the game to be permanently removed.
+- **Return Type**: `void` – The method performs the deletion but does not return a value.
+- **Behavior**: The implementing class (`HardDeleteGameService`) is responsible for the actual deletion logic, which may include database removal, cache invalidation, and cleanup of associated resources.
 
 ## Usage Example
 
@@ -43,6 +47,11 @@ hardDeleteService.execute(gameId);
 
 ## Implementation Notes
 
-- The sealed interface pattern ensures that only `HardDeleteGameService` can implement this interface, preventing unauthorized or accidental implementations.
-- The `execute` method should handle cases where the game ID does not exist, typically by throwing an appropriate exception (e.g., `GameNotFoundException`).
-- Implementations should ensure transactional integrity to prevent partial deletions.
+- The interface is **sealed**, so only `HardDeleteGameService` can implement it. This prevents accidental or unauthorized implementations.
+- The `execute` method is intentionally simple, focusing on the single responsibility of hard deletion.
+- Consider adding exception handling in the implementing class to manage cases where the game ID does not exist or deletion fails.
+
+## Related Components
+
+- **HardDeleteGameService**: The sole permitted implementation that contains the actual deletion logic.
+- **UUID**: Standard Java class used to uniquely identify games in the system.

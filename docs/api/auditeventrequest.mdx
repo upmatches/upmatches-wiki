@@ -6,9 +6,9 @@ sidebar_label: AuditEventRequest
 
 # AuditEventRequest
 
-The `AuditEventRequest` class is a Java record that serves as a data transfer object (DTO) for capturing audit events within the application. It encapsulates all relevant information about an auditable action, including the actor performing the action, the action itself, the outcome, and contextual metadata such as IP address and user agent.
+The `AuditEventRequest` is a Java record class that serves as the data transfer object (DTO) for capturing and transmitting audit event information within the application. It encapsulates all relevant details about an auditable action, including the actor performing the action, the action itself, the outcome, and contextual metadata such as IP address and user agent.
 
-This record is designed to be used with audit logging systems to track and record significant events for compliance, security, and monitoring purposes.
+This record is immutable by design, leveraging Java's record feature to provide a concise and type-safe way to define audit event payloads. It is typically used in audit logging systems to record user activities, system events, or security-related actions for compliance, monitoring, and debugging purposes.
 
 ## Record Definition
 
@@ -27,51 +27,52 @@ public record AuditEventRequest(
     String requestPayload,
     String errorCode,
     String errorMessage
-)
+) {}
 ```
 
-## Record Components
+## Components
 
 | Component | Type | Description |
 |-----------|------|-------------|
-| `actorId` | `UUID` | Unique identifier of the user or system that performed the action |
-| `actorType` | `AuditActorType` | Enum indicating whether the actor is a user, system, or other entity |
-| `action` | `String` | Description of the action performed (e.g., "CREATE", "UPDATE", "DELETE") |
-| `category` | `AuditCategory` | Enum categorizing the type of audit event (e.g., SECURITY, BUSINESS, SYSTEM) |
-| `outcome` | `AuditOutcome` | Enum indicating the result of the action (e.g., SUCCESS, FAILURE, DENIED) |
-| `resourceType` | `String` | Type of resource that was acted upon (e.g., "User", "Order", "Document") |
-| `resourceId` | `String` | Unique identifier of the specific resource involved |
-| `ipAddress` | `String` | IP address from which the request originated |
-| `userAgent` | `String` | User agent string from the client making the request |
-| `correlationId` | `String` | Identifier used to correlate related events across different services |
-| `requestPayload` | `String` | JSON or serialized representation of the request payload |
-| `errorCode` | `String` | Error code if the action resulted in a failure |
-| `errorMessage` | `String` | Human-readable error message if the action resulted in a failure |
+| `actorId` | `UUID` | Unique identifier of the entity (user, system, or service) that performed the auditable action. |
+| `actorType` | `AuditActorType` | Enum indicating the type of actor (e.g., USER, SYSTEM, SERVICE). |
+| `action` | `String` | Description of the action performed (e.g., "LOGIN", "CREATE_USER", "DELETE_RECORD"). |
+| `category` | `AuditCategory` | Enum categorizing the audit event (e.g., AUTHENTICATION, AUTHORIZATION, DATA_MODIFICATION). |
+| `outcome` | `AuditOutcome` | Enum representing the result of the action (e.g., SUCCESS, FAILURE, DENIED). |
+| `resourceType` | `String` | Type of resource affected by the action (e.g., "User", "Order", "Document"). |
+| `resourceId` | `String` | Identifier of the specific resource instance affected. |
+| `ipAddress` | `String` | IP address from which the action originated. |
+| `userAgent` | `String` | User agent string of the client making the request. |
+| `correlationId` | `String` | Unique identifier used to correlate related audit events across distributed systems. |
+| `requestPayload` | `String` | Serialized representation of the request payload (e.g., JSON body) for detailed auditing. |
+| `errorCode` | `String` | Error code associated with the action, if applicable (e.g., "INVALID_INPUT", "UNAUTHORIZED"). |
+| `errorMessage` | `String` | Human-readable error message providing additional context about failures. |
 
-## Usage Example
+## Usage
+
+The `AuditEventRequest` record is typically constructed and passed to an audit service for processing. Below is an example of how to create an instance:
 
 ```java
 AuditEventRequest auditEvent = new AuditEventRequest(
     UUID.randomUUID(),
     AuditActorType.USER,
     "LOGIN",
-    AuditCategory.SECURITY,
+    AuditCategory.AUTHENTICATION,
     AuditOutcome.SUCCESS,
-    "Session",
-    "session-12345",
-    "192.168.1.100",
+    "User",
+    "user-123",
+    "192.168.1.1",
     "Mozilla/5.0...",
-    "corr-abc-123",
-    null,
+    UUID.randomUUID().toString(),
+    "{\"username\":\"john.doe\"}",
     null,
     null
 );
 ```
 
-## Related Enums
+## Best Practices
 
-The record depends on the following enum types:
-
-- `AuditActorType` - Defines the type of actor (e.g., USER, SYSTEM, SERVICE)
-- `AuditCategory` - Defines the category of the audit event (e.g., SECURITY, BUSINESS, SYSTEM, COMPLIANCE)
-- `AuditOutcome` - Defines the outcome of the action (e.g., SUCCESS, FAILURE, DENIED, ERROR)
+- **Immutability**: Since `AuditEventRequest` is a record, all fields are final and cannot be modified after creation. This ensures data integrity for audit trails.
+- **Null Handling**: Fields like `errorCode` and `errorMessage` are nullable and should be set to `null` when not applicable (e.g., for successful actions).
+- **Serialization**: The record is well-suited for serialization to JSON or other formats, making it easy to transmit audit events to external systems or persist them in databases.
+- **Correlation**: Always provide a `correlationId` to enable tracing of related events across microservices or distributed systems.

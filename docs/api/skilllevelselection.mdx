@@ -1,46 +1,62 @@
 ---
 id: skill-level-selection
-title: SkillLevelSelection Record
+title: Skill Level Selection Record
 sidebar_label: SkillLevelSelection
 ---
 
-# SkillLevelSelection
+# Skill Level Selection Record
 
-The `SkillLevelSelection` record is a Java data carrier used to represent a user's selection of a skill level for a specific activity. It is typically employed in request bodies for API endpoints that allow users to set or update their proficiency level in a given activity.
+The `SkillLevelSelection` record is a Java data carrier used within the user request flow of the UpMatches application. It encapsulates the selection of a specific skill level for a given activity. This record is typically used as a request body when a user indicates their proficiency level for a particular activity.
 
 ## Purpose
 
-This record encapsulates two mandatory pieces of information:
-- The unique identifier of the activity (e.g., "Running", "Swimming").
-- The unique identifier of the chosen skill level (e.g., "Beginner", "Intermediate", "Advanced").
+The primary purpose of this record is to provide a type-safe, immutable, and concise way to transfer the following information between application layers:
 
-By using a Java record, the class automatically provides a constructor, getters, `equals()`, `hashCode()`, and `toString()` methods with minimal boilerplate.
+- **Activity Identification**: Which activity the skill level applies to.
+- **Skill Level Identification**: The specific skill level the user has selected.
 
-## Validation
+By using a Java record, the class automatically generates constructors, accessor methods, `equals()`, `hashCode()`, and `toString()` methods, reducing boilerplate code.
 
-Both fields are annotated with `@NotNull` (from `jakarta.validation.constraints`), ensuring that neither the `activityId` nor the `skillLevelId` can be `null` when the record is used in a validated context (e.g., a Spring REST controller with `@Valid`).
+## Record Definition
+
+```java
+public record SkillLevelSelection(
+    @NotNull UUID activityId,
+    @NotNull Long skillLevelId
+) {}
+```
 
 ## Fields
 
-| Field          | Type       | Description                                      | Constraints |
-|----------------|------------|--------------------------------------------------|-------------|
-| `activityId`   | `UUID`     | The unique identifier of the activity.           | Not null    |
-| `skillLevelId` | `Long`     | The unique identifier of the skill level.        | Not null    |
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `activityId` | `UUID` | `@NotNull` | The unique identifier of the activity for which the skill level is being selected. |
+| `skillLevelId` | `Long` | `@NotNull` | The unique identifier of the selected skill level. |
+
+## Validation
+
+Both fields are annotated with `@NotNull` from the `jakarta.validation.constraints` package. This ensures that when the record is used in a request body (e.g., in a Spring Boot controller), the framework will automatically validate that neither field is `null` before the request is processed.
 
 ## Usage Example
 
-```java
-// Creating a new SkillLevelSelection instance
-SkillLevelSelection selection = new SkillLevelSelection(
-    UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
-    42L
-);
+The following example demonstrates how `SkillLevelSelection` might be used in a REST controller:
 
-// Accessing fields
-UUID activityId = selection.activityId();
-Long skillLevelId = selection.skillLevelId();
+```java
+@PostMapping("/users/skill-levels")
+public ResponseEntity<Void> selectSkillLevel(
+    @Valid @RequestBody SkillLevelSelection selection
+) {
+    // Process the skill level selection
+    UUID activityId = selection.activityId();
+    Long skillLevelId = selection.skillLevelId();
+    
+    // Business logic...
+    return ResponseEntity.ok().build();
+}
 ```
 
-## Package
+## Related Components
 
-`com.upmatches.app.features.user.requests`
+- **Package**: `com.upmatches.app.features.user.requests`
+- **Validation Framework**: Jakarta Bean Validation (`jakarta.validation.constraints.NotNull`)
+- **Common Use Case**: Part of a user onboarding or profile customization flow where users specify their skill levels for various activities.

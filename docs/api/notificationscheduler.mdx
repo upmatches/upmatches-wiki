@@ -6,75 +6,67 @@ sidebar_label: NotificationScheduler
 
 # NotificationScheduler
 
-The `NotificationScheduler` class is a Spring `@Component` that manages the automated sending of game reminder notifications. It uses a scheduled cron job to periodically check for upcoming games and send appropriate reminders to users based on how far in advance the game is scheduled.
+The `NotificationScheduler` class is a Spring Boot component that automates the sending of game reminder notifications. It uses a cron expression to trigger scheduled tasks that send reminders for upcoming games at two different intervals: three days before and one day before the game.
 
 ## Purpose
 
-This scheduler is responsible for:
-- Automatically triggering game reminder notifications at a configured time each day.
-- Sending two types of reminders: one for games occurring in approximately 3 days (71-73 hours away) and another for games occurring in approximately 1 day (23-25 hours away).
-- Logging the number of reminders sent for each notification type for monitoring and debugging.
+This scheduler ensures that users receive timely reminders about their upcoming games without manual intervention. It leverages the `ISendGameRemindersService` to handle the actual notification logic, while the scheduler itself manages the timing and frequency of these reminders.
 
 ## Dependencies
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `ISendGameRemindersService` | Constructor Injection | Service interface that handles the actual logic of sending game reminders. |
+| Dependency | Description |
+|------------|-------------|
+| `ISendGameRemindersService` | Service interface responsible for executing reminder notifications |
+| `Logger` (SLF4J) | Logging framework for recording scheduler activity |
 
 ## Configuration
 
-The scheduler uses the following configurable properties:
+The scheduler uses a configurable cron expression defined in the application properties:
 
 | Property | Default Value | Description |
 |----------|---------------|-------------|
-| `app.notification.reminder-cron` | `0 0 9 * * *` | Cron expression defining when the reminder job runs (default: daily at 9:00 AM). |
-
-## Constants
-
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `REMINDER_CRON` | `${app.notification.reminder-cron:0 0 9 * * *}` | Cron expression for scheduling the reminder job. |
-| `HOURS_3_DAYS_MIN` | `71L` | Minimum hours before a game to send the 3-day reminder. |
-| `HOURS_3_DAYS_MAX` | `73L` | Maximum hours before a game to send the 3-day reminder. |
-| `HOURS_1_DAY_MIN` | `23L` | Minimum hours before a game to send the 1-day reminder. |
-| `HOURS_1_DAY_MAX` | `25L` | Maximum hours before a game to send the 1-day reminder. |
+| `app.notification.reminder-cron` | `0 0 9 * * *` | Cron expression for daily execution at 9:00 AM |
 
 ## Public Methods
 
 ### `sendReminders()`
 
-This is the main scheduled method that executes the reminder logic.
+This is the main scheduled method that executes daily to send game reminders.
 
-| Aspect | Details |
-|--------|---------|
-| **Annotation** | `@Scheduled(cron = REMINDER_CRON)` |
-| **Return Type** | `void` |
-| **Description** | Executes the reminder sending process. It calls the `ISendGameRemindersService` twice: once for 3-day reminders and once for 1-day reminders. Each call logs the count of reminders sent. |
+**Annotation:** `@Scheduled(cron = "${app.notification.reminder-cron:0 0 9 * * *}")`
 
 **Behavior:**
-1. Calls `sendGameRemindersService.execute()` with `NotificationType.GAME_REMINDER_3_DAYS` and the 3-day hour range (71-73 hours).
-2. Logs the number of 3-day reminders sent.
-3. Calls `sendGameRemindersService.execute()` with `NotificationType.GAME_REMINDER_1_DAY` and the 1-day hour range (23-25 hours).
-4. Logs the number of 1-day reminders sent.
+1. Sends reminders for games occurring in approximately 3 days (71-73 hours from now)
+2. Sends reminders for games occurring in approximately 1 day (23-25 hours from now)
+3. Logs the number of reminders sent for each notification type
+
+**Parameters:** None
+
+**Return Type:** `void`
+
+**Logging:**
+- Logs the count of sent reminders for each notification type using the format: `Sent {count} {notificationType} reminders.`
+
+## Internal Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `REMINDER_CRON` | `${app.notification.reminder-cron:0 0 9 * * *}` | Configurable cron expression with default of 9:00 AM daily |
+| `HOURS_3_DAYS_MIN` | `71L` | Minimum hours for 3-day reminder window |
+| `HOURS_3_DAYS_MAX` | `73L` | Maximum hours for 3-day reminder window |
+| `HOURS_1_DAY_MIN` | `23L` | Minimum hours for 1-day reminder window |
+| `HOURS_1_DAY_MAX` | `25L` | Maximum hours for 1-day reminder window |
 
 ## Usage Example
 
-The scheduler runs automatically based on the configured cron expression. No manual invocation is required. To customize the schedule, update the `app.notification.reminder-cron` property in your application configuration:
-
-```yaml
-app:
-  notification:
-    reminder-cron: "0 0 8 * * *"  # Run daily at 8:00 AM instead of 9:00 AM
+```java
+// The scheduler is automatically invoked by Spring's scheduling mechanism
+// No manual invocation is required
 ```
-
-## Logging
-
-The scheduler uses SLF4J logging with the following log messages:
-
-- **Info**: `"Sent {} {} reminders."` — Logs the count and type of reminders sent after each execution.
 
 ## Notes
 
-- The scheduler is thread-safe as it uses Spring's `@Scheduled` annotation, which ensures that only one instance of the method runs at a time.
-- The hour ranges (71-73 and 23-25) provide a 2-hour window to account for slight variations in game scheduling times.
-- The `ISendGameRemindersService` implementation handles the actual logic of finding eligible games and sending notifications.
+- The scheduler uses a configurable cron expression, allowing administrators to adjust the execution time without code changes
+- The time windows (71-73 hours and 23-25 hours) provide flexibility for the reminder service to find games within those ranges
+- All reminder activity is logged for monitoring and debugging purposes
+- The class is thread-safe as it has no mutable state

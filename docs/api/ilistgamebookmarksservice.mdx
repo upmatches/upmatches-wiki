@@ -4,13 +4,11 @@ title: IListGameBookmarksService Interface
 sidebar_label: IListGameBookmarksService
 ---
 
-# IListGameBookmarksService Interface
-
-## Purpose
+# IListGameBookmarksService
 
 The `IListGameBookmarksService` interface defines the contract for retrieving a paginated list of game bookmarks. It uses a cursor-based pagination strategy to efficiently fetch bookmarks in a scalable manner, avoiding the performance pitfalls of traditional offset-based pagination.
 
-This sealed interface permits only the `ListGameBookmarksService` class to implement it, ensuring controlled extension and a clear, single implementation path.
+This interface is declared as a **sealed interface**, meaning only the permitted class `ListGameBookmarksService` can implement it. This design enforces a controlled hierarchy and ensures that all implementations adhere to the same pagination contract.
 
 ## Interface Definition
 
@@ -20,37 +18,63 @@ public sealed interface IListGameBookmarksService permits ListGameBookmarksServi
 }
 ```
 
-## Methods
+## Method Summary
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute(String cursor, int size)` | `CursorPagedResponse<GameBookmarkResponse>` | Retrieves a cursor-based paginated list of game bookmarks. |
+
+## Method Details
 
 ### `execute`
 
-Retrieves a cursor-paginated list of game bookmarks.
+```java
+CursorPagedResponse<GameBookmarkResponse> execute(String cursor, int size)
+```
+
+Executes the query to fetch a page of game bookmarks based on the provided cursor and page size.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `cursor` | `String` | The cursor indicating the starting point for the next page of results. Pass `null` or an empty string to retrieve the first page. |
 | `size` | `int` | The maximum number of bookmarks to return in a single page. Must be a positive integer. |
 
-| Returns | Description |
-|---------|-------------|
-| `CursorPagedResponse<GameBookmarkResponse>` | A paginated response containing a list of `GameBookmarkResponse` objects and a cursor for the next page. |
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `CursorPagedResponse<GameBookmarkResponse>` | A paginated response containing the list of game bookmarks and the cursor for the next page. |
+
+**Throws:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `IllegalArgumentException` | If `size` is less than or equal to zero. |
 
 ## Usage Example
 
 ```java
-// Get the first page of 20 bookmarks
-IListGameBookmarksService service = new ListGameBookmarksService();
-CursorPagedResponse<GameBookmarkResponse> firstPage = service.execute(null, 20);
+// Inject the service (e.g., via Spring)
+@Autowired
+private IListGameBookmarksService listGameBookmarksService;
 
-// Use the cursor from the response to get the next page
+// Fetch the first page of 20 bookmarks
+CursorPagedResponse<GameBookmarkResponse> firstPage = listGameBookmarksService.execute(null, 20);
+
+// Process results
+List<GameBookmarkResponse> bookmarks = firstPage.getContent();
 String nextCursor = firstPage.getNextCursor();
+
+// Fetch the next page using the cursor
 if (nextCursor != null) {
-    CursorPagedResponse<GameBookmarkResponse> secondPage = service.execute(nextCursor, 20);
+    CursorPagedResponse<GameBookmarkResponse> nextPage = listGameBookmarksService.execute(nextCursor, 20);
 }
 ```
 
 ## Related Types
 
-- `CursorPagedResponse<T>` - Generic wrapper for cursor-based paginated responses
-- `GameBookmarkResponse` - Data transfer object representing a single game bookmark
-- `ListGameBookmarksService` - The sole permitted implementation of this interface
+- `CursorPagedResponse<T>` - Generic wrapper for cursor-based paginated responses.
+- `GameBookmarkResponse` - Data transfer object representing a single game bookmark.
+- `ListGameBookmarksService` - The sole permitted implementation of this interface.

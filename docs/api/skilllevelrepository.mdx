@@ -6,7 +6,7 @@ sidebar_label: SkillLevelRepository
 
 # SkillLevelRepository
 
-The `SkillLevelRepository` interface provides database access operations for `SkillLevel` entities. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD functionality and defines a custom query method for retrieving skill levels ordered by their sort position within a specific activity.
+The `SkillLevelRepository` interface provides database access operations for `SkillLevel` entities within the UpMatches application. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD functionality while adding a custom query method to retrieve skill levels ordered by their sort position for a specific activity.
 
 ## Interface Definition
 
@@ -14,25 +14,25 @@ The `SkillLevelRepository` interface provides database access operations for `Sk
 public interface SkillLevelRepository extends JpaRepository<SkillLevel, Long>
 ```
 
-This repository manages `SkillLevel` entities with a primary key of type `Long`.
+The repository works with `SkillLevel` entities that have a primary key of type `Long`.
 
 ## Methods
 
-### Inherited Methods from JpaRepository
+### Inherited Methods
 
 The following standard CRUD methods are inherited from `JpaRepository<SkillLevel, Long>`:
 
 | Method | Description |
 |--------|-------------|
-| `findAll()` | Returns all skill level entities |
-| `findById(Long id)` | Finds a skill level by its primary key |
-| `save(SkillLevel entity)` | Persists or updates a skill level |
-| `deleteById(Long id)` | Deletes a skill level by its primary key |
-| `delete(SkillLevel entity)` | Deletes a specific skill level |
-| `count()` | Returns the total number of skill levels |
-| `existsById(Long id)` | Checks if a skill level exists by its primary key |
+| `findAll()` | Returns all `SkillLevel` entities |
+| `findById(Long id)` | Finds a `SkillLevel` by its primary key |
+| `save(SkillLevel entity)` | Persists a new or updates an existing `SkillLevel` |
+| `delete(SkillLevel entity)` | Removes a `SkillLevel` from the database |
+| `deleteById(Long id)` | Deletes a `SkillLevel` by its primary key |
+| `count()` | Returns the total number of `SkillLevel` entities |
+| `existsById(Long id)` | Checks if a `SkillLevel` exists with the given primary key |
 
-### Custom Query Methods
+### Custom Methods
 
 #### `findByActivityIdOrderBySortOrder`
 
@@ -46,13 +46,13 @@ Retrieves all skill levels associated with a specific activity, ordered by their
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `activityId` | `UUID` | The unique identifier of the activity |
+| `activityId` | `UUID` | The unique identifier of the activity whose skill levels should be retrieved |
 
 **Returns:**
 
 | Type | Description |
 |------|-------------|
-| `List<SkillLevel>` | An ordered list of skill levels belonging to the specified activity |
+| `List<SkillLevel>` | An ordered list of `SkillLevel` entities belonging to the specified activity |
 
 **Example Usage:**
 
@@ -68,11 +68,5 @@ public List<SkillLevel> getSkillLevelsForActivity(UUID activityId) {
 ## Dependencies
 
 - **Spring Data JPA**: Provides the `JpaRepository` base interface and query derivation
-- **SkillLevel entity**: The domain entity this repository manages
-- **UUID**: Used for activity identification
-
-## Notes
-
-- The repository uses method name convention to automatically derive the query implementation
-- Results are sorted by `sortOrder` to maintain the intended display sequence of skill levels
-- The `activityId` parameter uses `UUID` type for distributed system compatibility
+- **SkillLevel entity**: The domain object this repository manages
+- **UUID**: Used for activity identification in the custom query method

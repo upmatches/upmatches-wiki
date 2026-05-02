@@ -8,19 +8,17 @@ sidebar_label: ExpelParticipantService
 
 ## Purpose
 
-The `ExpelParticipantService` is a Spring service class responsible for handling the expulsion of a participant from a game. It enforces business rules such as preventing an organizer from expelling themselves, validates that the participant exists and is active, and publishes a notification event upon successful expulsion.
-
-This service implements the `IExpelParticipantService` interface and is annotated with `@Service` and `@Transactional` to ensure database consistency.
+The `ExpelParticipantService` is a Spring service responsible for handling the expulsion of a participant from a game by the game organizer. It enforces business rules such as preventing self-expulsion, validates that the participant exists and is active, and triggers appropriate audit logging and notifications.
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `GameParticipantRepository` | Repository | Persistence layer for game participant entities |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID |
-| `IGameLookupService` | Service | Retrieves game entities by ID |
-| `IGameAuthorizationService` | Service | Validates that the current user is the game organizer |
-| `ApplicationEventPublisher` | Spring Event | Publishes domain events for notification purposes |
+| `GameParticipantRepository` | Repository | Data access for game participants |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
+| `IGameLookupService` | Service | Looks up game entities |
+| `IGameAuthorizationService` | Service | Authorizes game operations |
+| `ApplicationEventPublisher` | Spring | Publishes domain events for notifications |
 
 ## Public Methods
 
@@ -32,48 +30,59 @@ This service implements the `IExpelParticipantService` interface and is annotate
 public void execute(UUID gameId, UUID participantId, ExpelParticipantRequest request)
 ```
 
-Expels a participant from a game. This method performs the following steps:
+Expels a participant from a game. The method performs the following steps:
 
-1. Resolves the authenticated user's ID.
-2. Retrieves the game and verifies the user is the organizer.
-3. Finds the active participant record for the given participant ID within the specified game.
-4. Validates that the organizer is not attempting to expel themselves.
-5. Marks the participant as having left the game.
-6. Persists the change.
-7. Publishes a `GameNotificationEvent` of type `PLAYER_REMOVED_FROM_GAME`.
+1. Resolves the authenticated user ID
+2. Looks up the game and verifies the user is the organizer
+3. Finds the participant and validates they are active and belong to the specified game
+4. Prevents the organizer from expelling themselves
+5. Marks the participant as having left the game
+6. Persists the change
+7. Publishes a notification event
 
 #### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `gameId` | `UUID` | The unique identifier of the game |
-| `participantId` | `UUID` | The unique identifier of the participant to expel |
+| `gameId` | `UUID` | The ID of the game from which to expel the participant |
+| `participantId` | `UUID` | The ID of the participant to expel |
 | `request` | `ExpelParticipantRequest` | Contains the reason for expulsion |
 
 #### Throws
 
 | Exception | Condition |
 |-----------|-----------|
-| `ResourceNotFoundException` | If the participant is not found in the game or is not active |
-| `CannotExpelSelfException` | If the organizer attempts to expel themselves |
+| `ResourceNotFoundException` | Participant not found, not active, or not part of the specified game |
+| `CannotExpelSelfException` | Organizer attempts to expel themselves |
+| `AuthorizationException` | User is not the organizer of the game |
 
-#### Audit Trail
+## Audit Logging
 
-This method is annotated with `@Auditable`, which automatically records an audit event with:
+The method is annotated with `@Auditable` which automatically logs the following:
+
 - **Action**: `PARTICIPANT_EXPELLED`
 - **Resource Type**: `GAME`
 - **Resource ID**: The game ID (first argument)
 
-#### Logging
+## Notification
 
-On successful expulsion, the service logs the following information at INFO level:
-- Organizer user ID
+Upon successful expulsion, a `GameNotificationEvent` is published with:
+
+- **Type**: `PLAYER_REMOVED_FROM_GAME`
+- **Recipient**: The expelled user
+- **Context**: Game ID and optional game title (derived from the game's activity name)
+
+## Logging
+
+The service logs the expulsion event at INFO level, including:
+
+- Organizer ID
 - Participant ID
 - Expelled user ID
 - Game ID
 - Expulsion reason
 
-## Example Usage
+## Usage Example
 
 ```java
 @Autowired
@@ -84,17 +93,3 @@ public void expelPlayer(UUID gameId, UUID participantId, String reason) {
     expelParticipantService.execute(gameId, participantId, request);
 }
 ```
-
-## Business Rules
-
-1. **Self-expulsion prevention**: An organizer cannot expel themselves from the game. They must use the leave functionality instead.
-2. **Active participant only**: Only participants with `ParticipantStatus.ACTIVE` can be expelled.
-3. **Organizer authorization**: Only the game organizer can expel participants.
-4. **Notification**: The expelled user receives a `PLAYER_REMOVED_FROM_GAME` notification.
-
-## Related Components
-
-- `GameParticipant` - The entity representing a participant in a game
-- `ExpelParticipantRequest` - The request DTO containing the expulsion reason
-- `GameNotificationEvent` - The event published for notification purposes
-- `IExpelParticipantService` - The interface implemented by this service
