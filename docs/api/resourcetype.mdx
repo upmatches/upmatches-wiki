@@ -1,34 +1,45 @@
 ---
-id: resource-type
+id: resource-type-enum
 title: ResourceType Enum
 sidebar_label: ResourceType
 ---
 
-## Overview
+# ResourceType Enum
 
-The `ResourceType` enum is part of the `com.upmatches.app.features.sharelink.enums` package. It is designed to represent different types of resources within the application, specifically focusing on resources related to games. This enum provides a structured way to handle resource types and their associated paths.
+The `ResourceType` enum defines the different types of resources that can be shared via the share link feature in the UpMatches application. It provides a mapping between resource types and their corresponding API path segments.
+
+## Purpose
+
+This enum is used to standardize resource type identification throughout the share link functionality. Each enum constant represents a specific type of resource that can be shared, and contains the URL path segment associated with that resource type. This design ensures consistency when constructing API endpoints and handling resource routing.
 
 ## Enum Constants
 
-### GAME
+| Constant | Path Value | Description |
+|----------|------------|-------------|
+| `GAME`   | `games`    | Represents a game resource type |
 
-- **Description**: Represents the resource type for games.
-- **Associated Path**: `"games"`
+## Methods
 
-## Public Methods
+### `path()`
 
-The `ResourceType` enum provides the following public method:
+Returns the URL path segment associated with the resource type.
 
-| Method Signature | Description |
-|------------------|-------------|
-| `String path()`  | Returns the path associated with the resource type. |
+**Signature:**
+```java
+public String path()
+```
 
-### Method Details
+**Returns:**
+- `String` - The path segment for the resource type (e.g., `"games"` for the `GAME` constant)
 
-#### `path`
+**Example Usage:**
+```java
+ResourceType type = ResourceType.GAME;
+String path = type.path(); // Returns "games"
+```
 
-- **Description**: This method returns the path string associated with the specific resource type. It is useful for retrieving the path that corresponds to a particular resource type constant.
-- **Parameters**: None
-- **Returns**: `String` - The path associated with the resource type.
+## Usage Notes
 
-This enum is useful in scenarios where you need to manage and retrieve paths for different resource types in a consistent manner.
+- The enum is immutable and thread-safe by design
+- New resource types can be added by defining additional enum constants with their corresponding path values
+- The path values are used to construct API endpoints for resource sharing operations

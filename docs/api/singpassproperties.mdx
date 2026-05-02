@@ -1,38 +1,69 @@
 ---
 id: singpass-properties
-title: SingpassProperties Class
+title: SingpassProperties
 sidebar_label: SingpassProperties
 ---
 
+# SingpassProperties
+
+The `SingpassProperties` class is a Spring Boot configuration properties record that encapsulates all configuration parameters required for integrating with the Singpass authentication system. It uses the `@ConfigurationProperties` annotation with the prefix `app.singpass`, allowing these values to be easily configured via `application.properties` or `application.yml` files.
+
 ## Purpose
 
-The `SingpassProperties` class is a configuration properties holder for the Singpass authentication feature within the application. It is designed to capture and manage various configuration settings necessary for integrating with Singpass, a trusted digital identity platform. This class uses Spring Boot's `@ConfigurationProperties` annotation to map properties prefixed with `app.singpass` from external configuration sources (such as application.properties or application.yml) into its fields.
+This class serves as a centralized configuration holder for Singpass OAuth 2.0 / OpenID Connect authentication flow. It defines all the necessary endpoints, credentials, and parameters needed to interact with the Singpass identity provider, including authorization, token exchange, and user information retrieval.
 
-## Public Methods
+## Configuration Properties
 
-The `SingpassProperties` class is a Java record, which inherently provides a concise way to create immutable data-carrying classes. The class does not explicitly define public methods beyond its constructor, but it provides implicit accessor methods for each of its fields. Below is a table documenting these accessors:
+The following table documents all the configuration properties exposed by this record:
 
-| Method Name                   | Parameters | Return Type | Description                                                                 |
-|-------------------------------|------------|-------------|-----------------------------------------------------------------------------|
-| `clientId()`                  | None       | `String`    | Returns the client ID used for authentication with Singpass.                |
-| `redirectUri()`               | None       | `String`    | Returns the URI to which Singpass will redirect after authentication.       |
-| `issuer()`                    | None       | `String`    | Returns the issuer identifier for the Singpass service.                     |
-| `authorizationEndpoint()`     | None       | `String`    | Returns the endpoint for initiating the authorization request.              |
-| `parEndpoint()`               | None       | `String`    | Returns the Pushed Authorization Request (PAR) endpoint.                    |
-| `tokenEndpoint()`             | None       | `String`    | Returns the endpoint for obtaining tokens from Singpass.                    |
-| `jwksEndpoint()`              | None       | `String`    | Returns the JSON Web Key Set (JWKS) endpoint for retrieving public keys.    |
-| `userinfoEndpoint()`          | None       | `String`    | Returns the endpoint for accessing user information.                        |
-| `scopes()`                    | None       | `String`    | Returns the scopes requested during authentication, defaulting to "openid". |
-| `authContextType()`           | None       | `String`    | Returns the authentication context type, defaulting to "APP_AUTHENTICATION_DEFAULT". |
-| `authContextMessage()`        | None       | `String`    | Returns the message associated with the authentication context.             |
-| `privateSigningKeyPath()`     | None       | `String`    | Returns the file path to the private signing key.                           |
-| `privateEncryptionKeyPath()`  | None       | `String`    | Returns the file path to the private encryption key.                        |
+| Property | Type | Description |
+|----------|------|-------------|
+| `clientId` | `String` | The client identifier assigned by Singpass for your application |
+| `redirectUri` | `String` | The URI where Singpass will redirect users after authentication |
+| `issuer` | `String` | The issuer identifier for the Singpass identity provider |
+| `authorizationEndpoint` | `String` | The URL for initiating the authorization request |
+| `parEndpoint` | `String` | The Pushed Authorization Request (PAR) endpoint URL |
+| `tokenEndpoint` | `String` | The URL for exchanging authorization codes for tokens |
+| `jwksEndpoint` | `String` | The JSON Web Key Set (JWKS) endpoint URL for public key retrieval |
+| `userinfoEndpoint` | `String` | The URL for retrieving authenticated user information |
+| `scopes` | `String` | The OAuth 2.0 scopes requested (defaults to `"openid"`) |
+| `authContextType` | `String` | The authentication context type (defaults to `"APP_AUTHENTICATION_DEFAULT"`) |
+| `authContextMessage` | `String` | The authentication context message for user-facing prompts |
+| `privateSigningKeyPath` | `String` | The file path to the private key used for signing requests |
+| `privateEncryptionKeyPath` | `String` | The file path to the private key used for decrypting responses |
 
 ## Default Values
 
-The `SingpassProperties` class provides default values for certain fields if they are not explicitly set:
+The record provides sensible defaults for two critical properties:
 
-- **Scopes**: Defaults to `"openid"` if not specified.
-- **Auth Context Type**: Defaults to `"APP_AUTHENTICATION_DEFAULT"` if not specified.
+- **`scopes`**: Defaults to `"openid"` if not explicitly configured or if the provided value is blank
+- **`authContextType`**: Defaults to `"APP_AUTHENTICATION_DEFAULT"` if not explicitly configured or if the provided value is blank
 
-These defaults ensure that the application has a baseline configuration for interacting with Singpass, even if some properties are omitted from the configuration files.
+## Usage Example
+
+To configure these properties in your `application.yml`:
+
+```yaml
+app:
+  singpass:
+    client-id: your-client-id
+    redirect-uri: https://yourapp.com/callback
+    issuer: https://singpass.gov.sg
+    authorization-endpoint: https://singpass.gov.sg/auth
+    par-endpoint: https://singpass.gov.sg/par
+    token-endpoint: https://singpass.gov.sg/token
+    jwks-endpoint: https://singpass.gov.sg/jwks
+    userinfo-endpoint: https://singpass.gov.sg/userinfo
+    scopes: openid profile
+    auth-context-type: APP_AUTHENTICATION_DEFAULT
+    auth-context-message: Please authenticate with Singpass
+    private-signing-key-path: /path/to/signing-key.pem
+    private-encryption-key-path: /path/to/encryption-key.pem
+```
+
+## Key Features
+
+- **Immutable Configuration**: As a Java record, all properties are immutable after construction
+- **Spring Boot Integration**: Automatically binds properties from external configuration sources
+- **Sensible Defaults**: Provides fallback values for critical authentication parameters
+- **Type Safety**: All properties are strongly typed as `String` values

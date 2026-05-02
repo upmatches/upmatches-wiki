@@ -1,34 +1,70 @@
 ---
 id: admin-game-controller
-title: AdminGameController
+title: Admin Game Controller
 sidebar_label: AdminGameController
 ---
 
-import com.upmatches.app.features.game.services.IHardDeleteGameService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+# AdminGameController
 
-import java.util.UUID;
+The `AdminGameController` is a Spring REST controller that provides administrative endpoints for managing games. It exposes a single endpoint to perform a hard delete of a game by its unique identifier.
 
-## AdminGameController
+## Purpose
 
-The `AdminGameController` class is a Spring Boot REST controller responsible for handling administrative operations related to games. Specifically, it provides functionality to hard delete a game by its unique identifier. This controller is part of the `com.upmatches.app.features.game.controllers` package and interacts with the `IHardDeleteGameService` to perform the deletion operation.
+This controller is part of the admin API and is responsible for permanently removing a game from the system. Unlike a soft delete (which marks a record as inactive), a hard delete physically removes the game data from the database.
 
-### Public Methods
+## Dependencies
 
-#### `hardDeleteGame`
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `IHardDeleteGameService` | Service | Interface defining the business logic for hard deleting a game |
 
-This method is mapped to the HTTP DELETE request for the endpoint `/api/v1/admin/games/{id}`. It facilitates the hard deletion of a game identified by its UUID.
+## Constructor
 
-| Parameter | Type   | Description                          |
-|-----------|--------|--------------------------------------|
-| `id`      | UUID   | The unique identifier of the game to be deleted. |
+| Constructor | Description |
+|-------------|-------------|
+| `AdminGameController(IHardDeleteGameService hardDeleteGameService)` | Injects the hard delete game service via constructor injection |
 
-| Return Type          | Description                                      |
-|----------------------|--------------------------------------------------|
-| `ResponseEntity<Void>` | Returns a response entity with no content, indicating the deletion was successful. | 
+## Endpoints
 
-The `hardDeleteGame` method utilizes the `IHardDeleteGameService` to execute the deletion logic and returns a `ResponseEntity` with HTTP status 204 (No Content) upon successful deletion.
+### Hard Delete Game
+
+Permanently removes a game from the system.
+
+**HTTP Method:** `DELETE`
+
+**Endpoint:** `/api/v1/admin/games/{id}`
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to delete |
+
+**Response:**
+
+| Status Code | Description |
+|-------------|-------------|
+| `204 No Content` | The game was successfully deleted |
+
+**Example Request:**
+
+```http
+DELETE /api/v1/admin/games/550e8400-e29b-41d4-a716-446655440000
+```
+
+**Example Response:**
+
+```
+HTTP/1.1 204 No Content
+```
+
+## Usage Notes
+
+- This endpoint performs a permanent deletion. Once executed, the game data cannot be recovered.
+- The endpoint is intended for administrative use only and should be protected with appropriate authentication and authorization mechanisms.
+- The `IHardDeleteGameService` interface abstracts the underlying data access logic, allowing for different implementations (e.g., direct database deletion, event-driven deletion).
+
+## Related Components
+
+- `IHardDeleteGameService` - Service interface for hard delete operations
+- Game entity - The domain object being deleted

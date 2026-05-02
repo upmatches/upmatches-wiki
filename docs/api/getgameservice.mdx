@@ -1,32 +1,79 @@
 ---
 id: get-game-service
-title: GetGameService Class Documentation
+title: GetGameService
 sidebar_label: GetGameService
 ---
 
+# GetGameService
+
+The `GetGameService` class is a Spring service responsible for retrieving a game's details for a viewer. It handles both authenticated and unauthenticated users, providing appropriate game responses based on the viewer's context.
+
 ## Purpose
 
-The `GetGameService` class is a Spring service component responsible for retrieving game details and determining the joinability status for viewers. It integrates with various services and repositories to perform its operations, ensuring that only authorized users can view game information.
+This service orchestrates the retrieval of a game by:
+1. Resolving the current user (if authenticated)
+2. Looking up the game by its ID
+3. Authorizing the viewer to access the game
+4. Counting active participants
+5. Computing joinability information for authenticated users
+6. Returning a tailored `GameResponse` based on the viewer's authentication status
+
+## Class Details
+
+- **Package**: `com.upmatches.app.features.game.services`
+- **Annotations**: `@Service`
+- **Implements**: `IGetGameService`
+- **Modifiers**: `non-sealed`
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameParticipantRepository` | Repository | Provides access to game participant data |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
+| `IGameLookupService` | Service | Handles game lookup operations |
+| `IGameAuthorizationService` | Service | Manages authorization checks for game access |
+| `IGameJoinabilityService` | Service | Computes joinability information for viewers |
 
 ## Public Methods
 
-### `execute`
+### `execute(UUID id)`
 
-Retrieves game details and computes viewer joinability based on the user's authentication status and game participation.
+Retrieves a game and returns a response tailored to the viewer's authentication status.
 
-| Parameter | Type   | Description                           |
-|-----------|--------|---------------------------------------|
-| `id`      | `UUID` | The unique identifier of the game.    |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to retrieve |
 
-| Return Type  | Description                                                                 |
-|--------------|-----------------------------------------------------------------------------|
-| `GameResponse` | A response object containing game details and viewer joinability information. |
+**Returns**: `GameResponse` - A response object containing game details, participant count, and (for authenticated users) joinability information.
 
-## Method Details
+**Throws**:
+- `ResourceNotFoundException` - If the game is not found
+- Authorization exceptions if the viewer is not permitted to view the game
 
-- **`execute(UUID id)`**: This method performs the following operations:
-  - Retrieves the optional user ID from the authenticated user resolver.
-  - Finds the game using the `IGameLookupService`. If the game is not found, a `ResourceNotFoundException` is thrown.
-  - Asserts that the user has permission to view the game using the `IGameAuthorizationService`.
-  - Counts the number of active participants in the game using the `GameParticipantRepository`.
-  - Depending on whether the user is authenticated, it returns a `GameResponse` for anonymous users or a detailed response for authenticated viewers, including joinability status computed by the `IGameJoinabilityService`.
+**Behavior**:
+1. Resolves the optional user ID from the authentication context
+2. Looks up the game by ID, throwing `ResourceNotFoundException` if not found
+3. Authorizes the viewer (or null for anonymous) to view the game
+4. Counts active participants using `ServiceOperationExecutor`
+5. For anonymous users: returns `GameResponse.fromGameAnonymous(game, count)`
+6. For authenticated users: computes joinability and returns `GameResponse.fromGameForViewer(game, count, joinability, userId)`
+
+## Usage Example
+
+```java
+@Autowired
+private GetGameService getGameService;
+
+public void displayGame(UUID gameId) {
+    GameResponse response = getGameService.execute(gameId);
+    // Process the response based on viewer type
+}
+```
+
+## Notes
+
+- The service is marked as `non-sealed`, allowing further extension if needed
+- The `@Transactional(readOnly = true)` annotation ensures read-optimized database access
+- Anonymous users receive a simplified response without joinability information
+- The `ServiceOperationExecutor` wraps the participant count operation with standardized error handling

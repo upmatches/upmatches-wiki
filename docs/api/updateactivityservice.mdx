@@ -4,26 +4,82 @@ title: UpdateActivityService
 sidebar_label: UpdateActivityService
 ---
 
-## Overview
+# UpdateActivityService
 
-The `UpdateActivityService` class is a Spring service responsible for handling the update operations for `Activity` entities. It ensures that an activity can be updated if it exists and that the new name does not conflict with existing activities. This service is part of the application's activity management feature and uses transactional operations to maintain data integrity.
+The `UpdateActivityService` class is a Spring service component responsible for updating existing `Activity` entities in the system. It implements the `IUpdateActivityService` interface and provides transactional, auditable update operations with comprehensive validation and error handling.
+
+## Purpose
+
+This service handles the business logic for updating activity records. It ensures that:
+- The activity to be updated exists in the database
+- The new name doesn't conflict with existing activities (unless it's the same activity)
+- The update operation is executed within a transaction
+- The operation is audited for tracking purposes
+- Proper error handling and resource management are maintained
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `ActivityRepository` | Constructor Injection | Repository for accessing and persisting activity data |
 
 ## Public Methods
 
-### `execute`
+### `execute(UUID id, UpdateActivityRequest request)`
 
-The `execute` method updates an existing activity based on the provided ID and request data. It checks for the existence of the activity and ensures that the new name is unique before proceeding with the update.
+Updates an existing activity with the provided data.
 
-| Parameter | Type                      | Description                                                                 |
-|-----------|---------------------------|-----------------------------------------------------------------------------|
-| `id`      | `UUID`                    | The unique identifier of the activity to be updated.                        |
-| `request` | `UpdateActivityRequest`   | Contains the new data for the activity, including the potential new name.   |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the activity to update |
+| `request` | `UpdateActivityRequest` | The request object containing the updated activity data |
 
-| Return Type         | Description                                                                 |
-|---------------------|-----------------------------------------------------------------------------|
-| `ActivityResponse`  | Returns a response object containing the updated activity details.          |
+**Returns:** `ActivityResponse` - The response object containing the updated activity data
 
-## Exceptions
+**Throws:**
+- `ResourceNotFoundException` - If no activity exists with the provided ID
+- `ActivityAlreadyExistsException` - If another activity already has the requested name
 
-- `ResourceNotFoundException`: Thrown if the activity with the specified ID does not exist.
-- `ActivityAlreadyExistsException`: Thrown if an activity with the new name already exists and is different from the current activity's name.
+**Behavior:**
+1. Retrieves the existing activity by ID
+2. Validates that the activity exists; throws `ResourceNotFoundException` if not found
+3. Checks for name uniqueness; throws `ActivityAlreadyExistsException` if another activity has the same name
+4. Updates the activity name
+5. Persists the changes
+6. Returns the updated activity as a response object
+
+## Annotations
+
+| Annotation | Description |
+|------------|-------------|
+| `@Service` | Marks this class as a Spring service component |
+| `@Transactional` | Ensures the update operation is executed within a database transaction |
+| `@Auditable` | Enables auditing for the update operation with action "ACTIVITY_UPDATED" and resource type "ACTIVITY" |
+
+## Error Handling
+
+The service uses a consistent error handling approach:
+- **ResourceNotFoundException**: Thrown when the activity ID doesn't match any existing record
+- **ActivityAlreadyExistsException**: Thrown when attempting to rename an activity to a name already used by another activity
+- **ServiceOperationExecutor**: Wraps the update logic to provide consistent error handling and operation status tracking
+
+## Usage Example
+
+```java
+@Autowired
+private UpdateActivityService updateActivityService;
+
+public void updateActivityExample() {
+    UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+    UpdateActivityRequest request = new UpdateActivityRequest("Updated Activity Name");
+    
+    try {
+        ActivityResponse response = updateActivityService.execute(activityId, request);
+        // Handle successful update
+    } catch (ResourceNotFoundException e) {
+        // Handle activity not found
+    } catch (ActivityAlreadyExistsException e) {
+        // Handle duplicate name
+    }
+}
+```

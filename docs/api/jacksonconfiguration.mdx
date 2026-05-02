@@ -1,34 +1,82 @@
 ---
 id: jackson-configuration
-title: JacksonConfiguration Class
+title: Jackson Configuration
 sidebar_label: JacksonConfiguration
 ---
 
-## Overview
+# JacksonConfiguration
 
-The `JacksonConfiguration` class is a Spring configuration class that customizes the behavior of the Jackson `ObjectMapper`. Jackson is a popular library for processing JSON in Java, and this configuration class is designed to tailor its serialization and deserialization features to meet specific application needs.
+The `JacksonConfiguration` class is a Spring `@Configuration` class that provides a customized `ObjectMapper` bean for the application. This configuration ensures consistent JSON serialization and deserialization behavior across the entire Spring context, particularly for handling Java 8 date/time types and lenient parsing of unknown properties.
 
 ## Purpose
 
-The primary purpose of the `JacksonConfiguration` class is to provide a customized `ObjectMapper` bean that is used throughout the application for JSON processing. This configuration ensures that the application can handle Java 8 date and time types, manage unknown properties gracefully, and control how dates are serialized.
+This configuration centralizes the setup of Jackson's `ObjectMapper`, which is the primary class used by Spring Boot for JSON processing. By defining a `@Primary` bean, it overrides the default `ObjectMapper` created by Spring Boot's auto-configuration. The customizations applied are:
 
-## Public Methods
+- **Java 8 Date/Time Support**: Registers the `JavaTimeModule` to properly serialize and deserialize `java.time` objects (e.g., `LocalDate`, `LocalDateTime`, `ZonedDateTime`).
+- **Human-Readable Dates**: Disables writing dates as timestamps, so dates are serialized in ISO-8601 string format (e.g., `"2023-10-27T10:30:00"`) instead of numeric timestamps.
+- **Lenient Deserialization**: Disables failure on unknown JSON properties, allowing the application to ignore fields in incoming JSON that do not match any Java property.
+- **Empty String Handling**: Enables acceptance of empty strings as null objects, which is useful for handling empty string values in JSON that should be treated as `null` in Java.
 
-The class provides the following public method:
+## Bean Definition
 
-### objectMapper
+| Method | Return Type | Annotations | Description |
+|--------|-------------|-------------|-------------|
+| `objectMapper()` | `ObjectMapper` | `@Bean`, `@Primary` | Creates and configures the primary `ObjectMapper` instance used throughout the application. |
 
-This method defines a Spring bean for the `ObjectMapper` with specific configurations.
+## Configuration Details
 
-| Method Name | Parameters | Return Type | Description |
-|-------------|------------|-------------|-------------|
-| `objectMapper` | None | `ObjectMapper` | Configures and returns a customized `ObjectMapper` instance. |
+The `objectMapper()` method returns a new `ObjectMapper` instance with the following configuration chain:
 
-#### Configuration Details
+1. **`registerModule(new JavaTimeModule())`**  
+   Adds support for Java 8 date/time types (`java.time.*`). Without this module, Jackson would fail to serialize or deserialize these types.
 
-- **JavaTimeModule**: Registers the `JavaTimeModule` to handle Java 8 date and time API types.
-- **SerializationFeature.WRITE_DATES_AS_TIMESTAMPS**: Disabled to ensure dates are not written as timestamps.
-- **DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES**: Disabled to prevent exceptions when encountering unknown properties in JSON.
-- **DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT**: Enabled to allow empty strings to be treated as `null` during deserialization.
+2. **`disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)`**  
+   Ensures dates are serialized as ISO-8601 strings rather than numeric arrays or timestamps. This improves readability and interoperability.
 
-By providing this configuration, the `JacksonConfiguration` class enhances the application's ability to process JSON data efficiently and flexibly.
+3. **`disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)`**  
+   Prevents deserialization failures when the JSON contains properties that do not exist in the target Java class. This is particularly useful for backward compatibility when the API evolves.
+
+4. **`enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)`**  
+   Treats empty string values (`""`) in JSON as `null` during deserialization. This is helpful when dealing with frontend forms that may send empty strings for optional fields.
+
+## Usage
+
+This configuration is automatically applied when Spring Boot scans the `com.upmatches.app.shared.configurations` package. Any component that injects an `ObjectMapper` will receive this customized instance:
+
+```java
+@Service
+public class UserService {
+    private final ObjectMapper objectMapper;
+
+    public UserService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public User deserializeUser(String json) {
+        return objectMapper.readValue(json, User.class);
+    }
+}
+```
+
+## Dependencies
+
+This configuration requires the following dependency in your `pom.xml` or `build.gradle`:
+
+**Maven:**
+```xml
+<dependency>
+    <groupId>com.fasterxml.jackson.datatype</groupId>
+    <artifactId>jackson-datatype-jsr310</artifactId>
+</dependency>
+```
+
+**Gradle:**
+```groovy
+implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+```
+
+## Notes
+
+- The `@Primary` annotation ensures this bean takes precedence over any other `ObjectMapper` beans, including the one auto-configured by Spring Boot.
+- If you need different `ObjectMapper` configurations for specific use cases, you can create additional beans without `@Primary` and use `@Qualifier` to inject them.
+- The `ACCEPT_EMPTY_STRING_AS_NULL_OBJECT` feature may have side effects if your application relies on distinguishing between empty strings and null values. Use it judiciously.

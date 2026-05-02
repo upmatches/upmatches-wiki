@@ -1,35 +1,54 @@
 ---
 id: cursor-paged-response
-title: CursorPagedResponse Class
+title: CursorPagedResponse
 sidebar_label: CursorPagedResponse
 ---
 
-## Overview
+# CursorPagedResponse
 
-The `CursorPagedResponse` class is a generic record in the `com.upmatches.app.features.game.responses` package. It is designed to encapsulate a paginated response using a cursor-based pagination mechanism. This is particularly useful in scenarios where you need to efficiently handle large datasets by loading data in chunks, and where traditional offset-based pagination might not be optimal.
+A generic Java record representing a paginated response using cursor-based pagination. This class encapsulates a list of content items and a cursor string pointing to the next page of results.
 
-## Public Methods
+## Purpose
 
-The `CursorPagedResponse` record automatically provides the following methods due to its nature as a Java record:
+Cursor-based pagination (also known as keyset pagination) is an efficient way to paginate through large datasets where traditional offset-based pagination can become slow or inconsistent. The `CursorPagedResponse` record provides a standardized container for returning paginated results from an API endpoint.
 
-### Constructor
+The `nextCursor` field acts as a pointer to the next page. When it is `null` or empty, it indicates that there are no more pages to retrieve.
 
-The constructor for `CursorPagedResponse` is automatically provided and initializes the record with the specified content and next cursor.
+## Record Definition
 
-| Parameter   | Type     | Description                                      |
-|-------------|----------|--------------------------------------------------|
-| `content`   | `List<T>`| The list of items of type `T` representing the current page of data. |
-| `nextCursor`| `String` | A string representing the cursor for the next page of data. |
+```java
+public record CursorPagedResponse<T>(
+    List<T> content,
+    String nextCursor
+) {}
+```
 
-### Accessor Methods
+## Fields
 
-Records in Java automatically generate accessor methods for their components. For `CursorPagedResponse`, the following accessor methods are available:
+| Field        | Type        | Description                                                                 |
+|--------------|-------------|-----------------------------------------------------------------------------|
+| `content`    | `List<T>`   | The list of items for the current page.                                     |
+| `nextCursor` | `String`    | A cursor string to retrieve the next page. `null` or empty means no more pages. |
 
-| Method          | Return Type | Description                                      |
-|-----------------|-------------|--------------------------------------------------|
-| `content()`     | `List<T>`   | Returns the list of items in the current page.   |
-| `nextCursor()`  | `String`    | Returns the cursor for the next page of data.    |
+## Usage Example
 
-## Usage
+```java
+// Example: Creating a response with a next cursor
+List<User> users = List.of(user1, user2, user3);
+CursorPagedResponse<User> response = new CursorPagedResponse<>(users, "cursor_abc123");
 
-The `CursorPagedResponse` class is typically used in APIs where data needs to be fetched in a paginated manner. By using a cursor, it allows for efficient data retrieval without the pitfalls of offset-based pagination, such as skipping or duplicating records when data changes between requests.
+// Example: Creating a response for the last page
+CursorPagedResponse<User> lastPage = new CursorPagedResponse<>(users, null);
+```
+
+## Type Parameters
+
+| Parameter | Description                                      |
+|-----------|--------------------------------------------------|
+| `T`       | The type of elements contained in the page.      |
+
+## Notes
+
+- This record is immutable by design (all fields are final).
+- The `content` list should not be `null`; use `List.of()` or `Collections.emptyList()` for empty pages.
+- The `nextCursor` value is typically an opaque string (e.g., a base64-encoded ID or timestamp) that should not be interpreted by the client.

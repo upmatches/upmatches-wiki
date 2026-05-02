@@ -1,27 +1,62 @@
 ---
-id: isoftwaredeletegameservice
+id: isoftdeletegameservice
 title: ISoftDeleteGameService Interface
 sidebar_label: ISoftDeleteGameService
 ---
 
-## Overview
+# ISoftDeleteGameService Interface
 
-The `ISoftDeleteGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines the contract for services that perform a soft delete operation on a game entity identified by a unique identifier (UUID). The interface is sealed, meaning it restricts which classes can implement it, specifically permitting only the `SoftDeleteGameService` class.
+The `ISoftDeleteGameService` interface defines a contract for soft-deleting game entities within the application. Soft deletion marks a record as deleted without physically removing it from the database, allowing for potential recovery or audit trails.
 
-## Public Methods
+This interface is part of the game management feature and follows a sealed interface pattern to restrict implementation to a single authorized class.
 
-The `ISoftDeleteGameService` interface declares the following public method:
+## Interface Definition
 
-| Method Signature | Description |
-|------------------|-------------|
-| `void execute(UUID id)` | Executes the soft delete operation for a game entity identified by the given UUID. |
+```java
+public sealed interface ISoftDeleteGameService permits SoftDeleteGameService
+```
 
-### Method Details
+The interface is declared as `sealed`, meaning only the specified class `SoftDeleteGameService` is permitted to implement it. This design enforces controlled extension and ensures that all soft-delete operations follow a consistent implementation.
 
-#### `execute`
+## Method Summary
 
-- **Parameters**:
-  - `UUID id`: The unique identifier of the game entity to be soft deleted.
-- **Return Type**: `void` (This method does not return any value)
+| Method | Description |
+|--------|-------------|
+| `void execute(UUID id)` | Performs a soft-delete operation on a game identified by the provided UUID. |
 
-The `execute` method is responsible for performing the soft delete operation, which typically involves marking the game entity as deleted without permanently removing it from the database. This allows for potential recovery or auditing purposes.
+## Method Details
+
+### `execute(UUID id)`
+
+Initiates the soft-deletion process for a game entity.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to be soft-deleted. Must not be null. |
+
+**Returns:** `void` - This method does not return a value.
+
+**Behavior:**
+- Marks the specified game entity as deleted in the data store
+- Does not physically remove the record from the database
+- May update a `deleted_at` timestamp or similar flag
+- Throws appropriate exceptions if the game ID is invalid or the operation fails
+
+## Usage Example
+
+```java
+@Autowired
+private ISoftDeleteGameService softDeleteGameService;
+
+public void removeGame(UUID gameId) {
+    softDeleteGameService.execute(gameId);
+}
+```
+
+## Implementation Notes
+
+- Only `SoftDeleteGameService` can implement this interface due to the sealed modifier
+- The UUID parameter ensures globally unique identification of games
+- Soft deletion preserves data integrity and enables undo operations if needed

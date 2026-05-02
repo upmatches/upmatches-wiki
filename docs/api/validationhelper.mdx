@@ -1,49 +1,69 @@
 ---
 id: validation-helper
-title: ValidationHelper Class
+title: ValidationHelper Utility Class
 sidebar_label: ValidationHelper
 ---
 
-## Purpose
+# ValidationHelper
 
-The `ValidationHelper` class is a utility class designed to provide validation methods for pagination and sorting parameters. It ensures that the input parameters for pagination and sorting are within acceptable ranges and formats, preventing potential errors in data retrieval operations.
+The `ValidationHelper` class is a utility class designed to centralize common validation logic for API request parameters. It provides static methods to validate pagination parameters (both offset-based and cursor-based) and sort field parameters, ensuring that incoming requests meet the application's constraints before they are processed further.
 
-## Public Methods
+This class is declared as `final` and has a private constructor to prevent instantiation, following the standard utility class pattern in Java.
 
-### `validatePaginationParameters`
+## Methods
 
-Validates pagination parameters to ensure they are within acceptable ranges.
+### `validatePaginationParameters(int page, int size)`
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `page`    | `int` | The page number to validate. Must be greater than or equal to 0. |
-| `size`    | `int` | The size of the page to validate. Must be greater than 0 and less than or equal to 1000. |
-
-**Return Type:** `void`
-
-**Exceptions:** Throws `IllegalArgumentException` if the parameters do not meet the criteria.
-
-### `validateCursorPaginationParameters`
-
-Validates the size parameter for cursor-based pagination.
+Validates offset-based pagination parameters.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `size`    | `int` | The size of the page to validate. Must be greater than 0 and less than or equal to 1000. |
+| `page` | `int` | The page number (zero-indexed). Must be >= 0. |
+| `size` | `int` | The number of items per page. Must be > 0 and <= 1000. |
 
-**Return Type:** `void`
+**Throws:**
+- `IllegalArgumentException` if `page` is negative.
+- `IllegalArgumentException` if `size` is <= 0 or > 1000.
 
-**Exceptions:** Throws `IllegalArgumentException` if the size does not meet the criteria.
+### `validateCursorPaginationParameters(int size)`
 
-### `validateSortBy`
+Validates cursor-based pagination parameters.
 
-Validates the `sortBy` parameter to ensure it is not null or empty and is among the allowed fields.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `size` | `int` | The number of items per page. Must be > 0 and <= 1000. |
 
-| Parameter    | Type     | Description |
-|--------------|----------|-------------|
-| `sortBy`     | `String` | The field to sort by. Cannot be null or empty. |
-| `allowedFields` | `String...` | A varargs parameter representing the fields that are allowed for sorting. |
+**Throws:**
+- `IllegalArgumentException` if `size` is <= 0 or > 1000.
 
-**Return Type:** `void`
+### `validateSortBy(String sortBy, String... allowedFields)`
 
-**Exceptions:** Throws `IllegalArgumentException` if `sortBy` is null, empty, or not among the allowed fields.
+Validates that the `sortBy` parameter matches one of the allowed field names.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sortBy` | `String` | The field name to sort by. Cannot be null or empty. |
+| `allowedFields` | `String...` | Varargs of allowed field names for sorting. |
+
+**Throws:**
+- `IllegalArgumentException` if `sortBy` is null or empty.
+- `IllegalArgumentException` if `sortBy` does not match any of the `allowedFields`.
+
+## Usage Example
+
+```java
+// Validate offset-based pagination
+ValidationHelper.validatePaginationParameters(0, 20);
+
+// Validate cursor-based pagination
+ValidationHelper.validateCursorPaginationParameters(50);
+
+// Validate sort field
+ValidationHelper.validateSortBy("createdAt", "createdAt", "updatedAt", "name");
+```
+
+## Notes
+
+- The default maximum page size is set to `1000` items per page.
+- This class is thread-safe as it contains no mutable state.
+- All methods throw `IllegalArgumentException` with descriptive error messages to aid in debugging.

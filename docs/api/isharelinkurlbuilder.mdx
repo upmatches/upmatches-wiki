@@ -1,33 +1,84 @@
 ---
-id: isharelinkurlbuilder
+id: isharelink-url-builder
 title: IShareLinkUrlBuilder Interface
 sidebar_label: IShareLinkUrlBuilder
 ---
 
-## Overview
+# IShareLinkUrlBuilder Interface
 
-The `IShareLinkUrlBuilder` interface is part of the `com.upmatches.app.features.sharelink.services` package. It defines a contract for building various types of URLs related to sharing links within the application. This interface is designed to be implemented by classes that generate URLs for different platforms, such as web and mobile, based on resource types and identifiers.
+The `IShareLinkUrlBuilder` is a **sealed interface** that defines the contract for building shareable URLs within the application. It provides a standardized way to generate different types of URLs (share, web, and mobile) for various resources.
 
-## Public Methods
+This interface is part of the share link feature and is designed to be implemented by the `ShareLinkUrlBuilder` class, ensuring a consistent URL generation strategy across the application.
 
-The `IShareLinkUrlBuilder` interface declares the following public methods:
+## Interface Definition
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `buildShareUrl` | `String code` | `String` | Constructs a shareable URL using the provided code. |
-| `buildWebUrl` | `ResourceType resourceType`, `String resourceId` | `String` | Generates a web URL for the specified resource type and resource identifier. |
-| `buildMobileUrl` | `ResourceType resourceType`, `String resourceId` | `String` | Creates a mobile-specific URL for the given resource type and resource identifier. |
+```java
+public sealed interface IShareLinkUrlBuilder permits ShareLinkUrlBuilder {
+    // Method declarations
+}
+```
+
+The interface is declared as `sealed`, meaning only the specified class (`ShareLinkUrlBuilder`) is permitted to implement it. This design pattern ensures controlled inheritance and maintains a single, well-defined implementation.
+
+## Methods
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `buildShareUrl` | `String` | `String code` | Builds a shareable URL using a unique code identifier |
+| `buildWebUrl` | `String` | `ResourceType resourceType`, `String resourceId` | Builds a web-based URL for a specific resource |
+| `buildMobileUrl` | `String` | `ResourceType resourceType`, `String resourceId` | Builds a mobile deep-link URL for a specific resource |
 
 ### Method Details
 
-- **`buildShareUrl(String code)`**: This method takes a single parameter, `code`, which is a `String` representing a unique identifier or code for the shareable link. It returns a `String` that is the constructed URL intended for sharing.
+#### `buildShareUrl(String code)`
+- **Purpose**: Generates a shareable URL based on a unique code. This is typically used for sharing content via links that can be distributed to other users.
+- **Parameters**:
+  - `code`: A unique string identifier that represents the resource to be shared.
+- **Returns**: A complete URL string that can be used to access the shared resource.
 
-- **`buildWebUrl(ResourceType resourceType, String resourceId)`**: This method requires two parameters:
-  - `resourceType`: An instance of `ResourceType` enum, indicating the type of resource for which the URL is being generated.
-  - `resourceId`: A `String` representing the unique identifier of the resource.
-  
-  It returns a `String` that is the URL formatted for web access.
+#### `buildWebUrl(ResourceType resourceType, String resourceId)`
+- **Purpose**: Constructs a standard web URL for accessing a resource through a browser.
+- **Parameters**:
+  - `resourceType`: An enum value from `ResourceType` indicating the type of resource (e.g., profile, post, event).
+  - `resourceId`: The unique identifier of the specific resource.
+- **Returns**: A web-friendly URL string.
 
-- **`buildMobileUrl(ResourceType resourceType, String resourceId)`**: Similar to `buildWebUrl`, this method also takes `resourceType` and `resourceId` as parameters. It returns a `String` that is the URL formatted specifically for mobile access.
+#### `buildMobileUrl(ResourceType resourceType, String resourceId)`
+- **Purpose**: Creates a mobile deep-link URL that can open the resource directly within the mobile application.
+- **Parameters**:
+  - `resourceType`: An enum value from `ResourceType` indicating the type of resource.
+  - `resourceId`: The unique identifier of the specific resource.
+- **Returns**: A mobile deep-link URL string.
 
-The `IShareLinkUrlBuilder` interface is a sealed interface, which means it restricts which classes can implement it. In this case, only the `ShareLinkUrlBuilder` class is permitted to implement this interface.
+## Usage Example
+
+```java
+// Example implementation (conceptual)
+public class ShareLinkUrlBuilder implements IShareLinkUrlBuilder {
+    
+    @Override
+    public String buildShareUrl(String code) {
+        return "https://app.example.com/share/" + code;
+    }
+    
+    @Override
+    public String buildWebUrl(ResourceType resourceType, String resourceId) {
+        return "https://app.example.com/" + resourceType.name().toLowerCase() + "/" + resourceId;
+    }
+    
+    @Override
+    public String buildMobileUrl(ResourceType resourceType, String resourceId) {
+        return "yourapp://" + resourceType.name().toLowerCase() + "/" + resourceId;
+    }
+}
+```
+
+## Dependencies
+
+- **`ResourceType`**: An enum located in `com.upmatches.app.features.sharelink.enums` that defines the types of resources available for sharing.
+
+## Notes
+
+- The interface is sealed to restrict implementation to `ShareLinkUrlBuilder` only, ensuring a single source of truth for URL building logic.
+- The `ResourceType` enum should be consulted for available resource types that can be used with `buildWebUrl` and `buildMobileUrl` methods.
+- URL formats and patterns are determined by the implementing class and should follow the application's URL routing conventions.

@@ -1,53 +1,118 @@
 ---
 id: paged-response
-title: PagedResponse Class
+title: PagedResponse
 sidebar_label: PagedResponse
 ---
 
+# PagedResponse
+
+A generic paginated response wrapper designed for REST API responses. This record provides a standardized way to return paginated data along with comprehensive pagination metadata, making it easy for clients to navigate through large datasets.
+
 ## Purpose
 
-The `PagedResponse` class is a generic wrapper designed to encapsulate paginated responses. It is particularly useful in RESTful APIs where data is returned in pages. This class utilizes Spring Data's `Page` interface to provide a structured way to handle pagination metadata along with the actual content of the current page.
+The `PagedResponse` class serves as a DTO (Data Transfer Object) for paginated API responses. It encapsulates:
+- The actual data items for the current page
+- Detailed pagination metadata (page number, size, total elements, total pages, and navigation flags)
+
+This pattern is commonly used in Spring Boot applications to provide consistent paginated responses across all endpoints.
+
+## Structure
+
+The class is implemented as a Java record with two main components:
+
+### PagedResponse<T>
+The outer record containing the paginated data.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `content` | `List<T>` | List of items in the current page |
+| `page` | `PageInfo` | Pagination metadata |
+
+### PageInfo
+A nested record containing pagination metadata.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `number` | `Integer` | Current page number (zero-based) |
+| `size` | `Integer` | Number of items per page |
+| `totalElements` | `Long` | Total number of items across all pages |
+| `totalPages` | `Integer` | Total number of pages |
+| `first` | `Boolean` | Whether this is the first page |
+| `last` | `Boolean` | Whether this is the last page |
+| `hasNext` | `Boolean` | Whether there is a next page |
+| `hasPrevious` | `Boolean` | Whether there is a previous page |
 
 ## Public Methods
 
-The `PagedResponse` class provides two static methods to create instances of paginated responses. These methods are designed to be flexible, allowing for straightforward conversion from a `Page` object to a `PagedResponse`.
+### `of(Page<T> page)`
+Creates a `PagedResponse` from a Spring Data `Page` object.
 
-### Method: `of(Page<T> page)`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | `Page<T>` | The Spring Data Page to convert |
 
-This method creates a `PagedResponse` from a given `Page` object, encapsulating the content and pagination metadata.
+**Returns:** `PagedResponse<T>` - A paginated response with the same item type
 
-| Parameter | Type     | Description                       |
-|-----------|----------|-----------------------------------|
-| page      | `Page<T>`| The page object containing data.  |
+### `of(Page<T> page, Function<T, R> mapper)`
+Creates a `PagedResponse` from a Spring Data `Page` object, applying a mapping function to transform the items.
 
-| Return Type      | Description                                      |
-|------------------|--------------------------------------------------|
-| `PagedResponse<T>` | A new instance of `PagedResponse` with content and pagination metadata. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | `Page<T>` | The Spring Data Page to convert |
+| `mapper` | `Function<T, R>` | Function to transform items from type T to type R |
 
-### Method: `of(Page<T> page, Function<T, R> mapper)`
+**Returns:** `PagedResponse<R>` - A paginated response with transformed items
 
-This method creates a `PagedResponse` from a given `Page` object and applies a mapping function to transform the content.
+## Usage Examples
 
-| Parameter | Type                  | Description                                         |
-|-----------|-----------------------|-----------------------------------------------------|
-| page      | `Page<T>`             | The page object containing data.                    |
-| mapper    | `Function<T, R>`      | A function to transform each element in the content.|
+### Basic Usage
+```java
+// Assuming you have a Page<User> from a repository
+Page<User> userPage = userRepository.findAll(pageable);
+PagedResponse<User> response = PagedResponse.of(userPage);
+```
 
-| Return Type      | Description                                      |
-|------------------|--------------------------------------------------|
-| `PagedResponse<R>` | A new instance of `PagedResponse` with transformed content and pagination metadata. |
+### With Mapping
+```java
+// Transform entities to DTOs
+Page<User> userPage = userRepository.findAll(pageable);
+PagedResponse<UserDTO> response = PagedResponse.of(userPage, user -> new UserDTO(user.getId(), user.getName()));
+```
 
-## PageInfo Record
+## JSON Serialization
 
-The `PageInfo` record is a nested static record within `PagedResponse` that holds pagination metadata. It provides detailed information about the current page, including the page number, size, total elements, total pages, and navigation flags.
+The class uses Jackson annotations for JSON serialization:
+- `@JsonInclude(JsonInclude.Include.NON_NULL)` - Excludes null fields from the JSON output
+- `@Schema` annotations provide OpenAPI/Swagger documentation for the API
 
-| Field         | Type      | Description                                           |
-|---------------|-----------|-------------------------------------------------------|
-| number        | `Integer` | Current page number (zero-based).                     |
-| size          | `Integer` | Number of items per page.                             |
-| totalElements | `Long`    | Total number of items across all pages.               |
-| totalPages    | `Integer` | Total number of pages.                                |
-| first         | `Boolean` | Whether this is the first page.                       |
-| last          | `Boolean` | Whether this is the last page.                        |
-| hasNext       | `Boolean` | Whether there is a next page.                         |
-| hasPrevious   | `Boolean` | Whether there is a previous page.                     |
+### Example JSON Output
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "name": "John Doe"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith"
+    }
+  ],
+  "page": {
+    "number": 0,
+    "size": 20,
+    "totalElements": 100,
+    "totalPages": 5,
+    "first": true,
+    "last": false,
+    "hasNext": true,
+    "hasPrevious": false
+  }
+}
+```
+
+## Dependencies
+
+- Spring Data Commons (for `Page` interface)
+- Jackson (for JSON serialization)
+- Swagger/OpenAPI (for API documentation)

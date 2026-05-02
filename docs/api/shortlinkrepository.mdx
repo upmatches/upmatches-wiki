@@ -1,66 +1,68 @@
 ---
 id: short-link-repository
-title: ShortLinkRepository Interface
+title: ShortLinkRepository
 sidebar_label: ShortLinkRepository
 ---
 
-## Overview
+# ShortLinkRepository
 
-The `ShortLinkRepository` interface is part of the `com.upmatches.app.features.sharelink.repositories` package. It extends the `JpaRepository` interface provided by Spring Data JPA, allowing for CRUD operations and additional query methods on `ShortLink` entities. This repository is responsible for managing `ShortLink` entities, which are identified by a `UUID`.
+The `ShortLinkRepository` interface provides database access operations for the `ShortLink` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD functionality and defines custom query methods for managing shortened URLs within the application.
 
-## Public Methods
+## Purpose
 
-The `ShortLinkRepository` interface provides several methods to interact with `ShortLink` entities. Below is a detailed description of each public method, including parameters and return types.
+This repository handles persistence operations for short links, including:
+- Retrieving short links by their unique code
+- Finding existing short links for a specific resource and creator
+- Checking code availability
+- Incrementing click counters atomically
 
-### Methods
+## Methods
 
-| Method Signature | Description |
-|------------------|-------------|
-| `Optional<ShortLink> findByCode(String code)` | Retrieves a `ShortLink` entity by its unique code. |
-| `Optional<ShortLink> findByResourceTypeAndResourceIdAndCreatedById(ResourceType resourceType, String resourceId, UUID createdById)` | Finds a `ShortLink` entity based on the resource type, resource ID, and the ID of the creator. |
-| `boolean existsByCode(String code)` | Checks if a `ShortLink` entity exists with the specified code. |
-| `int incrementClickCount(@Param("id") UUID id)` | Increments the click count of a `ShortLink` entity identified by its ID. |
+### Standard CRUD Operations
 
-### Method Details
+The following methods are inherited from `JpaRepository<ShortLink, UUID>`:
 
-#### `findByCode`
+| Method | Description |
+|--------|-------------|
+| `findById(UUID id)` | Retrieves a short link by its primary key |
+| `findAll()` | Returns all short links |
+| `save(ShortLink entity)` | Creates or updates a short link |
+| `deleteById(UUID id)` | Deletes a short link by its ID |
+| `count()` | Returns the total number of short links |
 
-- **Parameters:**
+### Custom Query Methods
 
-  | Name | Type | Description |
-  |------|------|-------------|
-  | `code` | `String` | The unique code of the `ShortLink`. |
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findByCode(String code)` | `Optional<ShortLink>` | `code` - The unique short code | Finds a short link by its generated code |
+| `findByResourceTypeAndResourceIdAndCreatedById(ResourceType resourceType, String resourceId, UUID createdById)` | `Optional<ShortLink>` | `resourceType` - Type of resource (e.g., profile, post)<br/>`resourceId` - ID of the resource<br/>`createdById` - UUID of the user who created the link | Finds an existing short link for a specific resource and creator |
+| `existsByCode(String code)` | `boolean` | `code` - The short code to check | Returns `true` if the code is already in use |
+| `incrementClickCount(UUID id)` | `int` | `id` - UUID of the short link | Atomically increments the click count by 1. Returns the number of affected rows (should be 1) |
 
-- **Returns:** `Optional<ShortLink>` - An `Optional` containing the `ShortLink` if found, or empty if not.
+## Usage Notes
 
-#### `findByResourceTypeAndResourceIdAndCreatedById`
+- The `incrementClickCount` method is annotated with `@Modifying`, indicating it performs a write operation. It must be called within a transactional context.
+- The `findByCode` method is typically used when a user accesses a shortened URL to redirect them to the original resource.
+- The `findByResourceTypeAndResourceIdAndCreatedById` method prevents duplicate short links for the same resource and creator combination.
+- The `existsByCode` method is useful during code generation to ensure uniqueness.
 
-- **Parameters:**
+## Example Usage
 
-  | Name | Type | Description |
-  |------|------|-------------|
-  | `resourceType` | `ResourceType` | The type of resource associated with the `ShortLink`. |
-  | `resourceId` | `String` | The ID of the resource associated with the `ShortLink`. |
-  | `createdById` | `UUID` | The ID of the user who created the `ShortLink`. |
+```java
+@Service
+public class ShortLinkService {
+    private final ShortLinkRepository repository;
 
-- **Returns:** `Optional<ShortLink>` - An `Optional` containing the `ShortLink` if found, or empty if not.
+    public ShortLinkService(ShortLinkRepository repository) {
+        this.repository = repository;
+    }
 
-#### `existsByCode`
+    public Optional<ShortLink> findByCode(String code) {
+        return repository.findByCode(code);
+    }
 
-- **Parameters:**
-
-  | Name | Type | Description |
-  |------|------|-------------|
-  | `code` | `String` | The unique code of the `ShortLink`. |
-
-- **Returns:** `boolean` - `true` if a `ShortLink` with the specified code exists, `false` otherwise.
-
-#### `incrementClickCount`
-
-- **Parameters:**
-
-  | Name | Type | Description |
-  |------|------|-------------|
-  | `id` | `UUID` | The ID of the `ShortLink` whose click count is to be incremented. |
-
-- **Returns:** `int` - The number of entities updated (should be 1 if successful).
+    public void recordClick(UUID linkId) {
+        repository.incrementClickCount(linkId);
+    }
+}
+```

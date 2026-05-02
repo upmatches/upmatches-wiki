@@ -4,27 +4,53 @@ title: GameFilterOptionsResponse
 sidebar_label: GameFilterOptionsResponse
 ---
 
-import com.upmatches.app.features.game.enums.GameType;
-import com.upmatches.app.features.skilllevels.responses.SkillLevelResponse;
-import com.upmatches.app.features.venue.responses.VenueResponse;
+# GameFilterOptionsResponse
 
-## Overview
+The `GameFilterOptionsResponse` is a Java record that encapsulates the available filter options for game search or listing functionality. It provides a structured response containing all possible filter criteria that users can apply when searching for games, such as venues, skill levels, start times, and game types.
 
-The `GameFilterOptionsResponse` class is a record in the `com.upmatches.app.features.game.responses` package. It is designed to encapsulate various filtering options for games within the application. This record provides a structured way to return multiple filter criteria that can be used to refine game searches or selections.
+## Purpose
 
-## Public Methods
+This record serves as a data transfer object (DTO) that aggregates various filter options into a single response. It is typically returned by an API endpoint that provides the available filter choices to the frontend, allowing users to narrow down game searches based on their preferences.
 
-Since `GameFilterOptionsResponse` is a record, it automatically provides public methods to access its components. Below is a table documenting these methods, their parameters, and return types.
+## Record Structure
 
-### Methods
+As a Java record, `GameFilterOptionsResponse` is an immutable data carrier with automatically generated constructor, accessor methods, `equals()`, `hashCode()`, and `toString()`.
 
-| Method Name          | Parameters | Return Type                  | Description                                                                 |
-|----------------------|------------|------------------------------|-----------------------------------------------------------------------------|
-| `venues`             | None       | `List<VenueResponse>`        | Returns a list of venue responses available for filtering games.            |
-| `skillLevels`        | None       | `List<SkillLevelResponse>`   | Returns a list of skill level responses available for filtering games.      |
-| `availableStartTimes`| None       | `List<String>`               | Returns a list of available start times for filtering games.                |
-| `gameTypes`          | None       | `List<GameType>`             | Returns a list of game types available for filtering games.                 |
+### Components
 
-## Usage
+| Component | Type | Description |
+|-----------|------|-------------|
+| `venues` | `List<VenueResponse>` | Available venues for game filtering |
+| `skillLevels` | `List<SkillLevelResponse>` | Available skill levels for game filtering |
+| `availableStartTimes` | `List<String>` | Available start times for games (e.g., "09:00", "10:00") |
+| `gameTypes` | `List<GameType>` | Available game types (e.g., SINGLES, DOUBLES) |
 
-The `GameFilterOptionsResponse` record is typically used to encapsulate and return a set of filter options that can be applied when searching for games. Each component of the record provides a specific type of filter, such as venues, skill levels, start times, or game types, allowing for flexible and comprehensive game filtering capabilities.
+## Usage Example
+
+```java
+// Creating a filter options response
+GameFilterOptionsResponse filterOptions = new GameFilterOptionsResponse(
+    venues,           // List<VenueResponse>
+    skillLevels,      // List<SkillLevelResponse>
+    startTimes,       // List<String>
+    gameTypes         // List<GameType>
+);
+
+// Accessing individual filter options
+List<VenueResponse> availableVenues = filterOptions.venues();
+List<SkillLevelResponse> availableSkillLevels = filterOptions.skillLevels();
+List<String> availableTimes = filterOptions.availableStartTimes();
+List<GameType> availableGameTypes = filterOptions.gameTypes();
+```
+
+## Related Components
+
+- **VenueResponse**: Represents venue data used in the venues filter
+- **SkillLevelResponse**: Represents skill level data used in the skill levels filter
+- **GameType**: Enum defining different types of games (e.g., SINGLES, DOUBLES)
+
+## Notes
+
+- The record is immutable by design, ensuring thread safety and predictable behavior
+- All fields are required and cannot be null (standard Java record behavior)
+- The `availableStartTimes` field uses `String` type to allow flexible time format representation

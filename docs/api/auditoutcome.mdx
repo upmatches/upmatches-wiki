@@ -1,23 +1,46 @@
 ---
-id: audit-outcome
+id: audit-outcome-enum
 title: AuditOutcome Enum
 sidebar_label: AuditOutcome
 ---
 
+# AuditOutcome
+
+The `AuditOutcome` enum is part of the `com.upmatches.app.features.audit.enums` package. It defines the possible outcomes for an audit event within the application.
+
 ## Purpose
 
-The `AuditOutcome` enum is part of the `com.upmatches.app.features.audit.enums` package. It is used to represent the possible outcomes of an audit process within the application. Enums are a special Java type used to define collections of constants. In this case, `AuditOutcome` defines three possible states that an audit can result in: `SUCCESS`, `FAILURE`, and `DENIED`.
+This enum provides a standardized set of outcomes that can be associated with audit log entries. It is used to categorize the result of an audited action, such as a user login attempt, a data modification request, or an access control check.
 
 ## Enum Constants
 
-The `AuditOutcome` enum provides the following constants:
-
-| Constant | Description |
-|----------|-------------|
-| `SUCCESS` | Indicates that the audit was completed successfully. |
-| `FAILURE` | Indicates that the audit did not complete successfully. |
-| `DENIED`  | Indicates that the audit was denied, possibly due to insufficient permissions or other constraints. |
+| Constant  | Description                                                                 |
+|-----------|-----------------------------------------------------------------------------|
+| `SUCCESS` | Indicates that the audited action completed successfully.                   |
+| `FAILURE` | Indicates that the audited action failed due to an error or invalid input.  |
+| `DENIED`  | Indicates that the audited action was denied, typically due to insufficient permissions or security constraints. |
 
 ## Usage
 
-Enums in Java are used to define a set of named constants. The `AuditOutcome` enum can be used in switch statements, comparisons, and as method parameters to clearly convey the result of an audit operation. This improves code readability and reduces the likelihood of errors compared to using simple string or integer constants.
+This enum is typically used as a field in an audit log entity or event class. For example:
+
+```java
+public class AuditEvent {
+    private AuditOutcome outcome;
+    // other fields...
+}
+```
+
+The enum values can be compared directly:
+
+```java
+if (auditEvent.getOutcome() == AuditOutcome.SUCCESS) {
+    // handle success case
+}
+```
+
+## Related
+
+- Audit event classes that use this enum as a field
+- Security and permission checking logic that produces `DENIED` outcomes
+- Error handling code that produces `FAILURE` outcomes

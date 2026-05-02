@@ -1,27 +1,56 @@
 ---
 id: irecord-audit-event-service
-title: IRecordAuditEventService Interface
+title: IRecordAuditEventService
 sidebar_label: IRecordAuditEventService
 ---
 
+# IRecordAuditEventService
+
 ## Purpose
 
-The `IRecordAuditEventService` is a sealed interface within the `com.upmatches.app.features.audit.services` package. It defines a contract for recording audit events, ensuring that any implementing class, such as `RecordAuditEventService`, adheres to this contract. This interface is crucial for maintaining a consistent approach to handling audit events across the application.
+The `IRecordAuditEventService` interface defines a contract for recording audit events within the application. It is a **sealed interface**, meaning only the explicitly permitted class (`RecordAuditEventService`) can implement it. This design enforces a controlled hierarchy and ensures that audit event recording is handled by a single, designated implementation.
 
-## Public Methods
+This interface is part of the `com.upmatches.app.features.audit.services` package and is used to decouple the audit event recording logic from its consumers, promoting loose coupling and testability.
 
-| Method Signature                          | Description                                                                 |
-|-------------------------------------------|-----------------------------------------------------------------------------|
-| `void record(AuditEventRequest request);` | Records an audit event using the provided `AuditEventRequest` object.       |
+## Interface Definition
 
-### Method Details
+```java
+public sealed interface IRecordAuditEventService permits RecordAuditEventService {
+    void record(AuditEventRequest request);
+}
+```
 
-#### `record`
+## Methods
 
-- **Parameters:**
-  - `AuditEventRequest request`: An object containing the details of the audit event to be recorded.
+| Method | Description | Parameters | Returns |
+|--------|-------------|------------|---------|
+| `record` | Records an audit event based on the provided request data. | `AuditEventRequest request` – The request object containing the details of the audit event to be recorded. | `void` |
 
-- **Return Type:**
-  - `void`: This method does not return any value.
+## Usage Example
 
-The `record` method is the primary operation of the `IRecordAuditEventService` interface, designed to handle the recording of audit events by accepting an `AuditEventRequest` parameter. This method is essential for tracking and logging significant actions or changes within the application, contributing to better monitoring and auditing capabilities.
+```java
+// Inject or obtain an instance of IRecordAuditEventService
+IRecordAuditEventService auditService = new RecordAuditEventService();
+
+// Create an audit event request
+AuditEventRequest request = new AuditEventRequest();
+request.setAction("USER_LOGIN");
+request.setUserId(12345L);
+request.setTimestamp(LocalDateTime.now());
+
+// Record the audit event
+auditService.record(request);
+```
+
+## Implementation Notes
+
+- The interface is **sealed** to restrict implementation to `RecordAuditEventService` only. This prevents unauthorized or unintended implementations.
+- The `record` method is intentionally void; any errors or failures in recording should be handled internally by the implementing class or propagated via unchecked exceptions.
+- The `AuditEventRequest` class should contain all necessary fields for an audit event (e.g., action, user ID, timestamp, IP address, etc.).
+
+## Related Components
+
+| Component | Description |
+|-----------|-------------|
+| `AuditEventRequest` | The request DTO containing audit event data. |
+| `RecordAuditEventService` | The sole permitted implementation of this interface. |

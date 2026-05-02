@@ -4,28 +4,84 @@ title: MarkStartedGamesService
 sidebar_label: MarkStartedGamesService
 ---
 
+# MarkStartedGamesService
+
+The `MarkStartedGamesService` is a Spring service class responsible for automatically marking games as "started" when their scheduled start time has passed. It provides a transactional operation that updates the status of games in the database based on the current timestamp.
+
 ## Purpose
 
-The `MarkStartedGamesService` class is a service component in a Java application that interacts with the `GameRepository` to mark games as started. It is part of the `com.upmatches.app.features.game.services` package and is designed to update the status of games that have started before the current time. This service is transactional, ensuring that the operations it performs are completed successfully or rolled back in case of an error.
+This service handles the business logic of transitioning games from a "scheduled" or "pending" state to a "started" state. It is typically invoked by a scheduled task or an external trigger to ensure that games are properly marked as started once their start time has elapsed.
+
+## Class Details
+
+- **Package:** `com.upmatches.app.features.game.services`
+- **Implements:** `IMarkStartedGamesService`
+- **Annotations:** `@Service`
+- **Modifiers:** `non-sealed`
+
+## Dependencies
+
+| Dependency | Description |
+|------------|-------------|
+| `GameRepository` | Repository for accessing game data in the database |
+
+## Constructor
+
+### `MarkStartedGamesService(GameRepository gameRepository)`
+
+Creates a new instance of the service with the required repository dependency.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameRepository` | `GameRepository` | The repository used to persist game data |
 
 ## Public Methods
 
-### `execute`
+### `execute()`
 
-The `execute` method is the primary public method of the `MarkStartedGamesService` class. It is responsible for marking games as started by invoking the `markStartedBefore` method on the `GameRepository`. This method is transactional and utilizes the `ServiceOperationExecutor` to handle the execution and potential exceptions.
+Executes the operation to mark games as started. This method is transactional and updates all games whose scheduled start time is before the current timestamp.
 
-| Method   | Parameters | Return Type | Description |
-|----------|------------|-------------|-------------|
-| `execute` | None       | `int`       | Marks games as started that have a start time before the current instant. Returns the number of games updated. |
+**Signature:**
+```java
+@Transactional
+public int execute()
+```
 
-#### Parameters
+**Returns:**
 
-- **None**: The `execute` method does not take any parameters.
+| Type | Description |
+|------|-------------|
+| `int` | The number of games that were marked as started |
 
-#### Return Type
+**Behavior:**
+1. Captures the current timestamp using `Instant.now()`
+2. Calls `gameRepository.markStartedBefore(now, now)` to update games
+3. Wraps the operation in `ServiceOperationExecutor.execute()` with:
+   - Operation status: `UPDATE`
+   - Exception supplier: `ResourceNotFoundException::new`
 
-- **`int`**: The method returns an integer representing the number of games that were marked as started.
+**Exceptions:**
 
-## Usage
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | Thrown if the operation fails or no games are found to update |
 
-To use the `MarkStartedGamesService`, you need to have an instance of `GameRepository` available. The service can be instantiated and the `execute` method called to update the status of games. The operation is wrapped in a transaction to ensure data integrity.
+## Usage Example
+
+```java
+@Autowired
+private MarkStartedGamesService markStartedGamesService;
+
+// In a scheduled task or controller
+public void processStartedGames() {
+    int updatedCount = markStartedGamesService.execute();
+    System.out.println("Marked " + updatedCount + " games as started");
+}
+```
+
+## Notes
+
+- The service uses `non-sealed` modifier, indicating it is part of a sealed class hierarchy
+- The operation is wrapped in `ServiceOperationExecutor` for consistent error handling and logging
+- The `@Transactional` annotation ensures the database operation is atomic
+- The method uses the same `Instant` object for both the start time comparison and the update timestamp, ensuring consistency

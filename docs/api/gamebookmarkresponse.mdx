@@ -4,44 +4,72 @@ title: GameBookmarkResponse
 sidebar_label: GameBookmarkResponse
 ---
 
-## Overview
+# GameBookmarkResponse
 
-The `GameBookmarkResponse` class is a Java record that represents a response object for game bookmarks within an application. It is part of the `com.upmatches.app.features.game.responses` package. This record is used to encapsulate the details of a game bookmark, including its unique identifier, the associated game's ID and status, the timestamp when it was bookmarked, and a nested `GameResponse` object that provides additional details about the game.
+The `GameBookmarkResponse` record is a Data Transfer Object (DTO) used to represent a bookmarked game in API responses. It encapsulates both the bookmark metadata (such as when the game was bookmarked) and the underlying game details, providing a unified view for clients.
 
-## Public Methods
+This record is particularly useful when returning bookmark-related endpoints, as it avoids exposing internal entity structures and allows for flexible construction from either a `GameBookmark` entity or directly from a `Game` entity.
 
-The `GameBookmarkResponse` record provides two static factory methods to create instances of itself from different sources. These methods are designed to facilitate the conversion of `GameBookmark` and `Game` entities into a `GameBookmarkResponse`.
+## Record Components
 
-### Method: `fromBookmark`
+| Component | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the bookmark entry. May be `null` if constructed from a game without an existing bookmark. |
+| `gameId` | `UUID` | The unique identifier of the associated game. |
+| `gameStatus` | `GameStatus` | The current status of the game (e.g., UPCOMING, LIVE, COMPLETED). |
+| `bookmarkedAt` | `Instant` | The timestamp when the game was bookmarked. May be `null` if constructed from a game without a bookmark. |
+| `game` | `GameResponse` | The detailed game information, including participant count and other game-specific data. |
 
-This method creates a `GameBookmarkResponse` from a `GameBookmark` entity.
+## Factory Methods
 
-| Parameter        | Type           | Description                                      |
-|------------------|----------------|--------------------------------------------------|
-| `bookmark`       | `GameBookmark` | The game bookmark entity to convert.             |
-| `participantCount` | `long`       | The number of participants in the game.          |
+### `fromBookmark`
 
-**Returns:**  
-`GameBookmarkResponse` - A new instance of `GameBookmarkResponse` populated with data from the provided `GameBookmark`.
+```java
+public static GameBookmarkResponse fromBookmark(GameBookmark bookmark, long participantCount)
+```
 
-### Method: `fromGame`
+Creates a `GameBookmarkResponse` from an existing `GameBookmark` entity.
 
-This method creates a `GameBookmarkResponse` from a `Game` entity.
+**Parameters:**
 
-| Parameter        | Type   | Description                                      |
-|------------------|--------|--------------------------------------------------|
-| `game`           | `Game` | The game entity to convert.                      |
-| `participantCount` | `long` | The number of participants in the game.          |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `bookmark` | `GameBookmark` | The bookmark entity containing the bookmark metadata and associated game. |
+| `participantCount` | `long` | The number of participants in the game, used to populate the nested `GameResponse`. |
 
-**Returns:**  
-`GameBookmarkResponse` - A new instance of `GameBookmarkResponse` populated with data from the provided `Game`.
+**Returns:** A fully populated `GameBookmarkResponse` with the bookmark's ID and timestamp, the game's ID and status, and a `GameResponse` built from the associated game.
 
-## Fields
+### `fromGame`
 
-The `GameBookmarkResponse` record consists of the following fields:
+```java
+public static GameBookmarkResponse fromGame(Game game, long participantCount)
+```
 
-- `UUID id`: The unique identifier of the game bookmark.
-- `UUID gameId`: The unique identifier of the associated game.
-- `GameStatus gameStatus`: The status of the game.
-- `Instant bookmarkedAt`: The timestamp when the game was bookmarked.
-- `GameResponse game`: A nested response object containing additional game details.
+Creates a `GameBookmarkResponse` directly from a `Game` entity, without an existing bookmark. This is useful when you want to represent a game as if it were bookmarked (e.g., for preview or default states).
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `game` | `Game` | The game entity to convert. |
+| `participantCount` | `long` | The number of participants in the game, used to populate the nested `GameResponse`. |
+
+**Returns:** A `GameBookmarkResponse` with `id` and `bookmarkedAt` set to `null`, and the game details populated from the provided `Game` entity.
+
+## Usage Example
+
+```java
+// From an existing bookmark
+GameBookmark bookmark = bookmarkRepository.findById(bookmarkId);
+GameBookmarkResponse response = GameBookmarkResponse.fromBookmark(bookmark, 42);
+
+// From a game without a bookmark
+Game game = gameRepository.findById(gameId);
+GameBookmarkResponse preview = GameBookmarkResponse.fromGame(game, 15);
+```
+
+## Notes
+
+- The `id` and `bookmarkedAt` fields are nullable, reflecting the two possible construction paths.
+- The nested `GameResponse` is built using its own `fromGame` factory method, ensuring consistency across the API.
+- This record is immutable and thread-safe by design, as it is a Java record.

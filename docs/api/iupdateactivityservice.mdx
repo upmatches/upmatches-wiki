@@ -1,34 +1,58 @@
 ---
-id: iupdateactivityservice
+id: iupdate-activity-service
 title: IUpdateActivityService Interface
 sidebar_label: IUpdateActivityService
 ---
 
-## Overview
+# IUpdateActivityService Interface
 
-The `IUpdateActivityService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for updating activities within the application. This interface is designed to be implemented by classes that handle the logic for updating activity details based on a given request.
+The `IUpdateActivityService` interface defines the contract for updating an existing activity in the system. It follows a sealed interface pattern to restrict implementation to a single concrete class (`UpdateActivityService`), ensuring controlled and consistent update behavior across the application.
 
-## Public Methods
+## Purpose
 
-The `IUpdateActivityService` interface includes the following public method:
+This interface serves as the abstraction layer for the activity update use case. By sealing the interface, the design enforces that only the designated `UpdateActivityService` class can implement the update logic, preventing unintended implementations and promoting a clear, single-responsibility architecture.
 
-| Method Signature | Description |
-|------------------|-------------|
-| `ActivityResponse execute(UUID id, UpdateActivityRequest request)` | Executes the update operation for an activity identified by the given UUID. |
+## Interface Definition
 
-### Method Details
+```java
+public sealed interface IUpdateActivityService permits UpdateActivityService {
+    ActivityResponse execute(UUID id, UpdateActivityRequest request);
+}
+```
 
-#### `execute`
+## Method Summary
 
-- **Description**: This method is responsible for executing the update operation on an activity. It takes a unique identifier for the activity and an update request containing the new activity details.
-- **Parameters**:
-  | Name    | Type                           | Description                           |
-  |---------|--------------------------------|---------------------------------------|
-  | `id`    | `UUID`                         | The unique identifier of the activity to be updated. |
-  | `request` | `UpdateActivityRequest`      | An object containing the new details for the activity. |
-- **Returns**: 
-  | Type                | Description |
-  |---------------------|-------------|
-  | `ActivityResponse`  | An object containing the updated activity details. |
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute(UUID id, UpdateActivityRequest request)` | `ActivityResponse` | Updates an existing activity identified by the given UUID with the provided request data and returns the updated activity response. |
 
-This interface is sealed, meaning it restricts which classes can implement it, ensuring that only specific classes, such as `UpdateActivityService`, can provide the implementation for the update logic.
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the activity to be updated. |
+| `request` | `UpdateActivityRequest` | The request object containing the updated activity data. |
+
+## Return Type
+
+| Type | Description |
+|------|-------------|
+| `ActivityResponse` | The response object representing the updated activity after successful modification. |
+
+## Usage Example
+
+```java
+// Assuming the implementation is injected via dependency injection
+IUpdateActivityService updateActivityService = new UpdateActivityService(/* dependencies */);
+
+UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+UpdateActivityRequest request = new UpdateActivityRequest(/* updated fields */);
+
+ActivityResponse updatedActivity = updateActivityService.execute(activityId, request);
+```
+
+## Related Components
+
+- **`UpdateActivityRequest`**: The input data transfer object containing the fields to be updated.
+- **`ActivityResponse`**: The output data transfer object representing the updated activity state.
+- **`UpdateActivityService`**: The sole permitted implementation class that contains the actual update logic.

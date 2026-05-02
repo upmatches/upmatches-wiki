@@ -1,35 +1,100 @@
 ---
 id: service-operation-executor
-title: ServiceOperationExecutor Class
+title: ServiceOperationExecutor
 sidebar_label: ServiceOperationExecutor
 ---
 
+# ServiceOperationExecutor
+
 ## Purpose
 
-The `ServiceOperationExecutor` class is a utility class designed to execute operations with robust exception handling. It provides methods to execute operations that may interact with databases or external services, ensuring that exceptions are handled appropriately and consistently. This class is particularly useful in scenarios where operations need to be executed with traceability and error management.
+The `ServiceOperationExecutor` is a utility class that provides a standardized way to execute service operations with comprehensive exception handling, logging, and tracing. It acts as a centralized execution wrapper that:
+
+- Provides consistent error handling for database, REST client, and runtime exceptions
+- Automatically generates and manages trace IDs for request tracking
+- Translates low-level exceptions into domain-specific exceptions using an `ExceptionFactory`
+- Supports both return-value and void operations
+- Handles database locking, entity, and data access exceptions with specific error messages
+- Manages REST client exceptions with response body truncation for logging
+
+This class is designed to be used as a static utility and cannot be instantiated.
 
 ## Public Methods
 
 ### `execute`
 
-Executes a given operation with specified exception handling.
+Executes a supplier operation with comprehensive exception handling and tracing.
 
-| Parameter        | Type                      | Description                                                                 |
-|------------------|---------------------------|-----------------------------------------------------------------------------|
-| `operation`      | `Supplier<T>`             | The operation to be executed.                                               |
-| `operationType`  | `OperationStatus`         | The type of operation being executed, used for logging and exception messages. |
-| `exceptionFactory` | `ExceptionFactory`      | Factory to create exceptions for specific error scenarios.                  |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `operation` | `Supplier<T>` | The operation to execute |
+| `operationType` | `OperationStatus` | The type of operation being performed (e.g., SAVE, RETRIEVE, UPDATE, DELETE) |
+| `exceptionFactory` | `ExceptionFactory` | Factory for creating domain-specific exceptions |
 
-**Return Type:** `T` - The result of the operation.
+**Returns:** `T` - The result of the operation
+
+**Throws:**
+- `IllegalArgumentException` - If the operation receives invalid arguments
+- `ExternalServiceException` - If a REST client exception occurs
+- Various domain-specific exceptions created by the `ExceptionFactory`
 
 ### `executeVoid`
 
-Executes a given void operation with specified exception handling.
+Executes a void operation (Runnable) with the same exception handling and tracing as `execute`.
 
-| Parameter        | Type                      | Description                                                                 |
-|------------------|---------------------------|-----------------------------------------------------------------------------|
-| `operation`      | `Runnable`                | The operation to be executed.                                               |
-| `operationType`  | `OperationStatus`         | The type of operation being executed, used for logging and exception messages. |
-| `exceptionFactory` | `ExceptionFactory`      | Factory to create exceptions for specific error scenarios.                  |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `operation` | `Runnable` | The void operation to execute |
+| `operationType` | `OperationStatus` | The type of operation being performed |
+| `exceptionFactory` | `ExceptionFactory` | Factory for creating domain-specific exceptions |
 
-**Return Type:** `void` - This method does not return a value.
+**Throws:** Same as `execute`
+
+## Exception Handling Strategy
+
+The executor categorizes and handles exceptions in the following order:
+
+1. **IllegalArgumentException** - Re-thrown directly as a programmer error
+2. **Database Exceptions** (`DataAccessException`, `PersistenceException`) - Handled through specialized methods:
+   - Locking exceptions (optimistic, pessimistic, deadlock, lock acquisition)
+   - Entity exceptions (not found, exists, integrity violations, constraint violations)
+   - Data access exceptions (invalid SQL, missing tables/columns, JPA errors)
+3. **REST Client Exceptions** (`RestClientException`) - Converted to `ExternalServiceException` with HTTP status and response body
+4. **InvalidFileException** - Re-thrown via exception factory
+5. **ResourceNotFoundException** - Re-thrown directly
+6. **RuntimeException** - Checked for programmer errors (NPE, IllegalState, etc.) or wrapped in a generic exception
+
+## Trace Context Management
+
+The executor automatically manages trace IDs using SLF4J's MDC (Mapped Diagnostic Context):
+
+- Checks for an existing trace ID in MDC
+- Creates a new UUID-based trace ID if none exists
+- Cleans up the MDC context after operation completion
+- Logs all exceptions with the trace ID for correlation
+
+## Usage Example
+
+```java
+// Execute a save operation
+User savedUser = ServiceOperationExecutor.execute(
+    () -> userRepository.save(newUser),
+    OperationStatus.SAVE,
+    exceptionFactory
+);
+
+// Execute a void operation
+ServiceOperationExecutor.executeVoid(
+    () -> emailService.sendWelcomeEmail(userId),
+    OperationStatus.UPDATE,
+    exceptionFactory
+);
+```
+
+## Notes
+
+- This is a utility class and cannot be instantiated
+- All public methods require non-null parameters
+- The class uses constants from `ServiceOperationExecutorConstant` for error messages and logging
+- Response bodies from REST client exceptions are truncated to prevent log flooding
+- The executor distinguishes between programmer errors (re-thrown) and operational errors (wrapped)

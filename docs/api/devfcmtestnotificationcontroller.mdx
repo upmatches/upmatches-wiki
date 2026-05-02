@@ -1,26 +1,71 @@
 ---
 id: dev-fcm-test-notification-controller
 title: DevFcmTestNotificationController
-sidebar_label: Dev FCM Test Notification Controller
+sidebar_label: DevFcmTestNotificationController
 ---
 
-import { useBaseUrl } from '@docusaurus/router';
+# DevFcmTestNotificationController
 
-## Overview
+## Purpose
 
-The `DevFcmTestNotificationController` class is a Spring Boot REST controller designed for development environments. It handles HTTP requests to send Firebase Cloud Messaging (FCM) test notifications. This controller is part of the internal API, specifically for testing purposes in a development profile.
+The `DevFcmTestNotificationController` is a development-only REST controller designed for testing Firebase Cloud Messaging (FCM) notifications in a development environment. It provides an endpoint that allows developers to send test push notifications without affecting production systems.
+
+This controller is only active when the Spring profile `dev` is enabled, ensuring it cannot be accidentally used in production environments.
+
+## Endpoint
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/internal/dev/fcm-test-notifications` | Sends a test FCM notification |
 
 ## Public Methods
 
-### sendTestNotification
+### `sendTestNotification`
 
-Handles POST requests to send a test FCM notification. It validates the incoming request body and uses the `ISendFcmTestNotificationService` to process the notification sending.
+Sends a test FCM notification using the provided request body.
+
+**Request Body:** `SendFcmTestNotificationRequest` (validated)
+
+**Response:** `ResponseEntity<ApiResponse<FcmTestNotificationResponse>>`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `body`    | `@Valid @RequestBody SendFcmTestNotificationRequest` | The request body containing the details of the FCM notification to be sent. |
-| `request` | `HttpServletRequest` | The HTTP request object, used to retrieve the request URI. |
+| `body` | `SendFcmTestNotificationRequest` | The request payload containing test notification details (validated) |
+| `request` | `HttpServletRequest` | The HTTP request object used to generate the response URI |
 
-#### Returns
+**Response Structure:**
 
-`ResponseEntity<ApiResponse<FcmTestNotificationResponse>>`: A response entity containing the API response with the FCM test notification result, a success message, and the request URI.
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | `FcmTestNotificationResponse` | The response data from the test notification service |
+| `message` | `String` | Success message: "Dev FCM test notification sent successfully." |
+| `path` | `String` | The request URI path |
+
+**Example Response (200 OK):**
+
+```json
+{
+  "data": {
+    "notificationId": "abc123",
+    "status": "sent"
+  },
+  "message": "Dev FCM test notification sent successfully.",
+  "path": "/internal/dev/fcm-test-notifications"
+}
+```
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `ISendFcmTestNotificationService` | Service | Interface for executing the test notification logic |
+
+## Profile Restriction
+
+This controller is annotated with `@Profile("dev")`, meaning it will only be instantiated and available when the Spring profile `dev` is active. This prevents accidental usage in production environments.
+
+## Security Considerations
+
+- The endpoint is mapped under `/internal/dev/` path, indicating it is intended for internal development use only
+- The `@Profile("dev")` annotation provides an additional layer of protection against production usage
+- Input validation is enforced via `@Valid` annotation on the request body

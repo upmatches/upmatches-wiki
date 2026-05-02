@@ -1,28 +1,51 @@
 ---
 id: icreate-activity-service
-title: ICreateActivityService Interface
+title: ICreateActivityService
 sidebar_label: ICreateActivityService
 ---
 
-## Overview
+# ICreateActivityService
 
-The `ICreateActivityService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for creating activities within the application. This interface is designed to be implemented by classes that handle the creation of activities, ensuring a consistent method signature for executing the creation process.
+The `ICreateActivityService` interface defines the contract for creating new activities within the UpMatches application. It follows a command pattern, encapsulating the creation logic behind a single `execute` method. This interface is sealed, meaning only the explicitly permitted class (`CreateActivityService`) can implement it, ensuring controlled and secure extension of the activity creation behavior.
 
-## Public Methods
+## Interface Definition
 
-The `ICreateActivityService` interface declares the following public method:
+```java
+public sealed interface ICreateActivityService permits CreateActivityService {
 
-| Method Signature | Description |
-|------------------|-------------|
-| `ActivityResponse execute(CreateActivityRequest request)` | Executes the creation of an activity based on the provided request object and returns an `ActivityResponse`. |
+    ActivityResponse execute(CreateActivityRequest request);
 
-### Method Details
+}
+```
 
-#### `execute`
+## Methods
 
-- **Description**: This method is responsible for processing the creation of an activity. It takes a `CreateActivityRequest` object as input and returns an `ActivityResponse` object.
-- **Parameters**:
-  | Name    | Type                          | Description                                  |
-  |---------|-------------------------------|----------------------------------------------|
-  | request | `CreateActivityRequest`       | The request object containing activity details needed for creation. |
-- **Returns**: `ActivityResponse` - An object containing the details of the created activity, including any relevant status or identifiers.
+### `execute`
+
+Processes a request to create a new activity and returns the corresponding response.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `CreateActivityRequest` | The request object containing the necessary data to create an activity (e.g., title, description, date, location). |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| `ActivityResponse` | `ActivityResponse` | The response object containing the details of the newly created activity (e.g., activity ID, status, timestamps). |
+
+## Usage Example
+
+```java
+// Assuming you have an instance of ICreateActivityService
+ICreateActivityService activityService = new CreateActivityService();
+
+CreateActivityRequest request = new CreateActivityRequest();
+// Populate request fields...
+
+ActivityResponse response = activityService.execute(request);
+```
+
+## Related Components
+
+- **`CreateActivityRequest`**: The input data transfer object (DTO) for activity creation.
+- **`ActivityResponse`**: The output data transfer object (DTO) representing the created activity.
+- **`CreateActivityService`**: The sole permitted implementation of this interface.

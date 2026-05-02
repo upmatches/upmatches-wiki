@@ -4,24 +4,87 @@ title: ListNotificationsService
 sidebar_label: ListNotificationsService
 ---
 
-## Overview
+# ListNotificationsService
 
-The `ListNotificationsService` class is a part of the notification feature in the application. It is responsible for retrieving a paginated list of notifications for an authenticated user. This service interacts with the `NotificationRepository` to fetch notifications and uses the `IAuthenticatedUserResolver` to determine the current user's identity. The service ensures that the operation is executed within a transactional context and handles potential exceptions related to resource retrieval.
+The `ListNotificationsService` class is a Spring service component responsible for retrieving a paginated list of notifications for the currently authenticated user. It implements the `IListNotificationsService` interface and provides read-only transactional access to notification data.
+
+## Purpose
+
+This service handles the use case of fetching notifications for a logged-in user. It resolves the authenticated user's identity, queries the notification repository for notifications addressed to that user, and returns the results as a paginated response. The service leverages Spring's `@Transactional(readOnly = true)` to optimize database access for read operations.
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `NotificationRepository` | Repository | Data access layer for notification entities |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's UUID |
+
+## Constructor
+
+### `ListNotificationsService(NotificationRepository notificationRepository, IAuthenticatedUserResolver userResolver)`
+
+Creates a new instance of the service with the required dependencies.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notificationRepository` | `NotificationRepository` | Repository for accessing notification data |
+| `userResolver` | `IAuthenticatedUserResolver` | Service to resolve the authenticated user's identity |
 
 ## Public Methods
 
-### `execute`
+### `execute(Pageable pageable)`
 
-Retrieves a paginated list of notifications for the authenticated user.
+Retrieves a paginated list of notifications for the currently authenticated user, ordered by creation date in descending order (most recent first).
 
-| Parameter | Type      | Description                                   |
-|-----------|-----------|-----------------------------------------------|
-| `pageable`| `Pageable`| The pagination information for the request.   |
+**Parameters:**
 
-| Return Type                          | Description                                       |
-|--------------------------------------|---------------------------------------------------|
-| `PagedResponse<NotificationResponse>`| A paginated response containing notification data.|
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sort parameters |
 
-## Usage
+**Returns:**
 
-The `execute` method is the primary entry point for this service. It requires a `Pageable` object to specify pagination details and returns a `PagedResponse` containing `NotificationResponse` objects. This method is transactional and read-only, ensuring that it does not modify any data during its operation.
+| Type | Description |
+|------|-------------|
+| `PagedResponse<NotificationResponse>` | A paginated response containing notification data for the authenticated user |
+
+**Exceptions:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | Thrown if the operation fails or no data is found (wrapped by `ServiceOperationExecutor`) |
+
+**Behavior:**
+
+1. Resolves the authenticated user's UUID using `userResolver.requireUserId()`
+2. Queries the `notificationRepository` for notifications where `recipientId` matches the user's UUID, ordered by `createdAt` in descending order
+3. Maps each notification entity to a `NotificationResponse` DTO using the `fromNotification` method
+4. Returns the result wrapped in a `PagedResponse` object
+5. The operation is executed within the `ServiceOperationExecutor` framework, which handles error handling and logging with the `RETRIEVE` operation status
+
+## Usage Example
+
+```java
+// Inject the service
+private final ListNotificationsService listNotificationsService;
+
+// Create a pageable request
+Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+// Execute the service
+PagedResponse<NotificationResponse> notifications = listNotificationsService.execute(pageable);
+
+// Access the results
+List<NotificationResponse> items = notifications.getContent();
+int totalPages = notifications.getTotalPages();
+long totalElements = notifications.getTotalElements();
+```
+
+## Notes
+
+- The service is annotated with `@Service` and is a `non-sealed` class, allowing for future extension if needed
+- The `@Transactional(readOnly = true)` annotation ensures optimal database performance for read operations
+- The `ServiceOperationExecutor` provides consistent error handling and logging across all service operations
+- Notifications are returned in reverse chronological order (newest first) by default

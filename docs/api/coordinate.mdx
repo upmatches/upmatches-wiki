@@ -1,34 +1,47 @@
 ---
 id: coordinate
-title: Coordinate Class
+title: Coordinate
 sidebar_label: Coordinate
 ---
 
-## Purpose of the Coordinate Class
+# Coordinate
 
-The `Coordinate` class is a value object that represents a geographical coordinate with a latitude and a longitude. It ensures that the latitude and longitude values are within valid ranges, which are -90 to 90 for latitude and -180 to 180 for longitude. This class is immutable and uses Java's `record` feature to encapsulate the data.
+The `Coordinate` class is a Java record that represents a geographic coordinate pair consisting of latitude and longitude. It is designed as a value object within the venue feature of the application, ensuring that all coordinate instances are valid and immutable.
+
+## Purpose
+
+- **Encapsulation of Geographic Data**: Provides a structured way to handle latitude and longitude values.
+- **Validation**: Ensures that latitude and longitude are within valid ranges (-90 to 90 for latitude, -180 to 180 for longitude).
+- **Immutability**: As a Java record, `Coordinate` is immutable, making it safe for use in concurrent environments and as a key in collections.
 
 ## Public Methods
 
-The `Coordinate` class provides the following public methods:
+| Method | Description | Parameters | Return Type |
+|--------|-------------|------------|-------------|
+| `Coordinate(BigDecimal latitude, BigDecimal longitude)` | Constructor that validates and creates a new `Coordinate` instance. | `latitude` - The latitude value (must be between -90 and 90).<br/>`longitude` - The longitude value (must be between -180 and 180). | `Coordinate` |
+| `create(BigDecimal latitude, BigDecimal longitude)` | Static factory method to create a `Coordinate` instance. | `latitude` - The latitude value.<br/>`longitude` - The longitude value. | `Coordinate` |
+| `toString()` | Returns a string representation of the coordinate in the format "latitude, longitude". | None | `String` |
 
-### `create`
+## Usage Example
 
-Creates a new instance of the `Coordinate` class with the specified latitude and longitude.
+```java
+import java.math.BigDecimal;
 
-| Parameter   | Type        | Description                          |
-|-------------|-------------|--------------------------------------|
-| `latitude`  | `BigDecimal`| The latitude of the coordinate. Must be between -90 and 90. |
-| `longitude` | `BigDecimal`| The longitude of the coordinate. Must be between -180 and 180. |
+public class Example {
+    public static void main(String[] args) {
+        Coordinate coord = Coordinate.create(
+            new BigDecimal("40.7128"),
+            new BigDecimal("-74.0060")
+        );
+        System.out.println(coord.toString()); // Output: 40.7128, -74.0060
+    }
+}
+```
 
-| Return Type | Description                          |
-|-------------|--------------------------------------|
-| `Coordinate`| A new instance of the `Coordinate` class. |
+## Validation Rules
 
-### `toString`
+- **Latitude**: Must be between -90 and 90 (inclusive).
+- **Longitude**: Must be between -180 and 180 (inclusive).
+- **Null Values**: Both latitude and longitude must not be null.
 
-Returns a string representation of the `Coordinate` object in the format "latitude, longitude".
-
-| Return Type | Description                          |
-|-------------|--------------------------------------|
-| `String`    | A string representation of the coordinate. |
+If any validation fails, an `IllegalArgumentException` is thrown with a descriptive message.

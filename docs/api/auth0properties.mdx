@@ -1,29 +1,74 @@
 ---
 id: auth0-properties
-title: Auth0Properties Class
+title: Auth0Properties
 sidebar_label: Auth0Properties
 ---
 
-import { ConfigurationProperties } from 'org.springframework.boot.context.properties.ConfigurationProperties';
+# Auth0Properties
+
+The `Auth0Properties` class is a Spring Boot configuration properties record that maps Auth0 OAuth2 configuration values from the application's property files (e.g., `application.yml` or `application.properties`). It centralizes all Auth0-related settings under the `app.auth0` prefix, providing a type-safe and immutable way to access these values throughout the application.
 
 ## Purpose
 
-The `Auth0Properties` class is a configuration properties holder for Auth0 authentication settings in a Spring Boot application. It is designed to map properties prefixed with `app.auth0` from the application's configuration files (e.g., `application.yml` or `application.properties`) to a structured Java object. This class is implemented as a Java record, providing an immutable data structure with built-in methods for accessing its fields.
+This class serves as a configuration holder for Auth0 authentication parameters. By using Spring Boot's `@ConfigurationProperties` annotation, it automatically binds properties from the application configuration to the record's components. The record's compact constructor ensures that if no custom scopes are provided, a default set of scopes (`openid profile email`) is used.
 
-## Public Methods
+## Configuration Properties
 
-The `Auth0Properties` class does not explicitly define public methods beyond those automatically provided by the Java record. However, it includes a custom constructor logic to ensure default values for certain fields. Below is a summary of the fields and their initialization logic:
+The following table describes the configuration properties that can be set in your application's property files under the `app.auth0` prefix.
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `Auth0Properties` | `String domain`, `String clientId`, `String clientSecret`, `String redirectUri`, `String scopes` | `Auth0Properties` | Constructs an instance of `Auth0Properties`. If the `scopes` parameter is `null` or blank, it defaults to `"openid profile email"`. |
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `app.auth0.domain` | `String` | Yes | The Auth0 tenant domain (e.g., `your-tenant.auth0.com`) |
+| `app.auth0.client-id` | `String` | Yes | The Auth0 application client ID |
+| `app.auth0.client-secret` | `String` | Yes | The Auth0 application client secret |
+| `app.auth0.redirect-uri` | `String` | Yes | The callback URL after authentication |
+| `app.auth0.scopes` | `String` | No | Space-separated list of OAuth2 scopes. Defaults to `openid profile email` if not provided |
 
-## Fields
+## Constructor Behavior
 
-The `Auth0Properties` record includes the following fields:
+The compact constructor validates and normalizes the `scopes` parameter:
 
-- **domain**: The domain of the Auth0 tenant.
-- **clientId**: The client ID for the Auth0 application.
-- **clientSecret**: The client secret for the Auth0 application.
-- **redirectUri**: The URI to which Auth0 will redirect after authentication.
-- **scopes**: The scopes requested during authentication. Defaults to `"openid profile email"` if not provided.
+- If `scopes` is `null` or blank (empty or whitespace-only), it defaults to `"openid profile email"`
+- This ensures that the application always has a valid set of scopes for authentication requests
+
+## Usage Example
+
+To use this configuration class, add the following properties to your `application.yml`:
+
+```yaml
+app:
+  auth0:
+    domain: your-tenant.auth0.com
+    client-id: your-client-id
+    client-secret: your-client-secret
+    redirect-uri: http://localhost:8080/callback
+    scopes: openid profile email offline_access
+```
+
+Then inject the `Auth0Properties` bean into your services:
+
+```java
+@Service
+public class AuthService {
+    private final Auth0Properties auth0Properties;
+    
+    public AuthService(Auth0Properties auth0Properties) {
+        this.auth0Properties = auth0Properties;
+    }
+    
+    public String getAuthorizationUrl() {
+        // Use auth0Properties.domain(), auth0Properties.clientId(), etc.
+        return String.format("https://%s/authorize?client_id=%s&redirect_uri=%s&scope=%s",
+            auth0Properties.domain(),
+            auth0Properties.clientId(),
+            auth0Properties.redirectUri(),
+            auth0Properties.scopes());
+    }
+}
+```
+
+## Important Notes
+
+- The class is a Java `record`, making it immutable and providing automatic `equals()`, `hashCode()`, and `toString()` methods
+- Spring Boot's `@ConfigurationProperties` requires the `spring-boot-configuration-processor` dependency for IDE support and metadata generation
+- The `@ConfigurationProperties` annotation must be enabled in your Spring Boot application using `@EnableConfigurationProperties(Auth0Properties.class)` or by adding `@ConfigurationPropertiesScan` to your main application class

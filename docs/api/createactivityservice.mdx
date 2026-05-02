@@ -1,46 +1,62 @@
 ---
 id: create-activity-service
 title: CreateActivityService
-sidebar_label: Create Activity Service
+sidebar_label: CreateActivityService
 ---
 
-## Overview
+# CreateActivityService
 
-The `CreateActivityService` class is a part of the `com.upmatches.app.features.activity.services` package. It is responsible for handling the creation of new activities within the application. This service ensures that activities are created only if they do not already exist, and it leverages Spring's transaction management and auditing capabilities to maintain data integrity and track changes.
+The `CreateActivityService` class is a Spring service responsible for creating new `Activity` entities. It implements the `ICreateActivityService` interface and provides a transactional, auditable method to create an activity from a `CreateActivityRequest`. The service ensures that duplicate activity names are not allowed by throwing an `ActivityAlreadyExistsException` if an activity with the same name already exists.
 
 ## Purpose
 
-The primary purpose of the `CreateActivityService` class is to provide a mechanism to create new activity records in the system. It checks for the existence of an activity with the same name before proceeding with the creation to prevent duplicates. The service is annotated with `@Transactional` to ensure that the operation is atomic, and `@Auditable` to log the creation action for auditing purposes.
+- **Activity Creation**: Handles the business logic for creating a new activity.
+- **Duplicate Prevention**: Checks for existing activities with the same name before creation.
+- **Auditing**: Uses the `@Auditable` annotation to log creation events.
+- **Transactional**: Ensures the creation process is atomic and consistent.
 
 ## Public Methods
 
-### `execute`
+### `execute(CreateActivityRequest request)`
 
-The `execute` method is the main entry point for creating a new activity. It takes a `CreateActivityRequest` object as input and returns an `ActivityResponse` object.
-
-| Method Signature | Description |
-|------------------|-------------|
-| `public ActivityResponse execute(CreateActivityRequest request)` | Creates a new activity based on the provided request. Throws `ActivityAlreadyExistsException` if an activity with the same name already exists. |
-
-#### Parameters
+Creates a new activity based on the provided request.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `CreateActivityRequest` | The request object containing the details of the activity to be created. |
+| `request` | `CreateActivityRequest` | The request object containing the activity name. |
 
-#### Return Type
+**Returns**: `ActivityResponse` - The response object representing the newly created activity.
 
-| Type | Description |
-|------|-------------|
-| `ActivityResponse` | Returns a response object containing the details of the newly created activity. |
+**Throws**:
+- `ActivityAlreadyExistsException` - If an activity with the given name already exists.
+- `ResourceNotFoundException` - If the activity creation fails (wrapped from `ServiceOperationExecutor`).
 
-## Exception Handling
+**Example Usage**:
+```java
+CreateActivityRequest request = new CreateActivityRequest("Yoga Class");
+ActivityResponse response = createActivityService.execute(request);
+```
 
-- **ActivityAlreadyExistsException**: Thrown if an activity with the specified name already exists in the repository.
-- **ResourceNotFoundException**: A generic exception that might be thrown during the execution of the service operation if the resource is not found.
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `ActivityRepository` | Repository | Data access layer for `Activity` entities. |
 
 ## Annotations
 
-- **@Service**: Indicates that this class is a service component in the Spring framework.
-- **@Transactional**: Ensures that the method is executed within a transactional context.
-- **@Auditable**: Custom annotation used to log the creation of an activity for auditing purposes, capturing the action type, resource type, and resource ID.
+| Annotation | Description |
+|------------|-------------|
+| `@Service` | Marks this class as a Spring service component. |
+| `@Transactional` | Ensures the method runs within a transaction. |
+| `@Auditable` | Logs the creation action with metadata (action: `ACTIVITY_CREATED`, resourceType: `ACTIVITY`). |
+
+## Related Classes
+
+- `Activity` - The entity representing an activity.
+- `CreateActivityRequest` - The request DTO for creating an activity.
+- `ActivityResponse` - The response DTO for activity operations.
+- `ActivityRepository` - Repository for activity persistence.
+- `ActivityAlreadyExistsException` - Exception thrown when a duplicate activity name is detected.
+- `ServiceOperationExecutor` - Utility class for executing service operations with error handling.
+- `ICreateActivityService` - Interface implemented by this service.

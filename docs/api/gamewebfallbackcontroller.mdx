@@ -4,34 +4,168 @@ title: GameWebFallbackController
 sidebar_label: GameWebFallbackController
 ---
 
+# GameWebFallbackController
+
+The `GameWebFallbackController` is a Spring REST controller that serves HTML fallback pages for game share links. When a user opens a game link on a web browser (instead of the Upmatches app), this controller generates a human-readable HTML page with game details, metadata for social sharing, and a smart app banner to encourage users to open the link in the native app.
+
 ## Purpose
 
-The `GameWebFallbackController` class is a Spring Boot REST controller responsible for handling HTTP GET requests to display game pages. It provides a fallback mechanism for web clients to access game information, including public and private games, and handles scenarios where a game is not found.
+- **Web Fallback**: Provides a web-based view for game share links when the Upmatches app is not installed or the link is opened in a browser.
+- **SEO & Social Sharing**: Generates Open Graph and Twitter Card meta tags for rich link previews on social media platforms.
+- **Smart App Banner**: Includes an Apple Smart App Banner meta tag to prompt iOS users to open the link in the native app.
+- **Error Handling**: Returns appropriate "not found" pages for invalid or missing game IDs.
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `IGameLookupService` | Service | Interface for looking up game entities by ID |
+| `IShareLinkUrlBuilder` | Service | Builds mobile deep link URLs for share links |
+| `ShareLinkProperties` | Configuration | Configuration properties for share links (e.g., web base URL, App Store app ID) |
 
 ## Public Methods
 
-The class exposes the following public method:
+### `gamePage(String id)`
 
-### `gamePage`
+Serves an HTML page for a game identified by its UUID.
 
-Handles HTTP GET requests to retrieve the game page based on the provided game ID.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `String` | The UUID of the game (as a string) |
 
-| Parameter | Type   | Description                          |
-|-----------|--------|--------------------------------------|
-| `id`      | String | The unique identifier of the game.   |
+| Returns | Description |
+|---------|-------------|
+| `ResponseEntity<String>` | HTML response with status 200 (OK) for valid games, or 404 (Not Found) for invalid/missing games |
 
-| Return Type                  | Description                                      |
-|------------------------------|--------------------------------------------------|
-| `ResponseEntity<String>`     | An HTML response representing the game page.     |
+**Behavior:**
+1. Parses the `id` parameter as a UUID. If parsing fails, returns a 404 "not found" page.
+2. Looks up the game using `gameLookupService.findGameOrThrow()`. If the game is not found, returns a 404 "not found" page.
+3. Builds the mobile app link and canonical URL.
+4. If the game is public, renders a detailed game page with activity, venue, organizer, time, skill level, slots, and price.
+5. If the game is private, renders a simplified page indicating the game is private.
+6. Returns the HTML response with HTTP 200 status.
 
-- **Behavior**: 
-  - Attempts to parse the game ID from the path variable.
-  - Uses the `IGameLookupService` to find the game by its ID.
-  - Constructs an HTML response based on the game's visibility:
-    - **Public Game**: Displays game details such as activity, venue, organizer, skill level, slots, and price.
-    - **Private Game**: Displays a message indicating the game is private.
-  - If the game is not found or the ID is invalid, returns a "Game not found" page.
+## Private Methods
 
-## Usage
+### `publicGamePage(Game game, String appLink, String canonicalUrl)`
 
-This controller is typically used in scenarios where a web client needs to access game information via a URL. It provides a user-friendly HTML page with game details and a link to open the game in the Upmatches app. The controller also handles cases where the game is private or not found, ensuring a graceful user experience.
+Generates the HTML page for a public game.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `game` | `Game` | The game entity |
+| `appLink` | `String` | The mobile deep link URL |
+| `canonicalUrl` | `String` | The canonical web URL for the game |
+
+| Returns | Description |
+|---------|-------------|
+| `String` | Complete HTML page for the public game |
+
+**Details:**
+- Escapes all user-generated content (activity name, venue, organizer, etc.) using `HtmlUtils.htmlEscape()`.
+- Formats the start time in Singapore timezone (`Asia/Singapore`) with a human-readable pattern.
+- Builds a title like "Join the [Activity] game on Upmatches".
+- Creates a description combining venue, time, and skill level.
+- Includes a call-to-action button to open the game in the Upmatches app.
+
+### `privateGamePage(String appLink, String canonicalUrl)`
+
+Generates the HTML page for a private game.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `appLink` | `String` | The mobile deep link URL |
+| `canonicalUrl` | `String` | The canonical web URL for the game |
+
+| Returns | Description |
+|---------|-------------|
+| `String` | Complete HTML page for the private game |
+
+**Details:**
+- Shows a generic title "Open in Upmatches".
+- Displays a message that the game is private and must be opened in the app.
+- Includes a call-to-action button to open the game in the Upmatches app.
+
+### `notFoundPage()`
+
+Generates the HTML page for a game that was not found or has an invalid ID.
+
+| Returns | Description |
+|---------|-------------|
+| `String` | Complete HTML page for the "not found" state |
+
+**Details:**
+- Shows a "Game not found" title.
+- Displays a message that the game may have ended or been removed.
+- Does not include a canonical URL or app link.
+
+### `basePage(PageMeta meta, String body)`
+
+Builds the complete HTML document with metadata and body content.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `meta` | `PageMeta` | Metadata record containing title, description, canonical URL, and app link |
+| `body` | `String` | The HTML body content |
+
+| Returns | Description |
+|---------|-------------|
+| `String` | Complete HTML document |
+
+**Details:**
+- Generates a full HTML5 document with:
+  - Character set and viewport meta tags
+  - Title and description meta tags
+  - Open Graph (`og:title`, `og:description`, `og:url`, `og:type`) meta tags
+  - Twitter Card meta tags
+  - Canonical link tag (if canonical URL is provided)
+  - Apple Smart App Banner meta tag (if app link and App Store ID are configured)
+  - Inline CSS styling for a mobile-friendly layout
+  - The provided body content
+
+### `buildSmartAppBanner(String appLink)`
+
+Builds the Apple Smart App Banner meta tag.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `appLink` | `String` | The mobile deep link URL |
+
+| Returns | Description |
+|---------|-------------|
+| `String` | The meta tag HTML string, or empty string if app ID or app link is missing |
+
+**Details:**
+- Uses the App Store app ID from `ShareLinkProperties`.
+- Returns an empty string if the app ID or app link is null or blank.
+- Escapes both the app ID and app link for HTML safety.
+
+## Internal Record
+
+### `PageMeta`
+
+A private record used internally to pass page metadata between methods.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | `String` | The page title |
+| `description` | `String` | The page description |
+| `canonicalUrl` | `String` | The canonical URL (may be null) |
+| `appLink` | `String` | The mobile deep link URL (may be null) |
+
+## Configuration Properties
+
+The controller uses `ShareLinkProperties` for configuration:
+
+| Property | Description |
+|----------|-------------|
+| `webBaseUrl()` | The base URL for the web application (used to build canonical URLs) |
+| `appStoreAppId()` | The Apple App Store application ID (used for the Smart App Banner) |
+
+## Error Handling
+
+| Scenario | HTTP Status | Response |
+|----------|-------------|----------|
+| Invalid UUID format | 404 Not Found | "Game not found" page |
+| Game not found in database | 404 Not Found | "Game not found" page |
+| Valid game (public or private) | 200 OK | Appropriate game page |

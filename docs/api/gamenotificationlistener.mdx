@@ -4,46 +4,137 @@ title: GameNotificationListener
 sidebar_label: GameNotificationListener
 ---
 
+# GameNotificationListener
+
+The `GameNotificationListener` is a Spring component that listens for game-related events and creates and delivers notifications to the appropriate recipients. It handles various game events such as players joining/leaving, game updates, cancellations, and skill-level warnings.
+
 ## Purpose
 
-The `GameNotificationListener` class is a component in a Java application that listens for game-related notification events. It processes these events to generate and deliver notifications to users, either through push notifications or email, based on the type of event and the recipients involved. The class ensures that notifications are not duplicated and handles delivery failures gracefully.
+This listener is responsible for:
+- Listening to `GameNotificationEvent` events after database transactions commit
+- Resolving the appropriate recipients for each notification type
+- Creating in-app notifications
+- Delivering notifications via push and email channels
+- Preventing duplicate notifications for certain event types
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameRepository` | Repository | Retrieves game entities |
+| `GameParticipantRepository` | Repository | Queries game participants |
+| `NotificationRepository` | Repository | Checks for existing notifications |
+| `ICreateNotificationService` | Service | Creates notification records |
+| `IPushNotificationService` | Service | Sends push notifications |
+| `IEmailNotificationService` | Service | Sends email notifications |
+| `ShareLinkProperties` | Configuration | Provides web base URL for game links |
 
 ## Public Methods
 
-### onGameNotification
+### `onGameNotification(GameNotificationEvent event)`
 
-Listens for `GameNotificationEvent` and processes it to send notifications to the appropriate recipients.
+The main event handler method, annotated with `@Async` and `@TransactionalEventListener`.
 
-| Parameter | Type                  | Description                                      |
-|-----------|-----------------------|--------------------------------------------------|
-| event     | `GameNotificationEvent` | The event containing details about the game notification. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `event` | `GameNotificationEvent` | The game notification event containing type, game ID, and actor ID |
 
-| Return Type |
-|-------------|
-| `void`      |
+**Behavior:**
+1. Retrieves the game from the repository
+2. Resolves recipients based on event type
+3. Builds notification title and message
+4. Creates notification for each recipient (with deduplication check)
+5. Attempts external delivery (push, then email)
 
-## Method Details
+## Private Methods
 
-### onGameNotification
+### `deliverExternally(Notification notification, EmailContext emailContext)`
 
-- **Purpose**: This method is triggered asynchronously after a transaction commit. It retrieves the game associated with the event, determines the recipients, constructs the notification title and message, and attempts to deliver the notification both in-app and externally.
-- **Parameters**:
-  - `event`: An instance of `GameNotificationEvent` that contains information about the game and the type of notification to be sent.
-- **Return Type**: `void`
+Attempts to deliver notification via push, falling back to email.
 
-The method handles the following:
-- Retrieves the game using the game ID from the event.
-- Logs a warning if the game is not found.
-- Resolves the recipients based on the event type and game details.
-- Constructs the notification title and message.
-- Checks for duplicate notifications to avoid sending the same notification multiple times.
-- Attempts to deliver the notification using the `ICreateNotificationService`, `IPushNotificationService`, and `IEmailNotificationService`.
-- Logs any delivery failures.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notification` | `Notification` | The notification to deliver |
+| `emailContext` | `EmailContext` | Context data for email delivery |
 
-### Private Helper Methods
+**Delivery Flow:**
+1. Attempts push notification via `pushNotificationService`
+2. If push fails (not `SENT`), checks if recipient has an email
+3. If email exists, sends via `emailNotificationService`
+4. Logs if only in-app delivery is possible
 
-- **deliverExternally**: Attempts to send the notification via push service first, and falls back to email if push delivery fails and the recipient has a valid email address.
-- **isDedupable**: Determines if a notification type should be checked for duplicates.
-- **resolveRecipients**: Identifies the recipients of the notification based on the event type and game details.
-- **buildTitle**: Constructs the notification title based on the event type.
-- **buildMessage**: Constructs the notification message based on the event type and game title.
+### `isDedupable(NotificationType type)`
+
+Determines if a notification type should be checked for duplicates.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The type of notification |
+
+**Returns:** `boolean` - `true` for `PLAYER_JOINED`, `GAME_FULL`, `PLAYER_WARNING_MISMATCH`; `false` otherwise
+
+### `resolveRecipients(GameNotificationEvent event, Game game)`
+
+Determines the set of recipient IDs based on event type.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `event` | `GameNotificationEvent` | The event containing type and actor ID |
+| `game` | `Game` | The game entity |
+
+**Returns:** `Set<UUID>` - Set of recipient user IDs
+
+**Recipient Resolution by Event Type:**
+
+| Event Type | Recipients |
+|------------|------------|
+| `PLAYER_JOINED`, `PLAYER_LEFT`, `GAME_FULL`, `PLAYER_WARNING_MISMATCH` | Game organizer (excluding the actor) |
+| `GAME_UPDATED`, `GAME_REMOVED` | All active participants (excluding the actor) |
+| `PLAYER_REMOVED_FROM_GAME` | The actor (removed player) |
+
+### `buildTitle(NotificationType type)`
+
+Generates the notification title based on event type.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The type of notification |
+
+**Returns:** `String` - The notification title
+
+### `buildMessage(NotificationType type, String gameTitle)`
+
+Generates the notification message based on event type and game title.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The type of notification |
+| `gameTitle` | `String` | The title of the game (may be null or blank) |
+
+**Returns:** `String` - The notification message
+
+## Notification Types and Content
+
+| Notification Type | Title | Message |
+|-------------------|-------|---------|
+| `PLAYER_JOINED` | A player joined your game | A new player joined [game title]. |
+| `PLAYER_LEFT` | A player left your game | A player left [game title]. |
+| `PLAYER_WARNING_MISMATCH` | Skill-level warning | A player joined your game. |
+| `GAME_FULL` | Your game is full | Your badminton game has max out. |
+| `GAME_UPDATED` | Game updated | [game title] has been updated. |
+| `GAME_REMOVED` | Game cancelled | Your badminton game has been cancelled. |
+| `PLAYER_REMOVED_FROM_GAME` | You were removed from a game | You have been removed from a badminton game. |
+| Default | Notification | Update from Upmatches. |
+
+## Configuration
+
+The listener uses `ShareLinkProperties` to construct game URLs:
+```
+{webBaseUrl}/games/{gameId}
+```
+
+## Error Handling
+
+- Logs warning if game is not found
+- Catches and logs exceptions during notification creation/delivery
+- Continues processing remaining recipients if one fails

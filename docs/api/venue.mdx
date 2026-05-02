@@ -1,86 +1,94 @@
 ---
-id: venue
-title: Venue Class Documentation
+id: venue-entity
+title: Venue Entity
 sidebar_label: Venue
 ---
 
-## Overview
+# Venue Entity
 
-The `Venue` class represents a location where activities take place. It is a JPA entity mapped to the `venues` table in the database. This class is part of the `com.upmatches.app.features.venue.entities` package and is designed to store and manage information about various venues, including their geographical coordinates and associated stations.
+The `Venue` class is a JPA entity that represents a physical location where activities take place. It maps to the `venues` database table and encapsulates all location-related data including geographic coordinates, address information, and associations with activities and transit stations.
+
+This entity follows a **domain-driven design** approach by providing a static factory method (`create`) for construction and exposing behavior through methods like `addStation` and `removeStation`. The class uses Lombok's `@Getter` annotation to automatically generate getters for all fields, while setters are intentionally omitted to enforce immutability after creation.
+
+## Entity Mapping
+
+The `Venue` entity is mapped to the `venues` table with the following column mappings:
+
+| Field | Database Column | Type | Constraints |
+|-------|----------------|------|-------------|
+| `id` | `id` | `Long` | Primary key, auto-generated |
+| `sourceId` | `source_id` | `String` | Not null, unique, max 50 chars |
+| `activity` | `activity_id` | `Activity` | Many-to-one relationship, not null |
+| `name` | `name` | `String` | Not null, max 200 chars |
+| `address` | `address` | `String` | Not null, max 500 chars |
+| `postalCode` | `postal_code` | `String` | Not null, max 10 chars |
+| `latitude` | `latitude` | `BigDecimal` | Not null, precision 13, scale 10 |
+| `longitude` | `longitude` | `BigDecimal` | Not null, precision 13, scale 10 |
+| `stations` | `venue_stations` (join table) | `Set<Station>` | Many-to-many relationship |
+| `createdAt` | `created_at` | `Instant` | Not null, not updatable |
+| `updatedAt` | `updated_at` | `Instant` | Nullable |
 
 ## Public Methods
 
-The `Venue` class provides several public methods to interact with its instances. Below is a detailed description of these methods, including their parameters and return types.
-
 ### `create`
 
-Creates a new instance of the `Venue` class with the specified attributes.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sourceId` | `String` | External system identifier for the venue |
+| `activity` | `Activity` | The activity associated with this venue |
+| `name` | `String` | Name of the venue |
+| `address` | `String` | Physical address of the venue |
+| `postalCode` | `String` | Postal/ZIP code of the venue |
+| `latitude` | `BigDecimal` | Geographic latitude coordinate |
+| `longitude` | `BigDecimal` | Geographic longitude coordinate |
+| **Returns** | `Venue` | A new Venue instance with the provided values |
 
-| Method Signature                                                                 |
-|----------------------------------------------------------------------------------|
-| `public static Venue create(String sourceId, Activity activity, String name, String address, String postalCode, BigDecimal latitude, BigDecimal longitude)` |
-
-#### Parameters
-
-| Name       | Type          | Description                                      |
-|------------|---------------|--------------------------------------------------|
-| `sourceId` | `String`      | A unique identifier for the venue source.        |
-| `activity` | `Activity`    | The activity associated with the venue.          |
-| `name`     | `String`      | The name of the venue.                           |
-| `address`  | `String`      | The address of the venue.                        |
-| `postalCode` | `String`    | The postal code of the venue's location.         |
-| `latitude` | `BigDecimal`  | The latitude coordinate of the venue.            |
-| `longitude`| `BigDecimal`  | The longitude coordinate of the venue.           |
-
-#### Return Type
-
-| Type   | Description                        |
-|--------|------------------------------------|
-| `Venue`| A new instance of the `Venue` class.|
+Static factory method that creates a new `Venue` instance. This is the **only way** to construct a `Venue` object, as the constructor is protected. The method initializes all required fields and returns a fully configured entity.
 
 ### `addStation`
 
-Adds a station to the set of stations associated with the venue.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `station` | `Station` | The station to associate with this venue |
+| **Returns** | `void` | - |
 
-| Method Signature                      |
-|---------------------------------------|
-| `public void addStation(Station station)` |
-
-#### Parameters
-
-| Name      | Type     | Description                          |
-|-----------|----------|--------------------------------------|
-| `station` | `Station`| The station to be added to the venue.|
-
-#### Return Type
-
-| Type | Description |
-|------|-------------|
-| `void` | No return value. |
+Adds a transit station to the venue's collection of associated stations. The station is added to the internal `Set<Station>` collection, which ensures no duplicate stations are added.
 
 ### `removeStation`
 
-Removes a station from the set of stations associated with the venue.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `station` | `Station` | The station to disassociate from this venue |
+| **Returns** | `void` | - |
 
-| Method Signature                         |
-|------------------------------------------|
-| `public void removeStation(Station station)` |
+Removes a transit station from the venue's collection of associated stations. If the station is not currently associated, this method has no effect.
 
-#### Parameters
+## Lifecycle Callbacks
 
-| Name      | Type     | Description                            |
-|-----------|----------|----------------------------------------|
-| `station` | `Station`| The station to be removed from the venue.|
+The entity uses JPA lifecycle callbacks to automatically manage timestamp fields:
 
-#### Return Type
+- **`@PrePersist` (`onCreate`)**: Sets both `createdAt` and `updatedAt` to the current instant when the entity is first persisted.
+- **`@PreUpdate` (`onUpdate`)**: Updates the `updatedAt` field to the current instant whenever the entity is modified.
 
-| Type | Description |
-|------|-------------|
-| `void` | No return value. |
+## Usage Example
 
-## Entity Lifecycle Callbacks
+```java
+// Create a new venue
+Activity activity = activityRepository.findById(1L).orElseThrow();
+Venue venue = Venue.create(
+    "ext-venue-123",
+    activity,
+    "Central Park",
+    "123 Main Street",
+    "10001",
+    new BigDecimal("40.785091"),
+    new BigDecimal("-73.968285")
+);
 
-The `Venue` class includes lifecycle callback methods to manage timestamps:
+// Associate a station
+Station station = stationRepository.findById(1L).orElseThrow();
+venue.addStation(station);
 
-- **`onCreate`**: Sets the `createdAt` and `updatedAt` timestamps when a new venue is persisted.
-- **`onUpdate`**: Updates the `updatedAt` timestamp when an existing venue is updated.
+// Save the venue
+venueRepository.save(venue);
+```

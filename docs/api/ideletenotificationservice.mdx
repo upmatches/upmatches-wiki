@@ -1,31 +1,58 @@
 ---
-id: IDeleteNotificationService
+id: ideletenotificationservice
 title: IDeleteNotificationService Interface
 sidebar_label: IDeleteNotificationService
 ---
 
-## Overview
+# IDeleteNotificationService Interface
 
-The `IDeleteNotificationService` is a sealed interface in the `com.upmatches.app.features.notification.services` package. It defines a contract for deleting notifications identified by a unique identifier. This interface is part of a service layer that handles notification-related operations.
+The `IDeleteNotificationService` interface defines the contract for deleting a notification by its unique identifier. It is a **sealed interface**, meaning only explicitly permitted classes (in this case, `DeleteNotificationService`) can implement it. This design enforces a controlled hierarchy and ensures that the deletion logic is centralized and consistent across the application.
 
 ## Purpose
 
-The primary purpose of the `IDeleteNotificationService` interface is to provide a method for executing the deletion of a notification using its unique identifier. By using a sealed interface, it restricts the implementation to a specific set of classes, ensuring controlled extensibility and maintaining a clear contract for deletion operations.
+- Provides a single, well-defined method for deleting a notification.
+- Uses a sealed interface to restrict implementation to a specific service class, enhancing security and maintainability.
+- Accepts a `UUID` to uniquely identify the notification to be deleted.
 
-## Public Methods
+## Method Summary
 
-| Method Signature         | Description                                      |
-|--------------------------|--------------------------------------------------|
-| `void execute(UUID id)`  | Deletes a notification identified by the given UUID. |
+| Method | Description |
+|--------|-------------|
+| `void execute(UUID id)` | Deletes the notification identified by the given `UUID`. |
 
-### Method Details
+## Method Details
 
-#### `void execute(UUID id)`
+### `execute`
 
-- **Parameters:**
-  - `UUID id`: The unique identifier of the notification to be deleted.
+```java
+void execute(UUID id)
+```
 
-- **Return Type:**
-  - `void`: This method does not return any value.
+Deletes a notification from the system based on its unique identifier.
 
-This method is intended to be implemented by classes that handle the logic for deleting notifications, ensuring that the specified notification is removed from the system based on its unique identifier.
+**Parameters:**
+
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| `id`      | `UUID` | The unique identifier of the notification to delete. |
+
+**Returns:** `void`
+
+**Throws:** This method does not declare any checked exceptions. Implementations may throw runtime exceptions (e.g., `IllegalArgumentException` if the `id` is null or if the notification does not exist).
+
+## Usage Example
+
+```java
+// Assuming you have an instance of IDeleteNotificationService
+IDeleteNotificationService deleteService = new DeleteNotificationService();
+
+// Delete a notification by its UUID
+UUID notificationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+deleteService.execute(notificationId);
+```
+
+## Implementation Notes
+
+- The interface is sealed, so only `DeleteNotificationService` is allowed to implement it.
+- The `execute` method should handle cases where the notification does not exist gracefully (e.g., by logging a warning or throwing a specific runtime exception).
+- Ensure that the `UUID` passed is not null to avoid unexpected behavior.

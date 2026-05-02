@@ -1,44 +1,160 @@
 ---
 id: game-bookmark-controller
-title: GameBookmarkController
+title: Game Bookmark Controller
 sidebar_label: Game Bookmark Controller
 ---
 
-## Purpose
+# Game Bookmark Controller
 
-The `GameBookmarkController` class is a REST controller in a Spring Boot application that manages game bookmark operations. It provides endpoints to create, list, and delete game bookmarks. This controller interacts with services to perform the necessary business logic and returns appropriate HTTP responses.
+The `GameBookmarkController` is a REST controller that manages game bookmarks for the UpMatches application. It provides endpoints for creating, listing, and deleting game bookmarks, allowing users to save and manage their favorite games.
 
-## Public Methods
+## Location
 
-### `createGameBookmark`
+`com.upmatches.app.features.game.controllers.GameBookmarkController`
 
-Creates a new game bookmark.
+## Base URL
 
-| Parameter | Type                              | Description                                      |
-|-----------|-----------------------------------|--------------------------------------------------|
-| `body`    | `CreateGameBookmarkRequest`       | The request body containing the game ID to bookmark. |
-| `request` | `HttpServletRequest`              | The HTTP request object.                         |
+`/api/v1/game-bookmarks`
 
-**Returns:** `ResponseEntity<ApiResponse<GameBookmarkResponse>>` - A response entity containing the API response with the created game bookmark details.
+## Dependencies
 
-### `listGameBookmarks`
+The controller depends on three service interfaces:
+- `ICreateGameBookmarkService` - Handles bookmark creation
+- `IDeleteGameBookmarkService` - Handles bookmark deletion
+- `IListGameBookmarksService` - Handles bookmark listing with cursor-based pagination
 
-Lists all game bookmarks with optional pagination.
+## Endpoints
 
-| Parameter | Type                | Description                                      |
-|-----------|---------------------|--------------------------------------------------|
-| `cursor`  | `String` (optional) | The cursor for pagination.                       |
-| `size`    | `Integer`           | The number of items to return per page. Defaults to 20. |
-| `request` | `HttpServletRequest`| The HTTP request object.                         |
+### Create Game Bookmark
 
-**Returns:** `ResponseEntity<ApiResponse<CursorPagedResponse<GameBookmarkResponse>>>` - A response entity containing the API response with a paginated list of game bookmarks.
+Creates a new bookmark for a specific game.
 
-### `deleteGameBookmark`
+```
+POST /api/v1/game-bookmarks
+```
 
-Deletes a game bookmark by its ID.
+**Request Body:**
 
-| Parameter | Type   | Description                  |
-|-----------|--------|------------------------------|
-| `gameId`  | `UUID` | The unique identifier of the game bookmark to delete. |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `gameId` | UUID | Yes | The unique identifier of the game to bookmark |
 
-**Returns:** `ResponseEntity<Void>` - A response entity indicating the deletion status.
+**Response:**
+
+| Status Code | Description |
+|-------------|-------------|
+| `201 Created` | Bookmark created successfully |
+
+**Response Body:**
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "gameId": "uuid",
+    "createdAt": "timestamp"
+  },
+  "message": "Game bookmarked successfully.",
+  "path": "/api/v1/game-bookmarks"
+}
+```
+
+### List Game Bookmarks
+
+Retrieves a paginated list of game bookmarks using cursor-based pagination.
+
+```
+GET /api/v1/game-bookmarks?cursor={cursor}&size={size}
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `cursor` | String | No | - | Cursor for pagination (opaque string) |
+| `size` | Integer | No | 20 | Number of items per page (max 100) |
+
+**Response:**
+
+| Status Code | Description |
+|-------------|-------------|
+| `200 OK` | Bookmarks retrieved successfully |
+
+**Response Body:**
+
+```json
+{
+  "data": {
+    "items": [
+      {
+        "id": "uuid",
+        "gameId": "uuid",
+        "createdAt": "timestamp"
+      }
+    ],
+    "nextCursor": "opaque-cursor-string",
+    "hasMore": true
+  },
+  "message": "Game bookmarks retrieved successfully.",
+  "path": "/api/v1/game-bookmarks"
+}
+```
+
+### Delete Game Bookmark
+
+Removes a bookmark for a specific game.
+
+```
+DELETE /api/v1/game-bookmarks/{gameId}
+```
+
+**Path Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `gameId` | UUID | Yes | The unique identifier of the game to unbookmark |
+
+**Response:**
+
+| Status Code | Description |
+|-------------|-------------|
+| `204 No Content` | Bookmark deleted successfully |
+
+## Error Handling
+
+The controller uses standard HTTP status codes for error responses:
+
+| Status Code | Description |
+|-------------|-------------|
+| `400 Bad Request` | Invalid request parameters (e.g., invalid cursor, size out of range) |
+| `404 Not Found` | Game or bookmark not found |
+| `409 Conflict` | Bookmark already exists (for create operation) |
+
+## Usage Examples
+
+### Create a Bookmark
+
+```bash
+curl -X POST http://localhost:8080/api/v1/game-bookmarks \
+  -H "Content-Type: application/json" \
+  -d '{"gameId": "123e4567-e89b-12d3-a456-426614174000"}'
+```
+
+### List Bookmarks
+
+```bash
+curl "http://localhost:8080/api/v1/game-bookmarks?size=10"
+```
+
+### Delete a Bookmark
+
+```bash
+curl -X DELETE http://localhost:8080/api/v1/game-bookmarks/123e4567-e89b-12d3-a456-426614174000
+```
+
+## Notes
+
+- The controller uses cursor-based pagination for listing bookmarks, which is more efficient than offset-based pagination for large datasets.
+- The `size` parameter is validated to ensure it doesn't exceed reasonable limits (typically max 100).
+- All responses include the request path for debugging and logging purposes.
+- The delete operation returns `204 No Content` with no response body.

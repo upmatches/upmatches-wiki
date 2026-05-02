@@ -1,38 +1,53 @@
 ---
 id: update-activity-request
-title: UpdateActivityRequest Class
+title: UpdateActivityRequest Record
 sidebar_label: UpdateActivityRequest
 ---
 
-## Overview
+# UpdateActivityRequest
 
-The `UpdateActivityRequest` class is a Java record used to encapsulate the data required for updating an activity within the application. It is part of the `com.upmatches.app.features.activity.requests` package. This class leverages Java's record feature to provide an immutable data structure with built-in methods for data access. The primary purpose of this class is to validate and hold the necessary information for an activity update request.
+The `UpdateActivityRequest` is a Java record used to encapsulate the data required for updating an existing activity. It ensures that the incoming request payload is validated before processing, leveraging Jakarta Bean Validation annotations.
 
-## Class Definition
+## Purpose
 
-The `UpdateActivityRequest` class is defined as a record, which is a special kind of class in Java introduced to model immutable data. It automatically provides implementations for common methods like `equals()`, `hashCode()`, and `toString()`.
+This record serves as a Data Transfer Object (DTO) for the activity update endpoint. It defines the structure and validation rules for the request body, ensuring that the activity name is provided and does not exceed the maximum allowed length.
 
-## Public Methods
+## Record Definition
 
-The `UpdateActivityRequest` class provides the following public methods:
+```java
+public record UpdateActivityRequest(
+    @NotBlank
+    @Size(max = 100)
+    String name
+) {}
+```
 
-| Method Signature | Description |
-|------------------|-------------|
-| `String name()`  | Returns the name of the activity to be updated. |
+## Fields
 
-## Parameters
+| Field | Type   | Validation Constraints | Description                                      |
+|-------|--------|------------------------|--------------------------------------------------|
+| name  | String | `@NotBlank`, `@Size(max = 100)` | The updated name of the activity. Must not be blank and must not exceed 100 characters. |
 
-The `UpdateActivityRequest` class has the following parameter:
+## Validation Rules
 
-| Parameter | Type   | Description                                                                 |
-|-----------|--------|-----------------------------------------------------------------------------|
-| `name`    | String | The name of the activity. It must not be blank and can have a maximum length of 100 characters. |
+- **@NotBlank**: The `name` field must not be `null`, empty, or contain only whitespace characters.
+- **@Size(max = 100)**: The `name` field must not exceed 100 characters in length.
 
-## Annotations
+## Usage Example
 
-The class uses the following annotations for validation:
+The record is typically used as a parameter in a REST controller method:
 
-- `@NotBlank`: Ensures that the `name` field is not null or empty.
-- `@Size(max = 100)`: Ensures that the `name` field does not exceed 100 characters in length.
+```java
+@PutMapping("/activities/{id}")
+public ResponseEntity<ActivityResponse> updateActivity(
+    @PathVariable Long id,
+    @Valid @RequestBody UpdateActivityRequest request) {
+    // Business logic to update the activity
+}
+```
 
-These annotations are part of the Jakarta Bean Validation API, which helps in validating the constraints on the fields of the record.
+## Notes
+
+- This record is immutable by design, as all Java records are.
+- Validation is automatically triggered when the `@Valid` annotation is used in the controller method.
+- The record is located in the `com.upmatches.app.features.activity.requests` package.

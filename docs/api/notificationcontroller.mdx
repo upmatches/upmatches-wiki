@@ -1,64 +1,106 @@
 ---
 id: notification-controller
-title: NotificationController
-sidebar_label: Notification Controller
+title: Notification Controller
+sidebar_label: NotificationController
 ---
+
+# NotificationController
+
+The `NotificationController` is a REST controller that provides endpoints for managing user notifications within the UpMatches application. It handles listing notifications, retrieving unread counts, marking notifications as read, and deleting notifications.
 
 ## Purpose
 
-The `NotificationController` class is a REST controller in a Spring Boot application that manages notification-related operations. It provides endpoints to list notifications, get the count of unread notifications, mark notifications as read, mark all notifications as read, and delete notifications. This controller interacts with various services to perform these operations and returns appropriate HTTP responses.
+This controller serves as the API gateway for all notification-related operations. It delegates business logic to dedicated service interfaces, ensuring a clean separation of concerns between the web layer and the application logic.
 
-## Public Methods
+## Endpoints
 
-### listNotifications
+### List Notifications
 
-Retrieves a paginated list of notifications.
+Retrieves a paginated list of notifications for the authenticated user.
 
-| Parameter | Type    | Description                              |
-|-----------|---------|------------------------------------------|
-| page      | Integer | The page number to retrieve (default 0). |
-| size      | Integer | The number of items per page (default 20).|
-| request   | HttpServletRequest | The HTTP request object.       |
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/notifications` | Returns a paginated list of notifications |
 
-**Returns:** `ResponseEntity<ApiResponse<PagedResponse<NotificationResponse>>>` - A paginated response containing notifications.
+**Query Parameters:**
 
-### getUnreadCount
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | Integer | 0 | Page number (zero-based) |
+| `size` | Integer | 20 | Number of items per page |
 
-Fetches the count of unread notifications.
+**Response:** `200 OK` - Returns a `PagedResponse<NotificationResponse>` wrapped in an `ApiResponse`.
 
-| Parameter | Type               | Description            |
-|-----------|--------------------|------------------------|
-| request   | HttpServletRequest | The HTTP request object.|
+### Get Unread Count
 
-**Returns:** `ResponseEntity<ApiResponse<UnreadCountResponse>>` - The count of unread notifications.
+Retrieves the count of unread notifications for the authenticated user.
 
-### markRead
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/notifications/unread-count` | Returns the count of unread notifications |
+
+**Response:** `200 OK` - Returns an `UnreadCountResponse` wrapped in an `ApiResponse`.
+
+### Mark Notification as Read
 
 Marks a specific notification as read.
 
-| Parameter | Type    | Description                  |
-|-----------|---------|------------------------------|
-| id        | UUID    | The ID of the notification.  |
-| request   | HttpServletRequest | The HTTP request object.|
+| Method | Path | Description |
+|--------|------|-------------|
+| PUT | `/api/v1/notifications/{id}/read` | Marks the specified notification as read |
 
-**Returns:** `ResponseEntity<ApiResponse<NotificationResponse>>` - The updated notification marked as read.
+**Path Parameters:**
 
-### markAllRead
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | The unique identifier of the notification |
 
-Marks all notifications as read.
+**Response:** `200 OK` - Returns the updated `NotificationResponse` wrapped in an `ApiResponse`.
 
-| Parameter | Type               | Description            |
-|-----------|--------------------|------------------------|
-| request   | HttpServletRequest | The HTTP request object.|
+### Mark All Notifications as Read
 
-**Returns:** `ResponseEntity<ApiResponse<Integer>>` - The number of notifications marked as read.
+Marks all notifications for the authenticated user as read.
 
-### deleteNotification
+| Method | Path | Description |
+|--------|------|-------------|
+| PUT | `/api/v1/notifications/read-all` | Marks all notifications as read |
+
+**Response:** `200 OK` - Returns the number of updated notifications wrapped in an `ApiResponse`.
+
+### Delete Notification
 
 Deletes a specific notification.
 
-| Parameter | Type    | Description                  |
-|-----------|---------|------------------------------|
-| id        | UUID    | The ID of the notification.  |
+| Method | Path | Description |
+|--------|------|-------------|
+| DELETE | `/api/v1/notifications/{id}` | Deletes the specified notification |
 
-**Returns:** `ResponseEntity<Void>` - An empty response indicating successful deletion.
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | The unique identifier of the notification |
+
+**Response:** `204 No Content` - Returns an empty response body.
+
+## Dependencies
+
+The controller relies on the following service interfaces:
+
+- `IListNotificationsService` - Handles paginated notification retrieval
+- `IGetUnreadCountService` - Handles unread count calculation
+- `IMarkNotificationReadService` - Handles marking individual notifications as read
+- `IMarkAllReadService` - Handles marking all notifications as read
+- `IDeleteNotificationService` - Handles notification deletion
+
+## Error Handling
+
+The controller uses `ValidationHelper.validatePaginationParameters()` to validate pagination parameters before processing requests. Invalid parameters will result in appropriate error responses.
+
+## Notes
+
+- All endpoints are prefixed with `/api/v1/notifications`
+- Pagination defaults to page 0 with 20 items per page
+- Notifications are sorted by `createdAt` in descending order
+- The controller returns consistent `ApiResponse` wrappers for success responses
+- The delete endpoint returns `204 No Content` without a response body

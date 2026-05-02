@@ -4,25 +4,85 @@ title: ICreateNotificationService Interface
 sidebar_label: ICreateNotificationService
 ---
 
-## Overview
+# ICreateNotificationService Interface
 
-The `ICreateNotificationService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for creating notifications within the application. This interface is designed to be implemented by classes that handle the creation of notifications, ensuring a consistent method signature for executing the notification creation process.
+The `ICreateNotificationService` interface defines the contract for creating notifications within the UpMatches application. It serves as the abstraction layer for notification creation, ensuring that all implementations adhere to a standardized method signature for generating notifications.
 
-## Public Methods
+This interface is declared as a **sealed interface**, meaning it restricts which classes or interfaces can implement it. In this case, only `CreateNotificationService` is permitted to provide the concrete implementation.
+
+## Interface Declaration
+
+```java
+public sealed interface ICreateNotificationService permits CreateNotificationService
+```
+
+- **Sealed Interface**: The `sealed` keyword restricts implementation to only the specified class (`CreateNotificationService`). This provides controlled extensibility and ensures that all notification creation logic flows through a single, known implementation.
+
+## Method Summary
+
+| Method | Description |
+|--------|-------------|
+| `execute` | Creates and returns a new `Notification` object based on the provided parameters. |
+
+## Method Details
 
 ### `execute`
 
-The `execute` method is responsible for creating a notification based on the provided parameters. It returns a `Notification` object that represents the newly created notification.
+```java
+Notification execute(
+    UUID recipientId,
+    NotificationType type,
+    String title,
+    String message,
+    String resourceType,
+    UUID resourceId)
+```
 
-| Parameter     | Type                          | Description                                      |
-|---------------|-------------------------------|--------------------------------------------------|
-| `recipientId` | `UUID`                        | The unique identifier of the notification recipient. |
-| `type`        | `NotificationType`            | The type of notification to be created.          |
-| `title`       | `String`                      | The title of the notification.                   |
-| `message`     | `String`                      | The message content of the notification.         |
-| `resourceType`| `String`                      | The type of resource associated with the notification. |
-| `resourceId`  | `UUID`                        | The unique identifier of the resource associated with the notification. |
+Creates a new notification with the specified attributes.
 
-#### Return Type
+**Parameters:**
 
-- **`Notification`**: The method returns a `Notification` object representing the created notification.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The unique identifier of the user who will receive the notification. |
+| `type` | `NotificationType` | The type of notification (e.g., MATCH, MESSAGE, LIKE). Defined in the `NotificationType` enum. |
+| `title` | `String` | A short, descriptive title for the notification. |
+| `message` | `String` | The main content or body of the notification. |
+| `resourceType` | `String` | The type of resource associated with the notification (e.g., "profile", "message", "event"). |
+| `resourceId` | `UUID` | The unique identifier of the resource that triggered the notification. |
+
+**Returns:**
+
+| Return Type | Description |
+|-------------|-------------|
+| `Notification` | A fully constructed `Notification` entity object ready for persistence or delivery. |
+
+## Usage Example
+
+```java
+// Assuming implementation via dependency injection
+ICreateNotificationService notificationService = new CreateNotificationService();
+
+Notification notification = notificationService.execute(
+    recipient.getUserId(),
+    NotificationType.MATCH,
+    "New Match!",
+    "You have a new match with Sarah.",
+    "profile",
+    matchedUserId
+);
+```
+
+## Implementation Notes
+
+- The sealed interface pattern ensures that only `CreateNotificationService` can implement this contract, providing a single point of control for notification creation logic.
+- All parameters are required; no overloaded methods are provided.
+- The returned `Notification` object is a fully initialized entity, ready for further processing (e.g., saving to database, sending via push notification).
+
+## Related Components
+
+| Component | Description |
+|-----------|-------------|
+| `CreateNotificationService` | The sole permitted implementation of this interface. |
+| `Notification` | The entity class representing a notification. |
+| `NotificationType` | Enum defining the types of notifications available in the system. |

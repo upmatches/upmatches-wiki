@@ -1,29 +1,70 @@
 ---
-id: icreate-share-link-service
+id: icreatesharelinkservice
 title: ICreateShareLinkService Interface
 sidebar_label: ICreateShareLinkService
 ---
 
-## Overview
-
-The `ICreateShareLinkService` interface is part of the `com.upmatches.app.features.sharelink.services` package. It defines a contract for creating share links within the application. This interface is designed to be implemented by classes that provide the functionality to generate shareable links based on specific requests.
+# ICreateShareLinkService Interface
 
 ## Purpose
 
-The primary purpose of the `ICreateShareLinkService` interface is to abstract the process of creating share links. By defining a standard method, it ensures that any implementing class will provide a consistent way to handle share link creation requests and return appropriate responses.
+The `ICreateShareLinkService` interface defines the contract for creating share links within the UpMatches application. It serves as the abstraction layer for the share link creation functionality, allowing for a clean separation between the service interface and its implementation. This interface is sealed, meaning only explicitly permitted classes can implement it, providing controlled extensibility and enhanced security.
 
-## Public Methods
+## Interface Definition
+
+```java
+public sealed interface ICreateShareLinkService permits CreateShareLinkService
+```
+
+The interface is declared as `sealed`, which restricts implementation to only the `CreateShareLinkService` class. This design pattern ensures that the share link creation logic remains centralized and cannot be extended arbitrarily.
+
+## Method Summary
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute(CreateShareLinkRequest request)` | `ShareLinkResponse` | Processes a share link creation request and returns the corresponding response |
+
+## Method Details
 
 ### `execute`
 
-Executes the process of creating a share link based on the provided request.
+```java
+ShareLinkResponse execute(CreateShareLinkRequest request)
+```
 
-| Parameter | Type                                      | Description                                      |
-|-----------|-------------------------------------------|--------------------------------------------------|
-| request   | `CreateShareLinkRequest`                  | The request object containing details for link creation. |
+This method accepts a `CreateShareLinkRequest` object containing the necessary data to create a share link and returns a `ShareLinkResponse` with the result of the operation.
 
-| Return Type          | Description                                      |
-|----------------------|--------------------------------------------------|
-| `ShareLinkResponse`  | The response object containing the created share link details. |
+**Parameters:**
 
-The `execute` method takes a `CreateShareLinkRequest` object as input and returns a `ShareLinkResponse` object. This method is crucial for generating share links, encapsulating the logic required to process the request and produce a valid response.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `CreateShareLinkRequest` | The request object containing share link creation data |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `ShareLinkResponse` | The response object containing the result of the share link creation |
+
+## Related Classes
+
+| Class | Description |
+|-------|-------------|
+| `CreateShareLinkService` | The sole permitted implementation of this interface |
+| `CreateShareLinkRequest` | The request data transfer object for share link creation |
+| `ShareLinkResponse` | The response data transfer object for share link creation |
+
+## Usage Example
+
+```java
+// The interface is typically injected and used through dependency injection
+ICreateShareLinkService shareLinkService = new CreateShareLinkService();
+CreateShareLinkRequest request = new CreateShareLinkRequest(/* parameters */);
+ShareLinkResponse response = shareLinkService.execute(request);
+```
+
+## Notes
+
+- This interface is part of the `com.upmatches.app.features.sharelink.services` package
+- The sealed interface pattern ensures that only the designated implementation class can fulfill this contract
+- All implementations must provide the `execute` method as defined in the interface

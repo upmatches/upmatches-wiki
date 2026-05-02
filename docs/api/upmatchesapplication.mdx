@@ -1,48 +1,53 @@
 ---
 id: upmatches-application
-title: UpmatchesApplication Class
+title: UpmatchesApplication
 sidebar_label: UpmatchesApplication
 ---
 
-## Overview
+# UpmatchesApplication
 
-The `UpmatchesApplication` class serves as the entry point for the Upmatches application. It is a Spring Boot application that initializes and runs the application context. This class is responsible for bootstrapping the application and enabling configuration properties for various authentication and logging features.
+The `UpmatchesApplication` class serves as the main entry point for the Upmatches Spring Boot application. It is responsible for bootstrapping and launching the application, as well as enabling the configuration properties for various authentication and shared features.
 
-## Class Details
+## Purpose
 
-The `UpmatchesApplication` class is annotated with `@SpringBootApplication`, which is a convenience annotation that adds all of the following:
+This class is the core startup class for the Upmatches backend service. It uses Spring Boot's auto-configuration and component scanning to initialize the application context. By annotating the class with `@EnableConfigurationProperties`, it registers multiple property classes that hold configuration values for authentication providers, logging, and share link functionality.
 
-- `@Configuration`: Tags the class as a source of bean definitions for the application context.
-- `@EnableAutoConfiguration`: Tells Spring Boot to start adding beans based on classpath settings, other beans, and various property settings.
-- `@ComponentScan`: Tells Spring to look for other components, configurations, and services in the `com.upmatches.app` package, allowing it to find the controllers.
+## Key Annotations
 
-Additionally, the class is annotated with `@EnableConfigurationProperties`, which is used to enable support for `@ConfigurationProperties` annotated classes. This allows the application to bind external configuration properties to Java objects.
-
-### Configuration Properties
-
-The following configuration properties are enabled in this application:
-
-- `LogAspectProperties`: Configuration properties related to logging aspects.
-- `SingpassProperties`: Configuration properties for Singpass authentication.
-- `Auth0Properties`: Configuration properties for Auth0 authentication.
-- `AppleProperties`: Configuration properties for Apple authentication.
-- `AuthDevProperties`: Configuration properties for development authentication.
-- `JwtProperties`: Configuration properties for JWT authentication.
-- `InfisicalProperties`: Configuration properties for Infisical authentication.
-- `ShareLinkProperties`: Configuration properties for share link features.
+- **`@SpringBootApplication`**: A convenience annotation that combines `@Configuration`, `@EnableAutoConfiguration`, and `@ComponentScan`. It enables Spring Boot's auto-configuration and component scanning for the package and its sub-packages.
+- **`@EnableConfigurationProperties`**: Enables support for `@ConfigurationProperties` beans. The listed classes will be registered as beans in the application context, allowing their properties to be bound from external configuration sources (e.g., `application.yml` or environment variables).
 
 ## Public Methods
 
-The `UpmatchesApplication` class contains the following public method:
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `main(String[] args)` | `void` | `String[] args` - Command-line arguments passed to the application | The standard Java entry point. It calls `SpringApplication.run()` to launch the Spring Boot application. |
 
-| Method Signature             | Description                                                                 |
-|------------------------------|-----------------------------------------------------------------------------|
-| `public static void main(String[] args)` | The main method that serves as the entry point for the Spring Boot application. It takes an array of `String` arguments and uses `SpringApplication.run()` to launch the application. |
+## Configuration Properties Enabled
 
-### Parameters
+The following configuration property classes are enabled via `@EnableConfigurationProperties`:
 
-- `args`: An array of `String` arguments passed to the application. These can be used to pass command-line arguments to the application.
+| Property Class | Description |
+|----------------|-------------|
+| `LogAspectProperties` | Configuration for logging aspects |
+| `SingpassProperties` | Configuration for Singpass authentication |
+| `Auth0Properties` | Configuration for Auth0 authentication |
+| `AppleProperties` | Configuration for Apple Sign-In |
+| `AuthDevProperties` | Configuration for development authentication |
+| `JwtProperties` | Configuration for JWT token handling |
+| `InfisicalProperties` | Configuration for Infisical secrets management |
+| `ShareLinkProperties` | Configuration for share link functionality |
 
-### Return Type
+## Usage
 
-- The `main` method does not return a value as it is `void`. It is responsible for launching the application.
+To run the application, execute the `main` method:
+
+```bash
+# Using Maven
+mvn spring-boot:run
+
+# Using Java directly
+java -jar upmatches-app.jar
+```
+
+The application will start an embedded web server (default port 8080) and begin accepting requests.

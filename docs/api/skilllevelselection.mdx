@@ -1,42 +1,46 @@
 ---
 id: skill-level-selection
-title: SkillLevelSelection Class
+title: SkillLevelSelection Record
 sidebar_label: SkillLevelSelection
 ---
 
+# SkillLevelSelection
+
+The `SkillLevelSelection` record is a Java data carrier used to represent a user's selection of a skill level for a specific activity. It is typically employed in request bodies for API endpoints that allow users to set or update their proficiency level in a given activity.
+
 ## Purpose
 
-The `SkillLevelSelection` class is a Java record used to encapsulate the selection of a skill level for a specific activity. It is part of the `com.upmatches.app.features.user.requests` package. This class ensures that both the `activityId` and `skillLevelId` are provided and valid, as indicated by the `@NotNull` annotations.
+This record encapsulates two mandatory pieces of information:
+- The unique identifier of the activity (e.g., "Running", "Swimming").
+- The unique identifier of the chosen skill level (e.g., "Beginner", "Intermediate", "Advanced").
 
-## Public Methods
+By using a Java record, the class automatically provides a constructor, getters, `equals()`, `hashCode()`, and `toString()` methods with minimal boilerplate.
 
-Since `SkillLevelSelection` is a Java record, it automatically provides the following public methods:
+## Validation
 
-### Constructor
+Both fields are annotated with `@NotNull` (from `jakarta.validation.constraints`), ensuring that neither the `activityId` nor the `skillLevelId` can be `null` when the record is used in a validated context (e.g., a Spring REST controller with `@Valid`).
 
-| Method Signature | Description |
-|------------------|-------------|
-| `SkillLevelSelection(UUID activityId, Long skillLevelId)` | Constructs a new `SkillLevelSelection` instance with the specified `activityId` and `skillLevelId`. Both parameters are required and must not be null. |
+## Fields
 
-### Accessor Methods
+| Field          | Type       | Description                                      | Constraints |
+|----------------|------------|--------------------------------------------------|-------------|
+| `activityId`   | `UUID`     | The unique identifier of the activity.           | Not null    |
+| `skillLevelId` | `Long`     | The unique identifier of the skill level.        | Not null    |
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `activityId()` | `UUID` | Returns the `activityId` associated with this skill level selection. |
-| `skillLevelId()` | `Long` | Returns the `skillLevelId` associated with this skill level selection. |
+## Usage Example
 
-## Parameters
+```java
+// Creating a new SkillLevelSelection instance
+SkillLevelSelection selection = new SkillLevelSelection(
+    UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+    42L
+);
 
-The `SkillLevelSelection` record has the following parameters:
+// Accessing fields
+UUID activityId = selection.activityId();
+Long skillLevelId = selection.skillLevelId();
+```
 
-| Parameter Name | Type | Description |
-|----------------|------|-------------|
-| `activityId`   | `UUID` | The unique identifier for the activity. Must not be null. |
-| `skillLevelId` | `Long` | The unique identifier for the skill level. Must not be null. |
+## Package
 
-## Return Types
-
-The accessor methods return the following types:
-
-- `UUID` for the `activityId()`
-- `Long` for the `skillLevelId()`
+`com.upmatches.app.features.user.requests`

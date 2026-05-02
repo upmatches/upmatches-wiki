@@ -1,44 +1,79 @@
 ---
-id: share-link-controller
+id: sharelink-controller
 title: ShareLinkController
 sidebar_label: ShareLinkController
 ---
 
-## Overview
+# ShareLinkController
 
-The `ShareLinkController` class is a REST controller in a Spring Boot application responsible for managing share links. It provides endpoints to create and resolve share links, leveraging services for business logic execution. This controller ensures that share links are created and resolved following specific patterns and validations.
+The `ShareLinkController` is a REST controller that handles HTTP requests related to share links in the UpMatches application. It provides endpoints for creating new share links and resolving existing ones using a unique alphanumeric code.
+
+## Purpose
+
+This controller serves as the entry point for share link operations, delegating business logic to dedicated service interfaces (`ICreateShareLinkService` and `IResolveShareLinkService`). It validates input parameters, constructs appropriate API responses, and returns standardized HTTP status codes.
+
+## Endpoints
+
+### Create Share Link
+
+Creates a new share link based on the provided request body.
+
+**HTTP Method:** `POST`  
+**Path:** `/api/v1/share-links`  
+**Request Body:** `CreateShareLinkRequest` (validated)  
+**Response:** `ApiResponse<ShareLinkResponse>` with HTTP 201 (Created)
+
+### Resolve Share Link
+
+Resolves an existing share link using its unique 8-character alphanumeric code.
+
+**HTTP Method:** `GET`  
+**Path:** `/api/v1/share-links/{code}`  
+**Path Variable:** `code` (must match pattern `^[0-9A-Za-z]{8}$`)  
+**Response:** `ApiResponse<PublicShareLinkResponse>` with HTTP 200 (OK)
 
 ## Public Methods
 
-### `createShareLink`
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `createShareLink` | `@Valid @RequestBody CreateShareLinkRequest body`, `HttpServletRequest request` | `ResponseEntity<ApiResponse<ShareLinkResponse>>` | Creates a new share link and returns it with a 201 status code |
+| `resolveShareLink` | `@PathVariable @Pattern(regexp = "^[0-9A-Za-z]{8}$") String code`, `HttpServletRequest request` | `ResponseEntity<ApiResponse<PublicShareLinkResponse>>` | Resolves a share link by its 8-character alphanumeric code and returns it with a 200 status code |
 
-Creates a new share link based on the provided request data.
+## Dependencies
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `body` | `CreateShareLinkRequest` | The request body containing data required to create a share link. |
-| `request` | `HttpServletRequest` | The HTTP request object. |
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `ICreateShareLinkService` | Service Interface | Handles the business logic for creating share links |
+| `IResolveShareLinkService` | Service Interface | Handles the business logic for resolving share links |
 
-| Return Type | Description |
-|-------------|-------------|
-| `ResponseEntity<ApiResponse<ShareLinkResponse>>` | A response entity containing the API response with the created share link details. |
+## Validation
 
-### `resolveShareLink`
+The controller uses Jakarta Bean Validation annotations to ensure input integrity:
 
-Resolves an existing share link using a provided code.
+- **`CreateShareLinkRequest`**: Validated with `@Valid` annotation
+- **`code` path variable**: Validated with `@Pattern` annotation requiring exactly 8 alphanumeric characters (`^[0-9A-Za-z]{8}$`)
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `code` | `String` | The code of the share link to be resolved. Must be 8 alphanumeric characters. |
-| `request` | `HttpServletRequest` | The HTTP request object. |
+## Response Format
 
-| Return Type | Description |
-|-------------|-------------|
-| `ResponseEntity<ApiResponse<PublicShareLinkResponse>>` | A response entity containing the API response with the resolved share link details. |
+All responses are wrapped in an `ApiResponse` object containing:
 
-## Annotations and Validations
+- The response data (either `ShareLinkResponse` or `PublicShareLinkResponse`)
+- A success message
+- The request URI
 
-- The class is annotated with `@RestController` and `@RequestMapping("/api/v1/share-links")`, indicating it handles HTTP requests for the `/api/v1/share-links` path.
-- The `@Validated` annotation is used to enable validation on method parameters.
-- The `createShareLink` method uses `@Valid` to validate the request body.
-- The `resolveShareLink` method uses `@Pattern` to ensure the `code` parameter matches the specified pattern (`^[0-9A-Za-z]{8}$`), enforcing that it must be exactly 8 alphanumeric characters.
+## Error Handling
+
+The controller relies on Spring's validation framework to handle invalid inputs. If validation fails, a `MethodArgumentNotValidException` or `ConstraintViolationException` is thrown, which can be handled by a global exception handler.
+
+## Usage Example
+
+```java
+// Create a share link
+POST /api/v1/share-links
+{
+  // CreateShareLinkRequest body
+}
+
+// Resolve a share link
+GET /api/v1/share-links/ABC12345
+```

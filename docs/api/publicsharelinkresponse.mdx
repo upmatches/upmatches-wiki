@@ -1,51 +1,60 @@
 ---
 id: public-share-link-response
-title: PublicShareLinkResponse Class
+title: PublicShareLinkResponse
 sidebar_label: PublicShareLinkResponse
 ---
 
-## Overview
+# PublicShareLinkResponse
 
-The `PublicShareLinkResponse` class is a part of the `com.upmatches.app.features.sharelink.responses` package. It is designed to encapsulate the response details for a public share link within the application. This class is implemented as a Java Record, which provides a compact syntax for declaring immutable data carriers.
+The `PublicShareLinkResponse` class is a Java record that represents the response payload for a public share link. It encapsulates the essential information needed to share a resource via a short link, including the resource type, resource identifier, and both web and mobile URLs.
 
-## Purpose
+This record is typically used in API responses to provide clients with the necessary data to access a shared resource through different platforms (web and mobile).
 
-The primary purpose of the `PublicShareLinkResponse` class is to represent the response data associated with a public share link. It includes information about the type of resource being shared, the unique identifier of the resource, and the URLs for accessing the resource via web and mobile platforms.
+## Record Components
 
-## Public Methods
+| Component | Type | Description |
+|-----------|------|-------------|
+| `resourceType` | `ResourceType` | The type of the shared resource (e.g., document, image, video) |
+| `resourceId` | `String` | The unique identifier of the shared resource |
+| `webUrl` | `String` | The URL for accessing the resource on the web |
+| `mobileUrl` | `String` | The URL for accessing the resource on mobile devices |
 
-The class provides a static factory method to create instances of `PublicShareLinkResponse`. Below is a detailed description of the method, including its parameters and return type.
+## Methods
 
-### Method: `fromShortLink`
+### `fromShortLink`
 
-This static method is used to create a new instance of `PublicShareLinkResponse` from a given `ShortLink` object and specified URLs.
+```java
+public static PublicShareLinkResponse fromShortLink(ShortLink link, String webUrl, String mobileUrl)
+```
 
-| Method Signature | `public static PublicShareLinkResponse fromShortLink(ShortLink link, String webUrl, String mobileUrl)` |
-|------------------|------------------------------------------------------------------------------------------------------|
+Creates a `PublicShareLinkResponse` instance from a `ShortLink` entity and the generated web and mobile URLs.
 
-#### Parameters
+**Parameters:**
 
-| Name     | Type       | Description                                                                 |
-|----------|------------|-----------------------------------------------------------------------------|
-| `link`   | `ShortLink`| The `ShortLink` object containing the resource type and resource ID.        |
-| `webUrl` | `String`   | The URL for accessing the resource via a web browser.                       |
-| `mobileUrl` | `String` | The URL for accessing the resource via a mobile device.                    |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `link` | `ShortLink` | The short link entity containing the resource type and ID |
+| `webUrl` | `String` | The web URL for accessing the resource |
+| `mobileUrl` | `String` | The mobile URL for accessing the resource |
 
-#### Return Type
+**Returns:**
 
-| Type                      | Description                                                                 |
-|---------------------------|-----------------------------------------------------------------------------|
-| `PublicShareLinkResponse` | Returns a new instance of `PublicShareLinkResponse` initialized with the provided data. |
+| Type | Description |
+|------|-------------|
+| `PublicShareLinkResponse` | A new response instance populated with data from the provided short link and URLs |
 
-## Fields
+## Usage Example
 
-The `PublicShareLinkResponse` record consists of the following fields:
+```java
+// Assuming you have a ShortLink object and generated URLs
+ShortLink shortLink = shortLinkService.createShortLink(resource);
+String webUrl = "https://example.com/share/" + shortLink.getCode();
+String mobileUrl = "https://m.example.com/share/" + shortLink.getCode();
 
-| Field Name   | Type          | Description                                                                 |
-|--------------|---------------|-----------------------------------------------------------------------------|
-| `resourceType` | `ResourceType` | The type of resource being shared.                                        |
-| `resourceId`   | `String`       | The unique identifier of the resource.                                    |
-| `webUrl`       | `String`       | The URL for accessing the resource via a web browser.                     |
-| `mobileUrl`    | `String`       | The URL for accessing the resource via a mobile device.                   |
+PublicShareLinkResponse response = PublicShareLinkResponse.fromShortLink(shortLink, webUrl, mobileUrl);
+```
 
-This documentation provides a concise overview of the `PublicShareLinkResponse` class, its purpose, and its usage within the application.
+## Related Classes
+
+- `ShortLink` - The entity class representing a short link in the database
+- `ResourceType` - The enum defining the types of resources that can be shared

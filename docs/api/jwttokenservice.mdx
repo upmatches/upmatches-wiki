@@ -1,34 +1,132 @@
 ---
 id: jwt-token-service
-title: JwtTokenService Class
+title: JwtTokenService
 sidebar_label: JwtTokenService
 ---
 
+# JwtTokenService
+
+The `JwtTokenService` class is a Spring service responsible for generating JWT access tokens and refresh tokens for authentication in the UpMatches application. It implements the `IJwtTokenService` interface and uses Nimbus JOSE + JWT library for JWT creation and signing with ES256 (ECDSA using P-256 and SHA-256) algorithm.
+
 ## Purpose
 
-The `JwtTokenService` class is a part of the authentication feature in the application. It is responsible for generating JSON Web Tokens (JWTs) for user authentication. The class provides methods to create access tokens and refresh tokens, ensuring secure and efficient user session management.
+This service handles the core token generation logic:
+- Creates signed JWT access tokens with user identity claims and authentication provider information
+- Generates cryptographically secure random refresh tokens
+- Enforces single authentication provider per user (Singpass, Auth0, or Apple)
+- Uses configurable token expiry times from application properties
+
+## Dependencies
+
+| Dependency | Description |
+|------------|-------------|
+| `SigningKeyProvider` | Provides the ECDSA signing key and key ID for JWT signing |
+| `JwtProperties` | Configuration properties for JWT issuer, audience, and token expiry |
 
 ## Public Methods
 
 ### `generateAccessToken`
 
-Generates an access token for a user based on their unique identifiers from different authentication providers.
-
-| Parameter     | Type   | Description                                      |
-|---------------|--------|--------------------------------------------------|
-| `userId`      | `UUID` | The unique identifier of the user.               |
-| `singpassUuid`| `String` | The Singpass unique identifier for the user.   |
-| `auth0Uuid`   | `String` | The Auth0 unique identifier for the user.      |
-| `appleUuid`   | `String` | The Apple unique identifier for the user.      |
-
-**Returns**: `AccessTokenResult` - An object containing the serialized JWT and its expiration time in UTC seconds.
-
-### `generateRefreshToken`
-
-Generates a secure random refresh token encoded in Base64 URL format.
+Generates a signed JWT access token for a user.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| *(none)*  |      |             |
+| `userId` | `UUID` | The unique identifier of the user |
+| `singpassUuid` | `String` | Singpass user identifier (nullable) |
+| `auth0Uuid` | `String` | Auth0 user identifier (nullable) |
+| `appleUuid` | `String` | Apple user identifier (nullable) |
 
-**Returns**: `String` - A Base64 URL encoded string representing the refresh token.
+**Returns:** `AccessTokenResult` - A record containing the serialized JWT token string and the expiration timestamp in UTC seconds.
+
+**Throws:**
+- `IllegalArgumentException` if more than one authentication provider UUID is provided
+- `IllegalStateException` if JWT signing fails
+
+### `generateRefreshToken`
+
+Generates a cryptographically secure random refresh token.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None | | |
+
+**Returns:** `String` - A Base64 URL-encoded random string of 32 bytes (256 bits).
+
+## Internal Records
+
+### `AccessTokenResult`
+
+A record that holds the result of access token generation.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `token` | `String` | The serialized JWT access token |
+| `expiresAtUtc` | `Long` | Token expiration time in UTC epoch seconds |
+
+### `ProviderClaim`
+
+A private record used internally to track authentication provider claims.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `uuidClaim` | `String` | The JWT claim name for the provider UUID |
+| `provider` | `String` | The provider identifier (e.g., "singpass", "auth0", "apple") |
+| `value` | `String` | The actual UUID value |
+
+## Token Structure
+
+### Access Token Claims
+
+| Claim | Description |
+|-------|-------------|
+| `sub` | User UUID (subject) |
+| `iss` | Issuer from configuration |
+| `aud` | Audience from configuration |
+| `iat` | Issued at time |
+| `nbf` | Not before time |
+| `exp` | Expiration time |
+| `auth_provider` | Authentication provider name (if applicable) |
+| `singpass_uuid` | Singpass user UUID (if applicable) |
+| `auth0_uuid` | Auth0 user UUID (if applicable) |
+| `apple_uuid` | Apple user UUID (if applicable) |
+
+### Refresh Token
+
+- 32 random bytes encoded as Base64 URL without padding
+- No expiration or claims (managed separately by the application)
+
+## Usage Example
+
+```java
+@Autowired
+private JwtTokenService jwtTokenService;
+
+// Generate access token for a Singpass user
+AccessTokenResult result = jwtTokenService.generateAccessToken(
+    userId,
+    "singpass-uuid-123",
+    null,
+    null
+);
+
+// Generate refresh token
+String refreshToken = jwtTokenService.generateRefreshToken();
+```
+
+## Configuration
+
+The service requires the following properties to be configured:
+
+```yaml
+jwt:
+  issuer: "https://your-issuer.com"
+  audience: "https://your-api.com"
+  access-token-expiry-minutes: 15
+```
+
+## Notes
+
+- The service is conditionally loaded only when a `SigningKeyProvider` bean exists in the application context
+- The class is declared as `non-sealed`, allowing future extension if needed
+- Token signing uses ES256 algorithm with ECDSA keys provided by the `SigningKeyProvider`
+- Multiple authentication provider UUIDs for the same user will result in an `IllegalArgumentException`

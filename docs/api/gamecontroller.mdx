@@ -1,152 +1,388 @@
 ---
 id: game-controller
-title: GameController
+title: GameController API Documentation
 sidebar_label: GameController
 ---
 
-## Purpose
+# GameController
 
-The `GameController` class is a REST controller in a Spring Boot application that manages game-related operations. It provides endpoints for creating, retrieving, updating, and deleting games, as well as managing game participants and filtering options.
+The `GameController` class is a REST controller that handles all game-related HTTP requests in the UpMatches application. It provides endpoints for creating, retrieving, updating, and deleting games, as well as managing game participants and filtering game listings.
 
-## Public Methods
+## Base URL
 
-### `createGame`
+All endpoints are prefixed with `/api/v1/games`.
 
-Creates a new game.
+## Endpoints
 
-| Parameter | Type                   | Description                  |
-|-----------|------------------------|------------------------------|
-| `body`    | `CreateGameRequest`    | The request body containing game details. |
-| `request` | `HttpServletRequest`   | The HTTP request object.     |
+### Create Game
 
-**Returns:** `ResponseEntity<ApiResponse<GameResponse>>` - The response entity containing the created game details.
+Creates a new game with the specified details.
 
-### `listGames`
+**Endpoint:** `POST /api/v1/games`
 
-Retrieves a list of games with optional filtering and pagination.
+**Request Body:** `CreateGameRequest` (validated)
 
-| Parameter      | Type                  | Description                              |
-|----------------|-----------------------|------------------------------------------|
-| `cursor`       | `String`              | The pagination cursor (optional).        |
-| `size`         | `Integer`             | The number of games to retrieve (default: 20). |
-| `venueIds`     | `List<Long>`          | The list of venue IDs to filter by (optional). |
-| `skillLevelIds`| `List<Long>`          | The list of skill level IDs to filter by (optional). |
-| `fromDate`     | `LocalDate`           | The start date to filter by (optional).  |
-| `toDate`       | `LocalDate`           | The end date to filter by (optional).    |
-| `fromTime`     | `LocalTime`           | The start time to filter by (optional).  |
-| `toTime`       | `LocalTime`           | The end time to filter by (optional).    |
-| `latitude`     | `BigDecimal`          | The latitude for location-based filtering (optional). |
-| `longitude`    | `BigDecimal`          | The longitude for location-based filtering (optional). |
-| `radiusKm`     | `Integer`             | The radius in kilometers for location-based filtering (optional). |
-| `request`      | `HttpServletRequest`  | The HTTP request object.                 |
+**Response:** `201 Created`
 
-**Returns:** `ResponseEntity<ApiResponse<CursorPagedResponse<GameResponse>>>` - The response entity containing the list of games.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| body | CreateGameRequest | Game creation details |
+| request | HttpServletRequest | HTTP request object |
 
-### `getGameFilterOptions`
+**Response Body:**
+```json
+{
+  "data": {
+    "id": "uuid",
+    "title": "string",
+    "description": "string",
+    "gameType": "string",
+    "venueId": "number",
+    "skillLevelId": "number",
+    "date": "date",
+    "time": "time",
+    "maxParticipants": "number",
+    "currentParticipants": "number",
+    "status": "string"
+  },
+  "message": "Game created successfully.",
+  "path": "/api/v1/games"
+}
+```
 
-Retrieves filter options for games.
+### List Games
 
-| Parameter      | Type                  | Description                              |
-|----------------|-----------------------|------------------------------------------|
-| `fromDate`     | `LocalDate`           | The start date for filtering.            |
-| `toDate`       | `LocalDate`           | The end date for filtering.              |
-| `venueIds`     | `List<Long>`          | The list of venue IDs to filter by (optional). |
-| `skillLevelIds`| `List<Long>`          | The list of skill level IDs to filter by (optional). |
-| `fromTime`     | `LocalTime`           | The start time to filter by (optional).  |
-| `toTime`       | `LocalTime`           | The end time to filter by (optional).    |
-| `gameType`     | `GameType`            | The type of game to filter by (optional).|
-| `latitude`     | `BigDecimal`          | The latitude for location-based filtering (optional). |
-| `longitude`    | `BigDecimal`          | The longitude for location-based filtering (optional). |
-| `radiusKm`     | `Integer`             | The radius in kilometers for location-based filtering (optional). |
-| `request`      | `HttpServletRequest`  | The HTTP request object.                 |
+Retrieves a paginated list of games with optional filtering.
 
-**Returns:** `ResponseEntity<ApiResponse<GameFilterOptionsResponse>>` - The response entity containing the filter options.
+**Endpoint:** `GET /api/v1/games`
 
-### `getGameDateAvailability`
+**Query Parameters:**
 
-Checks the availability of game dates.
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| cursor | String | No | - | Pagination cursor |
+| size | Integer | No | 20 | Page size (max 100) |
+| venueIds | List<Long> | No | - | Filter by venue IDs |
+| skillLevelIds | List<Long> | No | - | Filter by skill level IDs |
+| fromDate | LocalDate | No | - | Filter by start date |
+| toDate | LocalDate | No | - | Filter by end date |
+| fromTime | LocalTime | No | - | Filter by start time |
+| toTime | LocalTime | No | - | Filter by end time |
+| latitude | BigDecimal | No | - | Location filter latitude |
+| longitude | BigDecimal | No | - | Location filter longitude |
+| radiusKm | Integer | No | - | Location filter radius |
 
-| Parameter | Type                 | Description                  |
-|-----------|----------------------|------------------------------|
-| `fromDate`| `LocalDate`          | The start date for availability check. |
-| `toDate`  | `LocalDate`          | The end date for availability check.   |
-| `request` | `HttpServletRequest` | The HTTP request object.     |
+**Response:** `200 OK`
 
-**Returns:** `ResponseEntity<ApiResponse<List<GameDateAvailabilityResponse>>>` - The response entity containing the date availability information.
+```json
+{
+  "data": {
+    "items": [
+      {
+        "id": "uuid",
+        "title": "string",
+        "gameType": "string",
+        "venueId": "number",
+        "date": "date",
+        "time": "time",
+        "currentParticipants": "number",
+        "maxParticipants": "number"
+      }
+    ],
+    "nextCursor": "string",
+    "hasMore": true
+  },
+  "message": "Games retrieved successfully.",
+  "path": "/api/v1/games"
+}
+```
 
-### `getGame`
+### Get Filter Options
 
-Retrieves details of a specific game.
+Retrieves available filter options for game search.
 
-| Parameter | Type                 | Description                  |
-|-----------|----------------------|------------------------------|
-| `id`      | `UUID`               | The unique identifier of the game. |
-| `request` | `HttpServletRequest` | The HTTP request object.     |
+**Endpoint:** `GET /api/v1/games/filter-options`
 
-**Returns:** `ResponseEntity<ApiResponse<GameResponse>>` - The response entity containing the game details.
+**Query Parameters:**
 
-### `updateGame`
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| fromDate | LocalDate | Yes | Start date for filtering |
+| toDate | LocalDate | Yes | End date for filtering |
+| venueIds | List<Long> | No | Filter by venue IDs |
+| skillLevelIds | List<Long> | No | Filter by skill level IDs |
+| fromTime | LocalTime | No | Filter by start time |
+| toTime | LocalTime | No | Filter by end time |
+| gameType | GameType | No | Filter by game type |
+| latitude | BigDecimal | No | Location filter latitude |
+| longitude | BigDecimal | No | Location filter longitude |
+| radiusKm | Integer | No | Location filter radius |
+
+**Response:** `200 OK`
+
+```json
+{
+  "data": {
+    "venues": [
+      {
+        "id": "number",
+        "name": "string",
+        "address": "string"
+      }
+    ],
+    "skillLevels": [
+      {
+        "id": "number",
+        "name": "string",
+        "description": "string"
+      }
+    ],
+    "gameTypes": ["string"],
+    "availableDates": ["date"]
+  },
+  "message": "Game filter options retrieved successfully.",
+  "path": "/api/v1/games/filter-options"
+}
+```
+
+### Get Date Availability
+
+Retrieves available dates for games within a date range.
+
+**Endpoint:** `GET /api/v1/games/date-availability`
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| fromDate | LocalDate | Yes | Start date |
+| toDate | LocalDate | Yes | End date |
+
+**Response:** `200 OK`
+
+```json
+{
+  "data": [
+    {
+      "date": "2024-01-15",
+      "availableGames": 5,
+      "totalGames": 10
+    }
+  ],
+  "message": "Game date availability retrieved successfully.",
+  "path": "/api/v1/games/date-availability"
+}
+```
+
+### Get Game
+
+Retrieves a specific game by its ID.
+
+**Endpoint:** `GET /api/v1/games/{id}`
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | UUID | Game ID |
+
+**Response:** `200 OK`
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "title": "string",
+    "description": "string",
+    "gameType": "string",
+    "venueId": "number",
+    "skillLevelId": "number",
+    "date": "date",
+    "time": "time",
+    "maxParticipants": "number",
+    "currentParticipants": "number",
+    "status": "string",
+    "participants": [
+      {
+        "userId": "uuid",
+        "username": "string",
+        "joinedAt": "datetime"
+      }
+    ]
+  },
+  "message": "Game retrieved successfully.",
+  "path": "/api/v1/games/{id}"
+}
+```
+
+### Update Game
 
 Updates an existing game.
 
-| Parameter | Type                  | Description                  |
-|-----------|-----------------------|------------------------------|
-| `id`      | `UUID`                | The unique identifier of the game. |
-| `body`    | `UpdateGameRequest`   | The request body containing updated game details. |
-| `request` | `HttpServletRequest`  | The HTTP request object.     |
+**Endpoint:** `PUT /api/v1/games/{id}`
 
-**Returns:** `ResponseEntity<ApiResponse<GameResponse>>` - The response entity containing the updated game details.
+**Path Parameters:**
 
-### `softDeleteGame`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | UUID | Game ID |
 
-Soft deletes a game.
+**Request Body:** `UpdateGameRequest` (validated)
 
-| Parameter | Type | Description                  |
-|-----------|------|------------------------------|
-| `id`      | `UUID` | The unique identifier of the game. |
+**Response:** `200 OK`
 
-**Returns:** `ResponseEntity<Void>` - The response entity indicating the operation result.
+```json
+{
+  "data": {
+    "id": "uuid",
+    "title": "string",
+    "description": "string",
+    "gameType": "string",
+    "venueId": "number",
+    "skillLevelId": "number",
+    "date": "date",
+    "time": "time",
+    "maxParticipants": "number",
+    "currentParticipants": "number",
+    "status": "string"
+  },
+  "message": "Game updated successfully.",
+  "path": "/api/v1/games/{id}"
+}
+```
 
-### `joinGame`
+### Soft Delete Game
 
-Joins a game as a participant.
+Soft deletes a game (marks as inactive).
 
-| Parameter | Type                 | Description                  |
-|-----------|----------------------|------------------------------|
-| `id`      | `UUID`               | The unique identifier of the game. |
-| `request` | `HttpServletRequest` | The HTTP request object.     |
+**Endpoint:** `DELETE /api/v1/games/{id}`
 
-**Returns:** `ResponseEntity<ApiResponse<GameParticipantResponse>>` - The response entity containing the participant details.
+**Path Parameters:**
 
-### `leaveGame`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | UUID | Game ID |
 
-Leaves a game as a participant.
+**Response:** `204 No Content`
 
-| Parameter | Type | Description                  |
-|-----------|------|------------------------------|
-| `id`      | `UUID` | The unique identifier of the game. |
+### Join Game
 
-**Returns:** `ResponseEntity<Void>` - The response entity indicating the operation result.
+Allows the current user to join a game.
 
-### `listGameParticipants`
+**Endpoint:** `POST /api/v1/games/{id}/participants`
 
-Lists participants of a specific game.
+**Path Parameters:**
 
-| Parameter | Type                 | Description                  |
-|-----------|----------------------|------------------------------|
-| `id`      | `UUID`               | The unique identifier of the game. |
-| `request` | `HttpServletRequest` | The HTTP request object.     |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | UUID | Game ID |
 
-**Returns:** `ResponseEntity<ApiResponse<List<GameParticipantResponse>>>` - The response entity containing the list of participants.
+**Response:** `201 Created`
 
-### `expelParticipant`
+```json
+{
+  "data": {
+    "userId": "uuid",
+    "username": "string",
+    "gameId": "uuid",
+    "joinedAt": "datetime",
+    "status": "string"
+  },
+  "message": "Joined game successfully.",
+  "path": "/api/v1/games/{id}/participants"
+}
+```
+
+### Leave Game
+
+Allows the current user to leave a game.
+
+**Endpoint:** `DELETE /api/v1/games/{id}/participants/me`
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | UUID | Game ID |
+
+**Response:** `204 No Content`
+
+### List Game Participants
+
+Retrieves all participants of a specific game.
+
+**Endpoint:** `GET /api/v1/games/{id}/participants`
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | UUID | Game ID |
+
+**Response:** `200 OK`
+
+```json
+{
+  "data": [
+    {
+      "userId": "uuid",
+      "username": "string",
+      "joinedAt": "datetime",
+      "status": "string"
+    }
+  ],
+  "message": "Game participants retrieved successfully.",
+  "path": "/api/v1/games/{id}/participants"
+}
+```
+
+### Expel Participant
 
 Expels a participant from a game.
 
-| Parameter       | Type                    | Description                  |
-|-----------------|-------------------------|------------------------------|
-| `gameId`        | `UUID`                  | The unique identifier of the game. |
-| `participantId` | `UUID`                  | The unique identifier of the participant. |
-| `body`          | `ExpelParticipantRequest` | The request body containing expulsion details (optional). |
+**Endpoint:** `DELETE /api/v1/games/{gameId}/participants/{participantId}`
 
-**Returns:** `ResponseEntity<Void>` - The response entity indicating the operation result.
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| gameId | UUID | Game ID |
+| participantId | UUID | Participant ID |
+
+**Request Body (optional):** `ExpelParticipantRequest`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| reason | String | Reason for expulsion |
+
+**Response:** `204 No Content`
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+| Status Code | Description |
+|-------------|-------------|
+| 400 | Bad Request - Invalid input parameters |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Insufficient permissions |
+| 404 | Not Found - Resource not found |
+| 409 | Conflict - Resource conflict (e.g., game full) |
+| 422 | Unprocessable Entity - Validation errors |
+| 500 | Internal Server Error |
+
+## Dependencies
+
+The controller depends on the following service interfaces:
+
+- `ICreateGameService`
+- `IListGamesCursorService`
+- `IGetGameService`
+- `IGetGameFilterOptionsService`
+- `IGetGameDateAvailabilityService`
+- `IUpdateGameService`
+- `ISoftDeleteGameService`
+- `IJoinGameService`
+- `ILeaveGameService`
+- `IListGameParticipantsService`
+- `IExpelParticipantService`

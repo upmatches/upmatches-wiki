@@ -1,30 +1,75 @@
 ---
 id: jwt-properties
-title: JwtProperties Class
+title: JwtProperties - JWT Configuration Record
 sidebar_label: JwtProperties
 ---
 
+# JwtProperties
+
+The `JwtProperties` class is a Spring Boot configuration properties record that maps to the `app.jwt` prefix in your application properties file. It centralizes all JWT-related configuration, including token expiration times, issuer/audience values, and callback URLs for authentication flows.
+
 ## Purpose
 
-The `JwtProperties` class is a configuration properties holder for JWT (JSON Web Token) settings in a Spring Boot application. It is designed to manage and validate JWT-related properties such as issuer, audience, token expiry times, and callback URLs. This class uses the `@ConfigurationProperties` annotation to bind external configuration properties to the fields of the class, allowing for easy configuration management.
+This record provides a type-safe and validated way to manage JWT configuration parameters. It automatically applies sensible defaults for optional fields and performs validation on critical values like the frontend callback URL. By using Spring Boot's `@ConfigurationProperties`, it seamlessly integrates with your application's property sources (e.g., `application.yml`, environment variables).
 
-## Public Methods
+## Configuration Properties
 
-The `JwtProperties` class is a Java record, which means it primarily serves as a data carrier with automatically generated methods for its fields. However, it includes a custom constructor for validation and default value assignment. Below is a table documenting the parameters of the constructor:
+The following table describes each property that can be configured under the `app.jwt` prefix:
 
-| Parameter                | Type    | Description                                                                 |
-|--------------------------|---------|-----------------------------------------------------------------------------|
-| `issuer`                 | String  | The issuer of the JWT. Defaults to "upmatches" if blank.                    |
-| `audience`               | String  | The audience for the JWT. Defaults to "upmatches" if blank.                 |
-| `accessTokenExpiryMinutes` | Integer | The expiry time in minutes for the access token. Defaults to 15 if not positive. |
-| `refreshTokenExpiryDays` | Integer | The expiry time in days for the refresh token. Defaults to 7 if not positive. |
-| `frontendCallbackUrl`    | String  | The callback URL for the frontend. Must be a valid URI and not blank.       |
-| `mobileCallbackScheme`   | String  | The callback scheme for mobile applications. Defaults to "upmatches" if blank. |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `issuer` | String | `"upmatches"` | The JWT issuer claim (`iss`). Defaults to `"upmatches"` if blank. |
+| `audience` | String | `"upmatches"` | The JWT audience claim (`aud`). Defaults to `"upmatches"` if blank. |
+| `accessTokenExpiryMinutes` | Integer | `15` | Access token expiration time in minutes. Must be positive; defaults to 15 if not provided or invalid. |
+| `refreshTokenExpiryDays` | Integer | `7` | Refresh token expiration time in days. Must be positive; defaults to 7 if not provided or invalid. |
+| `frontendCallbackUrl` | String | **Required** | The callback URL for the frontend after authentication. Must be a valid URI and cannot be blank. |
+| `mobileCallbackScheme` | String | `"upmatches"` | The custom URL scheme for mobile app callbacks. Defaults to `"upmatches"` if blank. |
 
-## Validation and Defaulting Logic
+## Constructor Validation
 
-- **Default Value Assignment**: The constructor assigns default values to `issuer`, `audience`, and `mobileCallbackScheme` if they are blank, using the `defaultIfBlank` method.
-- **Expiry Time Validation**: The `accessTokenExpiryMinutes` and `refreshTokenExpiryDays` are validated to ensure they are positive. If not, they are assigned default values using the `defaultIfNotPositive` method.
-- **Callback URL Validation**: The `frontendCallbackUrl` is validated to ensure it is a non-blank, valid URI. If the URL is invalid, an `IllegalArgumentException` is thrown.
+The compact constructor performs the following validations and default assignments:
 
-This class ensures that JWT configuration properties are correctly initialized and validated, providing a robust setup for managing JWTs in a Spring Boot application.
+1. **Blank String Handling**: `issuer`, `audience`, and `mobileCallbackScheme` default to `"upmatches"` if null or blank.
+2. **Positive Integer Enforcement**: `accessTokenExpiryMinutes` and `refreshTokenExpiryDays` default to their respective constants (`15` and `7`) if null or non-positive.
+3. **URI Validation**: `frontendCallbackUrl` is validated as a proper URI. An `IllegalArgumentException` is thrown if the URL is blank or malformed.
+
+## Usage Example
+
+To use this configuration in your application, add the following to your `application.yml` or `application.properties`:
+
+```yaml
+app:
+  jwt:
+    issuer: my-app
+    audience: my-app-users
+    access-token-expiry-minutes: 30
+    refresh-token-expiry-days: 14
+    frontend-callback-url: https://example.com/auth/callback
+    mobile-callback-scheme: myapp
+```
+
+Then inject the properties into your services:
+
+```java
+@Service
+public class JwtService {
+    private final JwtProperties jwtProperties;
+
+    public JwtService(JwtProperties jwtProperties) {
+        this.jwtProperties = jwtProperties;
+    }
+
+    public void generateToken() {
+        // Use jwtProperties.issuer(), jwtProperties.accessTokenExpiryMinutes(), etc.
+    }
+}
+```
+
+## Error Handling
+
+The constructor throws `IllegalArgumentException` in the following cases:
+
+- `frontendCallbackUrl` is null or blank
+- `frontendCallbackUrl` is not a valid URI (e.g., malformed syntax)
+
+All other fields have safe defaults, making the configuration resilient to missing or invalid values.

@@ -4,42 +4,69 @@ title: DeleteActivityService
 sidebar_label: DeleteActivityService
 ---
 
-## Overview
+# DeleteActivityService
 
-The `DeleteActivityService` class is a part of the `com.upmatches.app.features.activity.services` package. It is responsible for handling the deletion of `Activity` entities within the application. This service ensures that activities are deleted in a transactional and auditable manner, leveraging Spring's transaction management and custom auditing annotations.
+The `DeleteActivityService` class is a Spring service component responsible for deleting an `Activity` entity from the system. It implements the `IDeleteActivityService` interface and provides a transactional, auditable method to safely remove an activity by its unique identifier (UUID).
 
 ## Purpose
 
-The primary purpose of the `DeleteActivityService` class is to encapsulate the logic required to delete an `Activity` entity by its unique identifier (UUID). It interacts with the `ActivityRepository` to perform the deletion and ensures that the operation is logged for auditing purposes.
+This service encapsulates the business logic for deleting activities, ensuring that:
+- The activity exists before attempting deletion
+- The operation is executed within a transactional context
+- The deletion is audited for compliance and tracking purposes
+- Any errors are properly handled and wrapped in appropriate exceptions
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `ActivityRepository` | Repository | Data access layer for Activity entities |
 
 ## Public Methods
 
-### `execute`
+### `execute(UUID id)`
 
-The `execute` method is the main entry point for deleting an activity. It takes a UUID as a parameter, which identifies the activity to be deleted. If the activity is not found, a `ResourceNotFoundException` is thrown.
-
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `public void execute(UUID id)` | Deletes the `Activity` identified by the given UUID. |
-
-#### Parameters
+Deletes an activity by its unique identifier.
 
 | Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `id`      | `UUID` | The unique identifier of the `Activity` to be deleted. |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the activity to delete |
 
-#### Return Type
+**Return Type:** `void`
 
-| Type | Description |
-| ---- | ----------- |
-| `void` | This method does not return a value. |
+**Exceptions:**
 
-## Exception Handling
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | If no activity exists with the provided ID |
 
-- **ResourceNotFoundException**: Thrown if the `Activity` with the specified UUID does not exist in the repository.
+**Behavior:**
+1. Looks up the activity by its UUID
+2. Throws `ResourceNotFoundException` if the activity is not found
+3. Deletes the activity from the repository
+4. Executes within a transactional context
+5. Records an audit event with action type `ACTIVITY_DELETED`
 
-## Annotations
+## Example Usage
 
-- **@Service**: Indicates that this class is a Spring service component.
-- **@Transactional**: Ensures that the delete operation is executed within a transaction.
-- **@Auditable**: Custom annotation used to log the deletion action for auditing purposes.
+```java
+@Autowired
+private DeleteActivityService deleteActivityService;
+
+// Delete an activity
+UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+deleteActivityService.execute(activityId);
+```
+
+## Error Handling
+
+The service uses `ServiceOperationExecutor.executeVoid()` to wrap the deletion logic, which provides consistent error handling and operation status tracking. If the activity is not found, a `ResourceNotFoundException` is thrown with a message indicating the missing ID.
+
+## Audit Trail
+
+The `@Auditable` annotation ensures that every deletion operation is logged with:
+- **Action:** `ACTIVITY_DELETED`
+- **Resource Type:** `ACTIVITY`
+- **Resource ID:** The UUID of the deleted activity
+
+This provides a complete audit trail for compliance and monitoring purposes.

@@ -1,37 +1,75 @@
 ---
 id: device-token-controller
-title: DeviceTokenController
-sidebar_label: DeviceTokenController
+title: Device Token Controller
+sidebar_label: Device Token Controller
 ---
 
-import { HttpStatus, ResponseEntity } from 'org.springframework.http';
-import { ApiResponse } from 'com.upmatches.app.shared.responses';
-import { RegisterDeviceTokenRequest } from 'com.upmatches.app.features.notification.requests';
-import { IRegisterDeviceTokenService, IUnregisterDeviceTokenService } from 'com.upmatches.app.features.notification.services';
+# Device Token Controller
 
-## DeviceTokenController
+The `DeviceTokenController` is a REST controller that manages device token registration and unregistration for push notifications. It provides endpoints for clients to register their device tokens with the server and to remove them when no longer needed.
 
-The `DeviceTokenController` class is a REST controller responsible for handling HTTP requests related to device token registration and unregistration. It provides endpoints to register a new device token and to unregister an existing device token. This controller is part of the notification feature of the application.
+## Purpose
 
-### Public Methods
+This controller handles the lifecycle of device tokens used for push notification delivery. When a user's device wants to receive push notifications, it registers its unique device token. When the user logs out or disables notifications, the token can be unregistered.
 
-#### `registerToken`
+## Endpoints
 
-Registers a new device token.
+### Register Device Token
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `body` | `RegisterDeviceTokenRequest` | The request body containing the device token details to be registered. |
-| `request` | `HttpServletRequest` | The HTTP request object. |
+Registers a new device token for push notifications.
 
-**Returns:** `ResponseEntity<ApiResponse<Void>>` - A response entity with a success message and HTTP status 201 (Created).
+**HTTP Method:** `POST`  
+**Endpoint:** `/api/v1/device-tokens`  
+**HTTP Status on Success:** `201 Created`
 
-#### `unregisterToken`
+#### Request Body
 
-Unregisters an existing device token.
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `body` | `RegisterDeviceTokenRequest` | Yes | The device token registration details |
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `deviceToken` | `String` | The device token to be unregistered. Must not be blank and have a maximum size of 512 characters. |
+#### Response
 
-**Returns:** `ResponseEntity<Void>` - A response entity with HTTP status 204 (No Content) indicating successful unregistration.
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | `String` | Success status |
+| `message` | `String` | Success message: "Device token registered successfully." |
+| `path` | `String` | The request URI |
+
+### Unregister Device Token
+
+Removes a previously registered device token.
+
+**HTTP Method:** `DELETE`  
+**Endpoint:** `/api/v1/device-tokens`  
+**HTTP Status on Success:** `204 No Content`
+
+#### Request Parameters
+
+| Parameter | Type | Required | Constraints | Description |
+|-----------|------|----------|-------------|-------------|
+| `deviceToken` | `String` | Yes | Not blank, max 512 characters | The device token to unregister |
+
+#### Response
+
+No response body is returned on success.
+
+## Dependencies
+
+| Service Interface | Description |
+|-------------------|-------------|
+| `IRegisterDeviceTokenService` | Handles the business logic for registering device tokens |
+| `IUnregisterDeviceTokenService` | Handles the business logic for unregistering device tokens |
+
+## Validation
+
+The controller uses Jakarta Bean Validation annotations to ensure input data integrity:
+
+- `@Valid` on request bodies triggers validation of nested objects
+- `@NotBlank` ensures the device token parameter is not null or empty
+- `@Size(max = 512)` limits the device token length to 512 characters
+- `@Validated` at the class level enables method-level validation
+
+## Error Handling
+
+Validation errors will result in HTTP 400 Bad Request responses with appropriate error messages. Service-level exceptions will propagate to the global exception handler for consistent error responses.

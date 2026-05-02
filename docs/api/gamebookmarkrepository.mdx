@@ -1,59 +1,101 @@
 ---
 id: game-bookmark-repository
-title: GameBookmarkRepository Interface
+title: GameBookmarkRepository
 sidebar_label: GameBookmarkRepository
 ---
 
+# GameBookmarkRepository
+
+The `GameBookmarkRepository` interface provides data access operations for the `GameBookmark` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD functionality while adding custom query methods for bookmark-specific operations, including cursor-based pagination for efficient retrieval of bookmarked games.
+
 ## Purpose
 
-The `GameBookmarkRepository` interface is a part of the `com.upmatches.app.features.game.repositories` package and extends the `JpaRepository` interface provided by Spring Data JPA. It is designed to manage `GameBookmark` entities, which represent bookmarks of games by users. This repository provides methods to perform CRUD operations and custom queries on game bookmarks stored in a database.
+This repository serves as the persistence layer for managing game bookmarks in the application. It enables users to bookmark games for later reference and provides efficient querying capabilities for retrieving bookmarked games in a paginated manner, filtering out soft-deleted games.
 
-## Public Methods
+## Methods
 
-The `GameBookmarkRepository` interface includes the following public methods:
+### Standard CRUD Methods
 
-| Method Signature | Description |
-|------------------|-------------|
-| `boolean existsByGameIdAndUserId(UUID gameId, UUID userId)` | Checks if a `GameBookmark` exists for a given `gameId` and `userId`. |
-| `Optional<GameBookmark> findByGameIdAndUserId(UUID gameId, UUID userId)` | Retrieves a `GameBookmark` for a specified `gameId` and `userId`, if it exists. |
-| `List<GameBookmark> findByUserIdCursor(UUID userId, Instant afterBookmarkedAt, UUID afterId, int size)` | Retrieves a list of `GameBookmark` entities for a specified `userId`, using cursor-based pagination. The results are ordered by `bookmarked_at` in descending order and `id` in ascending order. |
+The following methods are inherited from `JpaRepository<GameBookmark, UUID>`:
 
-### Method Details
+| Method | Description |
+|--------|-------------|
+| `save(S entity)` | Persists a new bookmark or updates an existing one |
+| `findById(UUID id)` | Retrieves a bookmark by its unique identifier |
+| `findAll()` | Returns all bookmarks |
+| `deleteById(UUID id)` | Deletes a bookmark by its identifier |
+| `delete(S entity)` | Deletes a specific bookmark entity |
+| `count()` | Returns the total number of bookmarks |
+
+### Custom Query Methods
 
 #### `existsByGameIdAndUserId`
 
-- **Parameters:**
+```java
+boolean existsByGameIdAndUserId(UUID gameId, UUID userId)
+```
 
-  | Name     | Type   | Description                                      |
-  |----------|--------|--------------------------------------------------|
-  | `gameId` | `UUID` | The unique identifier of the game.               |
-  | `userId` | `UUID` | The unique identifier of the user.               |
+Checks whether a bookmark already exists for a specific game and user combination.
 
-- **Return Type:** `boolean`  
-  Returns `true` if a bookmark exists for the specified game and user, otherwise `false`.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameId` | `UUID` | The unique identifier of the game |
+| `userId` | `UUID` | The unique identifier of the user |
+
+**Returns:** `true` if a bookmark exists for the given game and user, `false` otherwise.
+
+---
 
 #### `findByGameIdAndUserId`
 
-- **Parameters:**
+```java
+Optional<GameBookmark> findByGameIdAndUserId(UUID gameId, UUID userId)
+```
 
-  | Name     | Type   | Description                                      |
-  |----------|--------|--------------------------------------------------|
-  | `gameId` | `UUID` | The unique identifier of the game.               |
-  | `userId` | `UUID` | The unique identifier of the user.               |
+Retrieves a bookmark for a specific game and user combination.
 
-- **Return Type:** `Optional<GameBookmark>`  
-  Returns an `Optional` containing the `GameBookmark` if found, otherwise an empty `Optional`.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameId` | `UUID` | The unique identifier of the game |
+| `userId` | `UUID` | The unique identifier of the user |
+
+**Returns:** An `Optional` containing the `GameBookmark` if found, or empty if no bookmark exists.
+
+---
 
 #### `findByUserIdCursor`
 
-- **Parameters:**
+```java
+@Query(nativeQuery = true)
+List<GameBookmark> findByUserIdCursor(
+    @Param("userId") UUID userId,
+    @Param("afterBookmarkedAt") Instant afterBookmarkedAt,
+    @Param("afterId") UUID afterId,
+    @Param("size") int size)
+```
 
-  | Name                | Type     | Description                                                                 |
-  |---------------------|----------|-----------------------------------------------------------------------------|
-  | `userId`            | `UUID`   | The unique identifier of the user.                                          |
-  | `afterBookmarkedAt` | `Instant`| The timestamp to start fetching bookmarks after. Can be `null`.             |
-  | `afterId`           | `UUID`   | The ID to start fetching bookmarks after, used for tie-breaking.            |
-  | `size`              | `int`    | The maximum number of bookmarks to retrieve.                                |
+Performs cursor-based pagination to retrieve bookmarks for a specific user. This method efficiently handles large datasets by using a cursor approach rather than traditional offset-based pagination.
 
-- **Return Type:** `List<GameBookmark>`  
-  Returns a list of `GameBookmark` entities for the specified user, ordered by `bookmarked_at` and `id`.
+The query performs a join with the `games` table to exclude bookmarks for soft-deleted games (`deleted_at IS NULL`). Results are ordered by bookmark timestamp in descending order, with ties broken by bookmark ID in ascending order.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | `UUID` | The unique identifier of the user whose bookmarks to retrieve |
+| `afterBookmarkedAt` | `Instant` | The cursor timestamp; bookmarks after this timestamp are returned. Pass `null` for the first page |
+| `afterId` | `UUID` | The cursor ID used for tie-breaking when multiple bookmarks have the same timestamp |
+| `size` | `int` | The maximum number of bookmarks to return |
+
+**Returns:** A `List` of `GameBookmark` entities matching the cursor criteria, limited to the specified size.
+
+**Usage Example:**
+
+```java
+// First page: retrieve 20 bookmarks
+List<GameBookmark> firstPage = repository.findByUserIdCursor(
+    userId, null, null, 20);
+
+// Subsequent page: use the last bookmark's timestamp and ID as cursor
+GameBookmark lastBookmark = firstPage.get(firstPage.size() - 1);
+List<GameBookmark> nextPage = repository.findByUserIdCursor(
+    userId, lastBookmark.getBookmarkedAt(), lastBookmark.getId(), 20);
+```

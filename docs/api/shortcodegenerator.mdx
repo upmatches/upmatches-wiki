@@ -1,31 +1,87 @@
 ---
-id: shortcode-generator
-title: ShortCodeGenerator Class
+id: short-code-generator
+title: ShortCodeGenerator
 sidebar_label: ShortCodeGenerator
 ---
 
-## Overview
+# ShortCodeGenerator
 
-The `ShortCodeGenerator` class is a utility class designed to generate random alphanumeric short codes. These codes are useful in scenarios where a unique identifier is needed, such as generating shareable links or unique tokens. The class uses a secure random number generator to ensure the randomness and uniqueness of the codes.
+The `ShortCodeGenerator` class is a utility for generating cryptographically secure, random alphanumeric short codes. It is designed to be used in scenarios such as creating unique share links, referral codes, or any other short identifier that requires a high degree of randomness and unpredictability.
+
+## Features
+
+- **Cryptographically Secure**: Uses `SecureRandom` to ensure the generated codes are unpredictable and resistant to guessing attacks.
+- **Fixed Length**: Generates codes of a consistent length (8 characters).
+- **Alphanumeric**: Uses a character set containing digits (0-9), uppercase letters (A-Z), and lowercase letters (a-z).
+- **Non-Instantiable**: The class has a private constructor, preventing instantiation and enforcing its use as a static utility.
+
+## Usage
+
+The class provides a single static method `generate()` that returns a random short code.
+
+### Example
+
+```java
+String code = ShortCodeGenerator.generate();
+System.out.println(code); // Example output: "a3Bx9K2p"
+```
 
 ## Public Methods
 
-### `generate`
+| Method | Return Type | Description |
+| :--- | :--- | :--- |
+| `generate()` | `String` | Generates and returns a random, 8-character alphanumeric code. |
 
-Generates a random alphanumeric short code of a fixed length.
+## Technical Details
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public static String generate()` | Generates and returns a random alphanumeric string of length 8. |
+### Character Set
 
-#### Parameters
+The code is built from the following 62-character alphabet:
 
-This method does not take any parameters.
+```
+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+```
 
-#### Return Type
+### Code Length
 
-| Type   | Description                                   |
-|--------|-----------------------------------------------|
-| String | A randomly generated alphanumeric short code. |
+The generated code is always exactly 8 characters long.
 
-The `generate` method constructs a string of length 8 using characters from a predefined alphabet consisting of digits, uppercase, and lowercase letters. The randomness is ensured by using `SecureRandom`, which provides a cryptographically strong random number generator.
+### Randomness
+
+The class uses `java.security.SecureRandom` to generate cryptographically strong random numbers. This makes the generated codes suitable for security-sensitive applications where predictability must be avoided.
+
+### Thread Safety
+
+The `generate()` method is thread-safe. The `SecureRandom` instance is a class-level constant, and the method does not maintain any mutable state.
+
+## Class Structure
+
+```java
+package com.upmatches.app.features.sharelink.utils;
+
+import java.security.SecureRandom;
+
+public final class ShortCodeGenerator {
+
+    private static final String ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    private static final int CODE_LENGTH = 8;
+    private static final SecureRandom RANDOM = new SecureRandom();
+
+    private ShortCodeGenerator() {
+    }
+
+    public static String generate() {
+        StringBuilder sb = new StringBuilder(CODE_LENGTH);
+
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            sb.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+
+        return sb.toString();
+    }
+}
+```
+
+## Dependencies
+
+- `java.security.SecureRandom` (part of the Java standard library)

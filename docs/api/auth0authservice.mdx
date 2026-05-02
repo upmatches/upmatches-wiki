@@ -4,40 +4,108 @@ title: Auth0AuthService
 sidebar_label: Auth0AuthService
 ---
 
+# Auth0AuthService
+
+The `Auth0AuthService` class is a Spring service that provides authentication functionality using Auth0 as the identity provider. It implements the `IAuth0AuthService` interface and handles the OAuth 2.0 Authorization Code flow with PKCE (Proof Key for Code Exchange) for secure authentication.
+
 ## Purpose
 
-The `Auth0AuthService` class is a Spring service designed to handle authentication operations with Auth0. It provides methods to generate authorization URLs and exchange authorization codes for verified claims. This class interacts with Auth0's OAuth2 endpoints and verifies ID tokens using JSON Web Keys (JWKS).
+This service manages the complete authentication lifecycle with Auth0, including:
+- Generating authorization URLs for user redirection
+- Exchanging authorization codes for ID tokens
+- Verifying ID tokens using JWKS (JSON Web Key Set)
+- Caching JWKS for performance optimization
 
 ## Public Methods
 
 ### `getAuthorizationUrl`
 
-Generates an authorization URL for Auth0's OAuth2 flow.
+Generates the Auth0 authorization URL for user redirection.
 
-| Parameter     | Type   | Description                                      |
-|---------------|--------|--------------------------------------------------|
-| `state`       | String | A unique state value to maintain request state.  |
-| `nonce`       | String | A nonce value to associate with the ID token.    |
-| `codeVerifier`| String | A code verifier for PKCE.                        |
-| `connection`  | String | Optional connection parameter for Auth0.         |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `state` | `String` | Anti-CSRF state parameter |
+| `nonce` | `String` | Cryptographic nonce for replay protection |
+| `codeVerifier` | `String` | PKCE code verifier for code challenge generation |
+| `connection` | `String` | Optional Auth0 connection (e.g., "google-oauth2") |
 
-**Returns**: `String` - The constructed authorization URL.
+**Returns:** `String` - The complete authorization URL
+
+**Example:**
+```java
+String authUrl = authService.getAuthorizationUrl(
+    "random-state-value",
+    "random-nonce-value",
+    "code-verifier-value",
+    "google-oauth2"
+);
+```
 
 ### `exchangeAuthorizationCode`
 
 Exchanges an authorization code for verified claims from Auth0.
 
-| Parameter          | Type   | Description                                      |
-|--------------------|--------|--------------------------------------------------|
-| `authorizationCode`| String | The authorization code received from Auth0.      |
-| `codeVerifier`     | String | The code verifier used in the authorization URL. |
-| `nonce`            | String | The nonce value to verify against the ID token.  |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `authorizationCode` | `String` | The authorization code from Auth0 callback |
+| `codeVerifier` | `String` | The PKCE code verifier used in the authorization request |
+| `nonce` | `String` | The nonce used in the authorization request |
 
-**Returns**: `Auth0VerifiedClaims` - An object containing verified claims such as subject, picture, and email.
+**Returns:** `Auth0VerifiedClaims` - Verified claims containing:
+- `sub` (subject/user ID)
+- `picture` (user profile picture URL)
+- `email` (user email address)
 
-## Additional Information
+**Throws:** `IllegalStateException` if:
+- ID token is missing from response
+- Token verification fails
+- Claims validation fails
 
-- The class uses a `RestClient` to interact with Auth0's endpoints.
-- It caches the JWKS for a specified duration to optimize performance.
-- The class handles various exceptions and logs relevant information for debugging purposes.
-- The `verifyIdToken` method ensures the integrity and authenticity of the ID token by checking the issuer, audience, and nonce claims.
+**Example:**
+```java
+Auth0VerifiedClaims claims = authService.exchangeAuthorizationCode(
+    "authorization-code-from-callback",
+    "code-verifier-from-session",
+    "nonce-from-session"
+);
+```
+
+## Internal Implementation Details
+
+### JWKS Caching
+
+The service caches Auth0's JWKS (JSON Web Key Set) for 900 seconds (15 minutes) to reduce network calls and improve performance. The cache is thread-safe using double-checked locking.
+
+### ID Token Verification
+
+The `verifyIdToken` method performs the following validations:
+1. **Signature Verification**: Uses RS256 algorithm with Auth0's JWKS
+2. **Issuer Validation**: Verifies the token issuer matches the configured Auth0 domain
+3. **Audience Validation**: Verifies the token audience matches the configured client ID
+4. **Nonce Validation**: Verifies the nonce matches the one provided in the authorization request
+5. **Subject Validation**: Ensures the `sub` claim is present and non-empty
+
+### Error Handling
+
+The service uses specific error messages for different failure scenarios:
+- `MSG_MISSING_ID_TOKEN`: When the token response doesn't contain an ID token
+- `MSG_ISSUER_MISMATCH`: When the token issuer doesn't match the expected Auth0 domain
+- `MSG_AUDIENCE_MISMATCH`: When the token audience doesn't match the client ID
+- `MSG_NONCE_MISMATCH`: When the nonce is missing or doesn't match
+- `MSG_MISSING_SUB`: When the token is missing the subject claim
+
+## Dependencies
+
+- **Auth0Properties**: Configuration properties for Auth0 (domain, client ID, client secret, redirect URI, scopes)
+- **RestClient**: HTTP client for making requests to Auth0 endpoints
+- **ObjectMapper**: Jackson JSON parser for processing responses
+- **Nimbus JOSE + JWT**: Library for JWT processing and verification
+
+## Configuration
+
+The service requires the following configuration in `Auth0Properties`:
+- `domain`: Auth0 tenant domain
+- `clientId`: Auth0 application client ID
+- `clientSecret`: Auth0 application client secret
+- `redirectUri`: Callback URL for authorization code flow
+- `scopes`: Requested OAuth scopes (e.g., "openid profile email")

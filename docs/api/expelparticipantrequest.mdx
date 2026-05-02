@@ -4,36 +4,40 @@ title: ExpelParticipantRequest
 sidebar_label: ExpelParticipantRequest
 ---
 
-import jakarta.validation.constraints.Size;
+# ExpelParticipantRequest
 
-## Overview
+The `ExpelParticipantRequest` class is a Java record used to encapsulate the data required when expelling a participant from a game. It provides a simple, immutable data structure that includes an optional reason for the expulsion.
 
-The `ExpelParticipantRequest` class is a Java record used within the `com.upmatches.app.features.game.requests` package. This class is designed to encapsulate the data required to expel a participant from a game, specifically by providing a reason for the expulsion. The reason is validated to ensure it does not exceed a specified character limit.
+## Purpose
 
-## Class Purpose
+This record is designed to be used as a request body in API endpoints that handle participant expulsion. It ensures that any provided reason does not exceed 280 characters, enforcing a business rule for user-generated content.
 
-The primary purpose of the `ExpelParticipantRequest` class is to serve as a data transfer object (DTO) that carries the reason for expelling a participant. It leverages Java's record feature to provide an immutable and concise representation of the data.
+## Record Structure
 
-## Public Methods
+| Field    | Type     | Constraints                                                                 | Description                                      |
+|----------|----------|-----------------------------------------------------------------------------|--------------------------------------------------|
+| `reason` | `String` | `@Size(max = 280)` – Must be at most 280 characters. | An optional explanation for why the participant is being expelled. |
 
-Since `ExpelParticipantRequest` is a record, it implicitly provides a constructor, accessor methods, and implementations for `equals()`, `hashCode()`, and `toString()`. Below is a documentation of the public methods available:
+## Constructor
 
-### Constructor
-
-The constructor is automatically provided by the record and is used to create an instance of `ExpelParticipantRequest`.
-
-| Parameter | Type   | Description                                    |
-|-----------|--------|------------------------------------------------|
-| reason    | String | The reason for expelling the participant. This must be at most 280 characters long. |
-
-### Accessor Method
-
-The record provides an accessor method for each component.
-
-| Method       | Return Type | Description                                    |
-|--------------|-------------|------------------------------------------------|
-| `reason()`   | String      | Returns the reason for expelling the participant. |
+The record has an implicit canonical constructor that accepts a single `String` parameter for the `reason` field. The `@Size` validation annotation is applied to this parameter.
 
 ## Validation
 
-The `reason` field is annotated with `@Size`, which ensures that the length of the reason does not exceed 280 characters. This validation is crucial to maintain consistency and prevent overly long messages that might not be suitable for display or storage.
+The `reason` field is validated using Jakarta Bean Validation (`jakarta.validation.constraints.Size`). If a value longer than 280 characters is provided, a validation error with the message "Reason must be at most 280 characters." will be triggered.
+
+## Usage Example
+
+```java
+// Creating a valid request with a reason
+ExpelParticipantRequest request = new ExpelParticipantRequest("Violation of community guidelines");
+
+// Creating a request without a reason (null is allowed)
+ExpelParticipantRequest emptyRequest = new ExpelParticipantRequest(null);
+```
+
+## Notes
+
+- The `reason` field is optional and can be `null`.
+- The record is immutable, meaning once created, its values cannot be changed.
+- This class is part of the `com.upmatches.app.features.game.requests` package.

@@ -4,26 +4,51 @@ title: ILeaveGameService Interface
 sidebar_label: ILeaveGameService
 ---
 
-## Overview
+# ILeaveGameService Interface
 
-The `ILeaveGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that handle the action of a player leaving a game. This interface is designed to be implemented by classes that provide the specific logic for this operation.
+The `ILeaveGameService` interface defines the contract for leaving a game within the application. It is a sealed interface, meaning only explicitly permitted classes (in this case, `LeaveGameService`) can implement it. This design enforces a controlled hierarchy and ensures that the leave game logic is centralized and secure.
 
-## Public Methods
+## Purpose
 
-The `ILeaveGameService` interface declares the following method:
+The primary purpose of this interface is to provide a single, well-defined method for executing the "leave game" operation. By using a sealed interface, the codebase ensures that only the designated implementation (`LeaveGameService`) can handle this action, preventing unauthorized or accidental implementations.
 
-| Method Signature | Description |
-|------------------|-------------|
-| `void execute(UUID id)` | Executes the operation for a player to leave a game identified by the given UUID. |
+## Method Summary
 
-### Method Details
+| Method | Description |
+|--------|-------------|
+| `void execute(UUID id)` | Executes the leave game operation for the game identified by the given UUID. |
 
-#### `execute`
+## Method Details
 
-- **Parameters:**
-  - `UUID id`: The unique identifier of the game from which the player is leaving.
-  
-- **Return Type:**
-  - `void`: This method does not return any value.
+### `execute`
 
-This interface is sealed, permitting only the `LeaveGameService` class to implement it, ensuring controlled and predictable extension of its functionality.
+```java
+void execute(UUID id)
+```
+
+This method initiates the process of a player leaving a game. The implementation (`LeaveGameService`) is responsible for handling all necessary side effects, such as updating game state, notifying other players, and cleaning up resources.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game from which the player is leaving. |
+
+**Returns:** `void` - This method does not return a value. Any errors or exceptions should be handled within the implementation.
+
+## Usage Example
+
+```java
+// Assuming you have an instance of ILeaveGameService
+ILeaveGameService leaveGameService = new LeaveGameService();
+
+// Leave a game with a specific ID
+UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+leaveGameService.execute(gameId);
+```
+
+## Implementation Notes
+
+- The interface is sealed, so only `LeaveGameService` can implement it.
+- The `execute` method is intentionally simple, accepting only a game ID. This keeps the interface focused and easy to use.
+- The actual logic for leaving a game (e.g., validation, state updates, notifications) is encapsulated within the `LeaveGameService` implementation.

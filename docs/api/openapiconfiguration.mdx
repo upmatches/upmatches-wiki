@@ -1,45 +1,48 @@
 ---
 id: open-api-configuration
-title: OpenApiConfiguration Class
+title: OpenApiConfiguration
 sidebar_label: OpenApiConfiguration
 ---
 
-## Purpose of the OpenApiConfiguration Class
+# OpenApiConfiguration
 
-The `OpenApiConfiguration` class is a Spring configuration class designed to set up and provide an OpenAPI specification for the Upmatches API. This configuration class uses the Swagger OpenAPI library to define API metadata, such as title, version, description, contact information, and server details. The class is annotated with `@Configuration`, indicating that it contains bean definitions for the application context.
+The `OpenApiConfiguration` class is a Spring `@Configuration` class that provides a bean for customizing the OpenAPI documentation for the Upmatches API. It defines metadata such as the API title, version, description, contact information, license, and server details. This configuration is used by SpringDoc OpenAPI (or similar libraries) to generate the API documentation (e.g., Swagger UI).
+
+## Purpose
+
+- **Centralized API Metadata**: Defines reusable constants for API title, version, description, contact, and license.
+- **Dynamic Server URL**: Reads the server port from the application properties (defaulting to `8080`) and constructs the server URL dynamically.
+- **Bean Definition**: Exposes an `OpenAPI` bean that SpringDoc uses to generate the OpenAPI specification.
 
 ## Public Methods
 
-The class contains the following public method:
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `openApi()` | `OpenAPI` | Creates and returns an `OpenAPI` instance configured with API info (title, version, description, contact, license) and a list of servers (local server with dynamic port). |
 
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `public OpenAPI openApi()` | Configures and returns an `OpenAPI` object with specified API information and server details. |
+## Parameters
 
-### Method Details
+The `openApi()` method has no parameters. It relies on the injected `serverPort` field.
 
-#### `openApi`
+## Field Details
 
-- **Purpose**: This method configures the OpenAPI specification for the Upmatches API.
-- **Parameters**: None
-- **Returns**: An `OpenAPI` object configured with API metadata and server information.
+| Field | Type | Description |
+|-------|------|-------------|
+| `serverPort` | `int` | Injected from the `server.port` property (default `8080`). Used to construct the local server URL. |
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| None      | -    | -           |
+## Usage Example
 
-| Return Type | Description |
-| ----------- | ----------- |
-| `OpenAPI`   | An instance of the `OpenAPI` class containing API metadata and server configuration. |
+This configuration is automatically picked up by Spring Boot when the application starts. No additional code is required to use it. The generated OpenAPI documentation will include:
 
-### Configuration Details
+- **Title**: "Upmatches API"
+- **Version**: "0.0.1"
+- **Description**: "Upmatches API"
+- **Contact**: "Upmatches"
+- **License**: "All Rights Reserved"
+- **Server**: `http://localhost:{port}` (e.g., `http://localhost:8080`)
 
-- **API Title**: "Upmatches API"
-- **API Version**: "0.0.1"
-- **API Description**: "Upmatches API"
-- **Contact Name**: "Upmatches"
-- **License Name**: "All Rights Reserved"
-- **Server URL**: Constructed using the prefix "http://localhost:" and the server port.
-- **Server Description**: "Local"
+## Notes
 
-The server port is injected using the `@Value` annotation, defaulting to `8080` if not specified in the application properties.
+- The class is annotated with `@Configuration`, making it a Spring-managed configuration class.
+- The `@Value` annotation reads the `server.port` property from the application's configuration (e.g., `application.properties` or `application.yml`).
+- The `OpenAPI` bean is typically used by SpringDoc OpenAPI (or Springfox) to generate the API documentation endpoint (e.g., `/v3/api-docs` or `/swagger-ui.html`).

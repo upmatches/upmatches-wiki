@@ -1,39 +1,120 @@
 ---
 id: correlation-id-filter
-title: CorrelationIdFilter
+title: CorrelationIdFilter Documentation
 sidebar_label: CorrelationIdFilter
 ---
 
+# CorrelationIdFilter
+
+The `CorrelationIdFilter` is a Spring Boot servlet filter that automatically manages correlation IDs for incoming HTTP requests. It ensures every request processed by the application has a unique identifier, which is propagated through the system via SLF4J's Mapped Diagnostic Context (MDC) and returned to the client in the response header.
+
 ## Purpose
 
-The `CorrelationIdFilter` class is a Spring component that ensures each HTTP request is assigned a unique correlation ID. This ID is used for tracing and logging purposes, allowing for better tracking of requests as they flow through a distributed system. The filter checks for an existing correlation ID in the request headers and generates a new one if none is found. It then adds this ID to the response headers and manages it within the logging context using SLF4J's MDC (Mapped Diagnostic Context).
+In distributed systems and microservice architectures, correlation IDs are essential for tracing requests across service boundaries. This filter:
+
+- Extracts an existing correlation ID from the incoming request header (`X-Correlation-Id`) if present
+- Generates a new correlation ID if none is provided
+- Stores the correlation ID in the MDC for use by logging frameworks
+- Sets the correlation ID on the HTTP response header for downstream services
+- Automatically cleans up the MDC after request processing
+
+## Class Details
+
+| Attribute | Value |
+|-----------|-------|
+| **Package** | `com.upmatches.app.shared.tracing.filters` |
+| **Annotation** | `@Component`, `@Order(Ordered.HIGHEST_PRECEDENCE)` |
+| **Extends** | `OncePerRequestFilter` |
+| **Order** | Highest precedence (executes first in the filter chain) |
+
+## Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `MDC_REQUEST_ID` | `"requestId"` | MDC key used to store the correlation ID |
+| `HEADER_CORRELATION_ID` | `"X-Correlation-Id"` | HTTP header name for correlation ID |
+| `CORRELATION_ID_LENGTH` | `8` | Length of generated correlation IDs (characters) |
 
 ## Public Methods
 
 ### `doFilterInternal`
 
-This method is the core of the `CorrelationIdFilter` class, responsible for processing each HTTP request and response to manage the correlation ID.
+```java
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws ServletException, IOException
+```
 
-| Parameter    | Type                      | Description                                                                 |
-|--------------|---------------------------|-----------------------------------------------------------------------------|
-| `request`    | `HttpServletRequest`      | The HTTP request object.                                                    |
-| `response`   | `HttpServletResponse`     | The HTTP response object.                                                   |
-| `filterChain`| `FilterChain`             | The filter chain to pass the request and response to the next filter.       |
+The core filter method that manages correlation ID lifecycle.
 
-**Return Type:** `void`
+**Parameters:**
 
-**Exceptions:** 
-- `ServletException` - if an error occurs during the filtering process.
-- `IOException` - if an I/O error occurs during the filtering process.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request |
+| `response` | `HttpServletResponse` | The outgoing HTTP response |
+| `filterChain` | `FilterChain` | The filter chain to continue processing |
+
+**Behavior:**
+
+1. Resolves the correlation ID from the request (either from header or generates new)
+2. Stores the correlation ID in MDC if not already present
+3. Sets the correlation ID as a response header
+4. Continues the filter chain execution
+5. Cleans up the MDC after request processing completes
+
+**Returns:** `void`
+
+**Throws:**
+- `ServletException` - if an error occurs during filter processing
+- `IOException` - if an I/O error occurs
+
+## Private Methods
 
 ### `resolveCorrelationId`
 
-This private method determines the correlation ID for the current request. It checks for an existing ID in the request headers and generates a new one if necessary.
+```java
+private String resolveCorrelationId(HttpServletRequest request)
+```
 
-| Parameter    | Type                      | Description                                                                 |
-|--------------|---------------------------|-----------------------------------------------------------------------------|
-| `request`    | `HttpServletRequest`      | The HTTP request object from which to extract the correlation ID.           |
+Resolves the correlation ID from the incoming request.
 
-**Return Type:** `String`
+**Parameters:**
 
-**Description:** Returns the correlation ID as a string, either extracted from the request header or newly generated.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request |
+
+**Returns:** `String` - The correlation ID (either from header or newly generated)
+
+**Logic:**
+1. Checks for `X-Correlation-Id` header in the request
+2. If header exists and is not blank, returns the header value
+3. Otherwise, generates a new UUID and returns the first 8 characters
+
+## Usage Example
+
+```java
+// In your application logs, the correlation ID will be available as:
+// [requestId: abc12345] Your log message here
+
+// The response will include:
+// X-Correlation-Id: abc12345
+```
+
+## MDC Integration
+
+The filter integrates with SLF4J's MDC to make the correlation ID available in log patterns. Configure your logging framework to include `%X{requestId}` in the log pattern:
+
+```xml
+<!-- Logback example -->
+<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] - %msg%n</pattern>
+```
+
+## Important Notes
+
+- The filter uses `OncePerRequestFilter` to ensure it executes only once per request
+- It runs with the highest precedence (`Ordered.HIGHEST_PRECEDENCE`) to ensure correlation IDs are available to all downstream filters
+- Generated correlation IDs are 8 characters long (first 8 characters of a UUID)
+- The filter properly handles nested requests by checking if an MDC value already exists before setting a new one
+- MDC cleanup is guaranteed via the `finally` block to prevent memory leaks

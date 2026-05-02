@@ -1,33 +1,66 @@
 ---
 id: clock-configuration
-title: ClockConfiguration Class
-sidebar_label: ClockConfiguration
+title: Clock Configuration
+sidebar_label: Clock Configuration
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+# Clock Configuration
 
-## Overview
+The `ClockConfiguration` class is a Spring `@Configuration` class that provides a centralized bean definition for a `java.time.Clock` instance. This configuration ensures that all components in the application that require time-related functionality use a consistent clock source, which is essential for testability and maintainability.
 
-The `ClockConfiguration` class is a Spring configuration class that provides a bean definition for a `Clock` instance. This class is part of the `com.upmatches.app.shared.configurations` package and is used to configure and provide a `Clock` bean that can be injected into other components within the Spring application. The `Clock` bean is configured to use the UTC time zone, ensuring consistent time-related operations across the application.
+## Purpose
+
+- **Centralized Time Management**: By defining a single `Clock` bean, the application can easily switch between different clock implementations (e.g., system time, fixed time for testing) without modifying multiple components.
+- **Testability**: The `Clock` abstraction allows tests to inject a fixed or offset clock, making time-dependent code predictable and easier to verify.
+- **Consistency**: All parts of the application that need the current time will use the same clock source, avoiding discrepancies.
 
 ## Public Methods
 
-<Tabs>
-<TabItem value="Java" label="Java" default>
-
-| Method Signature | Description |
-|------------------|-------------|
-| `public Clock clock()` | Provides a `Clock` bean configured to the UTC time zone. |
-
-</TabItem>
-</Tabs>
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `clock()` | `java.time.Clock` | Creates and returns a `Clock` instance configured to use the system's UTC time zone. |
 
 ### Method Details
 
-#### `public Clock clock()`
+#### `clock()`
 
-- **Description**: This method is annotated with `@Bean`, indicating that it returns a bean to be managed by the Spring container. It provides a `Clock` instance set to the UTC time zone, which can be used throughout the application for time-related operations.
-- **Return Type**: `Clock` - An instance of `Clock` set to the UTC time zone.
+- **Description**: This method is annotated with `@Bean`, making it a Spring-managed bean. It returns a `Clock` that represents the current instant in the UTC time zone using the system's best available clock.
+- **Return Value**: A `java.time.Clock` instance that provides the current time in UTC.
+- **Usage**: Inject this bean into any Spring component that needs to obtain the current time, for example:
 
-By using this configuration, developers can ensure that all time-related operations within the application are consistent and based on the UTC time zone, which is especially useful for applications that operate across multiple time zones.
+```java
+@Service
+public class TimeService {
+    private final Clock clock;
+
+    public TimeService(Clock clock) {
+        this.clock = clock;
+    }
+
+    public Instant now() {
+        return Instant.now(clock);
+    }
+}
+```
+
+## Example Configuration
+
+The following example demonstrates how to override the default clock bean in a test environment to use a fixed time:
+
+```java
+@Configuration
+public class TestClockConfiguration {
+
+    @Bean
+    @Primary
+    public Clock fixedClock() {
+        return Clock.fixed(Instant.parse("2024-01-01T00:00:00Z"), ZoneOffset.UTC);
+    }
+}
+```
+
+## Notes
+
+- The default implementation uses `Clock.systemUTC()`, which is suitable for production environments.
+- For testing, you can provide an alternative `@Bean` definition with `@Primary` or use `@MockBean` in Spring Boot tests.
+- This configuration follows the principle of dependency injection, making time-dependent code more modular and testable.

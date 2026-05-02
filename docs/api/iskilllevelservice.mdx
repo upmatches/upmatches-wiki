@@ -1,28 +1,35 @@
 ---
-id: i-skill-level-service
+id: iskilllevelservice
 title: ISkillLevelService Interface
 sidebar_label: ISkillLevelService
 ---
 
-import com.upmatches.app.features.skilllevels.responses.SkillLevelResponse;
+# ISkillLevelService Interface
 
-import java.util.List;
-import java.util.UUID;
+The `ISkillLevelService` interface defines the contract for retrieving skill level data associated with specific activities. It serves as the abstraction layer between the presentation layer and the concrete implementation (`SkillLevelService`), promoting loose coupling and testability within the application.
 
-## Purpose
+## Sealed Interface
 
-The `ISkillLevelService` interface is part of the `com.upmatches.app.features.skilllevels.services` package. It defines the contract for services that handle operations related to skill levels within the application. This interface is designed to be implemented by classes that provide specific functionalities for managing skill levels associated with different activities.
+This interface is declared as `sealed`, meaning only the explicitly permitted class (`SkillLevelService`) can implement it. This design ensures controlled extension and provides compile-time safety for the service hierarchy.
 
-## Public Methods
+## Methods
 
 ### `getSkillLevelsByActivity`
 
-Retrieves a list of skill levels associated with a specific activity.
+Retrieves a list of skill level responses for a given activity.
 
-| Parameter   | Type   | Description                              |
-|-------------|--------|------------------------------------------|
-| `activityId`| `UUID` | The unique identifier of the activity.   |
+| Parameter    | Type       | Description                                      |
+|--------------|------------|--------------------------------------------------|
+| `activityId` | `UUID`     | The unique identifier of the activity to query.  |
 
-| Return Type                      | Description                                      |
-|----------------------------------|--------------------------------------------------|
-| `List<SkillLevelResponse>`       | A list of skill level responses for the activity.|
+| Returns                | Description                                                      |
+|------------------------|------------------------------------------------------------------|
+| `List<SkillLevelResponse>` | A list of `SkillLevelResponse` objects representing the skill levels associated with the specified activity. |
+
+**Example usage:**
+
+```java
+ISkillLevelService skillLevelService = new SkillLevelService();
+UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+List<SkillLevelResponse> skillLevels = skillLevelService.getSkillLevelsByActivity(activityId);
+```

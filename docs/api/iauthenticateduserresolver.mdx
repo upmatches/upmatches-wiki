@@ -1,18 +1,42 @@
 ---
-id: iauthenticateduserresolver
+id: iauthenticated-user-resolver
 title: IAuthenticatedUserResolver Interface
 sidebar_label: IAuthenticatedUserResolver
 ---
 
+# IAuthenticatedUserResolver Interface
+
+The `IAuthenticatedUserResolver` interface defines a contract for resolving the currently authenticated user's unique identifier within the application. It provides two methods to obtain the user ID: one that throws an exception if the user is not authenticated, and another that returns an `Optional` to handle the absence of an authenticated user gracefully.
+
+This interface is declared as a **sealed interface**, meaning it restricts which classes or interfaces can implement it. In this case, only `AuthenticatedUserResolver` is permitted to implement `IAuthenticatedUserResolver`. This design ensures controlled extension and a clear, single implementation path.
+
 ## Purpose
 
-The `IAuthenticatedUserResolver` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for resolving authenticated user identifiers within the application. This interface is designed to be implemented by classes that need to provide mechanisms for retrieving user IDs, either mandatorily or optionally.
+- **Centralized Authentication Resolution**: Provides a standard way to retrieve the authenticated user's ID across different parts of the application.
+- **Flexible Error Handling**: Offers both a strict method (`requireUserId`) that fails fast when no user is authenticated, and a safe method (`optionalUserId`) that returns an empty `Optional` when the user is not present.
+- **Sealed Contract**: By using a sealed interface, the codebase enforces that only the intended implementation (`AuthenticatedUserResolver`) can fulfill this contract, improving maintainability and security.
 
 ## Public Methods
 
-| Method Name       | Parameters | Return Type     | Description                                                                 |
-|-------------------|------------|-----------------|-----------------------------------------------------------------------------|
-| `requireUserId`   | None       | `UUID`          | Retrieves the user ID of the authenticated user. Throws an exception if the user ID is not available. |
-| `optionalUserId`  | None       | `Optional<UUID>`| Retrieves the user ID of the authenticated user, if available, wrapped in an `Optional`. |
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `requireUserId()` | `UUID` | Returns the unique identifier of the currently authenticated user. Throws an exception (e.g., `IllegalStateException` or a custom exception) if no user is authenticated. |
+| `optionalUserId()` | `Optional<UUID>` | Returns an `Optional` containing the unique identifier of the currently authenticated user, or an empty `Optional` if no user is authenticated. |
 
-The `IAuthenticatedUserResolver` interface is a sealed interface, which means it restricts which classes can implement it. In this case, only the `AuthenticatedUserResolver` class is permitted to implement this interface. This design choice ensures controlled and predictable implementations of user ID resolution within the application.
+## Usage Example
+
+```java
+// Using requireUserId() - throws if no authenticated user
+UUID userId = resolver.requireUserId();
+
+// Using optionalUserId() - handles absence gracefully
+resolver.optionalUserId().ifPresentOrElse(
+    id -> System.out.println("User ID: " + id),
+    () -> System.out.println("No authenticated user")
+);
+```
+
+## Notes
+
+- The `UUID` type is used for user identifiers, providing a universally unique and secure identifier.
+- The sealed nature of this interface (`permits AuthenticatedUserResolver`) ensures that only the designated implementation can be used, which is beneficial for dependency injection and testing.

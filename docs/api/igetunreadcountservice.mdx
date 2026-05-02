@@ -1,26 +1,56 @@
 ---
-id: iget-unread-count-service
+id: igetunreadcountservice
 title: IGetUnreadCountService Interface
 sidebar_label: IGetUnreadCountService
 ---
 
-## Overview
+# IGetUnreadCountService Interface
 
-The `IGetUnreadCountService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that are responsible for retrieving the count of unread notifications. This interface is designed to be implemented by classes that provide specific logic for fetching unread notification counts.
+## Purpose
+
+The `IGetUnreadCountService` interface defines a contract for retrieving the total number of unread notifications for the current user. It is a sealed interface, meaning only the explicitly permitted implementing class (`GetUnreadCountService`) can implement it. This design enforces a strict, single-implementation pattern, ensuring that the unread count retrieval logic is centralized and cannot be extended by unauthorized classes.
+
+## Interface Definition
+
+```java
+package com.upmatches.app.features.notification.services;
+
+import com.upmatches.app.features.notification.responses.UnreadCountResponse;
+
+public sealed interface IGetUnreadCountService permits GetUnreadCountService {
+
+    UnreadCountResponse execute();
+
+}
+```
 
 ## Public Methods
 
-The interface declares the following public method:
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute()` | `UnreadCountResponse` | Executes the service to retrieve the current user's unread notification count. Returns a response object containing the unread count data. |
 
-| Method Signature                  | Description                                                                 |
-|-----------------------------------|-----------------------------------------------------------------------------|
-| `UnreadCountResponse execute()`   | Executes the service to retrieve the unread notification count.             |
+## Usage Notes
 
-### Method Details
+- The interface is **sealed** with the `permits` clause, restricting implementation to `GetUnreadCountService` only.
+- The `execute()` method is the single entry point for obtaining the unread count.
+- The returned `UnreadCountResponse` object is expected to contain at least the unread count value, though its exact structure is defined in the `com.upmatches.app.features.notification.responses` package.
 
-#### `UnreadCountResponse execute()`
+## Example Implementation
 
-- **Description**: This method is responsible for executing the service logic to fetch the unread notification count. It returns an instance of `UnreadCountResponse`, which contains the details of the unread notifications.
-- **Parameters**: This method does not take any parameters.
-- **Return Type**: 
-  - `UnreadCountResponse`: An object containing the unread notification count and related information.
+```java
+public final class GetUnreadCountService implements IGetUnreadCountService {
+    
+    @Override
+    public UnreadCountResponse execute() {
+        // Implementation logic to fetch unread count from database or cache
+        int unreadCount = fetchUnreadCountFromDatabase();
+        return new UnreadCountResponse(unreadCount);
+    }
+    
+    private int fetchUnreadCountFromDatabase() {
+        // Database query logic
+        return 0; // Placeholder
+    }
+}
+```

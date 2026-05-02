@@ -4,33 +4,110 @@ title: ListGamesCursorFilterRequest
 sidebar_label: ListGamesCursorFilterRequest
 ---
 
+# ListGamesCursorFilterRequest
+
+The `ListGamesCursorFilterRequest` is a Java record that encapsulates filter parameters for querying a paginated list of games using cursor-based pagination. It provides a structured way to pass filtering criteria such as venue IDs, skill levels, date/time ranges, and geographic location.
+
 ## Purpose
 
-The `ListGamesCursorFilterRequest` class is a Java record used to encapsulate filter criteria for querying a list of games. This record is part of the `com.upmatches.app.features.game.requests` package and provides various fields to specify filtering options such as venue IDs, skill level IDs, date and time ranges, and geographical location. It also includes methods to check the presence of certain fields, which can be useful for determining the completeness of the filter criteria.
+This record is designed to be used as a request object in API endpoints that retrieve games with filtering capabilities. It supports:
+- Filtering by multiple venues and skill levels
+- Date and time range filtering
+- Geographic location-based filtering with radius
+- Validation constraints to ensure data integrity
 
-## Public Methods
+## Record Definition
 
-The class provides the following public methods:
-
-| Method Name         | Description                                                                 | Parameters | Return Type |
-|---------------------|-----------------------------------------------------------------------------|------------|-------------|
-| `hasLocation`       | Checks if all location-related fields (`latitude`, `longitude`, `radiusKm`) are non-null. | None       | `boolean`   |
-| `hasAnyLocationField` | Checks if any of the location-related fields (`latitude`, `longitude`, `radiusKm`) are non-null. | None       | `boolean`   |
-| `hasSkillLevels`    | Checks if the `skillLevelIds` list is non-null and not empty.               | None       | `boolean`   |
-| `hasVenues`         | Checks if the `venueIds` list is non-null and not empty.                    | None       | `boolean`   |
+```java
+public record ListGamesCursorFilterRequest(
+    List<Long> venueIds,
+    List<Long> skillLevelIds,
+    LocalDate fromDate,
+    LocalDate toDate,
+    LocalTime fromTime,
+    LocalTime toTime,
+    BigDecimal latitude,
+    BigDecimal longitude,
+    Integer radiusKm
+)
+```
 
 ## Fields
 
-The record contains the following fields, which are used to filter the list of games:
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `venueIds` | `List<Long>` | Max 20 entries | List of venue IDs to filter by |
+| `skillLevelIds` | `List<Long>` | Max 20 entries | List of skill level IDs to filter by |
+| `fromDate` | `LocalDate` | None | Start date for filtering games |
+| `toDate` | `LocalDate` | None | End date for filtering games |
+| `fromTime` | `LocalTime` | None | Start time for filtering games |
+| `toTime` | `LocalTime` | None | End time for filtering games |
+| `latitude` | `BigDecimal` | -90.0 to 90.0 | Latitude coordinate for location-based filtering |
+| `longitude` | `BigDecimal` | -180.0 to 180.0 | Longitude coordinate for location-based filtering |
+| `radiusKm` | `Integer` | 1 to 5 | Search radius in kilometers for location-based filtering |
 
-| Field Name     | Type         | Description                                                                 |
-|----------------|--------------|-----------------------------------------------------------------------------|
-| `venueIds`     | `List<Long>` | A list of venue IDs to filter the games. Must contain at most 20 entries.   |
-| `skillLevelIds`| `List<Long>` | A list of skill level IDs to filter the games. Must contain at most 20 entries. |
-| `fromDate`     | `LocalDate`  | The start date for filtering games.                                         |
-| `toDate`       | `LocalDate`  | The end date for filtering games.                                           |
-| `fromTime`     | `LocalTime`  | The start time for filtering games.                                         |
-| `toTime`       | `LocalTime`  | The end time for filtering games.                                           |
-| `latitude`     | `BigDecimal` | The latitude for geographical filtering. Must be between -90 and 90.        |
-| `longitude`    | `BigDecimal` | The longitude for geographical filtering. Must be between -180 and 180.     |
-| `radiusKm`     | `Integer`    | The radius in kilometers for geographical filtering. Must be between 1 and 5. |
+## Methods
+
+### `hasLocation()`
+
+Returns `true` if all three location fields (`latitude`, `longitude`, and `radiusKm`) are non-null, indicating a complete location filter is provided.
+
+**Returns:** `boolean`
+
+### `hasAnyLocationField()`
+
+Returns `true` if at least one of the location fields (`latitude`, `longitude`, or `radiusKm`) is non-null.
+
+**Returns:** `boolean`
+
+### `hasSkillLevels()`
+
+Returns `true` if the `skillLevelIds` list is non-null and not empty.
+
+**Returns:** `boolean`
+
+### `hasVenues()`
+
+Returns `true` if the `venueIds` list is non-null and not empty.
+
+**Returns:** `boolean`
+
+## Usage Example
+
+```java
+// Create a filter request with venue and location filtering
+ListGamesCursorFilterRequest filter = new ListGamesCursorFilterRequest(
+    List.of(1L, 2L, 3L),           // venueIds
+    null,                           // skillLevelIds
+    LocalDate.of(2024, 1, 1),      // fromDate
+    LocalDate.of(2024, 12, 31),    // toDate
+    null,                           // fromTime
+    null,                           // toTime
+    new BigDecimal("40.7128"),      // latitude
+    new BigDecimal("-74.0060"),     // longitude
+    5                               // radiusKm
+);
+
+// Check if location filtering is available
+if (filter.hasLocation()) {
+    // Perform location-based query
+}
+
+// Check if venue filtering is available
+if (filter.hasVenues()) {
+    // Perform venue-based query
+}
+```
+
+## Validation
+
+The record uses Jakarta Bean Validation annotations to enforce constraints:
+- `@Size(max = 20)` on `venueIds` and `skillLevelIds` limits the number of entries
+- `@DecimalMin` and `@DecimalMax` on `latitude` and `longitude` ensure valid geographic coordinates
+- `@Min` and `@Max` on `radiusKm` restricts the search radius to 1-5 kilometers
+
+## Notes
+
+- All fields are optional; null values indicate no filtering for that criterion
+- The `hasLocation()` method is useful for ensuring all required location parameters are present before performing geospatial queries
+- The `hasAnyLocationField()` method can be used for validation to ensure partial location data is handled appropriately

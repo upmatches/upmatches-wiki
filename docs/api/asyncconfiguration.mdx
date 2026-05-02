@@ -1,27 +1,78 @@
 ---
 id: async-configuration
-title: AsyncConfiguration Class
+title: AsyncConfiguration
 sidebar_label: AsyncConfiguration
 ---
 
-## Purpose of the AsyncConfiguration Class
+# AsyncConfiguration
 
-The `AsyncConfiguration` class is a Spring configuration class designed to enable asynchronous processing and scheduling within a Spring application. By using the `@EnableAsync` and `@EnableScheduling` annotations, this configuration allows the application to run tasks asynchronously and schedule tasks for future execution. The class defines a custom `Executor` bean that manages a thread pool, optimizing the execution of concurrent tasks.
+The `AsyncConfiguration` class is a Spring configuration component that sets up asynchronous task execution and scheduling capabilities within the application. It enables Spring's `@Async` and `@Scheduled` annotations, allowing methods to be executed asynchronously or on a scheduled basis.
+
+## Purpose
+
+This configuration class defines a custom thread pool executor for handling asynchronous tasks. By configuring a dedicated `ThreadPoolTaskExecutor`, it ensures that asynchronous operations (such as email sending, report generation, or background data processing) are managed efficiently without blocking the main application threads.
+
+## Configuration Details
+
+The class uses the following annotations:
+- `@Configuration` – Marks this class as a Spring configuration source.
+- `@EnableAsync` – Enables Spring's asynchronous method execution capability.
+- `@EnableScheduling` – Enables Spring's scheduled task execution capability.
+
+## Thread Pool Configuration
+
+The thread pool is configured with the following parameters:
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| Core Pool Size | 4 | Minimum number of threads kept alive in the pool |
+| Max Pool Size | 8 | Maximum number of threads allowed in the pool |
+| Queue Capacity | 100 | Maximum number of tasks that can be queued before new threads are created |
+| Thread Name Prefix | `async-` | Prefix for thread names (e.g., `async-1`, `async-2`) |
 
 ## Public Methods
 
-The `AsyncConfiguration` class provides the following public method:
+### `taskExecutor()`
 
-| Method Name   | Parameters | Return Type | Description |
-|---------------|------------|-------------|-------------|
-| `taskExecutor` | None       | `Executor`  | Configures and returns a `ThreadPoolTaskExecutor` with specified core pool size, max pool size, queue capacity, and thread name prefix. |
+Creates and returns a configured `ThreadPoolTaskExecutor` bean.
 
-### Method Details
+| Aspect | Details |
+|--------|---------|
+| **Bean Name** | `taskExecutor` |
+| **Return Type** | `java.util.concurrent.Executor` |
+| **Description** | Initializes a thread pool executor with predefined core pool size, max pool size, queue capacity, and thread name prefix. This executor is used by Spring to run `@Async` annotated methods. |
 
-#### `taskExecutor`
+## Usage Example
 
-- **Purpose**: This method configures a `ThreadPoolTaskExecutor` to manage asynchronous task execution. It sets the core pool size, maximum pool size, queue capacity, and thread name prefix to optimize task handling.
-- **Parameters**: This method does not take any parameters.
-- **Return Type**: `Executor` - The method returns an instance of `ThreadPoolTaskExecutor` configured with the specified properties.
+To use this configuration in your application, simply annotate a method with `@Async`:
 
-By configuring the `ThreadPoolTaskExecutor`, the `AsyncConfiguration` class ensures that the application can efficiently handle multiple asynchronous tasks, improving performance and responsiveness.
+```java
+@Service
+public class NotificationService {
+    
+    @Async
+    public void sendEmailAsync(String recipient, String message) {
+        // This method will be executed in a separate thread
+        // using the configured thread pool
+    }
+}
+```
+
+For scheduled tasks, use `@Scheduled`:
+
+```java
+@Component
+public class ReportScheduler {
+    
+    @Scheduled(cron = "0 0 8 * * ?")
+    public void generateDailyReport() {
+        // This method will run daily at 8 AM
+    }
+}
+```
+
+## Notes
+
+- The thread pool configuration can be adjusted by modifying the constant values at the top of the class.
+- Ensure that the `taskExecutor` bean name matches the reference used in `@Async("taskExecutor")` if specifying a custom executor.
+- The queue capacity of 100 helps prevent memory issues by limiting the number of pending tasks.

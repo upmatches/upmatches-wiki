@@ -1,31 +1,62 @@
 ---
-id: IListMyHostedGamesCursorService
+id: ilistmyhostedgamescursorservice
 title: IListMyHostedGamesCursorService Interface
 sidebar_label: IListMyHostedGamesCursorService
 ---
 
+# IListMyHostedGamesCursorService
+
+The `IListMyHostedGamesCursorService` is a **sealed interface** that defines the contract for retrieving a cursor-based, paginated list of games hosted by the currently authenticated user. It serves as the abstraction layer for the `ListMyHostedGamesCursorService` implementation.
+
 ## Purpose
 
-The `IListMyHostedGamesCursorService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide paginated access to a list of games hosted by a user. This interface is designed to be implemented by classes that need to fetch game data in a cursor-based pagination format, which is useful for efficiently handling large datasets.
+This interface is part of the game management feature within the application. It provides a standardized way to fetch a user's hosted games using cursor-based pagination, which is more efficient and reliable than traditional offset-based pagination for large, frequently updated datasets.
 
-## Public Methods
+## Sealed Interface
 
-The interface declares the following public method:
+The interface is declared as `sealed`, meaning only the explicitly permitted class (`ListMyHostedGamesCursorService`) can implement it. This design enforces a single, controlled implementation and prevents unauthorized extensions.
 
-| Method Signature | Description |
-|------------------|-------------|
-| `CursorPagedResponse<GameResponse> execute(String cursor, int size)` | Fetches a paginated list of games hosted by the user. |
+## Method Summary
 
-### Method Details
+| Method | Description |
+|--------|-------------|
+| `execute(String cursor, int size)` | Retrieves a paginated list of games hosted by the current user, starting from the specified cursor position. |
 
-#### `execute`
+## Method Details
 
-- **Description**: This method retrieves a paginated list of games hosted by the user, starting from a specified cursor position and limited to a specified number of entries.
-- **Parameters**:
-  | Name   | Type   | Description |
-  |--------|--------|-------------|
-  | `cursor` | `String` | The cursor indicating the starting point for pagination. |
-  | `size`   | `int`    | The number of game entries to retrieve. |
-- **Returns**: 
-  - **Type**: `CursorPagedResponse<GameResponse>`
-  - **Description**: A response object containing the paginated list of `GameResponse` objects and pagination metadata.
+### `execute`
+
+```java
+CursorPagedResponse<GameResponse> execute(String cursor, int size)
+```
+
+Executes the query to fetch a cursor-based paginated list of the current user's hosted games.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `cursor` | `String` | The cursor indicating the starting point for the page. Pass `null` or empty string to retrieve the first page. |
+| `size` | `int` | The maximum number of items to return in the response. Must be a positive integer. |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `CursorPagedResponse<GameResponse>` | A paginated response containing a list of `GameResponse` objects and a cursor for the next page (if available). |
+
+**Usage Example:**
+
+```java
+// Get the first page of hosted games (10 items)
+CursorPagedResponse<GameResponse> firstPage = service.execute(null, 10);
+
+// Get the next page using the cursor from the previous response
+CursorPagedResponse<GameResponse> nextPage = service.execute(firstPage.getNextCursor(), 10);
+```
+
+## Related Types
+
+- **`CursorPagedResponse<T>`**: A generic wrapper that contains the list of items and the cursor for the next page.
+- **`GameResponse`**: The data transfer object representing a game's details.
+- **`ListMyHostedGamesCursorService`**: The sole permitted implementation of this interface.

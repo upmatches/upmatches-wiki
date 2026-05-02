@@ -1,39 +1,46 @@
 ---
-id: icreategameservice
+id: icreate-game-service
 title: ICreateGameService Interface
 sidebar_label: ICreateGameService
 ---
 
-## Overview
+# ICreateGameService Interface
 
-The `ICreateGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for creating a game within the application. This interface is designed to be implemented by classes that handle the logic for game creation, ensuring a consistent method signature for executing the creation process.
+The `ICreateGameService` interface defines the contract for creating a new game within the UpMatches application. It follows a command pattern, encapsulating the creation logic behind a single `execute` method. This interface is sealed, meaning only the explicitly permitted implementation (`CreateGameService`) can implement it, ensuring controlled extensibility and a clear, bounded domain.
 
-## Purpose
+## Interface Definition
 
-The primary purpose of the `ICreateGameService` interface is to provide a standardized way to execute the creation of a game. It ensures that any implementing class will provide the necessary functionality to handle a `CreateGameRequest` and return a `GameResponse`.
+```java
+public sealed interface ICreateGameService permits CreateGameService {
 
-## Public Methods
+    GameResponse execute(CreateGameRequest request);
 
-The interface defines the following public method:
+}
+```
 
-| Method Signature | Description |
-|------------------|-------------|
-| `GameResponse execute(CreateGameRequest request)` | Executes the game creation process using the provided `CreateGameRequest` and returns a `GameResponse`. |
+## Methods
 
-### Method Details
+| Method | Description | Parameters | Returns |
+| :----- | :---------- | :--------- | :------ |
+| `execute` | Executes the game creation process based on the provided request data. | `CreateGameRequest request` – The request object containing all necessary information to create a new game. | `GameResponse` – The response object containing the result of the game creation operation (e.g., the created game details or confirmation). |
 
-#### `execute`
+## Usage Example
 
-- **Parameters:**
+```java
+// Assuming you have an instance of ICreateGameService (e.g., CreateGameService)
+ICreateGameService gameService = new CreateGameService();
 
-  | Name    | Type                           | Description                          |
-  |---------|--------------------------------|--------------------------------------|
-  | request | `CreateGameRequest`            | The request object containing all necessary information to create a game. |
+// Create a request with the required game data
+CreateGameRequest request = new CreateGameRequest(/* ... */);
 
-- **Returns:** 
+// Execute the game creation
+GameResponse response = gameService.execute(request);
 
-  | Type            | Description                          |
-  |-----------------|--------------------------------------|
-  | `GameResponse`  | The response object containing the result of the game creation process. |
+// Use the response (e.g., display success message, navigate to new game)
+```
 
-This method is crucial for initiating the game creation workflow, taking in a request object and outputting a response that indicates the success or failure of the operation.
+## Related Components
+
+- **`CreateGameRequest`**: The input data transfer object (DTO) that carries the game creation parameters.
+- **`GameResponse`**: The output DTO that encapsulates the result of the game creation.
+- **`CreateGameService`**: The sole permitted implementation of this sealed interface, containing the actual business logic for creating a game.

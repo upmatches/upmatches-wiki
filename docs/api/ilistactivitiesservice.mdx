@@ -1,25 +1,59 @@
 ---
-id: IListActivitiesService
+id: ilist-activities-service
 title: IListActivitiesService Interface
 sidebar_label: IListActivitiesService
 ---
 
+# IListActivitiesService Interface
+
 ## Purpose
 
-The `IListActivitiesService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for services that list activities, specifically providing a method to execute a paginated query for activities. This interface is designed to be implemented by classes that handle the retrieval of activity data in a paginated format.
+The `IListActivitiesService` interface defines the contract for retrieving a paginated list of activities within the UpMatches application. It serves as the abstraction layer for the activity listing functionality, allowing for a clean separation between the service interface and its implementation.
 
-## Public Methods
+This interface is declared as a **sealed interface**, meaning it restricts which classes or interfaces can implement it. In this case, only `ListActivitiesService` is permitted to provide the concrete implementation.
+
+## Interface Definition
+
+```java
+public sealed interface IListActivitiesService permits ListActivitiesService {
+    PagedResponse<ActivityResponse> execute(Pageable pageable);
+}
+```
+
+## Methods
 
 ### `execute`
 
-Executes a paginated query to retrieve a list of activities.
+Retrieves a paginated list of activities based on the provided pagination parameters.
 
-| Parameter | Type                  | Description                               |
-|-----------|-----------------------|-------------------------------------------|
-| pageable  | `Pageable`            | An object that specifies pagination information such as page number and size. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sorting information |
 
-| Return Type                      | Description                                           |
-|----------------------------------|-------------------------------------------------------|
-| `PagedResponse<ActivityResponse>` | A paginated response containing a list of activity responses. |
+| Returns | Type | Description |
+|---------|------|-------------|
+| `PagedResponse<ActivityResponse>` | `PagedResponse<ActivityResponse>` | A paginated response containing a list of `ActivityResponse` objects with pagination metadata |
 
-The `execute` method is the primary method of this interface, allowing implementations to provide a paginated list of activities based on the given `Pageable` parameter.
+## Usage Example
+
+```java
+// Inject the service
+private final IListActivitiesService listActivitiesService;
+
+// Use the service to retrieve paginated activities
+Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+PagedResponse<ActivityResponse> activities = listActivitiesService.execute(pageable);
+```
+
+## Related Components
+
+- **`ListActivitiesService`**: The sole permitted implementation of this interface
+- **`ActivityResponse`**: The response DTO representing an activity
+- **`PagedResponse`**: A generic wrapper for paginated responses containing list data and pagination metadata
+- **`Pageable`**: Spring Data interface for pagination information
+
+## Notes
+
+- This interface uses Java's sealed class feature (introduced in Java 17) to restrict implementation to `ListActivitiesService` only
+- The pagination mechanism leverages Spring Data's `Pageable` for flexible querying
+- The response is wrapped in a `PagedResponse` to provide both the data and pagination metadata to the client

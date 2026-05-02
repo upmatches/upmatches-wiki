@@ -1,67 +1,112 @@
 ---
 id: activity-controller
-title: ActivityController
+title: Activity Controller
 sidebar_label: ActivityController
 ---
 
+# Activity Controller
+
+The `ActivityController` class is a REST controller that handles HTTP requests for managing activities in the UpMatches application. It provides endpoints for creating, reading, updating, and deleting activities, following standard RESTful API conventions.
+
 ## Purpose
 
-The `ActivityController` class is a REST controller in a Spring Boot application that manages activities. It provides endpoints to list, retrieve, create, update, and delete activities. This controller interacts with various services to perform these operations and returns appropriate HTTP responses.
+This controller serves as the entry point for all activity-related operations. It delegates business logic to dedicated service classes and returns standardized API responses using the `ApiResponse` wrapper. The controller is mapped to the `/api/v1/activities` base path and supports pagination for list operations.
 
-## Public Methods
+## Endpoints
 
-### listActivities
+### List Activities
 
-Retrieves a paginated list of activities.
+Retrieves a paginated list of activities sorted by name.
 
-| Parameter | Type    | Description                             |
-|-----------|---------|-----------------------------------------|
-| page      | Integer | The page number to retrieve (default 0).|
-| size      | Integer | The size of the page to retrieve (default 20).|
-| request   | HttpServletRequest | The HTTP request object.     |
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/activities` | Returns a paginated list of activities |
 
-**Returns:** `ResponseEntity<ApiResponse<PagedResponse<ActivityResponse>>>` - A response entity containing a paged response of activities.
+**Query Parameters:**
 
-### getActivity
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | Integer | 0 | Page number (zero-indexed) |
+| `size` | Integer | 20 | Number of items per page |
 
-Retrieves a specific activity by its ID.
+**Response:** `200 OK` - Returns a `PagedResponse<ActivityResponse>` wrapped in an `ApiResponse`.
 
-| Parameter | Type | Description                |
-|-----------|------|----------------------------|
-| id        | UUID | The unique identifier of the activity. |
-| request   | HttpServletRequest | The HTTP request object. |
+### Get Activity by ID
 
-**Returns:** `ResponseEntity<ApiResponse<ActivityResponse>>` - A response entity containing the activity details.
+Retrieves a single activity by its unique identifier.
 
-### createActivity
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/activities/{id}` | Returns a specific activity |
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | The unique identifier of the activity |
+
+**Response:** `200 OK` - Returns an `ActivityResponse` wrapped in an `ApiResponse`.
+
+### Create Activity
 
 Creates a new activity.
 
-| Parameter | Type                  | Description                |
-|-----------|-----------------------|----------------------------|
-| body      | CreateActivityRequest | The request body containing activity details. |
-| request   | HttpServletRequest    | The HTTP request object.   |
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/activities` | Creates a new activity |
 
-**Returns:** `ResponseEntity<ApiResponse<ActivityResponse>>` - A response entity containing the created activity details.
+**Request Body:** `CreateActivityRequest` (validated)
 
-### updateActivity
+**Response:** `201 Created` - Returns the created `ActivityResponse` wrapped in an `ApiResponse`.
+
+### Update Activity
 
 Updates an existing activity.
 
-| Parameter | Type                  | Description                |
-|-----------|-----------------------|----------------------------|
-| id        | UUID                  | The unique identifier of the activity. |
-| body      | UpdateActivityRequest | The request body containing updated activity details. |
-| request   | HttpServletRequest    | The HTTP request object.   |
+| Method | Path | Description |
+|--------|------|-------------|
+| PUT | `/api/v1/activities/{id}` | Updates a specific activity |
 
-**Returns:** `ResponseEntity<ApiResponse<ActivityResponse>>` - A response entity containing the updated activity details.
+**Path Parameters:**
 
-### deleteActivity
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | The unique identifier of the activity to update |
 
-Deletes an activity by its ID.
+**Request Body:** `UpdateActivityRequest` (validated)
 
-| Parameter | Type | Description                |
-|-----------|------|----------------------------|
-| id        | UUID | The unique identifier of the activity. |
+**Response:** `200 OK` - Returns the updated `ActivityResponse` wrapped in an `ApiResponse`.
 
-**Returns:** `ResponseEntity<Void>` - A response entity with no content, indicating successful deletion.
+### Delete Activity
+
+Deletes an activity.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| DELETE | `/api/v1/activities/{id}` | Deletes a specific activity |
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | The unique identifier of the activity to delete |
+
+**Response:** `204 No Content` - No response body.
+
+## Dependencies
+
+The controller depends on the following service interfaces:
+
+- `IListActivitiesService` - Handles paginated listing of activities
+- `IGetActivityService` - Handles retrieval of a single activity
+- `ICreateActivityService` - Handles creation of new activities
+- `IUpdateActivityService` - Handles updating existing activities
+- `IDeleteActivityService` - Handles deletion of activities
+
+## Validation
+
+The controller uses Jakarta Bean Validation (`@Valid`) to validate request bodies and custom validation through `ValidationHelper.validatePaginationParameters()` for pagination parameters. The class is also annotated with `@Validated` to enable method-level validation.
+
+## Error Handling
+
+All endpoints return standardized responses using the `ApiResponse` class. The controller does not handle exceptions directly; error handling is managed by Spring's exception handling mechanisms and the application's global exception handler.

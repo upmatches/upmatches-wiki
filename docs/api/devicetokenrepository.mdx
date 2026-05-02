@@ -4,33 +4,72 @@ title: DeviceTokenRepository
 sidebar_label: DeviceTokenRepository
 ---
 
-import com.upmatches.app.features.notification.entities.DeviceToken;
-import org.springframework.data.jpa.repository.JpaRepository;
+# DeviceTokenRepository
 
-## Overview
+## Purpose
 
-The `DeviceTokenRepository` interface is a part of the notification feature in the application. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers CRUD operations and additional query methods for the `DeviceToken` entity. This repository is responsible for managing device tokens associated with users, which are crucial for sending notifications to specific devices.
+The `DeviceTokenRepository` interface provides database access operations for managing device tokens associated with user accounts. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD operations while defining custom query methods for token management.
 
-## Public Methods
+This repository is essential for push notification functionality, allowing the application to store, retrieve, and remove device tokens that identify specific devices for sending targeted notifications.
 
-The following table documents the public methods available in the `DeviceTokenRepository` interface:
+## Interface Definition
 
-| Method Signature | Description |
-|------------------|-------------|
-| `List<DeviceToken> findByUserId(UUID userId)` | Retrieves a list of `DeviceToken` objects associated with a specific user identified by `userId`. |
-| `Optional<DeviceToken> findByUserIdAndDeviceToken(UUID userId, String deviceToken)` | Finds a specific `DeviceToken` for a user based on the `userId` and `deviceToken`. Returns an `Optional` containing the `DeviceToken` if found. |
-| `void deleteByUserIdAndDeviceToken(UUID userId, String deviceToken)` | Deletes a `DeviceToken` associated with a specific `userId` and `deviceToken`. |
-| `void deleteByDeviceToken(String deviceToken)` | Deletes a `DeviceToken` based solely on the `deviceToken`. |
+```java
+public interface DeviceTokenRepository extends JpaRepository<DeviceToken, UUID>
+```
 
-## Parameters and Return Types
+The repository operates on `DeviceToken` entities with a primary key of type `UUID`.
 
-The following table provides details on the parameters and return types for each method:
+## Custom Query Methods
 
-| Method | Parameters | Return Type |
-|--------|------------|-------------|
-| `findByUserId` | `UUID userId` | `List<DeviceToken>` |
-| `findByUserIdAndDeviceToken` | `UUID userId`, `String deviceToken` | `Optional<DeviceToken>` |
-| `deleteByUserIdAndDeviceToken` | `UUID userId`, `String deviceToken` | `void` |
-| `deleteByDeviceToken` | `String deviceToken` | `void` |
+| Method | Parameters | Return Type | Description |
+|--------|-----------|-------------|-------------|
+| `findByUserId` | `UUID userId` | `List<DeviceToken>` | Retrieves all device tokens registered for a specific user. A user may have multiple devices, hence the list return type. |
+| `findByUserIdAndDeviceToken` | `UUID userId`, `String deviceToken` | `Optional<DeviceToken>` | Finds a specific device token for a given user. Returns an empty `Optional` if no matching record exists. |
+| `deleteByUserIdAndDeviceToken` | `UUID userId`, `String deviceToken` | `void` | Removes a specific device token associated with a particular user. Useful when a user logs out from a specific device. |
+| `deleteByDeviceToken` | `String deviceToken` | `void` | Deletes a device token record regardless of which user it belongs to. Useful for cleaning up stale or invalid tokens. |
 
-This documentation provides a concise overview of the `DeviceTokenRepository` interface, detailing its purpose and the methods available for managing device tokens within the application.
+## Usage Examples
+
+### Finding all tokens for a user
+
+```java
+List<DeviceToken> userTokens = deviceTokenRepository.findByUserId(userId);
+```
+
+### Checking if a specific token exists for a user
+
+```java
+Optional<DeviceToken> token = deviceTokenRepository.findByUserIdAndDeviceToken(userId, tokenString);
+if (token.isPresent()) {
+    // Token exists, proceed with notification
+}
+```
+
+### Removing a token on logout
+
+```java
+deviceTokenRepository.deleteByUserIdAndDeviceToken(userId, deviceToken);
+```
+
+### Cleaning up invalid tokens
+
+```java
+deviceTokenRepository.deleteByDeviceToken(invalidToken);
+```
+
+## Inherited Methods
+
+As an extension of `JpaRepository<DeviceToken, UUID>`, this repository also inherits standard methods including:
+
+- `save(DeviceToken entity)` - Persists a new or updates an existing device token
+- `findById(UUID id)` - Finds a device token by its primary key
+- `findAll()` - Retrieves all device tokens
+- `deleteById(UUID id)` - Deletes a device token by its primary key
+- `count()` - Returns the total number of device token records
+
+## Notes
+
+- The `deleteByUserIdAndDeviceToken` and `deleteByDeviceToken` methods perform delete operations directly in the database without first loading the entities into the persistence context.
+- Device tokens are typically generated by mobile platforms (iOS APNs or Firebase Cloud Messaging for Android) and should be validated before storage.
+- Consider implementing token expiration logic to periodically clean up stale tokens using the `deleteByDeviceToken` method.

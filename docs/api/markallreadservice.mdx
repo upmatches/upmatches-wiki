@@ -4,26 +4,58 @@ title: MarkAllReadService
 sidebar_label: MarkAllReadService
 ---
 
-## Overview
+# MarkAllReadService
 
-The `MarkAllReadService` class is a part of the notification services in the application. It is responsible for marking all notifications as read for the authenticated user. This service interacts with the `NotificationRepository` to update the read status of notifications in the database. It ensures that the operation is executed within a transactional context to maintain data integrity.
+The `MarkAllReadService` class is a Spring service component responsible for marking all notifications as read for the currently authenticated user. It implements the `IMarkAllReadService` interface and provides a transactional operation that updates the read status of all notifications belonging to the authenticated user.
+
+## Purpose
+
+This service handles the bulk operation of marking all notifications as read for a specific user. It leverages the `NotificationRepository` to perform the database update and uses the `IAuthenticatedUserResolver` to obtain the authenticated user's ID. The operation is wrapped in a transaction to ensure data consistency.
+
+## Dependencies
+
+| Dependency | Description |
+|------------|-------------|
+| `NotificationRepository` | Repository interface for performing database operations on notifications |
+| `IAuthenticatedUserResolver` | Interface for resolving the currently authenticated user's ID |
+| `ServiceOperationExecutor` | Utility class for executing service operations with standardized error handling |
 
 ## Public Methods
 
-### `execute`
+### `execute()`
 
 Marks all notifications as read for the currently authenticated user.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None      |      |             |
+**Signature:**
+```java
+@Transactional
+public Integer execute()
+```
 
-| Return Type | Description |
-|-------------|-------------|
-| `Integer`   | The number of notifications that were marked as read. |
+**Returns:**
+- `Integer` - The number of notifications that were marked as read
 
-#### Method Details
+**Throws:**
+- `ResourceNotFoundException` - If the operation fails or the user cannot be resolved
 
-- **Transactional**: This method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction. This guarantees that all database operations within the method are completed successfully or none are applied in case of an error.
-- **Operation Execution**: Utilizes `ServiceOperationExecutor` to perform the update operation. This executor handles the execution logic and manages exceptions, specifically throwing a `ResourceNotFoundException` if the operation fails due to missing resources.
-- **User Resolution**: The method retrieves the authenticated user's ID using the `IAuthenticatedUserResolver` service, ensuring that the notifications are marked read for the correct user.
+**Behavior:**
+1. Retrieves the authenticated user's ID using `userResolver.requireUserId()`
+2. Executes the `markAllReadByRecipientId` method on the notification repository with the user ID and current timestamp
+3. Wraps the operation in `ServiceOperationExecutor.execute()` for standardized error handling and logging
+
+**Example Usage:**
+```java
+@Autowired
+private MarkAllReadService markAllReadService;
+
+public void markAllNotificationsAsRead() {
+    int updatedCount = markAllReadService.execute();
+    System.out.println("Marked " + updatedCount + " notifications as read");
+}
+```
+
+## Implementation Details
+
+The service uses Spring's `@Transactional` annotation to ensure the database update operation is performed within a transaction context. The `ServiceOperationExecutor` provides a consistent pattern for executing service operations, automatically handling exceptions and logging.
+
+The `non-sealed` modifier on the class declaration indicates that this class is part of a sealed class hierarchy, allowing it to be extended by other classes in the same package or module.

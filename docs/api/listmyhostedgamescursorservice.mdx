@@ -1,42 +1,108 @@
 ---
 id: list-my-hosted-games-cursor-service
 title: ListMyHostedGamesCursorService
-sidebar_label: List My Hosted Games Cursor Service
+sidebar_label: ListMyHostedGamesCursorService
 ---
 
 ## Overview
 
-The `ListMyHostedGamesCursorService` class is a Spring service designed to retrieve a paginated list of games hosted by the authenticated user. It uses a cursor-based pagination mechanism to efficiently navigate through large datasets. This service is part of the `com.upmatches.app.features.game.services` package and implements the `IListMyHostedGamesCursorService` interface.
+`ListMyHostedGamesCursorService` is a Spring service class that provides cursor-based pagination for retrieving games hosted by the currently authenticated user. It implements the `IListMyHostedGamesCursorService` interface and is marked as `non-sealed`, allowing further extension if needed.
 
-## Purpose
+The service uses a cursor-based pagination strategy (rather than traditional offset-based pagination) to efficiently handle large datasets and provide consistent results even when new games are added during pagination.
 
-The primary purpose of this class is to provide a method to fetch games hosted by the current user, utilizing cursor-based pagination. This allows for efficient data retrieval and navigation through potentially large lists of games without the performance drawbacks of traditional offset-based pagination.
+## Dependencies
+
+| Dependency | Type | Description |
+|-----------|------|-------------|
+| `GameRepository` | Repository | Data access layer for `Game` entities |
+| `GameParticipantRepository` | Repository | Data access layer for game participant counts |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID |
+| `GameCursor` | Helper | Encodes/decodes cursor values for pagination |
 
 ## Public Methods
 
-### `execute`
-
-The `execute` method retrieves a paginated list of games hosted by the authenticated user, starting from a specified cursor position and returning a specified number of results.
-
-| Parameter | Type   | Description                                                                 |
-|-----------|--------|-----------------------------------------------------------------------------|
-| `cursor`  | String | The cursor indicating the starting point for the pagination.                |
-| `size`    | int    | The maximum number of games to retrieve in this request.                    |
-
-#### Returns
-
-- `CursorPagedResponse<GameResponse>`: A response object containing the list of games and the next cursor for pagination.
-
-## Method Details
-
 ### `execute(String cursor, int size)`
 
-- **Description**: This method is responsible for executing the retrieval of hosted games for the authenticated user. It decodes the provided cursor to determine the starting point and fetches the specified number of games. It also calculates the number of active participants for each game and encodes the next cursor for further pagination.
-- **Transactional Behavior**: The method is annotated with `@Transactional(readOnly = true)`, indicating that it operates in a read-only transaction context, which optimizes performance by avoiding unnecessary locking.
+Retrieves a paginated list of games hosted by the authenticated user, ordered by start time and ID.
 
-### Private Helper Method
+**Parameters:**
 
-#### `countParticipants(List<Game> games)`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `cursor` | `String` | Base64-encoded cursor string for pagination. Pass `null` or empty string for the first page. |
+| `size` | `int` | Maximum number of games to return per page |
 
-- **Description**: This private method counts the number of active participants for each game in the provided list. It returns a map where the keys are game IDs and the values are the counts of active participants.
-- **Returns**: `Map<UUID, Long>`: A map of game IDs to their respective active participant counts.
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `CursorPagedResponse<GameResponse>` | A paginated response containing the list of games and a cursor for the next page |
+
+**Behavior:**
+
+1. Resolves the authenticated user's UUID via `userResolver.requireUserId()`
+2. Decodes the cursor string to extract the last game's start time and ID (if provided)
+3. Queries the database for games hosted by the user after the cursor position
+4. Counts active participants for each retrieved game
+5. Maps each `Game` entity to a `GameResponse` DTO with participant counts
+6. Generates a new cursor for the next page if more results exist
+7. Wraps the operation in `ServiceOperationExecutor` for consistent error handling and logging
+
+**Cursor Encoding:**
+
+The cursor encodes two values:
+- `startTime` (Instant): The start time of the last game on the current page
+- `id` (UUID): The ID of the last game on the current page
+
+This composite cursor ensures stable pagination even when multiple games share the same start time.
+
+## Private Methods
+
+### `countParticipants(List<Game> games)`
+
+Counts active participants for a list of games.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `games` | `List<Game>` | List of games to count participants for |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `Map<UUID, Long>` | Map of game IDs to their active participant counts |
+
+**Behavior:**
+
+- Extracts game IDs from the provided list
+- Returns an empty map if the list is empty
+- Queries `participantRepository` for counts of participants with `ACTIVE` status
+- Converts the result to a map keyed by game ID
+
+## Error Handling
+
+The service uses `ServiceOperationExecutor.execute()` which:
+
+- Wraps the operation with the `RETRIEVE` status
+- Throws `ResourceNotFoundException` if the operation fails
+- Provides consistent logging and monitoring
+
+## Usage Example
+
+```java
+// First page - no cursor
+CursorPagedResponse<GameResponse> firstPage = service.execute(null, 20);
+
+// Subsequent pages - use cursor from previous response
+CursorPagedResponse<GameResponse> nextPage = service.execute(firstPage.getNextCursor(), 20);
+```
+
+## Transactional Behavior
+
+The `execute` method is annotated with `@Transactional(readOnly = true)`, ensuring:
+
+- All database operations within the method execute within a single transaction
+- Read-only optimization hints are provided to the database
+- Consistent data view across the participant count query and game retrieval

@@ -1,39 +1,75 @@
 ---
-id: short-link
-title: ShortLink Class
+id: short-link-entity
+title: ShortLink Entity
 sidebar_label: ShortLink
 ---
 
-## Overview
+# ShortLink Entity
 
-The `ShortLink` class is an entity representing a shortened link in the system. It is used to map a short code to a specific resource, track the number of clicks, and store metadata about its creation and updates. This class is part of the `com.upmatches.app.features.sharelink.entities` package and is annotated with JPA annotations to map it to a database table named `short_links`.
+The `ShortLink` class is a JPA entity that represents a shortened URL link within the UpMatches application. It maps to the `short_links` database table and is used to store and manage shortened URLs that redirect users to various resources (e.g., user profiles, posts, or other content).
+
+## Purpose
+
+This entity serves as the core data model for the URL shortening feature. It stores:
+- A unique short code that forms the shortened URL
+- The type and ID of the resource the link points to
+- Click tracking metrics
+- Audit timestamps for creation and updates
+
+## Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `UUID` | Primary key, auto-generated using UUID strategy |
+| `code` | `String` | Unique short code (max 10 characters) used in the shortened URL |
+| `resourceType` | `ResourceType` | Enum indicating the type of resource (e.g., USER, POST) |
+| `resourceId` | `String` | UUID of the target resource (max 36 characters) |
+| `clickCount` | `Long` | Counter tracking how many times the short link has been accessed |
+| `createdBy` | `User` | Many-to-one relationship to the User who created the short link |
+| `createdAt` | `Instant` | Timestamp when the entity was first persisted (non-updatable) |
+| `updatedAt` | `Instant` | Timestamp of the last update |
 
 ## Public Methods
 
-The `ShortLink` class provides the following public methods:
+### `create(String code, ResourceType resourceType, String resourceId, User createdBy)`
 
-### `create`
+Static factory method for creating a new `ShortLink` instance.
 
-Creates a new instance of `ShortLink` with the specified parameters.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `code` | `String` | The unique short code for the URL |
+| `resourceType` | `ResourceType` | The type of resource being linked to |
+| `resourceId` | `String` | The ID of the target resource |
+| `createdBy` | `User` | The user who is creating the short link |
 
-| Parameter    | Type          | Description                                      |
-|--------------|---------------|--------------------------------------------------|
-| `code`       | `String`      | The unique code representing the short link.     |
-| `resourceType` | `ResourceType` | The type of resource the link points to.       |
-| `resourceId` | `String`      | The identifier of the resource.                  |
-| `createdBy`  | `User`        | The user who created the short link.             |
+**Returns:** `ShortLink` - A new ShortLink instance with `clickCount` initialized to `0`.
 
-**Returns:** `ShortLink` - A new instance of the `ShortLink` class.
+## Lifecycle Callbacks
 
-## Annotations and Lifecycle Methods
+### `onCreate()`
+- Annotated with `@PrePersist`
+- Sets both `createdAt` and `updatedAt` to the current instant
 
-- **`@Entity`**: Specifies that the class is an entity and is mapped to a database table.
-- **`@Table(name = "short_links")`**: Specifies the name of the database table.
-- **`@Id`**: Marks the field as a primary key.
-- **`@GeneratedValue(strategy = GenerationType.UUID)`**: Specifies that the ID should be generated as a UUID.
-- **`@Column`**: Maps a field to a column in the database table.
-- **`@Enumerated(EnumType.STRING)`**: Specifies that the `resourceType` should be persisted as a string.
-- **`@ManyToOne`**: Defines a many-to-one relationship with the `User` entity.
-- **`@JoinColumn(name = "created_by")`**: Specifies the foreign key column for the `createdBy` relationship.
-- **`@PrePersist`**: Lifecycle callback method that sets `createdAt` and `updatedAt` before the entity is persisted.
-- **`@PreUpdate`**: Lifecycle callback method that updates `updatedAt` before the entity is updated.
+### `onUpdate()`
+- Annotated with `@PreUpdate`
+- Updates `updatedAt` to the current instant
+
+## Dependencies
+
+- **ResourceType**: Enum defined in `com.upmatches.app.features.sharelink.enums`
+- **User**: Entity defined in `com.upmatches.app.features.user.entities`
+
+## Usage Example
+
+```java
+// Creating a new short link
+ShortLink link = ShortLink.create(
+    "abc123",
+    ResourceType.USER_PROFILE,
+    "550e8400-e29b-41d4-a716-446655440000",
+    currentUser
+);
+
+// The link is now ready to be persisted via a repository
+shortLinkRepository.save(link);
+```

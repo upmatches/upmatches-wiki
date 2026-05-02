@@ -1,39 +1,77 @@
 ---
 id: create-game-service
-title: CreateGameService Class
+title: CreateGameService
 sidebar_label: CreateGameService
 ---
 
-## Purpose
+# CreateGameService
 
-The `CreateGameService` class is a service component in a Java application that handles the creation of game entities. It is responsible for validating user permissions, checking for overlapping games, and saving new game instances to the repository. Additionally, it manages the creation of share links for the newly created games.
+The `CreateGameService` class is a Spring service responsible for creating new game entities within the UpMatches application. It handles the complete game creation workflow, including user authentication, validation of prerequisites (onboarding, Singpass authentication), conflict detection for overlapping games, and automatic generation of share links for the newly created game.
+
+## Key Responsibilities
+
+- Validates that the authenticated user is eligible to create a game (Singpass authentication, completed onboarding)
+- Resolves and validates all referenced entities (activity, venue, skill levels)
+- Detects and prevents overlapping game participation for organizers
+- Creates the game entity with appropriate pricing configuration
+- Optionally adds the organizer as a participant
+- Generates a share link for the game
+- Returns a comprehensive `GameResponse` with all relevant details
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameRepository` | Repository | Persistence for game entities |
+| `GameParticipantRepository` | Repository | Persistence for game participant records |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
+| `IGameLookupService` | Service | Provides lookup operations for related entities |
+| `ICreateShareLinkService` | Service | Generates share links for resources |
 
 ## Public Methods
 
 ### `execute`
 
-Executes the process of creating a game based on the provided request. This method is transactional and auditable, ensuring that the creation process is logged and can be rolled back if necessary.
+```java
+@Transactional
+@Auditable(action = "GAME_CREATED", resourceType = "GAME", resourceIdExpression = "#result?.id")
+public GameResponse execute(CreateGameRequest request)
+```
 
-| Parameter | Type                      | Description                                      |
-|-----------|---------------------------|--------------------------------------------------|
-| request   | `CreateGameRequest`       | The request object containing game details.      |
+Creates a new game based on the provided request. This method is transactional and auditable.
 
-| Return Type    | Description                                      |
-|----------------|--------------------------------------------------|
-| `GameResponse` | The response object containing the game details. |
+**Parameters:**
 
-## Method Details
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `CreateGameRequest` | Contains all necessary data for game creation including activity, venue, timing, pricing, and visibility settings |
 
-- **`execute(CreateGameRequest request)`**: This method performs several key operations:
-  - Retrieves the user ID of the organizer and checks if they are authorized to create a game.
-  - Validates that the user has completed onboarding and is authenticated via Singpass.
-  - Checks for overlapping games if the user intends to join as an organizer.
-  - Constructs a `Game` object with the provided details and saves it to the repository.
-  - Creates a share link for the game and returns a `GameResponse` object containing the game details and participant count.
+**Returns:**
 
-## Exceptions
+| Type | Description |
+|------|-------------|
+| `GameResponse` | A comprehensive response object containing the created game details, participant count, share link, and viewer-specific information |
 
-- **`SingpassRequiredException`**: Thrown if the user is not authenticated via Singpass.
-- **`OnboardingRequiredException`**: Thrown if the user has not completed onboarding.
-- **`OverlappingGameException`**: Thrown if the user is already participating in an overlapping game.
-- **`ResourceNotFoundException`**: Thrown if a resource required for game creation is not found.
+**Throws:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `SingpassRequiredException` | User is not authenticated via Singpass |
+| `OnboardingRequiredException` | User has not completed their profile/onboarding |
+| `OverlappingGameException` | Organizer already participates in another game during the requested time slot |
+| `ResourceNotFoundException` | Any referenced entity (activity, venue, skill level) is not found |
+
+**Workflow:**
+
+1. **User Resolution**: Retrieves the authenticated user's ID
+2. **Activity Validation**: Looks up and validates the requested activity
+3. **Organizer Resolution**: Resolves the organizer user, with optional pessimistic locking if joining as organizer
+4. **Authentication Check**: Verifies Singpass authentication status
+5. **Onboarding Check**: Ensures the user has completed onboarding and has a valid name
+6. **Entity Resolution**: Looks up venue and skill level entities
+7. **Conflict Detection**: Checks for overlapping games if the organizer is joining
+8. **Pricing Configuration**: Builds the pricing object from request data or defaults
+9. **Game Creation**: Constructs and persists the game entity
+10. **Participant Registration**: Optionally adds the organizer as a participant
+11. **Share Link Generation**: Creates a share link for the new game
+12. **Response Building**: Returns a formatted `GameResponse`

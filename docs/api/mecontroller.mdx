@@ -1,61 +1,139 @@
 ---
 id: me-controller
-title: MeController
+title: MeController - User Profile Management API
 sidebar_label: MeController
 ---
 
-## Purpose
+# MeController
 
-The `MeController` class is a REST controller in a Spring Boot application that manages user profile operations. It provides endpoints for retrieving, completing, updating, and deleting a user's profile. This controller interacts with the `IUserService` to perform these operations and returns appropriate HTTP responses.
+The `MeController` class is a REST controller in the UpMatches application that handles all operations related to the currently authenticated user's profile. It provides endpoints for retrieving, completing, updating, and deleting the user's profile information.
 
-## Public Methods
+This controller is mapped to the `/api/v1/me` base path and uses the `IUserService` interface to perform business logic operations.
 
-### `getMe`
+## Endpoints
 
-Retrieves the current user's profile.
+### GET /api/v1/me
 
-| Parameter | Type                  | Description                  |
-|-----------|-----------------------|------------------------------|
-| request   | `HttpServletRequest`  | The HTTP request object.     |
+Retrieves the profile of the currently authenticated user.
 
-| Return Type                                      | Description                                    |
-|--------------------------------------------------|------------------------------------------------|
-| `ResponseEntity<ApiResponse<UserProfileResponse>>` | A response entity containing the user's profile and a success message. |
-
-### `completeProfile`
-
-Completes the user's profile with the provided data.
-
-| Parameter | Type                          | Description                                      |
-|-----------|-------------------------------|--------------------------------------------------|
-| body      | `CompleteProfileRequest`      | The request body containing profile data.        |
-| request   | `HttpServletRequest`          | The HTTP request object.                         |
-
-| Return Type                                      | Description                                    |
-|--------------------------------------------------|------------------------------------------------|
-| `ResponseEntity<ApiResponse<UserProfileResponse>>` | A response entity with the completed profile and a success message. |
-
-### `updateProfile`
-
-Updates the user's profile with the provided data.
-
-| Parameter | Type                          | Description                                      |
-|-----------|-------------------------------|--------------------------------------------------|
-| body      | `UpdateProfileRequest`        | The request body containing updated profile data.|
-| request   | `HttpServletRequest`          | The HTTP request object.                         |
-
-| Return Type                                      | Description                                    |
-|--------------------------------------------------|------------------------------------------------|
-| `ResponseEntity<ApiResponse<UserProfileResponse>>` | A response entity with the updated profile and a success message. |
-
-### `deleteMe`
-
-Deletes the current user's profile.
+**Response:** Returns the user's profile data wrapped in an `ApiResponse` with HTTP status 200 (OK).
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| None      |      |             |
+| `request` | `HttpServletRequest` | The HTTP request object (injected by Spring) |
 
-| Return Type             | Description                                    |
-|-------------------------|------------------------------------------------|
-| `ResponseEntity<Void>`  | A response entity indicating successful deletion with no content. |
+**Response Body:**
+```json
+{
+  "success": true,
+  "message": "User profile retrieved successfully.",
+  "data": {
+    "id": "string",
+    "username": "string",
+    "email": "string",
+    "firstName": "string",
+    "lastName": "string",
+    "bio": "string",
+    "avatarUrl": "string"
+  },
+  "path": "/api/v1/me"
+}
+```
+
+### POST /api/v1/me
+
+Completes the user's profile after initial registration. This endpoint is typically called when a user needs to provide additional information to fully set up their profile.
+
+**Response:** Returns the completed profile data wrapped in an `ApiResponse` with HTTP status 201 (Created).
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `body` | `CompleteProfileRequest` | The request body containing profile completion data (validated) |
+| `request` | `HttpServletRequest` | The HTTP request object (injected by Spring) |
+
+**Request Body Example:**
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "bio": "Software developer and coffee enthusiast",
+  "avatarUrl": "https://example.com/avatar.jpg"
+}
+```
+
+**Response Body:**
+```json
+{
+  "success": true,
+  "message": "User profile completed successfully.",
+  "data": {
+    "id": "string",
+    "username": "string",
+    "email": "string",
+    "firstName": "John",
+    "lastName": "Doe",
+    "bio": "Software developer and coffee enthusiast",
+    "avatarUrl": "https://example.com/avatar.jpg"
+  },
+  "path": "/api/v1/me"
+}
+```
+
+### PUT /api/v1/me
+
+Updates the profile of the currently authenticated user. This endpoint allows partial or full updates to the user's profile information.
+
+**Response:** Returns the updated profile data wrapped in an `ApiResponse` with HTTP status 200 (OK).
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `body` | `UpdateProfileRequest` | The request body containing profile update data (validated) |
+| `request` | `HttpServletRequest` | The HTTP request object (injected by Spring) |
+
+**Request Body Example:**
+```json
+{
+  "firstName": "Jane",
+  "bio": "Updated bio information"
+}
+```
+
+**Response Body:**
+```json
+{
+  "success": true,
+  "message": "User profile updated successfully.",
+  "data": {
+    "id": "string",
+    "username": "string",
+    "email": "string",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "bio": "Updated bio information",
+    "avatarUrl": "https://example.com/avatar.jpg"
+  },
+  "path": "/api/v1/me"
+}
+```
+
+### DELETE /api/v1/me
+
+Deletes the currently authenticated user's account and associated data.
+
+**Response:** Returns HTTP status 204 (No Content) with no response body.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None | - | No request body or parameters required |
+
+## Dependencies
+
+- **IUserService**: The service interface that provides the business logic for user profile operations.
+- **CompleteProfileRequest**: A validated request DTO for completing a user's profile.
+- **UpdateProfileRequest**: A validated request DTO for updating a user's profile.
+- **UserProfileResponse**: The response DTO containing user profile data.
+- **ApiResponse**: A generic response wrapper used for consistent API responses.
+
+## Error Handling
+
+All endpoints rely on Spring's validation framework (`@Valid` annotation) to ensure request bodies are properly validated. Validation errors will result in appropriate HTTP 400 (Bad Request) responses. Other errors (e.g., user not found, authentication issues) are handled by the service layer and may result in various HTTP status codes.

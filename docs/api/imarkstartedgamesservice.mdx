@@ -4,14 +4,52 @@ title: IMarkStartedGamesService Interface
 sidebar_label: IMarkStartedGamesService
 ---
 
+# IMarkStartedGamesService Interface
+
 ## Purpose
 
-The `IMarkStartedGamesService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for marking games as started. This interface is designed to be implemented by classes that provide the actual logic for marking games as started. The interface is sealed, meaning it restricts which classes can implement it, specifically permitting only the `MarkStartedGamesService` class.
+The `IMarkStartedGamesService` interface defines a contract for marking games that have started within the application. It is a **sealed interface**, meaning only explicitly permitted classes (in this case, `MarkStartedGamesService`) can implement it. This design enforces a controlled hierarchy and ensures that the logic for marking started games is centralized and cannot be extended arbitrarily.
 
-## Public Methods
+The interface exposes a single method, `execute()`, which returns an integer representing the number of games that were successfully marked as started. This pattern is commonly used in service layers to encapsulate business operations with a clear, side-effect-oriented API.
 
-| Method Signature | Description | Parameters | Return Type |
-|------------------|-------------|------------|-------------|
-| `int execute()`  | Executes the logic to mark games as started. | None | `int` - Returns an integer indicating the result of the execution, typically the number of games marked as started. |
+## Interface Definition
 
-This interface is crucial for ensuring that any implementation adheres to a specific method signature for marking games as started, providing consistency across different implementations.
+```java
+package com.upmatches.app.features.game.services;
+
+public sealed interface IMarkStartedGamesService permits MarkStartedGamesService {
+
+    int execute();
+
+}
+```
+
+## Public Method
+
+| Method   | Return Type | Description                                                                 |
+|----------|-------------|-----------------------------------------------------------------------------|
+| `execute` | `int`       | Executes the operation to mark games as started. Returns the count of games that were successfully updated. |
+
+## Usage Notes
+
+- The interface is **sealed**, so only the class `MarkStartedGamesService` is allowed to implement it. This prevents unauthorized or accidental implementations elsewhere in the codebase.
+- The `execute()` method is intended to be called when the application needs to transition games from a pending or scheduled state to a "started" state.
+- The return value (`int`) can be used for logging, validation, or triggering subsequent actions based on how many games were affected.
+- This interface follows a command-like pattern, where the operation is self-contained and does not require parameters. If additional context is needed in the future, consider extending the interface or using a parameter object.
+
+## Example Implementation (Conceptual)
+
+```java
+public final class MarkStartedGamesService implements IMarkStartedGamesService {
+    @Override
+    public int execute() {
+        // Logic to mark games as started, e.g., updating database records
+        // Return the number of games updated
+        return 0;
+    }
+}
+```
+
+## Dependencies
+
+This interface is part of the `com.upmatches.app.features.game.services` package and is likely used in conjunction with other game-related services and repositories within the application.

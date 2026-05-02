@@ -4,36 +4,63 @@ title: DatabaseType Enum
 sidebar_label: DatabaseType
 ---
 
+# DatabaseType Enum
+
+The `DatabaseType` enum provides a centralized mapping between JDBC URL prefixes and their corresponding database driver class names. It supports three database types: H2, PostgreSQL, and MySQL.
+
 ## Purpose
 
-The `DatabaseType` enum is designed to represent different types of databases supported by the application. It provides a convenient way to manage database-specific configurations, such as JDBC URL prefixes and driver class names. This enum helps in identifying the database type from a given JDBC URL and retrieving the associated driver class name.
+This enum simplifies database connection configuration by:
+- Associating each supported database type with its JDBC URL prefix and driver class name.
+- Providing a utility method to resolve a `DatabaseType` from a given JDBC URL string.
+- Eliminating hard-coded driver class names and prefixes throughout the codebase.
+
+## Enum Constants
+
+| Constant      | JDBC Prefix (from `DatabaseConstant`) | Driver Class Name              |
+|---------------|----------------------------------------|--------------------------------|
+| `H2`          | `JDBC_H2`                              | `org.h2.Driver`                |
+| `POSTGRESQL`  | `JDBC_POSTGRESQL`                      | `org.postgresql.Driver`        |
+| `MYSQL`       | `JDBC_MYSQL`                           | `com.mysql.cj.jdbc.Driver`     |
 
 ## Public Methods
 
 ### `fromJdbcUrl`
 
-Determines the `DatabaseType` based on the provided JDBC URL.
+Resolves a `DatabaseType` from a JDBC URL string by matching its prefix.
 
-| Parameter | Type   | Description                          |
-|-----------|--------|--------------------------------------|
-| jdbcUrl   | String | The JDBC URL to be evaluated.        |
+| Parameter | Type     | Description                                      |
+|-----------|----------|--------------------------------------------------|
+| `jdbcUrl` | `String` | The JDBC URL to evaluate (e.g., `jdbc:mysql://...`). Can be `null`. |
 
-| Return Type | Description                                      |
-|-------------|--------------------------------------------------|
-| DatabaseType | The corresponding `DatabaseType` or `null` if no match is found. |
+| Returns    | Description                                                                 |
+|------------|-----------------------------------------------------------------------------|
+| `DatabaseType` | The matching enum constant, or `null` if the URL is `null` or no prefix matches. |
+
+**Example usage:**
+```java
+DatabaseType type = DatabaseType.fromJdbcUrl("jdbc:postgresql://localhost:5432/mydb");
+// Returns DatabaseType.POSTGRESQL
+```
 
 ### `getPrefix`
 
-Retrieves the JDBC URL prefix associated with the database type.
+Returns the JDBC URL prefix associated with this database type.
 
-| Return Type | Description                          |
-|-------------|--------------------------------------|
-| String      | The JDBC URL prefix for the database type. |
+| Returns | Description                          |
+|---------|--------------------------------------|
+| `String` | The JDBC prefix (e.g., `jdbc:mysql`). |
 
 ### `getDriverClassName`
 
-Retrieves the driver class name associated with the database type.
+Returns the fully qualified class name of the JDBC driver for this database type.
 
-| Return Type | Description                          |
-|-------------|--------------------------------------|
-| String      | The driver class name for the database type. |
+| Returns | Description                          |
+|---------|--------------------------------------|
+| `String` | The driver class name (e.g., `org.postgresql.Driver`). |
+
+## Internal Details
+
+- The enum constructor accepts a `String prefix` and `String driverClassName`, which are stored as private final fields.
+- The `fromJdbcUrl` method iterates over all enum values and checks if the provided URL starts with the enum's prefix. The first match is returned.
+- The prefix constants (`JDBC_H2`, `JDBC_MYSQL`, `JDBC_POSTGRESQL`) are imported from `com.upmatches.app.shared.database.constants.DatabaseConstant`.

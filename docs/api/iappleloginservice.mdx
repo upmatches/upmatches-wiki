@@ -4,30 +4,56 @@ title: IAppleLoginService Interface
 sidebar_label: IAppleLoginService
 ---
 
+# IAppleLoginService Interface
+
 ## Purpose
 
-The `IAppleLoginService` interface is part of the authentication services within the `com.upmatches.app.features.auth.services` package. It defines a contract for implementing Apple login functionality. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `AppleLoginService` class.
+The `IAppleLoginService` interface defines the contract for handling Apple Sign-In authentication within the UpMatches application. It serves as the abstraction layer for Apple login functionality, allowing for a clean separation between the interface definition and its implementation (`AppleLoginService`). This sealed interface ensures that only the designated implementation class can extend it, providing controlled extensibility and enhanced security.
 
-## Public Methods
+## Interface Definition
 
-The `IAppleLoginService` interface declares the following public method:
+```java
+public sealed interface IAppleLoginService permits AppleLoginService {
+    AppleLoginResponse execute(AppleLoginRequest request);
+}
+```
 
-| Method Signature | Description |
-|------------------|-------------|
-| `AppleLoginResponse execute(AppleLoginRequest request)` | Executes the Apple login process using the provided `AppleLoginRequest` and returns an `AppleLoginResponse`. |
+## Methods
 
-### Method Details
+### `execute`
 
-#### `execute`
+| Property | Description |
+|----------|-------------|
+| **Signature** | `AppleLoginResponse execute(AppleLoginRequest request)` |
+| **Purpose** | Processes an Apple Sign-In authentication request and returns the corresponding response |
+| **Parameters** | `request` - An `AppleLoginRequest` object containing the necessary authentication data from Apple Sign-In |
+| **Returns** | `AppleLoginResponse` - The response object containing the authentication result and user information |
+| **Throws** | Implementation-specific exceptions may be thrown (e.g., authentication failures, network errors) |
 
-- **Parameters:**
+## Usage Example
 
-  | Name    | Type                                | Description                              |
-  |---------|-------------------------------------|------------------------------------------|
-  | request | `AppleLoginRequest`                 | The request object containing necessary data for Apple login. |
+```java
+// Inject the service (typically via dependency injection)
+private final IAppleLoginService appleLoginService;
 
-- **Returns:**
+// Create a login request
+AppleLoginRequest request = new AppleLoginRequest(/* authorization code, identity token, etc. */);
 
-  | Type                  | Description                              |
-  |-----------------------|------------------------------------------|
-  | `AppleLoginResponse`  | The response object containing the result of the Apple login process. |
+// Execute the login
+AppleLoginResponse response = appleLoginService.execute(request);
+```
+
+## Implementation Details
+
+The interface is declared as `sealed`, meaning only the class `AppleLoginService` is permitted to implement it. This design pattern provides:
+
+- **Controlled inheritance**: Only the specified implementation can extend this interface
+- **Enhanced security**: Prevents unauthorized implementations
+- **Clear contract**: Defines a single, well-defined authentication method
+- **Testability**: Allows for easy mocking in unit tests
+
+## Related Components
+
+- **`AppleLoginRequest`**: The input data transfer object containing Apple Sign-In credentials
+- **`AppleLoginResponse`**: The output data transfer object containing authentication results
+- **`AppleLoginService`**: The concrete implementation of this interface

@@ -1,29 +1,36 @@
 ---
-id: gametype-enum
+id: game-type-enum
 title: GameType Enum
 sidebar_label: GameType
 ---
 
-## Overview
+# GameType Enum
 
-The `GameType` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to represent the type of game being played in the application. Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like final variables).
+The `GameType` enum defines the possible types of games within the application. It is used to distinguish between single-player and double-player game modes.
 
-## Enum Constants
+## Package Location
 
-The `GameType` enum defines two constants:
+`com.upmatches.app.features.game.enums`
 
-- **SINGLE**: Represents a single-player game type.
-- **DOUBLE**: Represents a double-player game type.
+## Enum Values
 
-## Public Methods
-
-Enums in Java inherently provide several useful methods. Below are the public methods available for the `GameType` enum:
-
-| Method Signature | Description |
-|------------------|-------------|
-| `GameType[] values()` | Returns an array containing all of the values of the enum in the order they are declared. This method is useful for iterating over the constants. |
-| `GameType valueOf(String name)` | Returns the enum constant of this type with the specified name. The string must match exactly an identifier used to declare an enum constant in this type. |
+| Value    | Description                                                                 |
+| -------- | --------------------------------------------------------------------------- |
+| `SINGLE` | Represents a single-player game mode where one participant plays alone.     |
+| `DOUBLE` | Represents a double-player game mode where two participants play together.  |
 
 ## Usage
 
-The `GameType` enum can be used to define and manage the type of game within the application, ensuring that only valid game types are used. This can help prevent errors and improve code readability.
+This enum is typically used to configure game logic, UI components, or data models that need to differentiate between the number of players in a game session. For example, it can be used in a game settings class or as a parameter in a game creation method.
+
+## Example
+
+```java
+GameType currentGameType = GameType.SINGLE;
+
+if (currentGameType == GameType.DOUBLE) {
+    // Initialize two-player game logic
+} else {
+    // Initialize single-player game logic
+}
+```

@@ -4,32 +4,73 @@ title: DeleteGameBookmarkService
 sidebar_label: DeleteGameBookmarkService
 ---
 
-## Overview
+# DeleteGameBookmarkService
 
-The `DeleteGameBookmarkService` class is a part of the `com.upmatches.app.features.game.services` package. It is responsible for handling the deletion of game bookmarks for authenticated users. This service ensures that only the bookmarks associated with the current authenticated user can be deleted, maintaining data integrity and security.
+The `DeleteGameBookmarkService` class is a Spring service responsible for removing a game bookmark for the currently authenticated user. It ensures that only the owner of the bookmark can delete it by resolving the authenticated user's ID and verifying the bookmark exists before deletion.
 
-## Class Purpose
+## Purpose
 
-The primary purpose of the `DeleteGameBookmarkService` is to provide a transactional operation that deletes a game bookmark based on the game ID and the authenticated user's ID. If the bookmark does not exist, it throws a `ResourceNotFoundException`.
+This service encapsulates the business logic for deleting a game bookmark. It performs the following operations:
+- Resolves the authenticated user's ID
+- Finds the bookmark by game ID and user ID
+- Throws a `ResourceNotFoundException` if the bookmark does not exist
+- Deletes the bookmark within a transactional context
+- Wraps the deletion operation in a `ServiceOperationExecutor` for consistent error handling
+
+## Class Details
+
+| Property | Value |
+|----------|-------|
+| **Package** | `com.upmatches.app.features.game.services` |
+| **Annotations** | `@Service` |
+| **Implements** | `IDeleteGameBookmarkService` |
+| **Modifiers** | `public non-sealed` |
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameBookmarkRepository` | Constructor Injection | Repository for accessing game bookmark data |
+| `IAuthenticatedUserResolver` | Constructor Injection | Resolves the currently authenticated user's ID |
 
 ## Public Methods
 
-### `execute`
+### `execute(UUID gameId)`
 
-Deletes a game bookmark for the authenticated user.
+Deletes a game bookmark for the currently authenticated user.
 
-| Parameter | Type   | Description                           |
-|-----------|--------|---------------------------------------|
-| `gameId`  | `UUID` | The unique identifier of the game.    |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameId` | `UUID` | The unique identifier of the game whose bookmark should be deleted |
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | This method does not return a value. |
+**Return Type:** `void`
 
-#### Exceptions
+**Throws:**
+- `ResourceNotFoundException` if no bookmark exists for the given game ID and authenticated user ID
 
-- `ResourceNotFoundException`: Thrown if no bookmark is found for the specified game ID and user ID.
+**Behavior:**
+1. Resolves the authenticated user's ID using `userResolver.requireUserId()`
+2. Searches for the bookmark using `bookmarkRepository.findByGameIdAndUserId(gameId, userId)`
+3. If not found, throws `ResourceNotFoundException` with a formatted message containing the game ID and user ID
+4. If found, executes the deletion within `ServiceOperationExecutor.executeVoid()` with the `DELETE` operation status
 
-## Usage
+## Error Handling
 
-To use the `DeleteGameBookmarkService`, you need to have an instance of `GameBookmarkRepository` and `IAuthenticatedUserResolver` injected into the service. The `execute` method should be called with the game ID for which the bookmark needs to be deleted. The service will handle the rest, ensuring that the operation is performed within a transactional context.
+The service uses a consistent error handling approach:
+- **Missing Bookmark:** Throws `ResourceNotFoundException` with a descriptive message
+- **Operation Execution:** Uses `ServiceOperationExecutor.executeVoid()` to wrap the deletion, converting any repository exceptions into `ResourceNotFoundException`
+
+## Transactional Behavior
+
+The `execute` method is annotated with `@Transactional`, ensuring that the deletion operation is performed within a database transaction. This guarantees atomicity and consistency of the operation.
+
+## Usage Example
+
+```java
+@Autowired
+private DeleteGameBookmarkService deleteGameBookmarkService;
+
+public void removeBookmark(UUID gameId) {
+    deleteGameBookmarkService.execute(gameId);
+}
+```

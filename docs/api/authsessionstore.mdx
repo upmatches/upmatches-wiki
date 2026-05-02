@@ -1,48 +1,124 @@
 ---
 id: auth-session-store
-title: AuthSessionStore Class
+title: AuthSessionStore
 sidebar_label: AuthSessionStore
 ---
 
-## Overview
+# AuthSessionStore
 
-The `AuthSessionStore` class is a service component in a Java application that manages authentication sessions using Redis as a storage backend. It implements the `IAuthSessionStore` interface and provides methods to store, retrieve, and manage authentication sessions. The class utilizes JSON serialization and deserialization to handle session data, leveraging the Jackson library for these operations.
+The `AuthSessionStore` class is a Spring `@Service` component that provides Redis-backed storage for authentication sessions. It implements the `IAuthSessionStore` interface and handles serialization/deserialization of `AuthSession` objects using Jackson's `ObjectMapper`.
+
+This service is designed to store temporary authentication sessions with a configurable expiry time (default: 5 minutes). It supports storing, retrieving (with automatic deletion), and querying session data by a unique state identifier.
+
+## Key Features
+
+- **Redis-backed storage** using `StringRedisTemplate` for high-performance session management
+- **Automatic session expiry** with a default TTL of 5 minutes
+- **Thread-safe operations** leveraging Redis atomic operations
+- **Graceful error handling** for serialization/deserialization failures
+- **Non-sealed implementation** allowing for future extension
+
+## Dependencies
+
+- `StringRedisTemplate` - Spring Data Redis template for string-based operations
+- `ObjectMapper` - Jackson library for JSON serialization/deserialization
+- `AuthSession` - The session model object being stored
+- `IAuthSessionStore` - The interface this service implements
+
+## Constructor
+
+| Constructor | Description |
+|-------------|-------------|
+| `AuthSessionStore(StringRedisTemplate redisTemplate, ObjectMapper mapper)` | Initializes the store with Redis template and Jackson ObjectMapper |
 
 ## Public Methods
 
-### `store`
+### `store(String state, AuthSession session)`
 
-Stores an authentication session in Redis with a specified state as the key.
+Stores an authentication session in Redis with automatic expiry.
 
-| Parameter | Type           | Description                           |
-|-----------|----------------|---------------------------------------|
-| `state`   | `String`       | The unique identifier for the session.|
-| `session` | `AuthSession`  | The authentication session to store.  |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `state` | `String` | Unique state identifier used as part of the Redis key |
+| `session` | `AuthSession` | The authentication session object to store |
 
-| Return Type |
-|-------------|
-| `void`      |
+**Returns:** `void`
 
-### `retrieveAndRemove`
+**Throws:** `IllegalStateException` if serialization fails
 
-Retrieves and removes an authentication session from Redis using the specified state.
+**Example:**
+```java
+authSessionStore.store("abc123", new AuthSession("web", "token123"));
+```
 
-| Parameter | Type     | Description                           |
-|-----------|----------|---------------------------------------|
-| `state`   | `String` | The unique identifier for the session.|
+### `retrieveAndRemove(String state)`
 
-| Return Type    | Description                                      |
-|----------------|--------------------------------------------------|
-| `AuthSession`  | The retrieved authentication session, or `null` if not found or deserialization fails. |
+Retrieves and atomically removes an authentication session from Redis.
 
-### `getPlatform`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `state` | `String` | The state identifier used to look up the session |
 
-Retrieves the platform information from an authentication session stored in Redis.
+**Returns:** `AuthSession` or `null` if the session doesn't exist or deserialization fails
 
-| Parameter | Type     | Description                           |
-|-----------|----------|---------------------------------------|
-| `state`   | `String` | The unique identifier for the session.|
+**Example:**
+```java
+AuthSession session = authSessionStore.retrieveAndRemove("abc123");
+```
 
-| Return Type | Description                                      |
-|-------------|--------------------------------------------------|
-| `String`    | The platform information, or `null` if not found or deserialization fails. |
+### `getPlatform(String state)`
+
+Retrieves only the platform information from a stored session without removing it.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `state` | `String` | The state identifier used to look up the session |
+
+**Returns:** `String` representing the platform, or `null` if the session doesn't exist or deserialization fails
+
+**Example:**
+```java
+String platform = authSessionStore.getPlatform("abc123");
+// Returns "web" or null
+```
+
+## Internal Implementation Details
+
+### Key Prefix
+All session keys are prefixed with `auth:session:` to namespace them within Redis.
+
+### Session Expiry
+Sessions automatically expire after 5 minutes (`SESSION_EXPIRY_MINUTES = 5`). This is set using Redis TTL (Time-To-Live) when storing the session.
+
+### Error Handling
+- **Serialization errors** (`JacksonException` during `store`) result in an `IllegalStateException` being thrown
+- **Deserialization errors** (`JacksonException` during `retrieveAndRemove` or `getPlatform`) are logged as warnings and return `null`
+
+## Usage Example
+
+```java
+@Service
+public class AuthService {
+    private final AuthSessionStore sessionStore;
+    
+    public AuthService(AuthSessionStore sessionStore) {
+        this.sessionStore = sessionStore;
+    }
+    
+    public void createSession(String state, AuthSession session) {
+        sessionStore.store(state, session);
+    }
+    
+    public AuthSession consumeSession(String state) {
+        return sessionStore.retrieveAndRemove(state);
+    }
+    
+    public String getSessionPlatform(String state) {
+        return sessionStore.getPlatform(state);
+    }
+}
+```
+
+## Configuration
+
+The session expiry duration can be adjusted by modifying the `SESSION_EXPIRY_MINUTES` constant in the class. For external configuration, consider using `@Value` annotation with Spring properties.

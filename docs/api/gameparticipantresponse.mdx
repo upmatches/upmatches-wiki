@@ -1,50 +1,95 @@
 ---
 id: game-participant-response
-title: GameParticipantResponse Class
+title: GameParticipantResponse
 sidebar_label: GameParticipantResponse
 ---
 
-## Purpose of the Class
+# GameParticipantResponse
 
-The `GameParticipantResponse` class is a Java record that encapsulates the response data for a participant in a game. It is part of the `com.upmatches.app.features.game.responses` package and is used to transfer participant-related data, including user information, participation status, skill level, and contact methods. This class is designed to be immutable and provides a structured way to represent participant data in a game context.
+The `GameParticipantResponse` class is a Java record that serves as a Data Transfer Object (DTO) for representing a game participant's information in API responses. It encapsulates participant details such as their unique identifier, associated game and user information, participation status, skill level, timestamps, and optional contact methods.
+
+## Purpose
+
+This record is designed to provide a structured and immutable representation of a game participant for client-facing responses. It includes a factory method `fromGameParticipant()` that converts a `GameParticipant` entity into this response DTO, with the ability to optionally include or exclude contact methods based on the API context.
+
+## Record Components
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `UUID` | Unique identifier for the participant record |
+| `gameId` | `UUID` | Identifier of the associated game activity |
+| `userId` | `UUID` | Identifier of the participating user |
+| `userName` | `String` | Display name of the participating user |
+| `status` | `ParticipantStatus` | Current participation status (e.g., joined, left, invited) |
+| `skillLevel` | `SkillLevelResponse` | Skill level information for the specific game activity (nullable) |
+| `joinedAt` | `Instant` | Timestamp when the participant joined the game |
+| `leftAt` | `Instant` | Timestamp when the participant left the game (nullable) |
+| `contactMethods` | `List<ContactMethod>` | List of available contact methods for the user |
 
 ## Public Methods
 
-The `GameParticipantResponse` class provides the following public static methods:
+### `fromGameParticipant(GameParticipant participant, UUID gameActivityId, boolean includeContactMethods)`
 
-### fromGameParticipant
+Factory method that creates a `GameParticipantResponse` from a `GameParticipant` entity.
 
-Converts a `GameParticipant` entity into a `GameParticipantResponse` object.
+**Parameters:**
 
-| Parameter              | Type                | Description                                                                 |
-|------------------------|---------------------|-----------------------------------------------------------------------------|
-| `participant`          | `GameParticipant`   | The game participant entity to convert.                                     |
-| `gameActivityId`       | `UUID`              | The unique identifier for the game activity.                                |
-| `includeContactMethods`| `boolean`           | Flag indicating whether to include contact methods in the response.         |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `participant` | `GameParticipant` | The source entity to convert |
+| `gameActivityId` | `UUID` | The game activity ID used to resolve the user's skill level for that activity. Can be `null` |
+| `includeContactMethods` | `boolean` | If `true`, includes the user's contact methods in the response; otherwise returns an empty list |
 
-**Returns:** `GameParticipantResponse` - A new instance of `GameParticipantResponse` populated with data from the `GameParticipant` entity.
+**Returns:** `GameParticipantResponse` - A new response instance populated with data from the participant entity.
 
-## Private Methods
+## Private Helper Methods
 
-The class also contains private static methods used internally to assist in constructing the `GameParticipantResponse`:
+### `resolveSkillLevel(GameParticipant participant, UUID gameActivityId)`
 
-### resolveSkillLevel
+Resolves the skill level of a participant for a specific game activity.
 
-Determines the skill level of a participant for a specific game activity.
+**Parameters:**
 
-| Parameter        | Type              | Description                                                                 |
-|------------------|-------------------|-----------------------------------------------------------------------------|
-| `participant`    | `GameParticipant` | The game participant whose skill level is to be resolved.                   |
-| `gameActivityId` | `UUID`            | The unique identifier for the game activity.                                |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `participant` | `GameParticipant` | The participant whose skill levels to examine |
+| `gameActivityId` | `UUID` | The target game activity ID to match against |
 
-**Returns:** `SkillLevelResponse` - The resolved skill level response, or `null` if no matching skill level is found.
+**Returns:** `SkillLevelResponse` - The resolved skill level for the matching activity, or `null` if no match is found or `gameActivityId` is `null`.
 
-### contactMethodsFor
+### `contactMethodsFor(User user)`
 
-Generates a list of contact methods for a user.
+Builds a list of available contact methods for a given user.
 
-| Parameter | Type  | Description                          |
-|-----------|-------|--------------------------------------|
-| `user`    | `User`| The user for whom contact methods are generated. |
+**Parameters:**
 
-**Returns:** `List<ContactMethod>` - A list of contact methods for the user, limited to a predefined capacity.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `user` | `User` | The user whose contact methods to extract |
+
+**Returns:** `List<ContactMethod>` - A list containing up to 3 contact methods (WhatsApp, Telegram, Messenger) that are non-null and non-blank.
+
+## Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `CONTACT_METHOD_CAPACITY` | `3` | Initial capacity for the contact methods list |
+| `CONTACT_METHOD_WHATSAPP` | `"whatsapp"` | Identifier for WhatsApp contact method |
+| `CONTACT_METHOD_TELEGRAM` | `"telegram"` | Identifier for Telegram contact method |
+| `CONTACT_METHOD_MESSENGER` | `"messenger"` | Identifier for Facebook Messenger contact method |
+
+## Usage Example
+
+```java
+// Create a response with contact methods included
+GameParticipantResponse response = GameParticipantResponse.fromGameParticipant(
+    participant,
+    gameActivityId,
+    true
+);
+
+// Access response fields
+UUID participantId = response.id();
+String userName = response.userName();
+List<ContactMethod> contacts = response.contactMethods();
+```

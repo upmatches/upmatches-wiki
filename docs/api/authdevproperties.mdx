@@ -1,35 +1,72 @@
 ---
 id: auth-dev-properties
-title: AuthDevProperties Class
+title: AuthDevProperties
 sidebar_label: AuthDevProperties
 ---
 
-import { ConfigurationProperties } from 'org.springframework.boot.context.properties';
+# AuthDevProperties
 
-## Overview
-
-The `AuthDevProperties` class is a configuration properties holder used in a Spring Boot application. It is designed to manage development-specific authentication settings. The class is annotated with `@ConfigurationProperties`, which binds the properties defined in the application's configuration files (e.g., `application.yml` or `application.properties`) to this class. The properties are prefixed with `app.auth.dev`.
+The `AuthDevProperties` class is a Spring Boot configuration properties record that maps to the `app.auth.dev` prefix in your application's configuration files (e.g., `application.yml` or `application.properties`). It centralizes development-specific authentication settings, providing a type-safe way to configure features like token page visibility and mint endpoint availability.
 
 ## Purpose
 
-The primary purpose of the `AuthDevProperties` class is to encapsulate configuration settings related to authentication in a development environment. This includes enabling or disabling certain authentication features and specifying allowed hosts for token pages.
+This record is designed to manage development-only authentication flags and host allowlists. It ensures that certain features (like a token page or mint endpoint) are only enabled when explicitly set to `true`, and that host lists are never null (defaulting to an empty list). This helps prevent accidental exposure of development features in production environments.
 
-## Public Methods
+## Configuration Prefix
 
-The `AuthDevProperties` class is a Java Record, which means it primarily serves as a data carrier. It does not have traditional methods with logic but provides implicit accessor methods for its fields. Below is a table documenting these accessors.
+- **Prefix:** `app.auth.dev`
+- **Example YAML:**
+  ```yaml
+  app:
+    auth:
+      dev:
+        token-page-enabled: true
+        mint-endpoint-enabled: false
+        token-page-allowed-hosts:
+          - localhost
+          - 127.0.0.1
+  ```
 
-| Method Name                | Parameters | Return Type | Description                                                                 |
-|----------------------------|------------|-------------|-----------------------------------------------------------------------------|
-| `tokenPageEnabled()`       | None       | `Boolean`   | Returns whether the token page is enabled.                                  |
-| `mintEndpointEnabled()`    | None       | `Boolean`   | Returns whether the mint endpoint is enabled.                               |
-| `tokenPageAllowedHosts()`  | None       | `List<String>` | Returns a list of allowed hosts for the token page.                          |
+## Constructor Behavior
 
-## Constructor
+The compact constructor performs two key validations:
 
-The constructor of the `AuthDevProperties` class ensures that:
+1. **Boolean coercion:** Both `tokenPageEnabled` and `mintEndpointEnabled` are normalized using `Boolean.TRUE.equals()`, ensuring that only an explicit `true` value results in `true`; any other value (including `null`) becomes `false`.
+2. **Null-safe list:** If `tokenPageAllowedHosts` is `null`, it defaults to an empty, immutable list. Otherwise, it creates an immutable copy via `List.copyOf()`.
 
-- `tokenPageEnabled` is set to `false` if it is `null`.
-- `mintEndpointEnabled` is set to `false` if it is `null`.
-- `tokenPageAllowedHosts` is initialized as an empty list if it is `null`, otherwise, it is a copy of the provided list to ensure immutability.
+## Properties
 
-This design helps maintain default values and prevents `NullPointerException` during runtime.
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `tokenPageEnabled` | `Boolean` | `false` | Enables or disables the token page in development mode. Only `true` enables it. |
+| `mintEndpointEnabled` | `Boolean` | `false` | Enables or disables the mint endpoint in development mode. Only `true` enables it. |
+| `tokenPageAllowedHosts` | `List<String>` | `[]` | A list of allowed hosts for the token page. Never `null`; defaults to an empty list. |
+
+## Usage Example
+
+```java
+// Inject the properties into a service
+@Service
+public class AuthDevService {
+    private final AuthDevProperties authDevProperties;
+
+    public AuthDevService(AuthDevProperties authDevProperties) {
+        this.authDevProperties = authDevProperties;
+    }
+
+    public boolean isTokenPageAccessible(String host) {
+        return authDevProperties.tokenPageEnabled() &&
+               authDevProperties.tokenPageAllowedHosts().contains(host);
+    }
+}
+```
+
+## Dependencies
+
+- **Spring Boot:** Requires `spring-boot-starter` for `@ConfigurationProperties` support.
+- **Java:** Requires Java 16+ for record support.
+
+## Notes
+
+- This class is immutable after construction due to the use of a Java record and `List.copyOf()`.
+- The `@ConfigurationProperties` annotation requires Spring Boot's configuration processor for IDE support (add `spring-boot-configuration-processor` as a dependency).

@@ -1,60 +1,52 @@
 ---
 id: postal-code
-title: PostalCode Class
+title: PostalCode
 sidebar_label: PostalCode
 ---
 
-## Overview
+# PostalCode
 
-The `PostalCode` class is a value object that represents a postal code in a specific format. It ensures that the postal code is a valid 6-digit number, providing a reliable way to handle postal codes within the application. This class is immutable and uses Java's `record` feature to encapsulate the postal code value.
+The `PostalCode` class is a Java record that represents a validated postal code value object. It ensures that any postal code stored within the system is a non-empty, 6-digit numeric string. This class is part of the `com.upmatches.app.features.venue.valueobjects` package and is designed to be immutable and self-validating.
 
-## Class Definition
+## Purpose
 
-The `PostalCode` class is defined as a Java record, which provides a concise way to create immutable data objects. It includes validation logic to ensure the postal code meets the required format.
+The primary purpose of the `PostalCode` record is to encapsulate the concept of a postal code in a type-safe manner. By using a dedicated value object, the application avoids primitive obsession and ensures that all postal codes adhere to a consistent format (exactly 6 digits). The validation logic is centralized within the record, preventing invalid data from propagating through the system.
 
 ## Public Methods
 
-The `PostalCode` class provides the following public methods:
+| Method | Description | Parameters | Return Type |
+| :--- | :--- | :--- | :--- |
+| `PostalCode(String value)` | Compact constructor that validates and creates a new `PostalCode` instance. | `value` - The postal code string to validate. | `PostalCode` |
+| `create(String postalCode)` | Static factory method to create a `PostalCode` instance. | `postalCode` - The postal code string to validate. | `PostalCode` |
+| `toString()` | Returns the string representation of the postal code. | None | `String` |
 
-### `create`
+## Validation Rules
 
-Creates a new instance of the `PostalCode` class.
+The `PostalCode` record enforces the following validation rules during construction:
 
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `public static PostalCode create(String postalCode)` | Creates a new `PostalCode` instance with the specified postal code string. |
+1.  **Non-empty**: The provided `value` must not be `null` or blank.
+2.  **Format**: The `value` must match the regular expression `^\d{6}$`, meaning it must consist of exactly 6 digits.
 
-#### Parameters
+If either validation rule is violated, an `IllegalArgumentException` is thrown with a descriptive message.
 
-| Parameter    | Type   | Description                        |
-| ------------ | ------ | ---------------------------------- |
-| `postalCode` | String | The postal code to be validated and stored. |
+## Usage Example
 
-#### Return Type
+```java
+// Valid postal code
+PostalCode code = PostalCode.create("123456");
+System.out.println(code.toString()); // Output: 123456
 
-| Type        | Description                           |
-| ----------- | ------------------------------------- |
-| `PostalCode` | Returns a new instance of the `PostalCode` class. |
+// Invalid postal code (empty)
+try {
+    PostalCode invalidCode = PostalCode.create("");
+} catch (IllegalArgumentException e) {
+    System.out.println(e.getMessage()); // Output: Postal code cannot be empty.
+}
 
-### `toString`
-
-Returns the string representation of the postal code.
-
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `public String toString()` | Returns the postal code as a string. |
-
-#### Return Type
-
-| Type   | Description                      |
-| ------ | -------------------------------- |
-| String | The string representation of the postal code. |
-
-## Validation
-
-The `PostalCode` class includes validation logic to ensure that the postal code:
-
-- Is not null or blank.
-- Is a 6-digit number.
-
-If the postal code does not meet these criteria, an `IllegalArgumentException` is thrown. This ensures that only valid postal codes are accepted and stored within the application.
+// Invalid postal code (non-digit characters)
+try {
+    PostalCode invalidCode = PostalCode.create("12A456");
+} catch (IllegalArgumentException e) {
+    System.out.println(e.getMessage()); // Output: Postal code must be a 6-digit number.
+}
+```

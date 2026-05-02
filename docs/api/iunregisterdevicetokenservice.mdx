@@ -4,28 +4,40 @@ title: IUnregisterDeviceTokenService Interface
 sidebar_label: IUnregisterDeviceTokenService
 ---
 
-## Overview
+# IUnregisterDeviceTokenService Interface
 
-The `IUnregisterDeviceTokenService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that handle the unregistration of device tokens. This is typically used in scenarios where a device should no longer receive notifications, such as when a user logs out or disables notifications.
+## Purpose
 
-## Public Methods
+The `IUnregisterDeviceTokenService` interface defines the contract for unregistering a device token from push notification services. It follows a sealed interface pattern, restricting implementation to the `UnregisterDeviceTokenService` class. This design ensures that only the intended concrete implementation can fulfill the unregistration contract, providing compile-time safety and clear architectural boundaries.
 
-The interface declares the following public method:
+## Interface Definition
 
-| Method Signature | Description |
-|------------------|-------------|
-| `void execute(String deviceToken)` | Unregisters the specified device token, effectively stopping notifications from being sent to the associated device. |
+```java
+public sealed interface IUnregisterDeviceTokenService permits UnregisterDeviceTokenService {
+    void execute(String deviceToken);
+}
+```
 
-### Method Details
+## Methods
 
-#### `execute`
+| Method | Description | Parameters | Returns |
+|--------|-------------|------------|---------|
+| `execute(String deviceToken)` | Unregisters the specified device token from the notification service, preventing further push notifications from being sent to that device. | `deviceToken` - The unique token identifying the device to be unregistered | `void` |
 
-- **Parameters:**
+## Usage Notes
 
-  | Name        | Type     | Description                           |
-  |-------------|----------|---------------------------------------|
-  | `deviceToken` | `String` | The device token to be unregistered. |
+- The interface is **sealed**, meaning only the `UnregisterDeviceTokenService` class can implement it. This enforces a single, controlled implementation path.
+- The `execute` method performs a void operation; any errors during unregistration should be handled by the implementing class (e.g., throwing runtime exceptions or logging).
+- This interface is part of the `com.upmatches.app.features.notification.services` package, indicating its role in the notification feature layer of the application.
 
-- **Return Type:** `void`
+## Example Implementation
 
-  This method does not return any value. It performs the action of unregistering the device token.
+```java
+public final class UnregisterDeviceTokenService implements IUnregisterDeviceTokenService {
+    @Override
+    public void execute(String deviceToken) {
+        // Implementation logic to unregister the device token
+        // e.g., remove from database, call external API, etc.
+    }
+}
+```

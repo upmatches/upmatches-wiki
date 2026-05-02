@@ -1,54 +1,124 @@
 ---
 id: refresh-token-store
-title: RefreshTokenStore Class
+title: RefreshTokenStore
 sidebar_label: RefreshTokenStore
 ---
 
+# RefreshTokenStore
+
+The `RefreshTokenStore` class is a Spring service that manages refresh tokens for user authentication. It provides secure storage, validation, rotation, and revocation of refresh tokens using Redis as the backing store. The class implements the `IRefreshTokenStore` interface and is conditionally created only when a `SigningKeyProvider` bean is available.
+
 ## Purpose
 
-The `RefreshTokenStore` class is a service responsible for managing refresh tokens in a Redis data store. It provides functionality to store, validate, rotate, and revoke refresh tokens associated with user sessions. This class is part of an authentication feature and relies on Redis for token storage and retrieval.
+This service handles the complete lifecycle of refresh tokens:
+- **Storage**: Securely stores refresh tokens with SHA-256 hashing
+- **Validation**: Validates tokens and performs automatic rotation (token rotation)
+- **Revocation**: Supports revoking all tokens for a specific user
+- **Expiration**: Automatically manages token expiration based on configured duration
+
+## Key Features
+
+- **Token Hashing**: Tokens are stored as SHA-256 hashes for security
+- **Redis Backend**: Uses Redis for fast, scalable token storage
+- **Automatic Rotation**: Validates and replaces tokens in a single atomic operation
+- **User-based Management**: Tracks all tokens per user for easy revocation
+- **Thread-safe**: Uses Redis atomic operations for concurrent access
+
+## Dependencies
+
+- `StringRedisTemplate`: Redis operations
+- `ObjectMapper`: JSON serialization/deserialization
+- `IJwtTokenService`: Token generation
+- `JwtProperties`: Configuration for token expiry
 
 ## Public Methods
 
-### `store`
+### store
 
-Stores a refresh token for a specific user.
+Stores a new refresh token for a user.
 
-| Parameter   | Type   | Description                  |
-|-------------|--------|------------------------------|
-| `userId`    | `UUID` | The unique identifier of the user. |
-| `refreshToken` | `String` | The refresh token to be stored. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | `UUID` | The user's unique identifier |
+| `refreshToken` | `String` | The refresh token to store |
 
-| Return Type |
-|-------------|
-| `void`      |
+**Returns**: `void`
 
-### `validateAndRotate`
+**Throws**: `IllegalStateException` if serialization fails
 
-Validates the provided refresh token and rotates it by generating a new one.
+### validateAndRotate
 
-| Parameter     | Type     | Description                  |
-|---------------|----------|------------------------------|
-| `refreshToken` | `String` | The refresh token to be validated and rotated. |
+Validates a refresh token and automatically rotates it (creates a new one while invalidating the old).
 
-| Return Type                  |
-|------------------------------|
-| `ValidationResult` or `null` |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `refreshToken` | `String` | The refresh token to validate |
 
-### `revokeAllForUser`
+**Returns**: `ValidationResult` containing the user ID and new refresh token, or `null` if the token is invalid or expired
 
-Revokes all refresh tokens associated with a specific user.
+### revokeAllForUser
 
-| Parameter | Type   | Description                  |
-|-----------|--------|------------------------------|
-| `userId`  | `UUID` | The unique identifier of the user. |
+Revokes all refresh tokens for a specific user.
 
-| Return Type |
-|-------------|
-| `void`      |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | `UUID` | The user whose tokens should be revoked |
 
-## Additional Information
+**Returns**: `void`
 
-- **Hashing**: The class uses SHA-256 to hash refresh tokens before storing them in Redis.
-- **Serialization**: It uses Jackson for serializing and deserializing token entries.
-- **Redis Operations**: The class performs various Redis operations such as storing values, setting expirations, and managing sets of token hashes.
+## Inner Records
+
+### ValidationResult
+
+Contains the result of token validation and rotation.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | `UUID` | The user's unique identifier |
+| `newRefreshToken` | `String` | The newly generated refresh token |
+
+### RefreshTokenEntry
+
+Internal record for storing token metadata in Redis.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | `UUID` | The user's unique identifier |
+| `createdAt` | `Instant` | Timestamp when the token was created |
+
+## Implementation Details
+
+### Token Hashing
+
+The `hashToken` method uses SHA-256 to create a secure hash of the refresh token before storage. This ensures that even if the Redis store is compromised, the actual tokens remain protected.
+
+### Redis Key Structure
+
+- **Token key**: `refresh_token:{hash}` - Stores the token metadata
+- **User key**: `refresh_tokens:user:{userId}` - Set of all token hashes for a user
+
+### Token Rotation
+
+The `validateAndRotate` method performs an atomic get-and-delete operation on the token key, ensuring that a token can only be used once. If successful, it generates a new token and stores it for the user.
+
+## Usage Example
+
+```java
+@Autowired
+private RefreshTokenStore refreshTokenStore;
+
+// Store a new token
+UUID userId = UUID.randomUUID();
+String token = jwtTokenService.generateRefreshToken();
+refreshTokenStore.store(userId, token);
+
+// Validate and rotate
+RefreshTokenStore.ValidationResult result = refreshTokenStore.validateAndRotate(token);
+if (result != null) {
+    // Token is valid, use the new token
+    String newToken = result.newRefreshToken();
+}
+
+// Revoke all tokens for a user
+refreshTokenStore.revokeAllForUser(userId);
+```

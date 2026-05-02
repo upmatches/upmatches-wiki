@@ -1,29 +1,60 @@
 ---
 id: skill-level
-title: SkillLevel Class
+title: SkillLevel Entity
 sidebar_label: SkillLevel
 ---
 
-## Purpose of the SkillLevel Class
+# SkillLevel
 
-The `SkillLevel` class is an entity that represents the skill level associated with a specific activity within an application. It is part of the `com.upmatches.app.features.skilllevels.entities` package and is mapped to the `skill_levels` table in a database using JPA annotations. This class is designed to store and manage information about different skill levels, including their associated activity, name, and sort order.
+The `SkillLevel` entity represents a proficiency level associated with a specific activity within the UpMatches application. It is used to define and categorize different skill tiers (e.g., Beginner, Intermediate, Advanced) for activities, enabling users to filter or match based on skill requirements.
+
+## Entity Overview
+
+This JPA entity is mapped to the `skill_levels` database table. It stores the name of the skill level and its display order, linked to a parent `Activity`. The class uses Lombok's `@Getter` annotation to automatically generate getter methods for all fields.
+
+### Database Table: `skill_levels`
+
+| Column       | Type         | Constraints          | Description                                      |
+|--------------|--------------|----------------------|--------------------------------------------------|
+| `id`         | `BIGINT`     | Primary Key, Auto    | Unique identifier for the skill level.           |
+| `activity_id`| `BIGINT`     | Foreign Key, Not Null| References the parent `Activity`.                |
+| `name`       | `VARCHAR(100)`| Not Null             | The name of the skill level (e.g., "Beginner").  |
+| `sort_order` | `INTEGER`    | Not Null             | Determines the display order of skill levels.    |
 
 ## Public Methods
 
-The `SkillLevel` class provides the following public method:
+### `create(Activity activity, String name, Integer sortOrder)`
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public static SkillLevel create(Activity activity, String name, Integer sortOrder)` | This static method is used to create a new instance of the `SkillLevel` class. It initializes the `activity`, `name`, and `sortOrder` fields with the provided parameters and returns the newly created `SkillLevel` object. |
+Creates a new `SkillLevel` instance with the specified parameters.
 
-### Parameters for `create` Method
+| Parameter   | Type       | Description                                      |
+|-------------|------------|--------------------------------------------------|
+| `activity`  | `Activity` | The parent activity this skill level belongs to. |
+| `name`      | `String`   | The name of the skill level (max 100 characters).|
+| `sortOrder` | `Integer`  | The display order for this skill level.          |
 
-| Parameter | Type     | Description |
-|-----------|----------|-------------|
-| `activity` | `Activity` | The activity associated with this skill level. This parameter is mandatory and cannot be null. |
-| `name`     | `String`   | The name of the skill level. It must be a non-null string with a maximum length of 100 characters. |
-| `sortOrder`| `Integer`  | The sort order of the skill level, which determines its position relative to other skill levels. This parameter is mandatory and cannot be null. |
+**Returns:** `SkillLevel` — A new, fully initialized `SkillLevel` entity.
 
-### Return Type
+**Example Usage:**
+```java
+Activity activity = activityRepository.findById(1L).orElseThrow();
+SkillLevel beginner = SkillLevel.create(activity, "Beginner", 1);
+skillLevelRepository.save(beginner);
+```
 
-The `create` method returns an instance of the `SkillLevel` class initialized with the specified parameters.
+## Fields (Getters Only)
+
+Since the class uses Lombok's `@Getter` annotation, all fields have public getter methods but no public setters. The only way to set field values is through the static factory method `create()`.
+
+| Field       | Type       | Description                                      |
+|-------------|------------|--------------------------------------------------|
+| `id`        | `Long`     | Unique identifier (auto-generated).              |
+| `activity`  | `Activity` | The parent activity entity.                      |
+| `name`      | `String`   | The skill level name.                            |
+| `sortOrder` | `Integer`  | Numeric order for sorting/display.               |
+
+## Notes
+
+- The class uses a **protected no-arg constructor** required by JPA. External instantiation should use the static `create()` method.
+- The `sortOrder` field allows flexible ordering of skill levels (e.g., 1 = Beginner, 2 = Intermediate, 3 = Advanced).
+- The relationship to `Activity` is **many-to-one**, meaning multiple skill levels can belong to the same activity.

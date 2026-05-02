@@ -1,32 +1,84 @@
 ---
 id: create-notification-service
 title: CreateNotificationService
-sidebar_label: Create Notification Service
+sidebar_label: CreateNotificationService
 ---
+
+# CreateNotificationService
+
+The `CreateNotificationService` class is a Spring service responsible for creating and persisting new notifications in the UpMatches application. It implements the `ICreateNotificationService` interface and provides a transactional method to create a notification for a specific user, associating it with relevant resource metadata.
 
 ## Purpose
 
-The `CreateNotificationService` class is a part of the notification feature in the application. It is responsible for creating notifications for users. This service interacts with the `NotificationRepository` to persist notifications and with the `UserRepository` to validate the existence of the recipient user. It ensures that notifications are created and saved in a transactional context, providing a robust mechanism for handling notification creation.
+This service encapsulates the business logic for notification creation, ensuring that:
+- The recipient user exists in the system before creating the notification.
+- A new `Notification` entity is properly constructed with all required fields.
+- The notification is saved to the database within a transactional context.
+- Errors during the save operation are handled gracefully using the `ServiceOperationExecutor`.
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `NotificationRepository` | Repository | Handles persistence of `Notification` entities |
+| `UserRepository` | Repository | Retrieves `User` entities by ID |
+| `ServiceOperationExecutor` | Utility | Executes operations with standardized error handling |
+
+## Constructor
+
+### `CreateNotificationService(NotificationRepository, UserRepository)`
+
+Initializes the service with required repositories.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notificationRepository` | `NotificationRepository` | Repository for notification persistence |
+| `userRepository` | `UserRepository` | Repository for user lookup |
 
 ## Public Methods
 
-### `execute`
+### `execute(UUID, NotificationType, String, String, String, UUID)`
 
-This method is responsible for creating and saving a notification for a specified user. It ensures that the recipient user exists and then creates a notification with the provided details.
+Creates and persists a new notification for the specified recipient.
 
-| Parameter      | Type                      | Description                                                                 |
-|----------------|---------------------------|-----------------------------------------------------------------------------|
-| `recipientId`  | `UUID`                    | The unique identifier of the user who will receive the notification.        |
-| `type`         | `NotificationType`        | The type of the notification to be created.                                 |
-| `title`        | `String`                  | The title of the notification.                                              |
-| `message`      | `String`                  | The message content of the notification.                                    |
-| `resourceType` | `String`                  | The type of resource associated with the notification.                      |
-| `resourceId`   | `UUID`                    | The unique identifier of the resource associated with the notification.     |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The unique identifier of the notification recipient |
+| `type` | `NotificationType` | The type/category of the notification |
+| `title` | `String` | The title of the notification |
+| `message` | `String` | The body content of the notification |
+| `resourceType` | `String` | The type of resource associated with the notification (e.g., "match", "message") |
+| `resourceId` | `UUID` | The unique identifier of the associated resource |
 
-#### Return Type
+**Returns:** `Notification` - The newly created and persisted notification entity.
 
-- **`Notification`**: Returns the created `Notification` object after it has been successfully saved in the repository.
+**Throws:** `ResourceNotFoundException` - If the recipient user is not found in the database.
 
-#### Exceptions
+**Transactional Behavior:** This method is annotated with `@Transactional`, ensuring that the entire operation (user lookup, notification creation, and save) is executed within a single database transaction. If any step fails, the transaction is rolled back.
 
-- **`ResourceNotFoundException`**: Thrown if the recipient user is not found in the `UserRepository`.
+## Error Handling
+
+The service handles two distinct error scenarios:
+
+1. **User Not Found:** If the `recipientId` does not correspond to an existing user, a `ResourceNotFoundException` is thrown with a descriptive message: `"User '<recipientId>' not found."`.
+
+2. **Save Operation Failure:** If the notification save operation fails, the `ServiceOperationExecutor` wraps the exception in a `ResourceNotFoundException` for consistent error propagation.
+
+## Usage Example
+
+```java
+@Autowired
+private CreateNotificationService createNotificationService;
+
+public void sendMatchNotification(UUID userId, UUID matchId) {
+    Notification notification = createNotificationService.execute(
+        userId,
+        NotificationType.MATCH,
+        "New Match!",
+        "You have a new match. Check it out!",
+        "match",
+        matchId
+    );
+    // notification is now persisted and can be used
+}
+```

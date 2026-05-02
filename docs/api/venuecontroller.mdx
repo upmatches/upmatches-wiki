@@ -1,36 +1,121 @@
 ---
 id: venue-controller
-title: VenueController
-sidebar_label: VenueController
+title: Venue Controller
+sidebar_label: Venue Controller
 ---
 
-## Purpose
+# Venue Controller
 
-The `VenueController` class is a Spring Boot REST controller responsible for handling HTTP requests related to venue operations. It provides endpoints for listing venues and importing venue data. The controller leverages services to perform these operations and ensures that the requests are properly validated and authorized.
+The `VenueController` class is a REST controller that exposes endpoints for managing venues in the UpMatches application. It provides functionality for listing venues with pagination and importing venues via CSV file upload. The controller is secured with role-based access control for administrative operations.
 
-## Public Methods
+## Endpoints
 
-### listVenues
+### List Venues
 
-Handles GET requests to retrieve a paginated list of venues.
+Retrieves a paginated list of venues sorted by name.
 
-| Parameter | Type                | Description                                     |
-|-----------|---------------------|-------------------------------------------------|
-| page      | Integer (optional)  | The page number to retrieve (default is 0).     |
-| size      | Integer (optional)  | The number of venues per page (default is 20).  |
-| request   | HttpServletRequest  | The HTTP request object.                        |
+**HTTP Method:** `GET`  
+**Endpoint:** `/api/v1/venues`  
+**Authentication:** None required
 
-**Returns:** `ResponseEntity<ApiResponse<PagedResponse<VenueResponse>>>`  
-A response entity containing a paginated response of venues and a success message.
+#### Query Parameters
 
-### createVenueImport
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | Integer | `0` | Page number (zero-indexed) |
+| `size` | Integer | `20` | Number of items per page |
 
-Handles POST requests to import venue data from a file. This operation is restricted to users with the 'ADMIN' role.
+#### Response
 
-| Parameter | Type               | Description                                      |
-|-----------|--------------------|--------------------------------------------------|
-| file      | MultipartFile      | The file containing venue data to be imported.   |
-| request   | HttpServletRequest | The HTTP request object.                         |
+Returns a paginated response containing venue data.
 
-**Returns:** `ResponseEntity<ApiResponse<VenueImportResponse>>`  
-A response entity containing the result of the import operation and a success message.
+**Status Code:** `200 OK`
+
+**Response Body:**
+```json
+{
+  "success": true,
+  "message": "Venues retrieved successfully.",
+  "data": {
+    "content": [
+      {
+        "id": "string",
+        "name": "string",
+        // ... other venue fields
+      }
+    ],
+    "page": 0,
+    "size": 20,
+    "totalElements": 100,
+    "totalPages": 5
+  },
+  "path": "/api/v1/venues"
+}
+```
+
+### Import Venues
+
+Uploads a CSV file to import venues into the system.
+
+**HTTP Method:** `POST`  
+**Endpoint:** `/api/v1/venues/imports`  
+**Authentication:** Required (ADMIN role only)  
+**Content-Type:** `multipart/form-data`
+
+#### Request Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `file` | MultipartFile | Yes | CSV file containing venue data |
+
+#### Response
+
+Returns the result of the import operation.
+
+**Status Code:** `201 Created`
+
+**Response Body:**
+```json
+{
+  "success": true,
+  "message": "Venues imported successfully.",
+  "data": {
+    "importedCount": 50,
+    "failedCount": 2,
+    "errors": [
+      {
+        "row": 5,
+        "message": "Invalid venue name"
+      }
+    ]
+  },
+  "path": "/api/v1/venues/imports"
+}
+```
+
+## Error Handling
+
+The controller uses standard HTTP status codes for error responses:
+
+| Status Code | Description |
+|-------------|-------------|
+| `400 Bad Request` | Invalid pagination parameters or file format |
+| `401 Unauthorized` | Missing or invalid authentication |
+| `403 Forbidden` | User does not have ADMIN role |
+| `500 Internal Server Error` | Unexpected server error |
+
+## Security
+
+- The `createVenueImport` endpoint is protected with `@PreAuthorize("hasRole('ADMIN')")` annotation, restricting access to users with the ADMIN role.
+- The `listVenues` endpoint is publicly accessible.
+
+## Dependencies
+
+The controller depends on two service interfaces:
+
+- `IListVenuesService` - Handles venue listing with pagination
+- `IImportVenuesService` - Handles venue import from CSV files
+
+## Validation
+
+Pagination parameters are validated using `ValidationHelper.validatePaginationParameters()` before processing the request. This ensures that page and size values are within acceptable ranges.

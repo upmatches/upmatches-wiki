@@ -1,32 +1,90 @@
 ---
 id: cache-configuration
-title: CacheConfiguration Class
-sidebar_label: CacheConfiguration
+title: Cache Configuration
+sidebar_label: Cache Configuration
 ---
 
-## Purpose
+# Cache Configuration
 
-The `CacheConfiguration` class is a Spring configuration class that sets up a Redis-based caching mechanism for the application. It is annotated with `@Configuration` and `@EnableCaching`, indicating that it provides configuration for the caching system. The class is conditionally loaded based on the presence of a specific property (`spring.cache.type=redis`), thanks to the `@ConditionalOnProperty` annotation.
+The `CacheConfiguration` class provides a centralized configuration for Redis-based caching in the application. It enables Spring's caching abstraction and configures a `RedisCacheManager` bean with sensible defaults, including a 30-minute time-to-live (TTL) for cached entries and key serialization using `StringRedisSerializer`.
 
-This class configures a `RedisCacheManager` bean, which manages the cache using Redis as the underlying store. The configuration specifies a default time-to-live (TTL) for cache entries and customizes the serialization of cache keys.
+This configuration is conditionally activated only when the property `spring.cache.type` is set to `redis`, allowing the application to fall back to other caching strategies (e.g., in-memory) when Redis is not available.
+
+## Annotations
+
+| Annotation | Description |
+|---|---|
+| `@Configuration` | Marks this class as a Spring configuration source. |
+| `@EnableCaching` | Enables Spring's annotation-driven cache management. |
+| `@ConditionalOnProperty` | Activates this configuration only when `spring.cache.type=redis` is set. |
 
 ## Public Methods
 
-| Method Signature | Description |
-|------------------|-------------|
-| `RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory)` | Configures and returns a `RedisCacheManager` bean. This method sets up the default cache configuration, including the TTL and key serialization strategy. |
+### `cacheManager`
 
-### Method Details
+Creates and configures a `RedisCacheManager` bean that manages Redis-backed caches.
 
-#### `cacheManager`
+```java
+@Bean
+public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory)
+```
 
-- **Parameters:**
+**Parameters:**
 
-  | Name               | Type                      | Description |
-  |--------------------|---------------------------|-------------|
-  | `connectionFactory`| `RedisConnectionFactory`  | The factory to establish connections to the Redis server. |
+| Parameter | Type | Description |
+|---|---|---|
+| `connectionFactory` | `RedisConnectionFactory` | The Redis connection factory provided by Spring Boot auto-configuration. |
 
-- **Return Type:** `RedisCacheManager`
+**Returns:**
 
-- **Description:**  
-  This method creates a `RedisCacheManager` using the provided `RedisConnectionFactory`. It sets a default time-to-live (TTL) of 30 minutes for cache entries, uses `StringRedisSerializer` for serializing cache keys, and disables caching of `null` values. The configured `RedisCacheManager` is then returned, ready to manage the application's cache with the specified settings.
+| Return Type | Description |
+|---|---|
+| `RedisCacheManager` | A fully configured Redis cache manager instance. |
+
+**Configuration Details:**
+
+- **Default TTL:** 30 minutes (`Duration.ofMinutes(30)`)
+- **Key Serialization:** Uses `StringRedisSerializer` for cache keys
+- **Null Values:** Caching null values is disabled (`disableCachingNullValues()`)
+
+## Usage Example
+
+To use this caching configuration, ensure your `application.properties` or `application.yml` includes:
+
+```properties
+spring.cache.type=redis
+```
+
+Then, enable caching on any service method using Spring's caching annotations:
+
+```java
+@Service
+public class UserService {
+    
+    @Cacheable(value = "users", key = "#userId")
+    public User getUserById(Long userId) {
+        // Expensive database lookup
+        return userRepository.findById(userId).orElse(null);
+    }
+}
+```
+
+## Dependencies
+
+This configuration requires the following Spring Boot starters:
+
+- `spring-boot-starter-cache`
+- `spring-boot-starter-data-redis`
+
+Add them to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```

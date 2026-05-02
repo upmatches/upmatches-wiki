@@ -1,40 +1,90 @@
 ---
 id: api-response
-title: ApiResponse Class
+title: ApiResponse
 sidebar_label: ApiResponse
 ---
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+# ApiResponse
 
-import java.time.Instant;
+The `ApiResponse` class is a generic Java record that provides a standardized structure for all API responses in the UpMatches application. It ensures consistency across the API layer by encapsulating success/failure status, payload data, messages, timestamps, and request paths.
 
-## Purpose of the ApiResponse Class
+## Purpose
 
-The `ApiResponse` class is a generic record designed to standardize the structure of API responses within the application. It provides a consistent format for both successful and error responses, including metadata such as a success flag, a message, a timestamp, and the request path. The class leverages Java's record feature to simplify data encapsulation and immutability.
+- **Standardization**: All API endpoints return responses in a uniform format.
+- **Serialization Control**: Uses `@JsonInclude(JsonInclude.Include.NON_NULL)` to exclude null fields from JSON output, reducing payload size.
+- **Immutability**: As a Java record, all fields are final and immutable.
+- **Factory Methods**: Provides static factory methods for creating success and error responses with automatic timestamp generation.
+
+## Record Components
+
+| Component | Type | Description |
+|-----------|------|-------------|
+| `success` | `Boolean` | Indicates whether the API call was successful (`true`) or failed (`false`) |
+| `data` | `T` | The response payload (generic type). `null` for error responses |
+| `message` | `String` | Human-readable message describing the result or error |
+| `timestamp` | `Instant` | UTC timestamp when the response was created |
+| `path` | `String` | The request path that generated this response |
 
 ## Public Methods
 
-The `ApiResponse` class includes two static factory methods to create instances of the response for success and error scenarios.
+### `success(T data, String message, String path)`
 
-### success
-
-Creates a successful `ApiResponse` instance.
+Creates a successful API response.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `data`    | `T`  | The data payload of the response. |
-| `message` | `String` | A message describing the success. |
-| `path`    | `String` | The path of the API endpoint that was called. |
+| `data` | `T` | The response payload |
+| `message` | `String` | Success message |
+| `path` | `String` | Request path |
 
-**Returns:** `ApiResponse<T>` - A new instance of `ApiResponse` indicating a successful operation.
+**Returns**: `ApiResponse<T>` with `success=true`, the provided data, message, current timestamp, and path.
 
-### error
+**Example**:
+```java
+ApiResponse<User> response = ApiResponse.success(user, "User found", "/api/users/123");
+```
 
-Creates an error `ApiResponse` instance.
+### `error(String message, String path)`
+
+Creates an error API response.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `message` | `String` | A message describing the error. |
-| `path`    | `String` | The path of the API endpoint that was called. |
+| `message` | `String` | Error description |
+| `path` | `String` | Request path |
 
-**Returns:** `ApiResponse<T>` - A new instance of `ApiResponse` indicating an error occurred.
+**Returns**: `ApiResponse<T>` with `success=false`, `data=null`, the provided message, current timestamp, and path.
+
+**Example**:
+```java
+ApiResponse<Void> response = ApiResponse.error("User not found", "/api/users/999");
+```
+
+## Usage Notes
+
+- The `@JsonInclude(JsonInclude.Include.NON_NULL)` annotation ensures that `data` field is omitted from JSON when it is `null` (error responses).
+- Timestamps are generated automatically using `Instant.now()` at the moment of response creation.
+- The generic type `T` allows the response to carry any type of payload, from simple strings to complex domain objects.
+
+## JSON Serialization Examples
+
+**Success Response**:
+```json
+{
+  "success": true,
+  "data": { "id": 1, "name": "John Doe" },
+  "message": "User found",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "path": "/api/users/1"
+}
+```
+
+**Error Response**:
+```json
+{
+  "success": false,
+  "message": "User not found",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "path": "/api/users/999"
+}
+```

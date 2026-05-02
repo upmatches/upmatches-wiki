@@ -1,37 +1,65 @@
 ---
 id: update-profile-request
-title: UpdateProfileRequest Class
+title: UpdateProfileRequest
 sidebar_label: UpdateProfileRequest
 ---
 
-## Overview
+# UpdateProfileRequest
 
-The `UpdateProfileRequest` class is a Java record used to encapsulate data for updating a user's profile in the application. It is part of the `com.upmatches.app.features.user.requests` package. This class utilizes Java's record feature to provide an immutable data structure with built-in validation constraints.
+The `UpdateProfileRequest` class is a Java record that serves as a Data Transfer Object (DTO) for updating user profile information. It encapsulates the data submitted by a client when modifying an existing user profile, including the user's name, preferred contact methods, and skill level selections.
 
-## Purpose
+This record leverages Jakarta Bean Validation annotations to enforce constraints on the input data, ensuring that the request payload meets the application's requirements before processing.
 
-The primary purpose of the `UpdateProfileRequest` class is to serve as a data transfer object (DTO) for user profile updates. It ensures that the data provided for updating a profile adheres to specified constraints, such as maximum lengths for the name and lists of contact methods and skill levels.
+## Record Definition
 
-## Public Methods
+```java
+public record UpdateProfileRequest(
+    @Size(max = UpdateProfileRequest.MAX_NAME_LENGTH)
+    String name,
 
-Since `UpdateProfileRequest` is a record, it implicitly provides a constructor and accessor methods for its fields. Below is a description of the fields and their constraints:
+    @Size(max = UpdateProfileRequest.MAX_CONTACT_METHODS)
+    List<ContactMethod> contactMethods,
 
-### Fields
+    @Valid
+    @Size(max = UpdateProfileRequest.MAX_SKILL_LEVELS)
+    List<SkillLevelSelection> skillLevels
+)
+```
 
-| Field Name      | Type                              | Description                                                                 | Constraints                                      |
-|-----------------|-----------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------|
-| `name`          | `String`                          | The name of the user.                                                       | Maximum length of 200 characters.                |
-| `contactMethods`| `List<ContactMethod>`             | A list of contact methods associated with the user.                         | Maximum of 10 contact methods.                   |
-| `skillLevels`   | `List<SkillLevelSelection>`       | A list of skill levels selected by the user.                                | Maximum of 50 skill levels.                      |
+## Fields
 
-### Static Constants
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `name` | `String` | `@Size(max = 200)` | The user's display name. Maximum length is 200 characters. |
+| `contactMethods` | `List<ContactMethod>` | `@Size(max = 10)` | A list of contact methods (e.g., email, phone, social media). Maximum of 10 items. |
+| `skillLevels` | `List<SkillLevelSelection>` | `@Valid`, `@Size(max = 50)` | A list of skill level selections. Each item is validated recursively via `@Valid`. Maximum of 50 items. |
 
-| Constant Name           | Type  | Description                                      |
-|-------------------------|-------|--------------------------------------------------|
-| `MAX_NAME_LENGTH`       | `int` | The maximum allowed length for the `name` field. |
-| `MAX_CONTACT_METHODS`   | `int` | The maximum number of contact methods allowed.   |
-| `MAX_SKILL_LEVELS`      | `int` | The maximum number of skill levels allowed.      |
+## Constants
 
-## Usage
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `MAX_NAME_LENGTH` | `200` | Maximum allowed length for the `name` field. |
+| `MAX_CONTACT_METHODS` | `10` | Maximum number of contact methods allowed. |
+| `MAX_SKILL_LEVELS` | `50` | Maximum number of skill level selections allowed. |
 
-The `UpdateProfileRequest` class is typically used in scenarios where a user needs to update their profile information. The validation annotations ensure that the data adheres to the specified constraints before processing. This helps maintain data integrity and prevents errors related to invalid input.
+## Usage Example
+
+```java
+// Creating an update profile request
+UpdateProfileRequest request = new UpdateProfileRequest(
+    "John Doe",
+    List.of(new ContactMethod("email", "john@example.com")),
+    List.of(new SkillLevelSelection("Java", 5))
+);
+```
+
+## Validation Behavior
+
+- The `name` field is optional but, if provided, must not exceed 200 characters.
+- The `contactMethods` list is optional but, if provided, must contain at most 10 items.
+- The `skillLevels` list is optional but, if provided, must contain at most 50 items. Each item in the list is validated using the `@Valid` annotation, which triggers validation on the `SkillLevelSelection` object's own constraints.
+
+## Related Classes
+
+- `ContactMethod` - Represents a single contact method (e.g., email, phone).
+- `SkillLevelSelection` - Represents a skill and its associated proficiency level.

@@ -1,24 +1,58 @@
 ---
 id: push-delivery-result
-title: PushDeliveryResult Enum
+title: PushDeliveryResult Enum Documentation
 sidebar_label: PushDeliveryResult
 ---
 
+# PushDeliveryResult
+
+The `PushDeliveryResult` enum defines the possible outcomes of a push notification delivery attempt. It is used within the notification system to standardize the reporting of delivery statuses across different push notification services.
+
 ## Purpose
 
-The `PushDeliveryResult` enum is part of the `com.upmatches.app.features.notification.models` package. It represents the possible outcomes of a push notification delivery attempt. This enum is useful for categorizing the result of sending a push notification, allowing developers to handle each case appropriately in their application logic.
+This enum provides a clear, type-safe way to represent the result of sending a push notification to a device. Instead of using ambiguous strings or integer codes, the application can use these well-defined constants to make the code more readable and maintainable. The enum is part of the `com.upmatches.app.features.notification.models` package.
 
 ## Enum Constants
 
-The `PushDeliveryResult` enum defines the following constants:
+| Constant | Description |
+|----------|-------------|
+| `SENT` | The push notification was successfully sent to the push notification service (e.g., FCM, APNs). |
+| `NO_TOKENS` | The target user or device has no registered push notification tokens, so the notification could not be delivered. |
+| `UNAVAILABLE` | The push notification service is temporarily unavailable or unreachable. The notification may be retried later. |
+| `FAILED` | The push notification delivery failed due to an error (e.g., invalid token, authentication failure, or network issue). |
 
-| Constant    | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `SENT`      | Indicates that the push notification was successfully sent.                  |
-| `NO_TOKENS` | Indicates that there were no tokens available to send the push notification. |
-| `UNAVAILABLE` | Indicates that the service required to send the notification is unavailable. |
-| `FAILED`    | Indicates that the push notification failed to be sent due to an error.      |
+## Usage Example
 
-## Usage
+```java
+import com.upmatches.app.features.notification.models.PushDeliveryResult;
 
-This enum can be used in switch statements or conditional logic to handle different outcomes of a push notification delivery attempt. By using this enum, developers can ensure that their application responds appropriately to each possible result of a push notification operation.
+public class NotificationService {
+    
+    public PushDeliveryResult sendPushNotification(String userId, String message) {
+        // Logic to retrieve tokens and send notification
+        // ...
+        
+        if (tokens.isEmpty()) {
+            return PushDeliveryResult.NO_TOKENS;
+        }
+        
+        try {
+            // Send notification via push service
+            // ...
+            return PushDeliveryResult.SENT;
+        } catch (ServiceUnavailableException e) {
+            return PushDeliveryResult.UNAVAILABLE;
+        } catch (Exception e) {
+            return PushDeliveryResult.FAILED;
+        }
+    }
+}
+```
+
+## Related Components
+
+This enum is typically used in conjunction with:
+
+- **Push notification services** that handle the actual sending of notifications
+- **Notification models** that store delivery results for auditing or retry logic
+- **Error handling logic** that determines whether to retry a failed notification

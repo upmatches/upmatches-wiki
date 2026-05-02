@@ -1,29 +1,65 @@
 ---
 id: game-participant
-title: GameParticipant Class
+title: GameParticipant Entity
 sidebar_label: GameParticipant
 ---
 
-## Purpose
+# GameParticipant
 
-The `GameParticipant` class represents an entity that links a user to a game, capturing the user's participation status and timestamps for when they joined and left the game. It is a part of the `com.upmatches.app.features.game.entities` package and is mapped to the `game_participants` table in the database.
+The `GameParticipant` entity represents a user's participation in a game within the UpMatches application. It tracks the relationship between a `Game` and a `User`, including the participant's current status and timestamps for when they joined and left the game.
 
-## Public Methods
-
-The `GameParticipant` class provides the following public methods:
-
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `create` | `Game game`, `User user` | `GameParticipant` | Static factory method to create a new `GameParticipant` instance with the given game and user, setting the status to `ACTIVE`. |
-| `leave` | None | `void` | Updates the participant's status to `LEFT` and sets the `leftAt` timestamp to the current time. |
+This JPA entity is mapped to the `game_participants` database table and uses Lombok's `@Getter` and `@NoArgsConstructor` annotations to reduce boilerplate code.
 
 ## Fields
 
-The class contains several fields, most of which are private and accessed via Lombok-generated getters:
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `UUID` | Unique identifier for the participation record (auto-generated) |
+| `game` | `Game` | The game the user is participating in (many-to-one relationship) |
+| `user` | `User` | The user participating in the game (many-to-one relationship) |
+| `status` | `ParticipantStatus` | Current status of the participant (e.g., ACTIVE, LEFT) |
+| `joinedAt` | `Instant` | Timestamp when the participant joined the game (set automatically) |
+| `leftAt` | `Instant` | Timestamp when the participant left the game (nullable) |
 
-- `UUID id`: Unique identifier for the participant.
-- `Game game`: The game associated with the participant.
-- `User user`: The user participating in the game.
-- `ParticipantStatus status`: The current status of the participant (e.g., ACTIVE, LEFT).
-- `Instant joinedAt`: Timestamp indicating when the participant joined the game.
-- `Instant leftAt`: Timestamp indicating when the participant left the game.
+## Public Methods
+
+### `create(Game game, User user)`
+Creates a new `GameParticipant` instance with an `ACTIVE` status.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `game` | `Game` | The game the user is joining |
+| `user` | `User` | The user joining the game |
+
+**Returns:** `GameParticipant` - A new participant instance with status set to `ACTIVE`
+
+### `leave()`
+Marks the participant as having left the game. Updates the status to `LEFT` and records the current timestamp in `leftAt`.
+
+**Parameters:** None  
+**Returns:** `void`
+
+## Lifecycle Callbacks
+
+### `onCreate()`
+A `@PrePersist` callback that automatically sets the `joinedAt` timestamp to the current time before the entity is persisted to the database.
+
+## Usage Example
+
+```java
+// Creating a new participant
+GameParticipant participant = GameParticipant.create(game, user);
+gameParticipantRepository.save(participant);
+
+// Marking a participant as having left
+participant.leave();
+gameParticipantRepository.save(participant);
+```
+
+## Dependencies
+
+- **JPA/Hibernate** - For entity mapping and persistence
+- **Lombok** - For getter generation and no-args constructor
+- **ParticipantStatus** - Enum defining possible participant states
+- **Game** - The game entity this participant belongs to
+- **User** - The user entity representing the participant

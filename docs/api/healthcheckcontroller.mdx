@@ -1,43 +1,69 @@
 ---
 id: health-check-controller
-title: HealthCheckController
-sidebar_label: HealthCheckController
+title: Health Check Controller
+sidebar_label: Health Check Controller
 ---
 
-import { HttpServletRequest } from 'jakarta.servlet.http';
-import { ResponseEntity } from 'org.springframework.http';
-import { GetMapping, RequestMapping, RestController } from 'org.springframework.web.bind.annotation';
-import { ApiResponse } from 'com.upmatches.app.shared.responses';
+# Health Check Controller
 
-## Overview
+The `HealthCheckController` is a REST controller that provides a simple health check endpoint for the UpMatches application. It is used to verify that the service is running and accessible, returning a standardized API response with a status of "OK" and a confirmation message.
 
-The `HealthCheckController` class is a Spring Boot REST controller designed to provide a simple health check endpoint for the application. It is part of the `com.upmatches.app.features.health.controllers` package. This controller is responsible for handling HTTP GET requests to verify that the service is running and accessible.
+## Location
+
+- **Package:** `com.upmatches.app.features.health.controllers`
+- **Base URL:** `/api/v1/public/health`
 
 ## Public Methods
 
-### healthCheck
+| Method | HTTP Method | Endpoint | Description |
+|--------|-------------|----------|-------------|
+| `healthCheck(HttpServletRequest request)` | `GET` | `/api/v1/public/health` | Returns a health check response indicating the service is running. |
 
-The `healthCheck` method is a public endpoint that responds to HTTP GET requests. It returns a response indicating the service status.
+### `healthCheck`
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public ResponseEntity<ApiResponse<String>> healthCheck(HttpServletRequest request)` | Handles GET requests to the health check endpoint and returns a status message. |
+```java
+public ResponseEntity<ApiResponse<String>> healthCheck(HttpServletRequest request)
+```
 
-#### Parameters
+**Description:**  
+This method handles GET requests to the health check endpoint. It returns a standardized `ApiResponse` object containing:
+- **Status:** `"OK"`
+- **Message:** `"Service is running"`
+- **Path:** The request URI from the incoming HTTP request
 
-| Parameter | Type                      | Description                              |
-|-----------|---------------------------|------------------------------------------|
-| `request` | `HttpServletRequest`      | The HTTP request object containing request details. |
+**Parameters:**
 
-#### Return Type
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request, used to extract the request URI for the response. |
 
-| Type                                | Description                                      |
-|-------------------------------------|--------------------------------------------------|
-| `ResponseEntity<ApiResponse<String>>` | A response entity containing the status and message of the service. |
+**Returns:**
 
-## Constants
+| Type | Description |
+|------|-------------|
+| `ResponseEntity<ApiResponse<String>>` | HTTP 200 OK response containing the health check data wrapped in an `ApiResponse` object. |
 
-The class defines two constants used in the response:
+## Response Example
 
-- `STATUS_OK`: A `String` constant with the value `"OK"`, indicating the service status.
-- `MESSAGE`: A `String` constant with the value `"Service is running"`, providing a message about the service state.
+```json
+{
+  "status": "OK",
+  "message": "Service is running",
+  "path": "/api/v1/public/health"
+}
+```
+
+## Usage
+
+This endpoint is typically used by:
+- **Load balancers** to verify service availability
+- **Monitoring tools** (e.g., Prometheus, Grafana) for uptime checks
+- **CI/CD pipelines** to confirm successful deployment
+- **Client applications** to check connectivity before making other API calls
+
+## Dependencies
+
+- `com.upmatches.app.shared.responses.ApiResponse` - Shared response wrapper for consistent API output
+- `jakarta.servlet.http.HttpServletRequest` - Jakarta Servlet API for accessing request details
+- `org.springframework.http.ResponseEntity` - Spring Framework HTTP response entity
+- `org.springframework.web.bind.annotation.*` - Spring Web annotations for REST controller mapping

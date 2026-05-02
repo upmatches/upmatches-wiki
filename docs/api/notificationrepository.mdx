@@ -1,76 +1,100 @@
 ---
 id: notification-repository
-title: NotificationRepository Interface
+title: NotificationRepository
 sidebar_label: NotificationRepository
 ---
 
+# NotificationRepository
+
+The `NotificationRepository` interface provides data access methods for the `Notification` entity in the UpMatches application. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD operations and defines custom query methods for retrieving, counting, and updating notifications.
+
 ## Purpose
 
-The `NotificationRepository` interface is a part of the notification feature in the application. It extends the `JpaRepository` interface, providing CRUD operations for `Notification` entities identified by `UUID`. This repository interface includes custom query methods to handle notifications, such as retrieving notifications for a specific recipient, counting unread notifications, and marking notifications as read.
+This repository handles all database interactions related to user notifications, including:
+- Retrieving paginated notifications for a specific recipient
+- Counting unread notifications
+- Checking for duplicate notifications
+- Marking notifications as read
 
-## Public Methods
+## Methods
 
 ### `findByRecipientIdOrderByCreatedAtDesc`
 
-Retrieves a paginated list of notifications for a specific recipient, ordered by creation date in descending order.
+Retrieves a paginated list of notifications for a recipient, ordered by creation time (newest first).
 
-| Parameter   | Type   | Description                          |
-|-------------|--------|--------------------------------------|
-| recipientId | UUID   | The unique identifier of the recipient. |
-| pageable    | Pageable | The pagination information.          |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The ID of the notification recipient |
+| `pageable` | `Pageable` | Pagination and sorting information |
 
-| Return Type     | Description                                      |
-|-----------------|--------------------------------------------------|
-| Page<Notification> | A paginated list of notifications.             |
+**Returns:** `Page<Notification>` - A page of notifications for the recipient
 
 ### `countByRecipientIdAndIsReadFalse`
 
 Counts the number of unread notifications for a specific recipient.
 
-| Parameter   | Type   | Description                          |
-|-------------|--------|--------------------------------------|
-| recipientId | UUID   | The unique identifier of the recipient. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The ID of the notification recipient |
 
-| Return Type | Description                                      |
-|-------------|--------------------------------------------------|
-| long        | The count of unread notifications.               |
+**Returns:** `long` - The count of unread notifications
 
 ### `findByIdAndRecipientId`
 
-Finds a notification by its ID and the recipient's ID.
+Finds a specific notification by its ID and recipient ID.
 
-| Parameter   | Type   | Description                          |
-|-------------|--------|--------------------------------------|
-| id          | UUID   | The unique identifier of the notification. |
-| recipientId | UUID   | The unique identifier of the recipient. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The notification ID |
+| `recipientId` | `UUID` | The recipient's user ID |
 
-| Return Type          | Description                                      |
-|----------------------|--------------------------------------------------|
-| Optional<Notification> | An optional containing the notification if found. |
+**Returns:** `Optional<Notification>` - The notification if found, empty otherwise
 
 ### `existsByRecipientIdAndTypeAndResourceId`
 
-Checks if a notification exists for a specific recipient, type, and resource ID.
+Checks if a notification with the given type and resource ID already exists for a recipient. This is useful for preventing duplicate notifications.
 
-| Parameter   | Type            | Description                          |
-|-------------|-----------------|--------------------------------------|
-| recipientId | UUID            | The unique identifier of the recipient. |
-| type        | NotificationType | The type of the notification.         |
-| resourceId  | UUID            | The unique identifier of the resource. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The ID of the notification recipient |
+| `type` | `NotificationType` | The type of notification |
+| `resourceId` | `UUID` | The ID of the related resource |
 
-| Return Type | Description                                      |
-|-------------|--------------------------------------------------|
-| boolean     | `true` if the notification exists, otherwise `false`. |
+**Returns:** `boolean` - `true` if a matching notification exists, `false` otherwise
 
 ### `markAllReadByRecipientId`
 
-Marks all unread notifications as read for a specific recipient and sets the read timestamp.
+Marks all unread notifications as read for a specific recipient. This method uses a bulk update query and is annotated with `@Modifying` to indicate it performs a write operation.
 
-| Parameter   | Type   | Description                          |
-|-------------|--------|--------------------------------------|
-| recipientId | UUID   | The unique identifier of the recipient. |
-| readAt      | Instant | The timestamp when the notifications were read. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The ID of the notification recipient |
+| `readAt` | `Instant` | The timestamp when notifications were read |
 
-| Return Type | Description                                      |
-|-------------|--------------------------------------------------|
-| int         | The number of notifications marked as read.      |
+**Returns:** `int` - The number of notifications updated
+
+## Usage Example
+
+```java
+@Service
+public class NotificationService {
+    private final NotificationRepository notificationRepository;
+    
+    public NotificationService(NotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
+    }
+    
+    public Page<Notification> getNotifications(UUID userId, Pageable pageable) {
+        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId, pageable);
+    }
+    
+    public long getUnreadCount(UUID userId) {
+        return notificationRepository.countByRecipientIdAndIsReadFalse(userId);
+    }
+    
+    @Transactional
+    public int markAllAsRead(UUID userId) {
+        return notificationRepository.markAllReadByRecipientId(userId, Instant.now());
+    }
+}
+```

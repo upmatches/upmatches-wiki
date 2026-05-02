@@ -1,35 +1,58 @@
 ---
 id: apple-properties
-title: AppleProperties Class
+title: AppleProperties
 sidebar_label: AppleProperties
 ---
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+# AppleProperties
 
-## Overview
+The `AppleProperties` class is a Spring Boot configuration properties record that maps to the `app.apple` prefix in your application's configuration files (e.g., `application.yml` or `application.properties`). It encapsulates the necessary OAuth 2.0 / OpenID Connect parameters required to validate Apple ID tokens during authentication.
 
-The `AppleProperties` class is a configuration properties holder for Apple authentication settings in a Spring Boot application. It is designed to capture and manage properties related to Apple's authentication service, such as the issuer, audience, and JSON Web Key Set (JWKS) URI. This class uses the `@ConfigurationProperties` annotation to bind external configuration properties prefixed with `app.apple` to its fields.
+## Purpose
 
-## Class Details
+This record provides a type-safe way to inject Apple Sign-In configuration values into your Spring beans. It defines three key properties: `issuer`, `audience`, and `jwksUri`. The record also includes sensible defaults for the issuer and JWKS URI, ensuring that your application can work out-of-the-box with Apple's authentication endpoints.
 
-### Purpose
+## Properties
 
-The primary purpose of the `AppleProperties` class is to encapsulate configuration properties required for integrating with Apple's authentication services. It ensures that default values are provided for critical properties if they are not specified in the application's configuration.
+| Property   | Type     | Description                                                                 | Default Value                        |
+|------------|----------|-----------------------------------------------------------------------------|--------------------------------------|
+| `issuer`   | `String` | The issuer identifier for Apple ID tokens.                                  | `https://appleid.apple.com`          |
+| `audience` | `String` | The client ID (audience) that the ID token is intended for.                 | No default (must be configured)      |
+| `jwksUri`  | `String` | The URI where Apple publishes its JSON Web Key Set (JWKS) for token verification. | `https://appleid.apple.com/auth/keys` |
 
-### Public Methods
+## Constructor Behavior
 
-The `AppleProperties` class is a record, which means it automatically provides public accessor methods for its fields. Below is a table documenting these methods:
+The compact constructor of this record applies default values if the `issuer` or `jwksUri` properties are `null` or blank. This ensures that even if these values are omitted from your configuration, the application will still use Apple's standard endpoints.
 
-| Method          | Parameters | Return Type | Description                                                                 |
-|-----------------|------------|-------------|-----------------------------------------------------------------------------|
-| `issuer()`      | None       | `String`    | Returns the issuer URL for Apple authentication. Defaults to `https://appleid.apple.com` if not specified. |
-| `audience()`    | None       | `String`    | Returns the audience value for Apple authentication. This value must be specified in the configuration. |
-| `jwksUri()`     | None       | `String`    | Returns the JWKS URI for Apple authentication. Defaults to `https://appleid.apple.com/auth/keys` if not specified. |
+## Usage Example
 
-### Constructor
+To use this configuration in your Spring application, add the following to your `application.yml`:
 
-The `AppleProperties` record provides a canonical constructor that initializes its fields. If the `issuer` or `jwksUri` parameters are null or blank, they are set to their respective default values.
+```yaml
+app:
+  apple:
+    issuer: https://appleid.apple.com
+    audience: com.your.client.id
+    jwksUri: https://appleid.apple.com/auth/keys
+```
 
-## Usage
+Then, inject the `AppleProperties` bean into any Spring-managed component:
 
-To use the `AppleProperties` class, ensure that your Spring Boot application's configuration file (e.g., `application.yml` or `application.properties`) contains the necessary `app.apple` properties. The class will automatically bind these properties and provide default values for `issuer` and `jwksUri` if they are not explicitly set.
+```java
+@Service
+public class AppleTokenVerifier {
+    private final AppleProperties appleProperties;
+
+    public AppleTokenVerifier(AppleProperties appleProperties) {
+        this.appleProperties = appleProperties;
+    }
+
+    public void verifyToken(String idToken) {
+        // Use appleProperties.issuer(), appleProperties.audience(), and appleProperties.jwksUri()
+    }
+}
+```
+
+## Dependencies
+
+This class requires Spring Boot's `@ConfigurationProperties` support. Ensure you have the `spring-boot-starter-validation` or appropriate dependency in your `pom.xml` or `build.gradle` to enable configuration property binding.

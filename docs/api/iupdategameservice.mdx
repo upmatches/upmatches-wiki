@@ -1,34 +1,64 @@
 ---
-id: iupdategameservice
+id: i-update-game-service
 title: IUpdateGameService Interface
 sidebar_label: IUpdateGameService
 ---
 
-import com.upmatches.app.features.game.requests.UpdateGameRequest;
-import com.upmatches.app.features.game.responses.GameResponse;
+# IUpdateGameService Interface
 
-import java.util.UUID;
+The `IUpdateGameService` interface defines the contract for updating an existing game entity within the UpMatches application. It follows a sealed interface pattern to restrict implementation to a single concrete service class (`UpdateGameService`), ensuring controlled and consistent update behavior across the system.
 
-## Overview
+## Purpose
 
-The `IUpdateGameService` interface is a part of the `com.upmatches.app.features.game.services` package. It defines the contract for updating game information within the application. This interface is designed to be implemented by classes that provide the actual update logic for game data. By using a sealed interface, it restricts which classes can implement it, ensuring a controlled extension of its functionality.
+This interface serves as the abstraction layer for game update operations. By defining a single `execute` method, it enforces a standardized approach to modifying game data while allowing the underlying implementation to handle business logic, validation, and persistence concerns.
 
-## Public Methods
+## Interface Definition
 
-The `IUpdateGameService` interface declares the following public method:
+```java
+public sealed interface IUpdateGameService permits UpdateGameService {
+    GameResponse execute(UUID id, UpdateGameRequest request);
+}
+```
 
-| Method Signature | Description |
-|------------------|-------------|
-| `GameResponse execute(UUID id, UpdateGameRequest request)` | Executes the update operation for a game identified by the given UUID. |
+## Method Summary
 
-### Method Details
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute(UUID id, UpdateGameRequest request)` | `GameResponse` | Updates an existing game identified by the provided UUID with the data from the update request |
 
-#### `execute`
+## Parameters
 
-- **Description**: This method is responsible for updating the game information based on the provided `UpdateGameRequest`. It returns a `GameResponse` which contains the updated game details.
-- **Parameters**:
-  | Name    | Type                       | Description                           |
-  |---------|----------------------------|---------------------------------------|
-  | `id`    | `UUID`                     | The unique identifier of the game to be updated. |
-  | `request` | `UpdateGameRequest`      | The request object containing the new game data. |
-- **Returns**: `GameResponse` - An object containing the updated game information.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to be updated |
+| `request` | `UpdateGameRequest` | The request object containing the updated game data |
+
+## Return Value
+
+The method returns a `GameResponse` object representing the updated game state after successful modification.
+
+## Sealed Interface Constraint
+
+The `sealed` keyword restricts implementation to only the `UpdateGameService` class. This design choice provides:
+
+- **Controlled extensibility**: Only the permitted class can implement this interface
+- **Compile-time safety**: The compiler enforces the implementation restriction
+- **Clear intent**: Developers understand that game update logic is centralized
+
+## Usage Example
+
+```java
+// Inject the service
+private final IUpdateGameService updateGameService;
+
+// Update a game
+UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+UpdateGameRequest request = new UpdateGameRequest(/* ... */);
+GameResponse updatedGame = updateGameService.execute(gameId, request);
+```
+
+## Related Components
+
+- **`UpdateGameRequest`**: The input DTO containing fields to be updated
+- **`GameResponse`**: The output DTO representing the updated game
+- **`UpdateGameService`**: The concrete implementation of this interface

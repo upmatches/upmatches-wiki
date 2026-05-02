@@ -4,38 +4,76 @@ title: GameFilterOptionsRequest
 sidebar_label: GameFilterOptionsRequest
 ---
 
+# GameFilterOptionsRequest
+
+The `GameFilterOptionsRequest` record is a Java DTO (Data Transfer Object) used to encapsulate filter criteria for querying games. It provides a structured way to pass optional and required filtering parameters from the client to the server, including date ranges, venue and skill level selections, time filters, game type, and location-based search.
+
 ## Purpose
 
-The `GameFilterOptionsRequest` class is a Java record used to encapsulate filtering options for game-related queries. It is designed to specify various criteria such as date range, venue, skill level, time, game type, and geographical location to filter games effectively. This record is particularly useful in applications where users need to search for games based on specific parameters.
+This record serves as the input model for game search/filter endpoints. It ensures that incoming filter data is validated according to business rules (e.g., date ranges are required, location coordinates are within valid ranges) and provides helper methods to check which filter groups are active.
 
-## Public Methods
+## Record Components
 
-The `GameFilterOptionsRequest` record provides several public methods to check the presence of certain fields. These methods enhance the usability of the record by allowing quick checks on the availability of location or other filtering criteria.
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `fromDate` | `LocalDate` | `@NotNull` | Start date for the game search range. |
+| `toDate` | `LocalDate` | `@NotNull` | End date for the game search range. |
+| `venueIds` | `List<Long>` | `@Size(max = 20)` | Optional list of venue IDs to filter by (max 20). |
+| `skillLevelIds` | `List<Long>` | `@Size(max = 20)` | Optional list of skill level IDs to filter by (max 20). |
+| `fromTime` | `LocalTime` | None | Optional start time filter. |
+| `toTime` | `LocalTime` | None | Optional end time filter. |
+| `gameType` | `GameType` | None | Optional game type filter (enum). |
+| `latitude` | `BigDecimal` | `@DecimalMin(-90.0)`, `@DecimalMax(90.0)` | Optional latitude for location-based search. |
+| `longitude` | `BigDecimal` | `@DecimalMin(-180.0)`, `@DecimalMax(180.0)` | Optional longitude for location-based search. |
+| `radiusKm` | `Integer` | `@Min(1)`, `@Max(5)` | Optional search radius in kilometers (1-5). |
 
-### Method Details
+## Methods
 
-| Method Name         | Description                                                                 | Return Type |
-|---------------------|-----------------------------------------------------------------------------|-------------|
-| `hasLocation()`     | Checks if all location-related fields (`latitude`, `longitude`, `radiusKm`) are present. | `boolean`   |
-| `hasAnyLocationField()` | Checks if any of the location-related fields (`latitude`, `longitude`, `radiusKm`) are present. | `boolean`   |
-| `hasSkillLevels()`  | Checks if the `skillLevelIds` list is not null and not empty.               | `boolean`   |
-| `hasVenues()`       | Checks if the `venueIds` list is not null and not empty.                    | `boolean`   |
+### `hasLocation()`
+Returns `true` if all three location fields (`latitude`, `longitude`, and `radiusKm`) are non-null, indicating a complete location-based filter.
 
-## Parameters
+### `hasAnyLocationField()`
+Returns `true` if at least one of the location fields (`latitude`, `longitude`, or `radiusKm`) is non-null. Useful for detecting partial location input.
 
-The `GameFilterOptionsRequest` record includes the following parameters:
+### `hasSkillLevels()`
+Returns `true` if the `skillLevelIds` list is non-null and not empty.
 
-| Parameter Name | Type        | Description                                                                 |
-|----------------|-------------|-----------------------------------------------------------------------------|
-| `fromDate`     | `LocalDate` | The start date for the game filter. Must not be null.                       |
-| `toDate`       | `LocalDate` | The end date for the game filter. Must not be null.                         |
-| `venueIds`     | `List<Long>`| A list of venue IDs to filter games. Maximum size is 20.                    |
-| `skillLevelIds`| `List<Long>`| A list of skill level IDs to filter games. Maximum size is 20.              |
-| `fromTime`     | `LocalTime` | The start time for the game filter.                                         |
-| `toTime`       | `LocalTime` | The end time for the game filter.                                           |
-| `gameType`     | `GameType`  | The type of game to filter.                                                 |
-| `latitude`     | `BigDecimal`| The latitude for location-based filtering. Must be between -90 and 90.      |
-| `longitude`    | `BigDecimal`| The longitude for location-based filtering. Must be between -180 and 180.   |
-| `radiusKm`     | `Integer`   | The radius in kilometers for location-based filtering. Must be between 1 and 5. |
+### `hasVenues()`
+Returns `true` if the `venueIds` list is non-null and not empty.
 
-This record is validated using Jakarta Bean Validation annotations to ensure that the input data adheres to specified constraints, providing robust error handling and data integrity.
+## Usage Example
+
+```java
+// Creating a filter request with date range and location
+GameFilterOptionsRequest request = new GameFilterOptionsRequest(
+    LocalDate.of(2024, 1, 1),
+    LocalDate.of(2024, 1, 31),
+    null,                    // no venue filter
+    List.of(1L, 2L),         // skill levels 1 and 2
+    LocalTime.of(9, 0),      // from 9 AM
+    LocalTime.of(17, 0),     // to 5 PM
+    GameType.SOCCER,
+    new BigDecimal("40.7128"),
+    new BigDecimal("-74.0060"),
+    3                        // 3 km radius
+);
+
+// Check if location filter is active
+if (request.hasLocation()) {
+    // Perform location-based search
+}
+
+// Check if skill level filter is active
+if (request.hasSkillLevels()) {
+    // Filter by skill levels
+}
+```
+
+## Validation Notes
+
+- `fromDate` and `toDate` are **required** and must be provided.
+- `venueIds` and `skillLevelIds` are optional but limited to 20 entries each.
+- Location fields (`latitude`, `longitude`, `radiusKm`) are optional but must be provided together for a valid location search (use `hasLocation()` to verify).
+- `latitude` must be between -90 and 90.
+- `longitude` must be between -180 and 180.
+- `radiusKm` must be between 1 and 5.

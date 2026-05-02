@@ -4,40 +4,60 @@ title: UserAgentClassifier
 sidebar_label: UserAgentClassifier
 ---
 
-import { useBaseUrl } from '@docusaurus/core';
+# UserAgentClassifier
 
-## Purpose
+The `UserAgentClassifier` is a Spring `@Component` that provides a simple utility for classifying HTTP `User-Agent` strings into one of three client platforms: **iOS**, **Android**, or **Web**. This is commonly used in share‑link or deep‑linking features to determine the appropriate redirect or fallback behavior based on the user's device.
 
-The `UserAgentClassifier` class is a utility component designed to classify user agents into different client platforms. It helps in determining whether a user is accessing the application from an Android device, an iOS device, or a web browser. This classification can be useful for tailoring user experiences based on the platform.
+## Enum: `ClientPlatform`
+
+| Enum Constant | Description |
+|---------------|-------------|
+| `IOS`         | Represents Apple mobile devices (iPhone, iPad, iPod). |
+| `ANDROID`     | Represents Android devices. |
+| `WEB`         | Represents all other clients (desktop browsers, unknown, or missing User‑Agent). |
 
 ## Public Methods
 
-### classify
+### `classify(String userAgent)`
 
-The `classify` method analyzes the provided user agent string and determines the client platform.
+Classifies the given `User-Agent` string into a `ClientPlatform`.
 
-| Parameter  | Type   | Description                                      |
-|------------|--------|--------------------------------------------------|
-| userAgent  | String | The user agent string to be classified.          |
+| Parameter   | Type     | Description |
+|-------------|----------|-------------|
+| `userAgent` | `String` | The raw `User-Agent` header value from an HTTP request. May be `null` or blank. |
 
-| Return Type          | Description                                      |
-|----------------------|--------------------------------------------------|
-| `ClientPlatform`     | An enum indicating the platform: `IOS`, `ANDROID`, or `WEB`. |
+| Returns          | Description |
+|------------------|-------------|
+| `ClientPlatform` | The detected platform: `ANDROID` if the string contains "Android"; `IOS` if it contains "iPhone", "iPad", or "iPod"; otherwise `WEB`. |
 
-## Usage
+**Behavior details:**
+- If `userAgent` is `null` or blank, the method returns `ClientPlatform.WEB`.
+- The check for Android is performed before the iOS check.
+- The method uses simple substring matching (case‑sensitive) against the predefined tokens.
 
-To use the `UserAgentClassifier`, you need to instantiate it and call the `classify` method with a user agent string. The method will return the corresponding `ClientPlatform` enum value based on the content of the user agent string.
+## Usage Example
 
 ```java
-UserAgentClassifier classifier = new UserAgentClassifier();
-UserAgentClassifier.ClientPlatform platform = classifier.classify("Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1");
-System.out.println(platform); // Output: IOS
+@Autowired
+private UserAgentClassifier classifier;
+
+public void handleRequest(String userAgent) {
+    UserAgentClassifier.ClientPlatform platform = classifier.classify(userAgent);
+    switch (platform) {
+        case IOS:
+            // redirect to App Store or open deep link
+            break;
+        case ANDROID:
+            // redirect to Google Play or open deep link
+            break;
+        case WEB:
+            // show web fallback page
+            break;
+    }
+}
 ```
 
-## ClientPlatform Enum
+## Notes
 
-The `ClientPlatform` enum defines the possible platforms that can be identified:
-
-- `IOS`: Represents iOS devices such as iPhone, iPad, and iPod.
-- `ANDROID`: Represents Android devices.
-- `WEB`: Represents web browsers or any other platform not explicitly identified as iOS or Android.
+- The classification is intentionally simple and does not handle all edge cases (e.g., Android tablets, Windows Phone, or custom browsers). For production use with more complex requirements, consider a dedicated User‑Agent parsing library.
+- The component is stateless and thread‑safe.

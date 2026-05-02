@@ -1,26 +1,68 @@
 ---
 id: activity-repository
-title: ActivityRepository Interface
+title: Activity Repository
 sidebar_label: ActivityRepository
 ---
 
-import com.upmatches.app.features.activity.entities.Activity;
-import org.springframework.data.jpa.repository.JpaRepository;
+# Activity Repository
 
-import java.util.Optional;
-import java.util.UUID;
+The `ActivityRepository` interface provides database access operations for the `Activity` entity. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD functionality while adding custom query methods specific to the activity domain.
 
 ## Purpose
 
-The `ActivityRepository` interface is a part of the repository layer in a Spring application. It extends the `JpaRepository` interface, providing CRUD operations for the `Activity` entity. This interface is used to interact with the database layer, allowing for operations on `Activity` entities identified by a `UUID`.
+This repository serves as the data access layer for activity management within the application. By extending `JpaRepository<Activity, UUID>`, it automatically provides:
 
-## Public Methods
+- Standard create, read, update, and delete operations
+- Pagination and sorting support
+- Batch operations
+- Fluent query method generation
 
-The `ActivityRepository` interface provides the following public methods:
+The custom methods defined in this interface enable efficient lookups by reference ID and name validation, which are common requirements in activity management workflows.
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `findByReferenceId` | `Integer referenceId` | `Optional<Activity>` | Retrieves an `Activity` entity based on its `referenceId`. Returns an `Optional` containing the `Activity` if found, or an empty `Optional` if not. |
-| `existsByName` | `String name` | `boolean` | Checks if an `Activity` entity with the specified `name` exists in the database. Returns `true` if such an entity exists, otherwise `false`. |
+## Methods
 
-The `ActivityRepository` leverages Spring Data JPA's capabilities to simplify database interactions, reducing the need for boilerplate code.
+### Inherited Methods
+
+The following methods are inherited from `JpaRepository` and `CrudRepository`:
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `findById(UUID id)` | `Optional<Activity>` | Retrieves an activity by its UUID primary key |
+| `findAll()` | `List<Activity>` | Returns all activities |
+| `save(Activity entity)` | `Activity` | Saves or updates an activity |
+| `deleteById(UUID id)` | `void` | Deletes an activity by its UUID |
+| `count()` | `long` | Returns the total number of activities |
+
+### Custom Methods
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findByReferenceId(Integer referenceId)` | `Optional<Activity>` | `referenceId` - The unique reference identifier for the activity | Finds an activity by its business reference ID. Returns an empty `Optional` if no matching activity exists. |
+| `existsByName(String name)` | `boolean` | `name` - The name to check for existence | Checks whether an activity with the given name already exists in the database. Returns `true` if found, `false` otherwise. |
+
+## Usage Example
+
+```java
+@Service
+public class ActivityService {
+    private final ActivityRepository activityRepository;
+
+    public ActivityService(ActivityRepository activityRepository) {
+        this.activityRepository = activityRepository;
+    }
+
+    public Optional<Activity> findByReferenceId(Integer referenceId) {
+        return activityRepository.findByReferenceId(referenceId);
+    }
+
+    public boolean isNameTaken(String name) {
+        return activityRepository.existsByName(name);
+    }
+}
+```
+
+## Dependencies
+
+- **Spring Data JPA**: Provides the `JpaRepository` base interface and query derivation
+- **Activity Entity**: The domain entity this repository manages
+- **UUID**: Used as the primary key type for activity entities

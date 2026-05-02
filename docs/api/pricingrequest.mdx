@@ -1,37 +1,81 @@
 ---
 id: pricing-request
-title: PricingRequest Class
+title: PricingRequest
 sidebar_label: PricingRequest
 ---
 
-## Purpose
+# PricingRequest
 
-The `PricingRequest` class is a Java record used to encapsulate pricing information for a game feature. It includes various pricing parameters and provides validation constraints to ensure data integrity. The class also includes a method to convert the request data into a `Pricing` object.
+The `PricingRequest` class is a Java record that serves as a Data Transfer Object (DTO) for receiving pricing configuration data from API clients. It encapsulates all the necessary fields to define a pricing structure for a game feature, including pricing mode, currency, and various price components.
 
-## Public Methods
+This record is designed with Jakarta Bean Validation annotations to ensure that incoming data meets business requirements before being processed. It provides a convenient `toPricing()` method to convert the request data into a domain `Pricing` value object.
 
-### `toPricing`
+## Record Definition
 
-Converts the `PricingRequest` instance into a `Pricing` object.
+```java
+public record PricingRequest(
+    PricingMode mode,
+    String currency,
+    BigDecimal flatPrice,
+    BigDecimal malePrice,
+    BigDecimal femalePrice,
+    BigDecimal basePrice,
+    BigDecimal pricePerShuttle
+)
+```
 
-| Parameter | Type      | Description |
-|-----------|-----------|-------------|
-| None      |           |             |
+## Fields
 
-| Returns   | Type      | Description |
-|-----------|-----------|-------------|
-| `Pricing` | `Pricing` | A new `Pricing` object initialized with the values from the `PricingRequest`. |
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `mode` | `PricingMode` | `@NotNull` | The pricing mode (enum) that determines how pricing is calculated |
+| `currency` | `String` | `@NotNull`, `@Pattern(regexp = "^[A-Z]{3}$")` | ISO-4217 3-letter currency code (e.g., USD, EUR) |
+| `flatPrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Flat price amount, must be >= 0, max 8 digits with 2 decimal places |
+| `malePrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price for male participants, must be >= 0, max 8 digits with 2 decimal places |
+| `femalePrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price for female participants, must be >= 0, max 8 digits with 2 decimal places |
+| `basePrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Base price amount, must be >= 0, max 8 digits with 2 decimal places |
+| `pricePerShuttle` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price per shuttle/unit, must be >= 0, max 8 digits with 2 decimal places |
 
-## Parameters
+## Methods
 
-The `PricingRequest` record includes the following parameters:
+### `toPricing()`
 
-| Parameter      | Type        | Description                                                                                     |
-|----------------|-------------|-------------------------------------------------------------------------------------------------|
-| `mode`         | `PricingMode` | The pricing mode. Must not be null.                                                            |
-| `currency`     | `String`    | The currency code in ISO-4217 format. Must be a 3-letter uppercase string.                      |
-| `flatPrice`    | `BigDecimal` | The flat price. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |
-| `malePrice`    | `BigDecimal` | The male-specific price. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |
-| `femalePrice`  | `BigDecimal` | The female-specific price. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |
-| `basePrice`    | `BigDecimal` | The base price. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |
-| `pricePerShuttle` | `BigDecimal` | The price per shuttle. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |
+```java
+public Pricing toPricing()
+```
+
+Converts this request object into a domain `Pricing` value object.
+
+**Returns:** `Pricing` - A new `Pricing` instance constructed from the request's field values, with the currency string converted to a `Currency` value object.
+
+## Usage Example
+
+```java
+// Example: Creating a PricingRequest for a flat-rate pricing model
+PricingRequest request = new PricingRequest(
+    PricingMode.FLAT,
+    "USD",
+    new BigDecimal("25.00"),  // flatPrice
+    null,                      // malePrice (not used in FLAT mode)
+    null,                      // femalePrice (not used in FLAT mode)
+    null,                      // basePrice (not used in FLAT mode)
+    null                       // pricePerShuttle (not used in FLAT mode)
+);
+
+// Convert to domain object
+Pricing pricing = request.toPricing();
+```
+
+## Validation Notes
+
+- All `BigDecimal` fields are validated to ensure they have at most 8 integer digits and 2 decimal places.
+- All monetary values must be greater than or equal to 0.00.
+- The `currency` field must be a valid 3-letter uppercase ISO-4217 code.
+- The `mode` field is required and must be a valid `PricingMode` enum value.
+
+## Dependencies
+
+- `com.upmatches.app.features.game.enums.PricingMode` - Enum defining available pricing modes
+- `com.upmatches.app.features.game.valueobjects.Currency` - Value object for currency representation
+- `com.upmatches.app.features.game.valueobjects.Pricing` - Domain value object for pricing configuration
+- Jakarta Bean Validation annotations (`jakarta.validation.constraints.*`)

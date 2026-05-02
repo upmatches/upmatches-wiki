@@ -4,34 +4,79 @@ title: DeleteNotificationService
 sidebar_label: DeleteNotificationService
 ---
 
-## Overview
+# DeleteNotificationService
 
-The `DeleteNotificationService` class is a part of the notification services in the application. It is responsible for handling the deletion of notifications for authenticated users. This service ensures that only notifications belonging to the authenticated user can be deleted, maintaining data integrity and security.
+The `DeleteNotificationService` class is a Spring service responsible for deleting a notification owned by the currently authenticated user. It ensures that only the intended recipient can delete their own notification, providing a secure and transactional delete operation.
 
-## Class Details
+## Purpose
 
-The `DeleteNotificationService` class implements the `IDeleteNotificationService` interface and is marked with the `@Service` annotation, indicating that it is a Spring service component. It uses dependency injection to obtain instances of `NotificationRepository` and `IAuthenticatedUserResolver`.
+- **Secure Deletion**: Verifies that the notification belongs to the authenticated user before deletion.
+- **Transactional**: The delete operation is wrapped in a Spring `@Transactional` annotation to ensure data consistency.
+- **Error Handling**: Throws a `NotificationNotFoundException` if the notification does not exist or does not belong to the user.
+- **Operation Tracking**: Uses `ServiceOperationExecutor` to execute the delete operation with standardized error handling and logging.
 
-## Public Methods
+## Dependencies
 
-### `execute`
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `NotificationRepository` | Repository | Data access layer for `Notification` entities |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID |
 
-The `execute` method is the primary method of the `DeleteNotificationService` class. It is responsible for deleting a notification specified by its unique identifier (UUID) for the currently authenticated user.
+## Constructor
+
+### `DeleteNotificationService(NotificationRepository, IAuthenticatedUserResolver)`
+
+Initializes the service with required dependencies.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id`      | `UUID` | The unique identifier of the notification to be deleted. |
+| `notificationRepository` | `NotificationRepository` | Repository for notification persistence |
+| `userResolver` | `IAuthenticatedUserResolver` | Service to resolve the authenticated user |
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | This method does not return a value. |
+## Public Methods
 
-### Method Behavior
+### `execute(UUID id)`
 
-1. **User Authentication**: The method retrieves the authenticated user's ID using the `userResolver.requireUserId()` method.
-2. **Notification Retrieval**: It attempts to find the notification by its ID and the recipient's ID using the `notificationRepository.findByIdAndRecipientId(id, userId)` method.
-3. **Exception Handling**: If the notification is not found, a `NotificationNotFoundException` is thrown with a descriptive message.
-4. **Notification Deletion**: If the notification is found, it is deleted using the `notificationRepository.delete(notification)` method, executed within a transactional context to ensure data consistency.
-5. **Operation Execution**: The deletion operation is wrapped in a `ServiceOperationExecutor.executeVoid` call to handle any potential exceptions and ensure the operation status is set to `DELETE`.
+Deletes a notification by its ID, but only if it belongs to the currently authenticated user.
 
-This service is crucial for maintaining the integrity of user-specific notifications and ensuring that users can manage their notifications effectively.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the notification to delete |
+
+**Throws:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `NotificationNotFoundException` | If no notification with the given ID exists for the authenticated user |
+| `ResourceNotFoundException` | If the delete operation fails (wrapped by `ServiceOperationExecutor`) |
+
+**Behavior:**
+
+1. Resolves the authenticated user's ID via `userResolver.requireUserId()`.
+2. Queries the repository for a notification matching both the provided ID and the user's ID.
+3. If not found, throws `NotificationNotFoundException` with a descriptive message.
+4. If found, executes the delete operation through `ServiceOperationExecutor.executeVoid()` with the `DELETE` operation status.
+
+## Example Usage
+
+```java
+@Autowired
+private DeleteNotificationService deleteNotificationService;
+
+public void removeNotification(UUID notificationId) {
+    deleteNotificationService.execute(notificationId);
+}
+```
+
+## Error Messages
+
+| Constant | Value | Usage |
+|----------|-------|-------|
+| `MSG_NOT_FOUND` | `"Notification '%s' not found for user '%s'."` | Used when the notification does not exist for the given user |
+
+## Notes
+
+- The class is declared as `non-sealed`, indicating it is part of a sealed interface hierarchy (`IDeleteNotificationService`).
+- The `@Service` annotation registers this class as a Spring bean.
+- The `@Transactional` annotation ensures the delete operation is performed within a database transaction.
+- The `ServiceOperationExecutor` provides consistent error handling and logging for service-level operations.

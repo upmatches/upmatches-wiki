@@ -4,23 +4,52 @@ title: IGameAuthorizationService Interface
 sidebar_label: IGameAuthorizationService
 ---
 
-## Overview
+# IGameAuthorizationService
 
-The `IGameAuthorizationService` is a sealed interface in the `com.upmatches.app.features.game.services` package. It defines a set of methods for handling authorization logic related to game operations. This interface ensures that only authorized users can perform specific actions on game entities, such as viewing, organizing, joining, and modifying games. The interface is implemented by the `GameAuthorizationService` class.
+The `IGameAuthorizationService` is a **sealed interface** that defines the contract for authorization and validation logic related to game operations in the application. It serves as the boundary for enforcing business rules and access control policies before any game-related action is performed.
 
-## Public Methods
+This interface is designed to be implemented exclusively by the `GameAuthorizationService` class, ensuring a single, centralized authorization layer for game entities.
 
-The following table documents the public methods available in the `IGameAuthorizationService` interface:
+## Purpose
+
+The primary purpose of this interface is to provide a clear, testable contract for:
+
+- **Access Control**: Determining whether a user has permission to view or modify a game.
+- **Business Rule Validation**: Enforcing constraints such as joinability, slot availability, and field immutability.
+- **Separation of Concerns**: Isolating authorization logic from the service layer that handles game CRUD operations.
+
+## Methods
 
 | Method | Parameters | Return Type | Description |
 |--------|------------|-------------|-------------|
-| `assertCanViewGame` | `Game game`, `UUID userId` | `void` | Ensures that the user with the specified `userId` has permission to view the given `game`. |
-| `assertIsOrganizer` | `Game game`, `UUID userId` | `void` | Verifies that the user with the specified `userId` is the organizer of the given `game`. |
-| `assertGameJoinable` | `UUID id`, `Game game` | `void` | Checks if the game identified by `id` is joinable. |
-| `assertPrivateAccess` | `UUID id`, `UUID userId`, `Game game` | `void` | Ensures that the user with the specified `userId` has private access to the game identified by `id`. |
-| `assertNotAlreadyJoined` | `UUID id`, `UUID userId` | `void` | Confirms that the user with the specified `userId` has not already joined the game identified by `id`. |
-| `assertVisibilityUnchanged` | `UUID id`, `Game game`, `UpdateGameRequest request` | `void` | Ensures that the visibility of the game identified by `id` remains unchanged according to the `request`. |
-| `assertSlotsAboveActive` | `UUID id`, `Integer newSlots`, `long activeCount` | `void` | Validates that the number of new slots for the game identified by `id` is above the current active count. |
-| `assertImmutableFields` | `UUID id`, `Game game`, `UpdateGameRequest request`, `long activeCount` | `void` | Ensures that certain immutable fields of the game identified by `id` are not altered according to the `request`. |
+| `assertCanViewGame` | `Game game`, `UUID userId` | `void` | Asserts that the given user has permission to view the specified game. Throws an exception if the user is not authorized. |
+| `assertIsOrganizer` | `Game game`, `UUID userId` | `void` | Asserts that the given user is the organizer of the specified game. Throws an exception if the user is not the organizer. |
+| `assertGameJoinable` | `UUID id`, `Game game` | `void` | Asserts that the game with the given ID is currently joinable (e.g., not full, not started, etc.). Throws an exception if the game cannot be joined. |
+| `assertPrivateAccess` | `UUID id`, `UUID userId`, `Game game` | `void` | Asserts that the given user has access to a private game. Throws an exception if the user is not authorized to access the private game. |
+| `assertNotAlreadyJoined` | `UUID id`, `UUID userId` | `void` | Asserts that the given user has not already joined the game with the specified ID. Throws an exception if the user is already a participant. |
+| `assertVisibilityUnchanged` | `UUID id`, `Game game`, `UpdateGameRequest request` | `void` | Asserts that the visibility field of the game is not being changed in the update request. Throws an exception if the visibility is being modified. |
+| `assertSlotsAboveActive` | `UUID id`, `Integer newSlots`, `long activeCount` | `void` | Asserts that the new number of slots is greater than or equal to the current active participant count. Throws an exception if the new slot count is insufficient. |
+| `assertImmutableFields` | `UUID id`, `Game game`, `UpdateGameRequest request`, `long activeCount` | `void` | Asserts that no immutable fields are being modified in the update request. This is a composite validation that may check multiple fields at once. Throws an exception if any immutable field is being changed. |
 
-This interface is crucial for maintaining the integrity and security of game-related operations by enforcing authorization checks.
+## Usage Notes
+
+- All methods throw runtime exceptions (typically `AuthorizationException` or `ValidationException`) when the assertion fails.
+- The interface is **sealed**, meaning only the permitted class `GameAuthorizationService` can implement it. This ensures a single, consistent authorization implementation across the application.
+- The `UUID id` parameter in many methods represents the unique identifier of the game being operated on.
+- The `UpdateGameRequest` parameter is used in methods that validate update operations to compare the requested changes against the current game state.
+
+## Example Implementation Snippet
+
+```java
+public final class GameAuthorizationService implements IGameAuthorizationService {
+    
+    @Override
+    public void assertCanViewGame(Game game, UUID userId) {
+        if (!game.isPublic() && !game.getOrganizerId().equals(userId)) {
+            throw new AuthorizationException("User cannot view this game");
+        }
+    }
+    
+    // ... other method implementations
+}
+```

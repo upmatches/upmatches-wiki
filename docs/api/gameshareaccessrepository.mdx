@@ -1,37 +1,57 @@
 ---
-id: gameshare-access-repository
+id: game-share-access-repository
 title: GameShareAccessRepository
 sidebar_label: GameShareAccessRepository
 ---
 
-import com.upmatches.app.features.game.entities.GameShareAccess;
-import org.springframework.data.jpa.repository.JpaRepository;
+# GameShareAccessRepository
 
-import java.util.UUID;
+The `GameShareAccessRepository` interface provides database access operations for the `GameShareAccess` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD (Create, Read, Update, Delete) functionality, and includes a custom query method for checking access permissions.
 
-## Overview
+## Purpose
 
-The `GameShareAccessRepository` interface is a part of the repository layer in a Spring application. It extends the `JpaRepository` interface, providing CRUD operations for the `GameShareAccess` entity. This repository is responsible for handling data access related to game share access records, which are identified by a unique `UUID`.
+This repository serves as the data access layer for managing game share access records. It enables the application to:
+- Perform standard database operations on `GameShareAccess` entities (save, find, delete, etc.)
+- Check whether a specific user has access to a particular game
 
-## Public Methods
+## Inheritance
 
-The `GameShareAccessRepository` interface includes the following public method:
+The interface extends `JpaRepository<GameShareAccess, UUID>`, which provides:
+- **Entity type**: `GameShareAccess`
+- **Primary key type**: `UUID`
 
-| Method Signature | Description |
-|------------------|-------------|
-| `boolean existsByGameIdAndUserId(UUID gameId, UUID userId)` | Checks if a `GameShareAccess` record exists for a given `gameId` and `userId`. |
+## Custom Methods
 
-### Method Details
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `existsByGameIdAndUserId` | `boolean` | `UUID gameId`, `UUID userId` | Checks if a record exists where a specific user has access to a specific game. Returns `true` if an access record exists, `false` otherwise. |
 
-#### `existsByGameIdAndUserId`
+## Usage Example
 
-- **Parameters:**
+```java
+@Service
+public class GameShareService {
+    
+    private final GameShareAccessRepository repository;
+    
+    public GameShareService(GameShareAccessRepository repository) {
+        this.repository = repository;
+    }
+    
+    public boolean hasUserAccessToGame(UUID gameId, UUID userId) {
+        return repository.existsByGameIdAndUserId(gameId, userId);
+    }
+}
+```
 
-  | Name    | Type   | Description                              |
-  |---------|--------|------------------------------------------|
-  | gameId  | UUID   | The unique identifier of the game.       |
-  | userId  | UUID   | The unique identifier of the user.       |
+## Dependencies
 
-- **Return Type:** `boolean`
+- **Spring Data JPA**: Provides the `JpaRepository` base interface and query derivation
+- **GameShareAccess entity**: The JPA entity this repository manages
+- **UUID**: Used as the primary key type for the entity
 
-  Returns `true` if a `GameShareAccess` record exists for the specified `gameId` and `userId`, otherwise returns `false`.
+## Notes
+
+- The custom method `existsByGameIdAndUserId` is automatically implemented by Spring Data JPA through method name convention
+- This method is optimized for existence checks and returns a boolean result without loading the full entity
+- The repository is typically injected into service classes using constructor injection

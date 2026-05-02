@@ -4,22 +4,51 @@ title: Auditable Annotation
 sidebar_label: Auditable
 ---
 
-## Overview
+# @Auditable
 
-The `Auditable` annotation is part of the `com.upmatches.app.features.audit.annotations` package. It is designed to be used on methods to specify that they should be audited. This annotation provides metadata about the action being performed, the category of the audit, and additional details about the resource involved. It is retained at runtime, allowing for dynamic processing during the execution of the application.
+The `@Auditable` annotation is a custom Java annotation used to mark methods that should be audited. When applied to a method, it captures metadata about the operation being performed, enabling automatic audit logging of user actions within the application.
 
-## Public Methods
+## Purpose
 
-The `Auditable` annotation defines several elements that can be used to configure the auditing behavior. Below is a table documenting each element, its purpose, and its return type.
+This annotation serves as a declarative mechanism to define audit requirements for specific methods. It allows developers to specify what action is being performed, the category of the audit event, the resource being affected, and whether the operation involves sensitive data. The annotation is retained at runtime, making it accessible for reflection-based audit processing.
 
-| Element Name         | Description                                                                 | Return Type                  |
-|----------------------|-----------------------------------------------------------------------------|------------------------------|
-| `action`             | Specifies the action being audited. This is a required element.             | `String`                     |
-| `category`           | Defines the category of the audit. Defaults to `AuditCategory.WRITE`.       | `AuditCategory`              |
-| `resourceType`       | Describes the type of resource being audited. Defaults to an empty string.  | `String`                     |
-| `resourceIdExpression` | Provides an expression to determine the resource ID. Defaults to an empty string. | `String`                     |
-| `sensitive`          | Indicates whether the audited action involves sensitive information. Defaults to `false`. | `boolean`                    |
+## Annotation Elements
 
-## Usage
+| Element | Type | Default | Description |
+|---------|------|---------|-------------|
+| `action` | `String` | (required) | A descriptive name for the action being audited (e.g., "CREATE_USER", "UPDATE_PROFILE"). |
+| `category` | `AuditCategory` | `AuditCategory.WRITE` | The category of the audit event, typically indicating the type of operation (e.g., READ, WRITE, DELETE). |
+| `resourceType` | `String` | `""` | The type of resource being acted upon (e.g., "User", "Order", "Document"). |
+| `resourceIdExpression` | `String` | `""` | A SpEL (Spring Expression Language) expression that resolves to the identifier of the resource being audited. |
+| `sensitive` | `boolean` | `false` | Indicates whether the audited operation involves sensitive data that may require special handling or masking. |
 
-To use the `Auditable` annotation, apply it to a method within your application where auditing is required. Configure the elements as needed to provide the necessary audit metadata.
+## Usage Example
+
+```java
+import com.upmatches.app.features.audit.annotations.Auditable;
+import com.upmatches.app.features.audit.enums.AuditCategory;
+
+public class UserService {
+
+    @Auditable(
+        action = "CREATE_USER",
+        category = AuditCategory.WRITE,
+        resourceType = "User",
+        resourceIdExpression = "#user.id",
+        sensitive = true
+    )
+    public User createUser(User user) {
+        // Method implementation
+    }
+}
+```
+
+## Target and Retention
+
+- **Target**: `ElementType.METHOD` – This annotation can only be applied to methods.
+- **Retention**: `RetentionPolicy.RUNTIME` – The annotation is available at runtime for reflection-based processing.
+
+## Related Components
+
+- **`AuditCategory`**: An enum that defines the categories of audit events (e.g., READ, WRITE, DELETE).
+- **Audit Interceptor/Aspect**: A component that processes methods annotated with `@Auditable` to generate and store audit logs.

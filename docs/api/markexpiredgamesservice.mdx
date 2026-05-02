@@ -4,36 +4,76 @@ title: MarkExpiredGamesService
 sidebar_label: MarkExpiredGamesService
 ---
 
-## Overview
+# MarkExpiredGamesService
 
-The `MarkExpiredGamesService` class is a service component in a Java application that manages game statuses. Specifically, it marks games as expired if they are scheduled or started but have not been completed by the current time. This service is part of a larger application that likely deals with game scheduling and management.
+## Purpose
 
-## Class Purpose
+The `MarkExpiredGamesService` is a Spring service class responsible for marking games as expired when their scheduled time has passed. It identifies games that are currently in `SCHEDULED` or `STARTED` status and updates their status to reflect expiration based on the current system time.
 
-The primary purpose of the `MarkExpiredGamesService` class is to update the status of games in the repository to "expired" if they meet certain criteria. This is achieved through a transactional operation that ensures data consistency and integrity.
+This service is part of the game management feature and ensures that games are automatically transitioned to an expired state, maintaining data consistency and enabling downstream processes to handle expired games appropriately.
+
+## Class Details
+
+| Aspect | Description |
+|--------|-------------|
+| **Package** | `com.upmatches.app.features.game.services` |
+| **Type** | `non-sealed` class implementing `IMarkExpiredGamesService` |
+| **Annotations** | `@Service` |
+| **Dependencies** | `GameRepository` |
+
+## Constructor
+
+| Constructor | Description |
+|-------------|-------------|
+| `MarkExpiredGamesService(GameRepository gameRepository)` | Creates a new instance with the required `GameRepository` dependency for database operations. |
 
 ## Public Methods
 
-### `execute`
+### `execute()`
 
-The `execute` method is the main operation of the `MarkExpiredGamesService` class. It performs the task of marking games as expired.
+| Property | Value |
+|----------|-------|
+| **Signature** | `@Transactional public int execute()` |
+| **Description** | Executes the expiration marking process. Retrieves the current time and marks all games with status `SCHEDULED` or `STARTED` that have a scheduled time before the current time as expired. |
+| **Returns** | `int` - The number of games that were marked as expired. |
+| **Transactional** | Yes - the operation is wrapped in a database transaction. |
+| **Error Handling** | Uses `ServiceOperationExecutor` to handle exceptions. If a `ResourceNotFoundException` occurs, it is wrapped and re-thrown. |
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None      | N/A  | This method does not take any parameters. |
+## Method Details
 
-| Return Type | Description |
-|-------------|-------------|
-| `int`       | Returns the number of games that were marked as expired. |
+### `execute()` Flow
 
-#### Method Details
+1. **Get Current Time**: Captures the current instant using `Instant.now()`.
+2. **Query and Update**: Calls `gameRepository.markExpiredBefore()` with:
+   - A list of statuses to check: `SCHEDULED` and `STARTED`
+   - The current time as the expiration threshold
+   - The current time as the update timestamp
+3. **Operation Management**: The entire operation is managed by `ServiceOperationExecutor` with:
+   - Operation type: `UPDATE`
+   - Exception handling: Creates a `ResourceNotFoundException` if the operation fails
 
-- **Transactional**: The method is annotated with `@Transactional`, ensuring that the operation is atomic and consistent.
-- **Operation Execution**: Utilizes `ServiceOperationExecutor.execute` to perform the operation, which handles exceptions and ensures the operation status is updated.
-- **Game Status Update**: It checks for games with statuses `SCHEDULED` and `STARTED` and marks them as expired if they are past the current time (`Instant.now()`).
+## Dependencies
 
-## Exception Handling
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameRepository` | Repository | Provides database access for game entities and the `markExpiredBefore` query method. |
+| `ServiceOperationExecutor` | Utility | Handles operation execution, logging, and exception wrapping. |
+| `GameStatus` | Enum | Defines possible game statuses (`SCHEDULED`, `STARTED`, etc.). |
+| `ResourceNotFoundException` | Exception | Custom exception thrown when the operation encounters an error. |
 
-- **ResourceNotFoundException**: This exception is thrown if no games are found that meet the criteria for being marked as expired. The exception handling is managed by the `ServiceOperationExecutor`.
+## Usage Example
 
-This service is crucial for maintaining the integrity of game statuses within the application, ensuring that outdated games are appropriately marked and managed.
+```java
+// Inject the service
+private final MarkExpiredGamesService markExpiredGamesService;
+
+// Execute the expiration marking
+int expiredCount = markExpiredGamesService.execute();
+logger.info("Marked {} games as expired", expiredCount);
+```
+
+## Notes
+
+- The service is declared as `non-sealed`, allowing for future extension while maintaining controlled inheritance.
+- The `@Transactional` annotation ensures that the entire operation is atomic - either all matching games are updated or none are.
+- The operation uses `Instant.now()` for both the expiration comparison and the update timestamp, ensuring consistency.

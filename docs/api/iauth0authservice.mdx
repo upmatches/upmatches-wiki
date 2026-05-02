@@ -1,46 +1,88 @@
 ---
 id: iauth0authservice
-title: IAuth0AuthService Interface
+title: IAuth0AuthService Interface Documentation
 sidebar_label: IAuth0AuthService
 ---
 
-## Overview
+# IAuth0AuthService
 
-The `IAuth0AuthService` is a sealed interface in the `com.upmatches.app.features.auth.services` package. It defines the contract for authentication services using Auth0. This interface is designed to be implemented by classes that handle authentication processes, specifically dealing with authorization URLs and exchanging authorization codes for verified claims.
+The `IAuth0AuthService` is a sealed interface that defines the contract for Auth0 authentication operations within the application. It provides methods for generating authorization URLs and exchanging authorization codes for verified claims. The interface is sealed to permit only `Auth0AuthService` as its implementation, ensuring controlled inheritance and type safety.
 
-## Public Methods
+## Interface Definition
+
+```java
+public sealed interface IAuth0AuthService permits Auth0AuthService
+```
+
+## Methods
 
 ### `getAuthorizationUrl`
 
-This method generates an authorization URL that can be used to initiate the authentication process with Auth0.
+Generates the authorization URL for initiating the OAuth 2.0 authentication flow with Auth0.
 
-| Parameter      | Type   | Description                                      |
-|----------------|--------|--------------------------------------------------|
-| `state`        | String | A unique state parameter to maintain state between the request and callback. |
-| `nonce`        | String | A nonce parameter to associate a client session with an ID token. |
-| `codeVerifier` | String | A code verifier for the PKCE (Proof Key for Code Exchange) flow. |
-| `connection`   | String | The connection to use for authentication (e.g., database, social). |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `state` | `String` | A random string used to maintain state between the request and callback, preventing CSRF attacks |
+| `nonce` | `String` | A random string used to associate a client session with an ID token, preventing replay attacks |
+| `codeVerifier` | `String` | A cryptographically random string used in PKCE (Proof Key for Code Exchange) flow |
+| `connection` | `String` | The Auth0 connection type (e.g., "google-oauth2", "facebook", "Username-Password-Authentication") |
 
-**Returns:** `String` - The generated authorization URL.
+**Returns:** `String` - The fully constructed authorization URL to redirect the user to Auth0's authentication page.
 
 ### `exchangeAuthorizationCode`
 
-This method exchanges an authorization code for verified claims, which include user information.
+Exchanges an authorization code for verified claims from Auth0 after successful user authentication.
 
-| Parameter            | Type   | Description                                      |
-|----------------------|--------|--------------------------------------------------|
-| `authorizationCode`  | String | The authorization code received from the Auth0 authorization server. |
-| `codeVerifier`       | String | The code verifier used in the PKCE flow.         |
-| `nonce`              | String | The nonce used to validate the ID token.         |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `authorizationCode` | `String` | The authorization code received from Auth0 after user authentication |
+| `codeVerifier` | `String` | The same code verifier used in the authorization request for PKCE verification |
+| `nonce` | `String` | The same nonce used in the authorization request for ID token validation |
 
-**Returns:** `Auth0VerifiedClaims` - An object containing verified claims such as subject, picture URL, and email.
+**Returns:** `Auth0VerifiedClaims` - A record containing the verified claims from Auth0.
 
-## Auth0VerifiedClaims Record
+## Inner Record: `Auth0VerifiedClaims`
 
-The `Auth0VerifiedClaims` is a record that encapsulates the verified claims received after exchanging an authorization code. It includes the following fields:
+A record that encapsulates the verified claims returned from Auth0 after successful authentication.
 
-| Field        | Type   | Description                                      |
-|--------------|--------|--------------------------------------------------|
-| `sub`        | String | The subject identifier for the user.             |
-| `pictureUrl` | String | The URL of the user's profile picture.           |
-| `email`      | String | The email address of the user.                   |
+| Field | Type | Description |
+|-------|------|-------------|
+| `sub` | `String` | The subject identifier (unique user ID from Auth0) |
+| `pictureUrl` | `String` | URL to the user's profile picture |
+| `email` | `String` | The user's email address |
+
+## Usage Example
+
+```java
+public class AuthServiceExample {
+    private final IAuth0AuthService authService;
+    
+    public AuthServiceExample(IAuth0AuthService authService) {
+        this.authService = authService;
+    }
+    
+    public String initiateLogin() {
+        String state = generateRandomState();
+        String nonce = generateRandomNonce();
+        String codeVerifier = generateCodeVerifier();
+        String connection = "google-oauth2";
+        
+        return authService.getAuthorizationUrl(state, nonce, codeVerifier, connection);
+    }
+    
+    public IAuth0AuthService.Auth0VerifiedClaims handleCallback(
+            String authorizationCode, 
+            String codeVerifier, 
+            String nonce) {
+        return authService.exchangeAuthorizationCode(authorizationCode, codeVerifier, nonce);
+    }
+}
+```
+
+## Implementation Notes
+
+- The interface is sealed, meaning only `Auth0AuthService` can implement it
+- The `Auth0VerifiedClaims` record is immutable and provides type-safe access to user claims
+- PKCE (Proof Key for Code Exchange) is used for secure authorization code exchange
+- The `nonce` parameter helps prevent replay attacks on ID tokens
+- The `state` parameter helps prevent CSRF attacks during the OAuth flow

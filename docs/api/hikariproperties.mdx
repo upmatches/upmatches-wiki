@@ -1,27 +1,47 @@
 ---
 id: hikari-properties
-title: HikariProperties Class
+title: HikariProperties
 sidebar_label: HikariProperties
 ---
 
-## Overview
+# HikariProperties
 
-The `HikariProperties` class is a Java record that encapsulates configuration properties for a HikariCP connection pool. HikariCP is a fast, simple, and reliable JDBC connection pool. This class provides a structured way to define and manage the settings required to optimize database connection pooling.
+## Purpose
 
-## Public Methods
+The `HikariProperties` class is a Java record that encapsulates configuration properties for a HikariCP connection pool. HikariCP is a high-performance JDBC connection pool library commonly used in Spring Boot applications. This record provides a type-safe and immutable way to define and pass HikariCP connection pool settings, such as pool size limits, timeouts, and connection lifecycle parameters.
 
-The `HikariProperties` class automatically provides the following public methods due to its nature as a Java record. Each method corresponds to a component of the record and allows access to the respective property.
+## Record Definition
 
-| Method Name                  | Parameters | Return Type | Description                                                                 |
-|------------------------------|------------|-------------|-----------------------------------------------------------------------------|
-| `maximumPoolSize()`          | None       | `Integer`   | Returns the maximum number of connections in the pool.                      |
-| `minimumIdle()`              | None       | `Integer`   | Returns the minimum number of idle connections that the pool maintains.     |
-| `idleTimeout()`              | None       | `Long`      | Returns the maximum amount of time that a connection is allowed to sit idle in the pool. |
-| `maxLifetime()`              | None       | `Long`      | Returns the maximum lifetime of a connection in the pool.                   |
-| `connectionTimeout()`        | None       | `Long`      | Returns the maximum number of milliseconds that a client will wait for a connection from the pool. |
-| `leakDetectionThreshold()`   | None       | `Long`      | Returns the amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak. |
-| `initializationFailTimeout()`| None       | `Long`      | Returns the time in milliseconds that the pool will wait for a connection to be successfully established before failing. |
+This record is defined in the `com.upmatches.app.shared.database.properties` package and is intended to be used as a configuration holder for HikariCP connection pool settings.
 
-## Usage
+## Fields
 
-The `HikariProperties` record is typically used to configure a HikariCP connection pool by providing the necessary parameters to optimize performance and resource management. Each property can be accessed via its corresponding method to retrieve the configuration value.
+| Field | Type | Description |
+|-------|------|-------------|
+| `maximumPoolSize` | `Integer` | The maximum number of connections that can be created in the pool. |
+| `minimumIdle` | `Integer` | The minimum number of idle connections that HikariCP tries to maintain in the pool. |
+| `idleTimeout` | `Long` | The maximum time (in milliseconds) that a connection is allowed to sit idle in the pool. |
+| `maxLifetime` | `Long` | The maximum lifetime (in milliseconds) of a connection in the pool. |
+| `connectionTimeout` | `Long` | The maximum time (in milliseconds) that the pool will wait for a connection to become available. |
+| `leakDetectionThreshold` | `Long` | The threshold (in milliseconds) for detecting connection leaks. |
+| `initializationFailTimeout` | `Long` | The time (in milliseconds) that the pool will wait for a connection to be validated during initialization. |
+
+## Usage Example
+
+```java
+HikariProperties properties = new HikariProperties(
+    10,      // maximumPoolSize
+    5,       // minimumIdle
+    300000,  // idleTimeout (5 minutes)
+    1800000, // maxLifetime (30 minutes)
+    30000,   // connectionTimeout (30 seconds)
+    0,       // leakDetectionThreshold (disabled)
+    -1       // initializationFailTimeout (fail immediately)
+);
+```
+
+## Notes
+
+- All fields are nullable (`Integer` and `Long` types), allowing for partial configuration where some properties may be left unspecified.
+- The record is immutable and thread-safe by design, making it suitable for use in configuration management.
+- This class is typically used in conjunction with a configuration framework (e.g., Spring Boot's `@ConfigurationProperties`) to bind external configuration values to a structured object.

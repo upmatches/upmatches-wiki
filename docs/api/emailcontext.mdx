@@ -1,59 +1,111 @@
 ---
 id: email-context
-title: EmailContext Class
+title: EmailContext
 sidebar_label: EmailContext
 ---
 
-## Purpose of the EmailContext Class
+# EmailContext
 
-The `EmailContext` class is a Java record designed to encapsulate the context required for sending email notifications related to games. It includes details such as the game title, venue, date, start and end times, skill level, court count, and a URL for the game. This class provides utility methods to create instances of `EmailContext` from game entities or for aggregate reminders.
+The `EmailContext` class is a Java record that encapsulates all the data needed to render an email notification for a game event. It provides a structured, immutable data container with factory methods to create instances from different sources, such as a `Game` entity or for aggregate reminders.
+
+## Purpose
+
+- **Centralize email data**: Collects all relevant fields (game title, venue, date, time, skill level, etc.) into a single object.
+- **Simplify email template rendering**: Provides a consistent data shape for email templates, reducing the need for null checks and formatting logic in the template layer.
+- **Support multiple email types**: Offers factory methods for creating contexts from a game object or for aggregate reminders (e.g., weekly summaries).
+
+## Record Components
+
+| Field       | Type        | Description                                      |
+|-------------|-------------|--------------------------------------------------|
+| `gameTitle` | `String`    | The title or name of the game.                   |
+| `venue`     | `String`    | The name of the venue where the game is held.    |
+| `date`      | `LocalDate` | The date of the game.                            |
+| `startTime` | `LocalTime` | The start time of the game.                      |
+| `endTime`   | `LocalTime` | The end time of the game.                        |
+| `skillLevel`| `String`    | The skill level label (single or range).         |
+| `courtCount`| `Integer`   | The number of courts (used in aggregate emails). |
+| `gameUrl`   | `String`    | A URL linking to the game details.               |
 
 ## Public Methods
 
-The `EmailContext` class provides the following public static methods:
+### `empty()`
 
-### `empty`
+Creates an `EmailContext` with all fields set to `null`. Useful as a fallback or placeholder.
 
-Creates an empty `EmailContext` instance with all fields set to `null`.
+**Returns:** `EmailContext` – an empty context instance.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None      |      |             |
+### `fromGame(Game game, String gameTitle, String gameUrl)`
 
-| Return Type | Description |
-|-------------|-------------|
-| `EmailContext` | An instance of `EmailContext` with all fields set to `null`. |
+Constructs an `EmailContext` from a `Game` entity, extracting and formatting the relevant data.
 
-### `fromGame`
+**Parameters:**
 
-Creates an `EmailContext` instance from a `Game` entity, a game title, and a game URL.
+| Parameter   | Type    | Description                                      |
+|-------------|---------|--------------------------------------------------|
+| `game`      | `Game`  | The game entity to extract data from.            |
+| `gameTitle` | `String`| The title to use for the game.                   |
+| `gameUrl`   | `String`| The URL linking to the game details.             |
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `game`    | `Game` | The game entity from which to extract context information. |
-| `gameTitle` | `String` | The title of the game. |
-| `gameUrl` | `String` | The URL associated with the game. |
+**Returns:** `EmailContext` – a fully populated context, or an empty context if `game` is `null`.
 
-| Return Type | Description |
-|-------------|-------------|
-| `EmailContext` | An instance of `EmailContext` populated with data extracted from the `Game` entity. |
+**Behavior:**
+- Converts the game's start time to Singapore Time (SGT) to extract the date and start/end times.
+- Retrieves the venue name via `venueName()`.
+- Formats the skill level label via `skillLevelLabel()`.
 
-### `aggregateReminder`
+### `aggregateReminder(LocalDate date, Integer courtCount)`
 
-Creates an `EmailContext` instance for an aggregate reminder, including the date and court count.
+Creates an `EmailContext` specifically for aggregate reminder emails (e.g., weekly summaries). Only the `date` and `courtCount` fields are populated; all others are `null`.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `date`    | `LocalDate` | The date for the reminder. |
-| `courtCount` | `Integer` | The number of courts involved in the reminder. |
+**Parameters:**
 
-| Return Type | Description |
-|-------------|-------------|
-| `EmailContext` | An instance of `EmailContext` with the specified date and court count. |
+| Parameter    | Type        | Description                                      |
+|--------------|-------------|--------------------------------------------------|
+| `date`       | `LocalDate` | The date associated with the reminder.           |
+| `courtCount` | `Integer`   | The total number of courts booked.               |
 
-## Private Methods
+**Returns:** `EmailContext` – a context with only `date` and `courtCount` set.
 
-The `EmailContext` class also includes private utility methods to assist in constructing the context:
+## Private Helper Methods
 
-- `venueName(Venue venue)`: Returns the name of the venue or `null` if the venue is `null`.
-- `skillLevelLabel(SkillLevel from, SkillLevel to)`: Constructs a skill level label based on the provided skill levels, handling cases where the levels are the same or one is `null`.
+### `venueName(Venue venue)`
+
+Extracts the name from a `Venue` object, returning `null` if the venue is `null`.
+
+**Parameters:**
+
+| Parameter | Type    | Description              |
+|-----------|---------|--------------------------|
+| `venue`   | `Venue` | The venue entity.        |
+
+**Returns:** `String` – the venue name, or `null`.
+
+### `skillLevelLabel(SkillLevel from, SkillLevel to)`
+
+Formats a skill level label. If only one level is provided, it returns that level's name. If two different levels are provided, it returns a range in the format "From – To". Returns `null` if the `from` level is `null`.
+
+**Parameters:**
+
+| Parameter | Type         | Description                          |
+|-----------|--------------|--------------------------------------|
+| `from`    | `SkillLevel` | The starting skill level.            |
+| `to`      | `SkillLevel` | The ending skill level (optional).   |
+
+**Returns:** `String` – the formatted skill level label, or `null`.
+
+## Usage Example
+
+```java
+// Create a context from a game
+Game game = gameService.findById(gameId);
+EmailContext context = EmailContext.fromGame(game, "Friday Night Badminton", "https://example.com/game/123");
+
+// Create an aggregate reminder context
+EmailContext reminder = EmailContext.aggregateReminder(LocalDate.now(), 5);
+```
+
+## Notes
+
+- All time conversions use the Singapore Time Zone (`Asia/Singapore`).
+- The record is immutable, making it safe for use in concurrent environments and email template rendering.

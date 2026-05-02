@@ -1,39 +1,46 @@
 ---
-id: igetgamedateavailabilityservice
+id: igame-date-availability-service
 title: IGetGameDateAvailabilityService
 sidebar_label: IGetGameDateAvailabilityService
 ---
 
-import com.upmatches.app.features.game.responses.GameDateAvailabilityResponse;
-
-import java.time.LocalDate;
-import java.util.List;
-
 ## Overview
 
-The `IGetGameDateAvailabilityService` is a sealed interface designed to define the contract for retrieving game date availability. It ensures that any implementing class, such as `GetGameDateAvailabilityService`, adheres to the specified method signature for fetching available game dates within a given range. This service is crucial for applications that need to provide users with information about available game dates, enhancing user experience by allowing them to plan accordingly.
+The `IGetGameDateAvailabilityService` interface defines the contract for retrieving game date availability within a specified date range. It is a **sealed interface**, meaning only the permitted implementation class (`GetGameDateAvailabilityService`) can implement it. This design enforces a controlled hierarchy and ensures that the availability logic is centralized and consistent.
 
-## Public Methods
+## Interface Definition
 
-### `execute`
+```java
+public sealed interface IGetGameDateAvailabilityService permits GetGameDateAvailabilityService {
 
-The `execute` method is the core functionality of the `IGetGameDateAvailabilityService`. It is responsible for fetching a list of game date availabilities between two specified dates.
+    List<GameDateAvailabilityResponse> execute(LocalDate fromDate, LocalDate toDate);
 
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `List<GameDateAvailabilityResponse> execute(LocalDate fromDate, LocalDate toDate)` | Retrieves a list of available game dates within the specified date range. |
+}
+```
 
-#### Parameters
+## Method Summary
 
-| Parameter | Type      | Description                          |
-| --------- | --------- | ------------------------------------ |
-| `fromDate` | `LocalDate` | The start date of the range for which game availability is requested. |
-| `toDate`   | `LocalDate` | The end date of the range for which game availability is requested. |
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `execute` | `List<GameDateAvailabilityResponse>` | `LocalDate fromDate` – Start of the date range (inclusive) <br/> `LocalDate toDate` – End of the date range (inclusive) | Retrieves a list of game date availability responses for the specified date range. |
 
-#### Return Type
+## Usage Notes
 
-| Type | Description |
-| ---- | ----------- |
-| `List<GameDateAvailabilityResponse>` | A list of `GameDateAvailabilityResponse` objects representing the available game dates within the specified range. |
+- The interface is **sealed**, so only the class `GetGameDateAvailabilityService` is allowed to implement it. This prevents unintended implementations and ensures a single source of truth for availability logic.
+- The `execute` method returns a list of `GameDateAvailabilityResponse` objects, each representing the availability status for a specific date within the range.
+- The date range is inclusive of both `fromDate` and `toDate`.
 
-This interface is a critical component for any system that requires dynamic retrieval of game availability data, ensuring that the implementing services provide consistent and reliable information.
+## Example Usage
+
+```java
+IGetGameDateAvailabilityService service = new GetGameDateAvailabilityService();
+LocalDate start = LocalDate.of(2025, 6, 1);
+LocalDate end = LocalDate.of(2025, 6, 30);
+List<GameDateAvailabilityResponse> availability = service.execute(start, end);
+```
+
+## Dependencies
+
+- `com.upmatches.app.features.game.responses.GameDateAvailabilityResponse` – The response object representing availability for a single date.
+- `java.time.LocalDate` – Standard Java date class for representing dates without time.
+- `java.util.List` – Standard Java collection interface for ordered sequences.

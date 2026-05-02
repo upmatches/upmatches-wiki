@@ -4,39 +4,89 @@ title: HardDeleteGameService
 sidebar_label: HardDeleteGameService
 ---
 
-## Overview
+# HardDeleteGameService
 
-The `HardDeleteGameService` class is a service component in a Java application that handles the permanent deletion of game entities from the database. It is part of the `com.upmatches.app.features.game.services` package and is designed to be used by administrators to remove game records completely, bypassing any soft-delete mechanisms.
+The `HardDeleteGameService` class provides a service for permanently deleting a game entity from the database. This operation is irreversible and is restricted to users with the `ADMIN` authority. The service ensures that the game exists before deletion and wraps the operation in a transactional context with auditing support.
+
+## Purpose
+
+- **Permanent Deletion**: Removes a game record entirely from the database (hard delete), as opposed to a soft delete.
+- **Authorization**: Only users with the `ADMIN` authority can perform this operation.
+- **Auditing**: The deletion action is logged with details about the resource and the affected game ID.
+- **Error Handling**: Throws a `ResourceNotFoundException` if the game does not exist.
 
 ## Class Details
 
-The `HardDeleteGameService` class implements the `IHardDeleteGameService` interface and is marked with the `@Service` annotation, indicating that it is a Spring service component. It is also marked as `non-sealed`, allowing other classes to extend it if necessary.
+| Property       | Value                                                                 |
+|----------------|-----------------------------------------------------------------------|
+| **Package**    | `com.upmatches.app.features.game.services`                            |
+| **Modifiers**  | `public non-sealed`                                                   |
+| **Implements** | `IHardDeleteGameService`                                              |
+| **Annotations**| `@Service`                                                            |
 
-### Dependencies
+## Dependencies
 
-- **GameRepository**: Used to perform database operations related to the `Game` entity.
-- **IGameLookupService**: Utilized to find games, including those that are marked as deleted.
+| Dependency          | Type                | Description                                      |
+|---------------------|---------------------|--------------------------------------------------|
+| `GameRepository`    | Repository          | Handles database operations for `Game` entities. |
+| `IGameLookupService`| Service             | Provides lookup functionality for game entities. |
+
+## Constructor
+
+### `HardDeleteGameService(GameRepository gameRepository, IGameLookupService lookupService)`
+
+Initializes the service with the required dependencies.
+
+**Parameters:**
+
+| Parameter        | Type                | Description                          |
+|------------------|---------------------|--------------------------------------|
+| `gameRepository` | `GameRepository`    | Repository for game data access.     |
+| `lookupService`  | `IGameLookupService`| Service for looking up game entities.|
 
 ## Public Methods
 
-### `execute`
+### `execute(UUID id)`
 
-The `execute` method is responsible for permanently deleting a game from the database. It is annotated with `@Transactional` to ensure that the operation is executed within a transaction context, and `@PreAuthorize` to restrict access to users with the 'ADMIN' authority. The `@Auditable` annotation is used to log the deletion action for auditing purposes.
+Permanently deletes a game entity identified by its UUID.
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public void execute(UUID id)` | Permanently deletes a game identified by the given UUID. |
+**Annotations:**
 
-#### Parameters
+- `@Transactional` – Ensures the operation is executed within a database transaction.
+- `@PreAuthorize("hasAuthority('ADMIN')")` – Restricts access to users with the `ADMIN` authority.
+- `@Auditable(action = "GAME_HARD_DELETED", resourceType = "GAME", resourceIdExpression = "#args[0]")` – Logs the deletion action with the game ID.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id`      | `UUID` | The unique identifier of the game to be deleted. |
+**Parameters:**
 
-#### Return Type
+| Parameter | Type   | Description                        |
+|-----------|--------|------------------------------------|
+| `id`      | `UUID` | The unique identifier of the game. |
 
-This method does not return any value (`void`).
+**Throws:**
 
-## Usage
+| Exception                    | Condition                                      |
+|------------------------------|------------------------------------------------|
+| `ResourceNotFoundException`  | If no game exists with the given ID.           |
 
-The `HardDeleteGameService` is intended to be used in scenarios where a game needs to be completely removed from the system. It ensures that only users with the appropriate authority can perform this operation and logs the action for auditing purposes.
+**Behavior:**
+
+1. Uses `lookupService.findGameIgnoringDeletedOrThrow(id)` to verify the game exists (including soft-deleted records).
+2. Calls `ServiceOperationExecutor.executeVoid()` to perform the deletion via `gameRepository.delete(game)`.
+3. If the game is not found, a `ResourceNotFoundException` is thrown.
+
+## Usage Example
+
+```java
+@Autowired
+private HardDeleteGameService hardDeleteGameService;
+
+public void deleteGame(UUID gameId) {
+    hardDeleteGameService.execute(gameId);
+}
+```
+
+## Notes
+
+- This service performs a **hard delete**, meaning the record is permanently removed from the database. Use with caution.
+- The `findGameIgnoringDeletedOrThrow` method in `IGameLookupService` is used to locate the game regardless of its soft-delete status, ensuring that even previously soft-deleted games can be hard deleted.
+- The `ServiceOperationExecutor.executeVoid` method handles the execution and exception mapping, converting any persistence errors into `ResourceNotFoundException`.

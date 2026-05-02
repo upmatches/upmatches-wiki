@@ -1,35 +1,70 @@
 ---
 id: venue-response
-title: VenueResponse Class
+title: VenueResponse
 sidebar_label: VenueResponse
 ---
 
-## Purpose of the VenueResponse Class
+# VenueResponse
 
-The `VenueResponse` class is a Java record that represents a response object for venue-related data in the application. It encapsulates various details about a venue, such as its identifier, location, associated activity, and related stations. This class is designed to facilitate the transfer of venue data between different layers of the application, particularly from the backend to the frontend.
+The `VenueResponse` class is a Java record that serves as a Data Transfer Object (DTO) for representing venue information in API responses. It encapsulates all relevant venue data, including location details, associated activity, and nearby stations, while providing a convenient factory method for converting from the domain entity `Venue`.
 
-## Public Methods
+## Purpose
 
-The `VenueResponse` class provides the following public method:
+- **Data Transfer**: Provides a structured, immutable representation of venue data for API responses.
+- **Entity Mapping**: Simplifies conversion from the `Venue` domain entity to a response-friendly format.
+- **Nested Data**: Includes related `ActivityResponse` and `StationResponse` objects for a complete venue view.
 
-### `fromVenue`
+## Record Components
 
-Converts a `Venue` entity into a `VenueResponse` object.
+| Component | Type | Description |
+|-----------|------|-------------|
+| `id` | `Long` | Unique identifier for the venue |
+| `sourceId` | `String` | External source identifier |
+| `activity` | `ActivityResponse` | Associated activity details |
+| `name` | `String` | Venue name |
+| `address` | `String` | Street address |
+| `postalCode` | `String` | Postal/ZIP code |
+| `latitude` | `BigDecimal` | Geographic latitude coordinate |
+| `longitude` | `BigDecimal` | Geographic longitude coordinate |
+| `stations` | `List<StationResponse>` | List of nearby stations |
+| `createdAt` | `Instant` | Timestamp of venue creation |
+| `updatedAt` | `Instant` | Timestamp of last update |
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public static VenueResponse fromVenue(Venue venue)` | Creates a `VenueResponse` instance from a given `Venue` object. |
+## Methods
 
-#### Parameters
+### `fromVenue(Venue venue)`
+
+Converts a `Venue` domain entity into a `VenueResponse` DTO.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `venue`   | `Venue` | The `Venue` entity to be converted into a `VenueResponse`. |
+| `venue` | `Venue` | The venue entity to convert |
 
-#### Return Type
+**Returns:** `VenueResponse` - A new response object populated with data from the provided venue.
 
-| Type | Description |
-|------|-------------|
-| `VenueResponse` | A new instance of `VenueResponse` containing data from the provided `Venue` entity. |
+**Behavior:**
+- Maps all venue fields directly to the response record
+- Converts the venue's station list to `StationResponse` objects using `StationResponse.fromStation()`
+- Converts the venue's activity to an `ActivityResponse` using `ActivityResponse.fromActivity()`
 
-This method extracts data from a `Venue` object, including its ID, source ID, associated activity, name, address, postal code, geographical coordinates, list of stations, and timestamps for creation and last update. It then constructs a `VenueResponse` object with this data, ensuring a structured and consistent format for venue information.
+## Usage Example
+
+```java
+// Assuming 'venue' is a Venue entity retrieved from the database
+VenueResponse response = VenueResponse.fromVenue(venue);
+
+// Access response data
+Long venueId = response.id();
+String venueName = response.name();
+List<StationResponse> stations = response.stations();
+```
+
+## Dependencies
+
+- `ActivityResponse` - For representing associated activity data
+- `StationResponse` - For representing nearby station data
+- `Venue` - The domain entity being converted
+- `BigDecimal` - For precise geographic coordinate representation
+- `Instant` - For timestamp handling

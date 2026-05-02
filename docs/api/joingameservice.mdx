@@ -1,42 +1,105 @@
 ---
 id: join-game-service
 title: JoinGameService
-sidebar_label: Join Game Service
+sidebar_label: JoinGameService
 ---
 
-## Overview
+# JoinGameService
 
-The `JoinGameService` class is a part of the game services in the application. It is responsible for handling the logic when a user attempts to join a game. This service ensures that the user can join the game by checking various conditions such as game capacity, overlapping schedules, and authorization. It also manages notifications related to the game joining process.
+The `JoinGameService` class is a Spring service responsible for handling the business logic of a user joining a game. It validates the join request, checks for capacity and scheduling conflicts, persists the participant record, and publishes relevant notifications.
+
+## Purpose
+
+This service encapsulates the complete "join game" workflow, including:
+- Authenticating the requesting user
+- Looking up the game and user entities
+- Performing authorization checks (game joinable, private access, not already joined)
+- Validating game capacity
+- Checking for overlapping game participation
+- Persisting the new `GameParticipant` entity
+- Publishing domain events for notifications (player joined, game full, skill mismatch)
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameParticipantRepository` | Repository | Persistence for game participant records |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
+| `IGameLookupService` | Service | Retrieves game and user entities |
+| `IGameAuthorizationService` | Service | Performs authorization checks |
+| `ApplicationEventPublisher` | Spring | Publishes domain events for notifications |
 
 ## Public Methods
 
-### `execute`
-
-This method is the main entry point for a user to join a game. It performs several checks and operations to ensure that the user can successfully join the game.
-
-| Parameter | Type   | Description                          |
-|-----------|--------|--------------------------------------|
-| `id`      | `UUID` | The unique identifier of the game.   |
-
-| Return Type                   | Description                                                                 |
-|-------------------------------|-----------------------------------------------------------------------------|
-| `GameParticipantResponse`     | A response object containing details about the game participant after joining. |
-
-## Method Details
-
 ### `execute(UUID id)`
 
-- **Purpose**: Allows a user to join a specified game by performing necessary checks and operations.
-- **Parameters**:
-  - `id`: The unique identifier of the game the user wants to join.
-- **Return Type**: `GameParticipantResponse` - Contains information about the game participant after the join operation is completed.
-- **Exceptions**:
-  - `GameFullException`: Thrown if the game has reached its maximum capacity.
-  - `OverlappingGameException`: Thrown if the user is already participating in another game that overlaps with the specified game's schedule.
-  - `ResourceNotFoundException`: Thrown if the game or user resources are not found during the operation.
+Joins the authenticated user to the game identified by the given ID.
 
-## Additional Information
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to join |
 
-- **Notifications**: The service publishes events for different scenarios such as a player joining, the game becoming full, or a skill mismatch warning.
-- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operations are executed within a transaction, providing atomicity and consistency.
-- **Auditing**: The method is annotated with `@Auditable`, indicating that the action of joining a game is recorded for auditing purposes.
+| Returns | Type | Description |
+|---------|------|-------------|
+| `GameParticipantResponse` | Object | Response containing the saved participant details |
+
+**Throws:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | Game or user not found |
+| `GameFullException` | Game has reached its maximum capacity |
+| `OverlappingGameException` | User already participates in another game during the same time period |
+| `AuthorizationException` | User is not authorized to join the game |
+
+**Behavior:**
+
+1. Resolves the authenticated user's ID
+2. Retrieves the game with a pessimistic lock for update
+3. Performs authorization checks:
+   - Game is joinable
+   - User has private access (if applicable)
+   - User has not already joined
+4. Counts current active participants
+5. Validates game capacity
+6. Retrieves the user entity
+7. Checks for overlapping game participation
+8. Creates and persists a new `GameParticipant` entity
+9. Publishes notification events:
+   - `PLAYER_JOINED` - always published
+   - `GAME_FULL` - published if game becomes full
+   - `PLAYER_WARNING_MISMATCH` - published if skill mismatch detected
+10. Returns the participant response
+
+## Private Methods
+
+### `publishNotifications(Game game, UUID actorId, User user, long newCount)`
+
+Publishes domain events for various notification scenarios.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `game` | `Game` | The game being joined |
+| `actorId` | `UUID` | The ID of the user joining |
+| `user` | `User` | The user entity |
+| `newCount` | `long` | The new participant count after joining |
+
+## Annotations
+
+| Annotation | Description |
+|------------|-------------|
+| `@Service` | Marks this class as a Spring service component |
+| `@Transactional` | Ensures the entire join operation is executed within a single database transaction |
+| `@Auditable(action = "GAME_JOINED", ...)` | Records an audit log entry for the join operation |
+
+## Usage Example
+
+```java
+@Autowired
+private JoinGameService joinGameService;
+
+public void joinGame(UUID gameId) {
+    GameParticipantResponse response = joinGameService.execute(gameId);
+    // Handle response
+}
+```

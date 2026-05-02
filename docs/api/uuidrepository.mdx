@@ -4,34 +4,67 @@ title: UuidRepository
 sidebar_label: UuidRepository
 ---
 
-import { useBaseUrl } from '@docusaurus/core';
+# UuidRepository
+
+The `UuidRepository` interface is a custom Spring Data JPA repository base interface that extends `JpaRepository` and adds a method to find entities by their UUID. It is annotated with `@NoRepositoryBean`, meaning it will not be instantiated as a repository bean itself but serves as a base interface for other repository interfaces.
 
 ## Purpose
 
-The `UuidRepository` interface is a specialized repository interface in Java that extends the `JpaRepository` from the Spring Data JPA framework. It is designed to provide a mechanism for accessing entities by their universally unique identifier (UUID). This interface is marked with the `@NoRepositoryBean` annotation, indicating that Spring should not create an instance of this repository directly. Instead, it serves as a base interface for other repository interfaces that require UUID-based entity retrieval.
+This interface provides a reusable foundation for repositories that need to support lookups by UUID in addition to the standard CRUD operations provided by `JpaRepository`. By extending this interface, concrete repository interfaces automatically inherit the `findByUuid` method, ensuring consistent UUID-based querying across your application.
 
-## Public Methods
+## Type Parameters
 
-The `UuidRepository` interface defines the following public method:
+| Parameter | Description |
+|-----------|-------------|
+| `T` | The entity type that the repository manages |
 
-| Method Signature               | Description                                                                 |
-|--------------------------------|-----------------------------------------------------------------------------|
-| `Optional<T> findByUuid(UUID uuid)` | Retrieves an entity by its UUID. Returns an `Optional` containing the entity if found, or an empty `Optional` if not. |
+## Methods
 
-### Method Details
+### findByUuid
 
-#### `findByUuid`
+```java
+Optional<T> findByUuid(UUID uuid)
+```
 
-- **Parameters:**
+Finds an entity by its UUID.
 
-  | Name | Type | Description |
-  |------|------|-------------|
-  | `uuid` | `UUID` | The universally unique identifier of the entity to be retrieved. |
+**Parameters:**
 
-- **Return Type:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `uuid` | `UUID` | The UUID of the entity to find |
 
-  | Type | Description |
-  |------|-------------|
-  | `Optional<T>` | An `Optional` containing the entity if found, or an empty `Optional` if the entity does not exist. |
+**Returns:**
 
-This method is useful for applications that require retrieval of entities using UUIDs, which are often used as unique identifiers in distributed systems.
+| Type | Description |
+|------|-------------|
+| `Optional<T>` | An `Optional` containing the entity if found, or empty if no entity exists with the given UUID |
+
+## Usage Example
+
+```java
+// Define a concrete repository
+public interface UserRepository extends UuidRepository<User> {
+    // Additional custom query methods can be added here
+}
+
+// Usage in a service
+@Service
+public class UserService {
+    private final UserRepository userRepository;
+    
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+    
+    public Optional<User> findByUuid(UUID uuid) {
+        return userRepository.findByUuid(uuid);
+    }
+}
+```
+
+## Notes
+
+- The `@NoRepositoryBean` annotation prevents Spring Data JPA from creating a bean for this interface directly.
+- The `findByUuid` method relies on Spring Data JPA's query derivation mechanism and expects the entity to have a field named `uuid` of type `UUID`.
+- This interface extends `JpaRepository<T, Long>`, so the primary key type is `Long`.

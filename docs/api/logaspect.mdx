@@ -1,54 +1,122 @@
 ---
 id: log-aspect
-title: LogAspect Class Documentation
+title: LogAspect - AOP Logging and Metrics Aspect
 sidebar_label: LogAspect
 ---
 
+# LogAspect
+
+The `LogAspect` class is a Spring AOP (Aspect-Oriented Programming) aspect that provides centralized logging, metrics collection, and request tracing for service and controller methods in the application. It automatically intercepts method executions, logs their performance, records metrics to Micrometer, and manages MDC (Mapped Diagnostic Context) for request tracing.
+
 ## Purpose
 
-The `LogAspect` class is an Aspect-Oriented Programming (AOP) component designed to log the execution of service and controller methods in a Spring application. It utilizes AspectJ annotations to intercept method calls and log their execution time, success, or failure. Additionally, it records metrics using Micrometer and manages logging context using SLF4J's Mapped Diagnostic Context (MDC).
+- **Automatic Logging**: Logs method execution time and status (success/failure) for all public methods in service and controller packages.
+- **Performance Monitoring**: Tracks slow method executions and logs warnings when methods exceed configurable thresholds.
+- **Metrics Collection**: Records execution times and success/failure rates to Micrometer for monitoring and alerting.
+- **Request Tracing**: Generates and manages unique request IDs in MDC for distributed tracing across HTTP requests.
+- **Error Handling**: Wraps checked exceptions in `MethodExecutionException` while allowing runtime exceptions and errors to propagate naturally.
+
+## Configuration
+
+The aspect is enabled by default but can be disabled via configuration:
+
+```yaml
+app:
+  logging:
+    aspect:
+      enabled: true  # Set to false to disable the aspect
+```
 
 ## Public Methods
 
-### `logExecution`
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `logExecution(ProceedingJoinPoint)` | `Object` | Main advice method that intercepts service and controller method executions |
 
-Logs the execution of service and controller methods, capturing execution time and handling exceptions.
+### logExecution
 
-| Parameter   | Type                      | Description                                                                 |
-|-------------|---------------------------|-----------------------------------------------------------------------------|
-| `joinPoint` | `ProceedingJoinPoint`     | The join point representing the method execution being intercepted.         |
+Intercepts method executions and provides:
+- Request ID generation and MDC management
+- HTTP context extraction (method, endpoint)
+- Execution time measurement
+- Success/failure logging with configurable thresholds
+- Micrometer metrics recording
+- Exception handling and wrapping
 
-| Return Type | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `Object`    | The result of the method execution, or throws an exception if one occurs.   |
+**Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `joinPoint` | `ProceedingJoinPoint` | The join point representing the intercepted method execution |
 
-### `serviceMethods`
+**Returns:**
+- The result of the intercepted method execution
 
-Defines a pointcut for service methods within the application.
+**Throws:**
+- `Throwable` - Propagates errors and runtime exceptions; wraps checked exceptions in `MethodExecutionException`
 
-| Parameter | Type   | Description |
-|-----------|--------|-------------|
-| None      | N/A    | N/A         |
+## Internal Methods
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | N/A         |
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `initRequestId()` | `String` | Generates an 8-character uppercase request ID from a UUID |
+| `currentHttpRequest()` | `HttpServletRequest` or `null` | Retrieves the current HTTP request from request context |
+| `resolveComponent(ProceedingJoinPoint)` | `String` | Determines if the intercepted method belongs to a controller or service component |
+| `recordMetrics(String, Long, boolean)` | `void` | Records execution metrics to Micrometer with component and status tags |
+| `logSuccess(String, Long)` | `void` | Logs successful execution with info or warning level based on threshold |
+| `logFailure(String, Long, Throwable)` | `void` | Logs failed execution with error details |
 
-### `controllerMethods`
+## MDC Context Management
 
-Defines a pointcut for controller methods within the application.
+The aspect manages the following MDC keys:
 
-| Parameter | Type   | Description |
-|-----------|--------|-------------|
-| None      | N/A    | N/A         |
+| MDC Key | Description | Set When |
+|---------|-------------|----------|
+| `requestId` | Unique request identifier | First intercepted method in request chain |
+| `method` | Short method signature | Every intercepted method |
+| `httpMethod` | HTTP method (GET, POST, etc.) | When HTTP context is available |
+| `endpoint` | Request URI path | When HTTP context is available |
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | N/A         |
+## Metrics
 
-## Key Features
+The aspect records Micrometer timer metrics with the following tags:
 
-- **Aspect-Oriented Logging**: Intercepts method executions to log their performance and outcomes.
-- **Metrics Recording**: Utilizes Micrometer to record execution metrics for monitoring.
-- **MDC Management**: Manages logging context using SLF4J's MDC for enhanced log traceability.
-- **Conditional Activation**: Enabled based on application properties, allowing for flexible configuration.
+| Tag | Values | Description |
+|-----|--------|-------------|
+| `component` | `controller`, `service` | Type of component being executed |
+| `status` | `success`, `failure` | Execution outcome |
+
+## Logging Behavior
+
+- **Success (fast)**: Logged at INFO level with method name and duration
+- **Success (slow)**: Logged at WARN level when duration exceeds `slowExecutionThresholdMs`
+- **Failure**: Logged at ERROR level with method name, duration, exception type, and message
+
+## Dependencies
+
+- Spring AOP (`@Aspect`, `@Pointcut`, `@Around`)
+- Micrometer (`MeterRegistry`)
+- SLF4J (`Logger`, `MDC`)
+- Jakarta Servlet API (`HttpServletRequest`)
+- Spring Web (`RequestContextHolder`)
+
+## Usage Example
+
+```java
+@RestController
+public class UserController {
+    
+    @GetMapping("/users/{id}")
+    public User getUser(@PathVariable Long id) {
+        // This method will be automatically logged and monitored
+        return userService.findById(id);
+    }
+}
+```
+
+The aspect will automatically:
+1. Generate a request ID and add it to MDC
+2. Log the HTTP method and endpoint
+3. Measure execution time
+4. Log success/failure with duration
+5. Record metrics to Micrometer
+6. Clean up MDC context after execution

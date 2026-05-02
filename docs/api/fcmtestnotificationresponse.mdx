@@ -4,25 +4,79 @@ title: FcmTestNotificationResponse
 sidebar_label: FcmTestNotificationResponse
 ---
 
-## Purpose
+# FcmTestNotificationResponse
 
-The `FcmTestNotificationResponse` class is a Java record that encapsulates the response details for a Firebase Cloud Messaging (FCM) test notification. It is designed to hold information such as the message ID, email ID, notification type, title, body, and badge count. This class is part of the `com.upmatches.app.features.notification.responses` package and is used to structure the data related to FCM notifications in a concise and immutable manner.
+The `FcmTestNotificationResponse` is a Java record that represents the response payload returned after sending a test notification via Firebase Cloud Messaging (FCM). It encapsulates the key details of the sent notification, including the FCM message identifier, the target email address, the notification type, and the content fields (title, body, badge).
+
+This record is typically used in the notification feature of the application to confirm that a test notification was successfully dispatched and to provide the caller with the resulting metadata.
+
+## Record Definition
+
+```java
+public record FcmTestNotificationResponse(
+    String messageId,
+    String emailId,
+    NotificationType type,
+    String title,
+    String body,
+    Integer badge)
+```
+
+## Constructor Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `messageId` | `String` | The unique identifier assigned by FCM for the sent notification. |
+| `emailId` | `String` | The email address of the recipient to whom the test notification was sent. |
+| `type` | `NotificationType` | The type of notification (e.g., `PROMOTIONAL`, `TRANSACTIONAL`), defined by the `NotificationType` enum. |
+| `title` | `String` | The title of the notification message. |
+| `body` | `String` | The body content of the notification message. |
+| `badge` | `Integer` | The badge count to display on the app icon (nullable). |
 
 ## Public Methods
 
 ### `of`
 
-This static method is a factory method that creates a new instance of `FcmTestNotificationResponse`.
+```java
+public static FcmTestNotificationResponse of(
+    String messageId,
+    String emailId,
+    NotificationType type,
+    String title,
+    String body,
+    Integer badge)
+```
 
-| Parameter   | Type                          | Description                                      |
-|-------------|-------------------------------|--------------------------------------------------|
-| `messageId` | `String`                      | The unique identifier for the message.           |
-| `emailId`   | `String`                      | The email ID associated with the notification.   |
-| `type`      | `NotificationType`            | The type of the notification.                    |
-| `title`     | `String`                      | The title of the notification.                   |
-| `body`      | `String`                      | The body content of the notification.            |
-| `badge`     | `Integer`                     | The badge count associated with the notification.|
+A static factory method that creates a new `FcmTestNotificationResponse` instance.
 
-#### Return Type
+**Parameters:**
 
-- `FcmTestNotificationResponse`: Returns a new instance of `FcmTestNotificationResponse` initialized with the provided parameters.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `messageId` | `String` | The FCM message identifier. |
+| `emailId` | `String` | The recipient email address. |
+| `type` | `NotificationType` | The notification type. |
+| `title` | `String` | The notification title. |
+| `body` | `String` | The notification body. |
+| `badge` | `Integer` | The badge count (nullable). |
+
+**Returns:** `FcmTestNotificationResponse` — a new instance with the provided values.
+
+## Usage Example
+
+```java
+FcmTestNotificationResponse response = FcmTestNotificationResponse.of(
+    "fcm_msg_12345",
+    "user@example.com",
+    NotificationType.PROMOTIONAL,
+    "Special Offer!",
+    "Check out our latest deals.",
+    5
+);
+```
+
+## Notes
+
+- The `badge` field is nullable (`Integer`), allowing it to be `null` if no badge count is applicable.
+- The `NotificationType` enum is expected to be defined in the `com.upmatches.app.features.notification.enums` package.
+- This record is immutable and thread-safe by design, as all fields are final.

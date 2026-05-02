@@ -1,39 +1,50 @@
 ---
 id: create-activity-request
-title: CreateActivityRequest Class
+title: CreateActivityRequest
 sidebar_label: CreateActivityRequest
 ---
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+# CreateActivityRequest
+
+The `CreateActivityRequest` class is a Java record used as a Data Transfer Object (DTO) for creating a new activity. It encapsulates the input data required when a user submits a request to create an activity, ensuring that the provided name is valid according to the defined constraints.
 
 ## Purpose
 
-The `CreateActivityRequest` class is a Java record used to encapsulate the data required to create a new activity within the application. It ensures that the activity name adheres to specified validation constraints, making it a crucial part of the application's request handling mechanism.
+This record serves as the request payload for activity creation endpoints. By using Jakarta Bean Validation annotations, it enforces input validation at the API boundary, preventing invalid or malicious data from reaching the service layer.
 
-## Public Methods
+## Record Definition
 
-The `CreateActivityRequest` class is a record, which means it automatically provides a constructor, accessors, and other utility methods. Below is a documentation of its components:
+```java
+public record CreateActivityRequest(
+    @NotBlank
+    @Size(max = 100)
+    String name
+) {}
+```
 
-### Constructor
+## Fields
 
-The constructor is implicitly provided by the record and is used to create an instance of `CreateActivityRequest`.
+| Field | Type   | Validation Constraints | Description |
+|-------|--------|------------------------|-------------|
+| `name`| String | `@NotBlank`<br/>`@Size(max = 100)` | The name of the activity. Must not be blank and cannot exceed 100 characters. |
 
-| Parameter | Type   | Description                          |
-|-----------|--------|--------------------------------------|
-| name      | String | The name of the activity. Must not be blank and can have a maximum length of 100 characters. |
+## Validation Details
 
-### Accessor Methods
+- **`@NotBlank`**: Ensures the `name` field is not null and contains at least one non-whitespace character.
+- **`@Size(max = 100)`**: Limits the `name` field to a maximum of 100 characters.
 
-Since `CreateActivityRequest` is a record, it provides an accessor method for each component.
+## Usage Example
 
-| Method | Return Type | Description                          |
-|--------|-------------|--------------------------------------|
-| name() | String      | Returns the name of the activity.    |
+```java
+// Valid request
+CreateActivityRequest validRequest = new CreateActivityRequest("Morning Yoga");
 
-## Validation Constraints
+// Invalid request (blank name)
+CreateActivityRequest invalidRequest = new CreateActivityRequest("   ");
+```
 
-The `CreateActivityRequest` class uses Jakarta Bean Validation annotations to enforce constraints on its fields:
+## Related Components
 
-- `@NotBlank`: Ensures that the `name` field is not null or empty.
-- `@Size(max = 100)`: Ensures that the `name` field does not exceed 100 characters in length.
+- **Package**: `com.upmatches.app.features.activity.requests`
+- **Validation Framework**: Jakarta Bean Validation (Jakarta Validation API)
+- **Typical Consumer**: Activity creation controller or service layer

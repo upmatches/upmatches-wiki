@@ -4,35 +4,118 @@ title: DevAuthController
 sidebar_label: DevAuthController
 ---
 
-## Overview
+# DevAuthController
 
-The `DevAuthController` class is a Spring Boot REST controller responsible for handling developer authentication requests in a non-production environment. It provides an endpoint to mint development tokens, ensuring that these operations are only accessible from localhost or equivalent local addresses. This controller is conditionally enabled based on application properties and profiles, ensuring it is not active in production environments.
+The `DevAuthController` is a development-only REST controller that provides an endpoint for minting authentication tokens for testing and development purposes. It is designed to be **disabled in production** environments and only accessible from localhost.
 
-## Public Methods
+## Purpose
 
-### mintToken
+This controller allows developers to generate authentication tokens without going through the standard authentication flow. It is particularly useful for:
 
-Mint a development token for a user. This method is accessible via a POST request to the `/api/v1/auth/dev/tokens` endpoint. It validates the request's origin to ensure it is from a local host and then processes the token minting request.
+- Local development and testing
+- Integration testing with automated test suites
+- API development and debugging
 
-| Parameter | Type                          | Description                                      |
-|-----------|-------------------------------|--------------------------------------------------|
-| `body`    | `MintDevTokenRequest`         | The request body containing the user ID for whom the token is to be minted. |
-| `request` | `HttpServletRequest`          | The HTTP request object, used to validate the host. |
+## Security Constraints
 
-| Return Type               | Description                                      |
-|---------------------------|--------------------------------------------------|
-| `ResponseEntity<Object>`  | A response entity containing the minted token and a success message. |
+The controller enforces strict security measures:
 
-## Additional Details
+- **Profile Restriction**: Only active when the Spring profile is NOT `prod`
+- **Property Gate**: Requires `app.auth.dev.mint-endpoint-enabled=true` in application properties
+- **Host Restriction**: Only accepts requests from localhost (127.0.0.1, [::1], or hostname "localhost")
 
-- **Allowed Hosts**: The controller restricts access to the token minting endpoint to the following hosts:
-  - `localhost`
-  - `127.0.0.1`
-  - `[::1]`
-  - `0:0:0:0:0:0:0:1`
+## Endpoints
 
-- **Conditional Activation**: The controller is activated only when the application is not running in a production profile and when the `app.auth.dev.mint-endpoint-enabled` property is set to `true`.
+### POST `/api/v1/auth/dev/tokens`
 
-- **Exception Handling**: If a request originates from a non-allowed host, an `AuthenticationException` is thrown with a message indicating the forbidden host.
+Mints a new development authentication token for a specified user.
 
-This setup ensures that development tokens are securely minted and only accessible in controlled, non-production environments.
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | String | Yes | The unique identifier of the user to generate a token for |
+
+#### Response
+
+| Status Code | Description |
+|-------------|-------------|
+| 200 OK | Token minted successfully |
+| 400 Bad Request | Invalid request body (validation error) |
+| 403 Forbidden | Request not from localhost |
+| 500 Internal Server Error | Token minting service failure |
+
+#### Response Body
+
+```json
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIs...",
+    "expiresAt": "2024-01-01T00:00:00Z"
+  },
+  "message": "Dev token minted successfully.",
+  "path": "/api/v1/auth/dev/tokens"
+}
+```
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `IMintDevTokenService` | Service | Interface for token minting logic |
+| `MintDevTokenRequest` | DTO | Request validation object |
+| `TokenResponse` | DTO | Token response data |
+| `ApiResponse` | Utility | Standard API response wrapper |
+
+## Usage Example
+
+```java
+// Example request
+POST /api/v1/auth/dev/tokens
+Content-Type: application/json
+
+{
+  "userId": "user-123-abc"
+}
+
+// Example response
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "dev-token-xyz-789",
+    "expiresAt": "2024-12-31T23:59:59Z"
+  },
+  "message": "Dev token minted successfully.",
+  "path": "/api/v1/auth/dev/tokens"
+}
+```
+
+## Configuration
+
+To enable this controller, add the following to your `application-dev.yml` or `application-local.yml`:
+
+```yaml
+app:
+  auth:
+    dev:
+      mint-endpoint-enabled: true
+```
+
+## Error Handling
+
+| Error Scenario | HTTP Status | Error Message |
+|----------------|-------------|---------------|
+| Non-localhost request | 403 Forbidden | "Dev token endpoint is not reachable from host '192.168.1.1'" |
+| Invalid request body | 400 Bad Request | Validation error details |
+| Service failure | 500 Internal Server Error | Internal error details |
+
+## Notes
+
+- This controller should **never** be enabled in production environments
+- The `@Profile("!prod")` annotation ensures it's automatically disabled when the `prod` profile is active
+- The `@ConditionalOnProperty` annotation provides an additional safety layer
+- Tokens generated through this endpoint may have different properties than production tokens (e.g., longer expiration, elevated permissions)

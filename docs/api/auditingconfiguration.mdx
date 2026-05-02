@@ -1,27 +1,71 @@
 ---
 id: auditing-configuration
-title: AuditingConfiguration Class
+title: Auditing Configuration
 sidebar_label: AuditingConfiguration
 ---
 
-## Overview
+# Auditing Configuration
 
-The `AuditingConfiguration` class is a Spring configuration class that enables JPA auditing in a Spring Boot application. It provides a mechanism to automatically populate auditing fields, such as created by and last modified by, with the current user's information. This class is particularly useful in applications where tracking the user responsible for data changes is crucial.
+The `AuditingConfiguration` class provides a Spring Boot configuration for JPA auditing. It defines how the system determines the current user (auditor) for automatic population of `createdBy` and `lastModifiedBy` fields in JPA entities.
+
+## Purpose
+
+This configuration enables automatic auditing of entity changes by resolving the current user from the security context. It handles three scenarios:
+
+1. **Unauthenticated requests** – Falls back to a default system auditor
+2. **OAuth2/JWT authenticated users** – Extracts the subject claim from the JWT token
+3. **Standard authenticated users** – Uses the authentication name
+
+## Configuration Details
+
+The class uses Spring's `@EnableJpaAuditing` annotation with a reference to the `auditorAware` bean. This bean implements `AuditorAware<String>` and is automatically used by Spring Data JPA to populate auditing fields.
 
 ## Public Methods
 
-The `AuditingConfiguration` class provides the following public method:
+### `auditorAware()`
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public AuditorAware<String> auditorAware()` | This method returns an `AuditorAware` implementation that determines the current auditor (user) for auditing purposes. |
+| Property | Description |
+|----------|-------------|
+| **Return Type** | `AuditorAware<String>` |
+| **Description** | Creates a bean that provides the current auditor (user) for JPA auditing. The implementation resolves the user from the security context with fallback logic. |
 
-### Method Details
+#### Resolution Logic
 
-#### `auditorAware`
+The method follows this priority order:
 
-- **Purpose**: Provides an `AuditorAware` bean that determines the current user for auditing purposes.
-- **Parameters**: None
-- **Return Type**: `AuditorAware<String>`
+1. **No authentication or anonymous user** – Returns `"system"` as the default auditor
+2. **JWT authenticated user** – Extracts the JWT subject claim; falls back to `"system"` if blank or null
+3. **Standard authenticated user** – Uses the authentication name; falls back to `"system"` if blank or null
 
-This method uses Spring Security to obtain the current `Authentication` object from the `SecurityContextHolder`. It checks if the user is authenticated and not anonymous. If the user is authenticated and the principal is a JWT token, it extracts the subject from the token. If the principal is not a JWT, it uses the authentication name. If no valid user information is available, it defaults to using "system" as the auditor.
+## Usage Example
+
+To use this auditing configuration in your entities:
+
+```java
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+public class YourEntity {
+    
+    @CreatedBy
+    @Column(updatable = false)
+    private String createdBy;
+    
+    @LastModifiedBy
+    private String lastModifiedBy;
+    
+    // getters and setters
+}
+```
+
+## Dependencies
+
+- Spring Context (`@Configuration`, `@Bean`)
+- Spring Data JPA (`@EnableJpaAuditing`, `AuditorAware`)
+- Spring Security (`SecurityContextHolder`, `Authentication`)
+- Spring Security OAuth2 JWT (`Jwt`)
+
+## Notes
+
+- The default auditor value is `"system"` for unauthenticated or anonymous requests
+- The constant `ANONYMOUS_PRINCIPAL` (`"anonymousUser"`) is used to detect Spring Security's anonymous authentication
+- The JWT subject claim is extracted using `jwt.getSubject()`

@@ -1,26 +1,80 @@
 ---
 id: venue-import-request
-title: VenueImportRequest Class
+title: VenueImportRequest
 sidebar_label: VenueImportRequest
 ---
 
-## Purpose of the VenueImportRequest Class
+# VenueImportRequest
 
-The `VenueImportRequest` class is a Java record used to encapsulate data for importing venue information into the system. It ensures that all necessary venue details are provided and validated according to specified constraints. This class is part of the `com.upmatches.app.features.venue.requests` package and leverages Jakarta Bean Validation annotations to enforce data integrity.
+The `VenueImportRequest` class is a Java record that serves as a Data Transfer Object (DTO) for importing venue data into the system. It encapsulates all necessary information required to create or update a venue, including its location, identification, and associated stations.
 
-## Public Methods
+## Purpose
 
-Since `VenueImportRequest` is a record, it automatically provides a constructor, accessor methods, `equals()`, `hashCode()`, and `toString()` methods. Below is a table documenting the parameters of the primary constructor, which are also the fields of the record.
+This record is designed to validate and transport venue import data from external sources (such as CSV files, APIs, or bulk uploads) into the application's domain layer. It ensures that all required fields are present and conform to specified constraints before processing.
 
-| Parameter Name | Type                          | Description                                                                 | Constraints                   |
-|----------------|-------------------------------|-----------------------------------------------------------------------------|-------------------------------|
-| sourceId       | `String`                      | A unique identifier for the source of the venue data.                       | Not blank, max size 50        |
-| activityId     | `Integer`                     | The ID representing the activity associated with the venue.                 | Not null                      |
-| name           | `String`                      | The name of the venue.                                                      | Not blank, max size 200       |
-| address        | `String`                      | The physical address of the venue.                                          | Not blank, max size 500       |
-| latitude       | `BigDecimal`                  | The latitude coordinate of the venue's location.                            | Not null                      |
-| longitude      | `BigDecimal`                  | The longitude coordinate of the venue's location.                           | Not null                      |
-| postalCode     | `Integer`                     | The postal code of the venue's location.                                    | Not null                      |
-| stations       | `List<StationImportRequest>`  | A list of station import requests associated with the venue.                | Not null, max size 50, valid  |
+## Record Definition
 
-The `VenueImportRequest` class ensures that all fields are validated according to the constraints specified by Jakarta Bean Validation annotations. This includes checks for non-null values, maximum string lengths, and nested validation for the list of `StationImportRequest` objects.
+```java
+public record VenueImportRequest(
+    @NotBlank @Size(max = 50) String sourceId,
+    @NotNull Integer activityId,
+    @NotBlank @Size(max = 200) String name,
+    @NotBlank @Size(max = 500) String address,
+    @NotNull BigDecimal latitude,
+    @NotNull BigDecimal longitude,
+    @NotNull Integer postalCode,
+    @NotNull @Size(max = 50) @Valid List<StationImportRequest> stations
+) {}
+```
+
+## Fields
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `sourceId` | `String` | `@NotBlank`, max 50 characters | External identifier for the venue from the source system |
+| `activityId` | `Integer` | `@NotNull` | Identifier for the activity associated with the venue |
+| `name` | `String` | `@NotBlank`, max 200 characters | Name of the venue |
+| `address` | `String` | `@NotBlank`, max 500 characters | Physical address of the venue |
+| `latitude` | `BigDecimal` | `@NotNull` | Geographic latitude coordinate |
+| `longitude` | `BigDecimal` | `@NotNull` | Geographic longitude coordinate |
+| `postalCode` | `Integer` | `@NotNull` | Postal or ZIP code of the venue |
+| `stations` | `List<StationImportRequest>` | `@NotNull`, max 50 items, `@Valid` | List of station import requests associated with the venue |
+
+## Validation Constraints
+
+The record uses Jakarta Bean Validation annotations to enforce data integrity:
+
+- **`@NotBlank`**: Ensures the field is not null and contains at least one non-whitespace character
+- **`@NotNull`**: Ensures the field is not null
+- **`@Size(max = ...)`**: Limits the maximum length or size of the field
+- **`@Valid`**: Triggers cascading validation on the nested `StationImportRequest` objects
+
+## Usage Example
+
+```java
+// Creating a VenueImportRequest instance
+VenueImportRequest request = new VenueImportRequest(
+    "EXT-001",
+    123,
+    "Central Park Sports Complex",
+    "123 Main Street, New York, NY 10001",
+    new BigDecimal("40.785091"),
+    new BigDecimal("-73.968285"),
+    10001,
+    List.of(
+        new StationImportRequest("Station A", "Description A"),
+        new StationImportRequest("Station B", "Description B")
+    )
+);
+```
+
+## Related Classes
+
+- **`StationImportRequest`**: A nested record representing individual station data within the venue import request. This class must also be defined with appropriate validation constraints.
+
+## Notes
+
+- The record is immutable by design, ensuring thread safety and data consistency
+- All fields are required for successful validation
+- The `stations` list is limited to a maximum of 50 entries to prevent excessively large import requests
+- Geographic coordinates (`latitude` and `longitude`) use `BigDecimal` for precise decimal representation

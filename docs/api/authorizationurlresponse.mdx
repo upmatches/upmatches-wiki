@@ -4,34 +4,52 @@ title: AuthorizationUrlResponse
 sidebar_label: AuthorizationUrlResponse
 ---
 
-import { useBaseUrl } from '@docusaurus/core';
+# AuthorizationUrlResponse
 
-## Overview
-
-The `AuthorizationUrlResponse` class is a simple Java record used to encapsulate an authorization URL. This class is part of the `com.upmatches.app.features.auth.responses` package and provides a static factory method for creating instances of the record.
+The `AuthorizationUrlResponse` class is a Java record that encapsulates the authorization URL returned by an authentication service. It provides a simple, immutable data carrier for the URL that clients should redirect users to for OAuth or similar authorization flows.
 
 ## Purpose
 
-The primary purpose of the `AuthorizationUrlResponse` class is to store and provide access to an authorization URL. This is typically used in authentication workflows where a client needs to redirect a user to an authorization server.
+This record is used in the authentication module of the UpMatches application to standardize the response format when an authorization URL is generated. It ensures type safety and immutability, making it suitable for use in API responses and service layers.
+
+## Record Structure
+
+The record has a single component:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `authorizationUrl` | `String` | The full authorization URL to which the user should be redirected |
 
 ## Public Methods
 
-The class provides the following public method:
+### `of(String authorizationUrl)`
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public static AuthorizationUrlResponse of(String authorizationUrl)` | A static factory method that creates a new instance of `AuthorizationUrlResponse` with the specified authorization URL. |
+A static factory method that creates a new `AuthorizationUrlResponse` instance.
 
-### Method Details
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `authorizationUrl` | `String` | The authorization URL to wrap in the response |
 
-#### `of`
+**Returns:** `AuthorizationUrlResponse` — a new instance containing the provided URL
 
-- **Parameters:**
+**Example usage:**
 
-  | Name              | Type   | Description                          |
-  |-------------------|--------|--------------------------------------|
-  | `authorizationUrl`| String | The authorization URL to be encapsulated in the response. |
+```java
+AuthorizationUrlResponse response = AuthorizationUrlResponse.of("https://auth.example.com/authorize?client_id=123");
+String url = response.authorizationUrl(); // "https://auth.example.com/authorize?client_id=123"
+```
 
-- **Returns:** `AuthorizationUrlResponse` - A new instance of `AuthorizationUrlResponse` containing the provided authorization URL.
+## Inherited Methods
 
-This method is a convenient way to create instances of `AuthorizationUrlResponse` without directly invoking the constructor, adhering to the factory method design pattern.
+As a Java record, `AuthorizationUrlResponse` automatically provides:
+
+- `authorizationUrl()` — accessor method for the record component
+- `equals(Object o)` — value-based equality comparison
+- `hashCode()` — hash code based on the component value
+- `toString()` — string representation of the record
+
+## Usage Notes
+
+- This record is immutable; once created, the authorization URL cannot be changed.
+- The static factory method `of()` provides a convenient way to create instances without using the `new` keyword.
+- The record is ideal for use in REST API responses where the authorization URL needs to be serialized to JSON.

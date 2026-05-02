@@ -1,50 +1,54 @@
 ---
-id: gameshareaccess
-title: GameShareAccess Class
+id: game-share-access
+title: GameShareAccess Entity
 sidebar_label: GameShareAccess
 ---
 
-## Overview
+# GameShareAccess Entity
 
-The `GameShareAccess` class is an entity representing the access permissions for a user to a specific game. It is part of the `com.upmatches.app.features.game.entities` package and is used to manage the relationship between games and users, ensuring that each user has the appropriate access to a game. This class is mapped to the `game_share_accesses` table in the database with unique constraints on the combination of `game_id` and `user_id`.
+The `GameShareAccess` entity represents a record of when a user was granted access to a shared game. It is a JPA entity mapped to the `game_share_accesses` table in the database. Each record links a specific game to a specific user and records the timestamp when the access was resolved (granted).
 
-## Public Methods
-
-The `GameShareAccess` class provides the following public methods:
-
-### `create`
-
-Creates a new instance of `GameShareAccess` with the specified game and user.
-
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `public static GameShareAccess create(Game game, User user)` | Static method to create a new `GameShareAccess` instance. |
-
-#### Parameters
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `game`    | `Game` | The game for which access is being granted. |
-| `user`    | `User` | The user who is being granted access to the game. |
-
-#### Return Type
-
-| Type | Description |
-| ---- | ----------- |
-| `GameShareAccess` | Returns a new instance of `GameShareAccess` with the specified game and user. |
+This entity enforces a unique constraint on the combination of `game_id` and `user_id`, ensuring that a user can only have one access record per game.
 
 ## Entity Details
 
-- **Table Name**: `game_share_accesses`
-- **Unique Constraints**: Combination of `game_id` and `user_id`.
+| Property     | Type    | Description                                                                 |
+|--------------|---------|-----------------------------------------------------------------------------|
+| `id`         | UUID    | Primary key, auto-generated using UUID strategy.                            |
+| `game`       | Game    | The game that was shared. Many-to-one relationship with the `Game` entity.  |
+| `user`       | User    | The user who received access. Many-to-one relationship with the `User` entity. |
+| `resolvedAt` | Instant | The timestamp when the access was granted. Set automatically on creation.   |
 
-## Fields
+## Public Methods
 
-- **id**: A unique identifier for each `GameShareAccess` instance, generated using UUID strategy.
-- **game**: A reference to the `Game` entity, representing the game to which access is being granted.
-- **user**: A reference to the `User` entity, representing the user who is being granted access.
-- **resolvedAt**: A timestamp indicating when the access was resolved, automatically set to the current time when the entity is persisted.
+### `create(Game game, User user)`
 
-## Lifecycle Callback
+Creates a new `GameShareAccess` instance for the given game and user.
 
-- **onCreate**: A `@PrePersist` method that sets the `resolvedAt` field to the current timestamp when a new `GameShareAccess` entity is created.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `game`    | Game | The game to which access is being granted. |
+| `user`    | User | The user who is receiving access. |
+
+**Returns:** `GameShareAccess` — a new instance with the provided game and user, but without a `resolvedAt` timestamp (set automatically before persistence).
+
+**Example usage:**
+```java
+GameShareAccess access = GameShareAccess.create(game, user);
+```
+
+## Lifecycle Callbacks
+
+### `onCreate()`
+
+A `@PrePersist` callback that automatically sets the `resolvedAt` field to the current instant (`Instant.now()`) before the entity is persisted to the database. This ensures the timestamp is always recorded at the moment of creation.
+
+## Database Constraints
+
+- **Unique Constraint:** The combination of `game_id` and `user_id` must be unique across the `game_share_accesses` table. This prevents duplicate access records for the same user and game.
+
+## Dependencies
+
+- **Lombok:** Uses `@Getter` to generate getters for all fields and `@NoArgsConstructor(access = AccessLevel.PROTECTED)` to generate a protected no-argument constructor (required by JPA).
+- **Jakarta Persistence:** Standard JPA annotations for entity mapping.
+- **Java Time:** Uses `java.time.Instant` for timestamp handling.

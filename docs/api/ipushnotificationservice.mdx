@@ -1,33 +1,63 @@
 ---
-id: ipushnotificationservice
-title: IPushNotificationService Interface
+id: ipush-notification-service
+title: IPushNotificationService
 sidebar_label: IPushNotificationService
 ---
 
-## Overview
+# IPushNotificationService
 
-The `IPushNotificationService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines the contract for sending push notifications within the application. This interface is designed to be implemented by classes that handle the delivery of push notifications to users.
+The `IPushNotificationService` is a **sealed interface** that defines the contract for sending push notifications within the UpMatches application. It establishes a single, clear abstraction for push notification delivery, ensuring that only authorized implementations (specifically `PushNotificationService`) can fulfill this contract.
 
-## Public Methods
+## Purpose
 
-The `IPushNotificationService` interface declares the following public method:
+This interface serves as the core abstraction for push notification sending. By using a sealed interface, the design enforces a controlled hierarchy, preventing unauthorized classes from implementing the service and ensuring all push notification logic flows through a single, well-defined channel.
 
-| Method Signature | Description |
-|------------------|-------------|
-| `PushDeliveryResult send(Notification notification)` | Sends a push notification and returns the result of the delivery attempt. |
+## Interface Definition
 
-### Method Details
+```java
+public sealed interface IPushNotificationService permits PushNotificationService {
+    PushDeliveryResult send(Notification notification);
+}
+```
 
-#### `send`
+## Methods
 
-- **Description**: Sends a push notification to the intended recipient and returns the result of the delivery.
-- **Parameters**:
-  | Name | Type | Description |
-  |------|------|-------------|
-  | `notification` | `Notification` | The notification object containing the details of the message to be sent. |
-- **Returns**: 
-  | Type | Description |
-  |------|-------------|
-  | `PushDeliveryResult` | An object representing the outcome of the push notification delivery, including success or failure status. |
+### `send`
 
-This interface is sealed, meaning it restricts which classes can implement it. Currently, it permits the `PushNotificationService` class to implement its methods, ensuring a controlled and predictable implementation hierarchy.
+Sends a push notification and returns the result of the delivery attempt.
+
+| Parameter      | Type           | Description                                      |
+|----------------|----------------|--------------------------------------------------|
+| `notification` | `Notification` | The notification object containing the message details and target recipient(s). |
+
+| Returns              | Description                                      |
+|----------------------|--------------------------------------------------|
+| `PushDeliveryResult` | An object representing the outcome of the push delivery (e.g., success, failure, or partial delivery). |
+
+## Permitted Implementations
+
+The only class permitted to implement this interface is:
+
+- **`PushNotificationService`** – The concrete implementation responsible for handling the actual push notification delivery logic.
+
+## Usage Example
+
+```java
+// Assuming PushNotificationService is injected
+IPushNotificationService pushService = new PushNotificationService();
+
+Notification notification = new Notification(/* ... */);
+PushDeliveryResult result = pushService.send(notification);
+
+if (result.isSuccess()) {
+    // Handle successful delivery
+} else {
+    // Handle delivery failure
+}
+```
+
+## Related Components
+
+- **`Notification`** – The entity representing a push notification message.
+- **`PushDeliveryResult`** – The model class encapsulating the delivery outcome.
+- **`PushNotificationService`** – The sole implementation of this interface.

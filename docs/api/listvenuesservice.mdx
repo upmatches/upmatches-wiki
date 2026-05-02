@@ -1,25 +1,72 @@
 ---
 id: list-venues-service
 title: ListVenuesService
-sidebar_label: List Venues Service
+sidebar_label: ListVenuesService
 ---
 
-## Overview
+# ListVenuesService
 
-The `ListVenuesService` class is a part of the `com.upmatches.app.features.venue.services` package. It is responsible for retrieving a paginated list of venues from the database. This service leverages the `VenueRepository` to access venue data and returns it in a paginated format using the `PagedResponse` class. The service is designed to be used in a read-only transactional context to ensure data consistency and integrity.
+The `ListVenuesService` class is a Spring service component responsible for retrieving a paginated list of venues from the database. It implements the `IListVenuesService` interface and provides a read-only transactional operation that fetches venue data and transforms it into a standardized response format.
+
+## Purpose
+
+This service encapsulates the business logic for listing venues with pagination support. It leverages Spring Data's `Pageable` parameter to handle pagination efficiently and uses a service operation executor to manage error handling and operation status tracking.
+
+## Class Details
+
+| Property | Value |
+|----------|-------|
+| **Package** | `com.upmatches.app.features.venue.services` |
+| **Annotations** | `@Service` |
+| **Modifiers** | `public non-sealed` |
+| **Implements** | `IListVenuesService` |
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `VenueRepository` | Constructor Injection | Repository for accessing venue data from the database |
 
 ## Public Methods
 
-### `execute`
+### `execute(Pageable pageable)`
 
-Retrieves a paginated list of venues.
+Retrieves a paginated list of venues and returns them as a `PagedResponse<VenueResponse>`.
 
-| Parameter | Type            | Description                     |
-|-----------|-----------------|---------------------------------|
-| pageable  | `Pageable`      | Provides pagination information.|
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sort criteria |
 
-| Return Type                          | Description                                      |
-|--------------------------------------|--------------------------------------------------|
-| `PagedResponse<VenueResponse>`       | A paginated response containing venue data.      |
+**Returns:** `PagedResponse<VenueResponse>` - A paginated response containing venue data transformed into `VenueResponse` objects.
 
-The `execute` method uses the `ServiceOperationExecutor` to perform the retrieval operation. It handles the operation status and throws a `ResourceNotFoundException` if no venues are found. This method is annotated with `@Transactional(readOnly = true)` to indicate that it is a read-only transaction, ensuring that no data modifications occur during its execution.
+**Exceptions:** Throws `ResourceNotFoundException` if the operation fails (handled by `ServiceOperationExecutor`).
+
+**Transactional Behavior:** The method is marked with `@Transactional(readOnly = true)` to optimize database access for read-only operations.
+
+## Usage Example
+
+```java
+@Service
+public class VenueController {
+    private final ListVenuesService listVenuesService;
+    
+    public VenueController(ListVenuesService listVenuesService) {
+        this.listVenuesService = listVenuesService;
+    }
+    
+    public PagedResponse<VenueResponse> getVenues(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return listVenuesService.execute(pageable);
+    }
+}
+```
+
+## Implementation Details
+
+The service uses `ServiceOperationExecutor.execute()` to wrap the database operation with standardized error handling and status tracking. The core operation:
+
+1. Calls `venueRepository.findAll(pageable)` to retrieve a paginated `Page<Venue>` from the database
+2. Transforms each `Venue` entity to a `VenueResponse` using the static method `VenueResponse::fromVenue`
+3. Wraps the result in a `PagedResponse` object for consistent API responses
+
+The operation status is set to `RETRIEVE` and any failures result in a `ResourceNotFoundException` being thrown.

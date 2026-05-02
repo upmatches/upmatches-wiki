@@ -1,35 +1,53 @@
 ---
 id: activity-response
-title: ActivityResponse Class
+title: ActivityResponse Record
 sidebar_label: ActivityResponse
 ---
 
-import { useBaseUrl } from '@docusaurus/core';
+# ActivityResponse Record
 
-# ActivityResponse Class
-
-The `ActivityResponse` class is a record in the `com.upmatches.app.features.activity.responses` package. It is designed to provide a simplified and immutable representation of an `Activity` entity, which can be used for transferring data across different layers of an application, such as from the backend to the frontend.
+The `ActivityResponse` record is a Data Transfer Object (DTO) used to represent an `Activity` entity in API responses. It provides a lightweight, immutable representation of an activity, exposing only the fields that are safe and necessary for external clients.
 
 ## Purpose
 
-The primary purpose of the `ActivityResponse` class is to encapsulate the essential details of an `Activity` object in a form that is easy to handle and transmit. This class leverages Java's record feature to automatically generate boilerplate code such as constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods.
+- **Encapsulation**: Hides internal entity details while exposing a clean, stable API contract.
+- **Immutability**: As a Java `record`, all fields are final and the object is thread-safe.
+- **Conversion**: Provides a static factory method to convert an `Activity` entity into a response object.
+
+## Record Fields
+
+| Field         | Type        | Description                                      |
+|---------------|-------------|--------------------------------------------------|
+| `id`          | `UUID`      | Unique identifier for the activity.              |
+| `referenceId` | `Integer`   | External reference ID (e.g., from a third-party system). |
+| `name`        | `String`    | Human-readable name of the activity.             |
 
 ## Public Methods
 
-The `ActivityResponse` class provides the following public method:
+### `fromActivity(Activity activity)`
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `fromActivity` | `Activity activity` | `ActivityResponse` | Converts an `Activity` object into an `ActivityResponse` object. |
+Converts an `Activity` entity into an `ActivityResponse` DTO.
 
-### Method Details
+**Parameters:**
 
-#### `fromActivity`
+| Parameter  | Type       | Description                          |
+|------------|------------|--------------------------------------|
+| `activity` | `Activity` | The source entity to convert from.   |
 
-- **Parameters:**
-  - `activity`: An instance of the `Activity` class from which the `ActivityResponse` is created.
+**Returns:** `ActivityResponse` — a new immutable response object with the same `id`, `referenceId`, and `name` as the provided entity.
 
-- **Return Type:** 
-  - Returns an instance of `ActivityResponse` containing the `id`, `referenceId`, and `name` extracted from the given `Activity` object.
+**Example Usage:**
 
-This method is static and can be called without creating an instance of `ActivityResponse`. It serves as a factory method to facilitate the conversion from an `Activity` entity to an `ActivityResponse` record.
+```java
+Activity activity = new Activity(UUID.randomUUID(), 12345, "Morning Jog");
+ActivityResponse response = ActivityResponse.fromActivity(activity);
+// response.id() -> UUID
+// response.referenceId() -> 12345
+// response.name() -> "Morning Jog"
+```
+
+## Notes
+
+- This record is part of the `com.upmatches.app.features.activity.responses` package.
+- It is designed for use in REST API controllers or service layers where entity objects should not be directly exposed.
+- The `fromActivity` method ensures a consistent mapping between the domain model and the API response layer.

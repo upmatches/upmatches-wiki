@@ -4,25 +4,88 @@ title: GetUnreadCountService
 sidebar_label: GetUnreadCountService
 ---
 
-## Overview
+# GetUnreadCountService
 
-The `GetUnreadCountService` class is a part of the notification services in the application. It is responsible for retrieving the count of unread notifications for the authenticated user. This service interacts with the `NotificationRepository` to fetch the necessary data and uses the `IAuthenticatedUserResolver` to determine the current user's identity.
+The `GetUnreadCountService` class is a Spring service component responsible for retrieving the count of unread notifications for the currently authenticated user. It implements the `IGetUnreadCountService` interface and provides a transactional read-only operation to query the notification repository.
 
-## Public Methods
+## Purpose
 
-### `execute`
+This service encapsulates the business logic for fetching the number of unread notifications belonging to the authenticated user. It leverages dependency injection to obtain the necessary repository and user resolver, ensuring clean separation of concerns and testability.
 
-Retrieves the count of unread notifications for the authenticated user.
+## Class Details
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None      | N/A  | This method does not take any parameters. |
-
-| Return Type          | Description |
-|----------------------|-------------|
-| `UnreadCountResponse` | An object containing the count of unread notifications. |
+| Property | Description |
+|----------|-------------|
+| **Package** | `com.upmatches.app.features.notification.services` |
+| **Annotations** | `@Service` |
+| **Modifiers** | `public non-sealed` |
+| **Implements** | `IGetUnreadCountService` |
 
 ## Dependencies
 
-- **NotificationRepository**: Used to interact with the data source to count unread notifications.
-- **IAuthenticatedUserResolver**: Utilized to resolve the current authenticated user's ID.
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `notificationRepository` | `NotificationRepository` | Repository for accessing notification data |
+| `userResolver` | `IAuthenticatedUserResolver` | Resolves the currently authenticated user's identity |
+
+## Constructor
+
+### `GetUnreadCountService(NotificationRepository notificationRepository, IAuthenticatedUserResolver userResolver)`
+
+Creates a new instance of the service with the required dependencies injected via constructor injection.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notificationRepository` | `NotificationRepository` | The repository used to query notification records |
+| `userResolver` | `IAuthenticatedUserResolver` | The resolver used to obtain the authenticated user's ID |
+
+## Public Methods
+
+### `execute()`
+
+Retrieves the count of unread notifications for the currently authenticated user.
+
+**Method Signature:**
+```java
+@Transactional(readOnly = true)
+public UnreadCountResponse execute()
+```
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `UnreadCountResponse` | A response object containing the count of unread notifications |
+
+**Behavior:**
+
+1. Resolves the authenticated user's ID using `userResolver.requireUserId()`
+2. Queries the `notificationRepository` for the count of notifications where:
+   - `recipientId` matches the authenticated user's ID
+   - `isRead` is `false`
+3. Wraps the count in an `UnreadCountResponse` object using the static factory method `UnreadCountResponse.of()`
+
+**Transactional Behavior:**
+
+The method is annotated with `@Transactional(readOnly = true)`, which:
+- Ensures the database operation runs within a read-only transaction context
+- Optimizes performance by allowing the database to apply read-specific optimizations
+- Prevents any unintended write operations during the query execution
+
+## Usage Example
+
+```java
+@Autowired
+private GetUnreadCountService getUnreadCountService;
+
+public void displayUnreadCount() {
+    UnreadCountResponse response = getUnreadCountService.execute();
+    System.out.println("Unread notifications: " + response.getCount());
+}
+```
+
+## Error Handling
+
+The method relies on `userResolver.requireUserId()` which may throw an exception if no authenticated user is found. The caller should handle any exceptions thrown by the user resolver or the repository layer as appropriate for the application's error handling strategy.

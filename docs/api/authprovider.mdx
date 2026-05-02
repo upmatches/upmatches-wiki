@@ -4,24 +4,41 @@ title: AuthProvider Enum
 sidebar_label: AuthProvider
 ---
 
-## Overview
+# AuthProvider Enum
 
-The `AuthProvider` enum is part of the `com.upmatches.app.features.auth.enums` package. It defines a set of constants representing different authentication providers that can be used within the application. Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like final variables).
-
-## Enum Constants
-
-The `AuthProvider` enum includes the following constants:
-
-| Constant | Description                                      |
-|----------|--------------------------------------------------|
-| SINGPASS | Represents the SingPass authentication provider. |
-| AUTH0    | Represents the Auth0 authentication provider.    |
-| APPLE    | Represents the Apple authentication provider.    |
+The `AuthProvider` enum defines the supported authentication providers for the UpMatches application. It is used to specify which third-party identity provider a user can authenticate with when logging into the app.
 
 ## Purpose
 
-The purpose of the `AuthProvider` enum is to provide a type-safe way to specify which authentication provider is being used in different parts of the application. By using an enum, the code becomes more readable and less error-prone, as it restricts the possible values to the defined constants.
+This enum centralizes the list of authentication providers, ensuring type safety and consistency across the codebase when handling user login flows. It prevents the use of arbitrary strings and makes the authentication logic more maintainable.
+
+## Enum Values
+
+| Value      | Description                                                                 |
+|------------|-----------------------------------------------------------------------------|
+| `SINGPASS` | Singapore's national digital identity platform for secure government and business transactions. |
+| `AUTH0`    | A flexible, drop-in authentication and authorization service by Okta.       |
+| `APPLE`    | Apple's Sign in with Apple, providing privacy-focused authentication for iOS users. |
 
 ## Usage
 
-Enums are typically used in switch statements or as a method parameter to ensure that only valid constants are passed. This enum can be used to handle authentication logic based on the provider selected.
+The `AuthProvider` enum is typically used in conjunction with authentication services, user profile models, or login screens to determine which provider was used for authentication. For example:
+
+```java
+// Example usage in a user profile class
+public class UserProfile {
+    private AuthProvider provider;
+    
+    public AuthProvider getProvider() {
+        return provider;
+    }
+    
+    public void setProvider(AuthProvider provider) {
+        this.provider = provider;
+    }
+}
+```
+
+## Package
+
+`com.upmatches.app.features.auth.enums`

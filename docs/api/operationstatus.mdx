@@ -4,22 +4,50 @@ title: OperationStatus Enum
 sidebar_label: OperationStatus
 ---
 
-## Overview
+# OperationStatus Enum
 
-The `OperationStatus` enum is part of the `com.upmatches.app.shared.enums` package. It is designed to represent the various states or actions that can be performed in an application, specifically related to operations such as data retrieval, saving, updating, and deletion. This enum provides a standardized way to handle these operation statuses throughout the application, ensuring consistency and clarity in the codebase.
+The `OperationStatus` enum is a shared enumeration within the `com.upmatches.app.shared.enums` package. It defines a set of standard operation types that can be used across the application to indicate the nature of a database or service operation being performed.
+
+## Purpose
+
+This enum provides a type-safe way to represent common CRUD (Create, Read, Update, Delete) operations, along with a catch-all `OTHER` value. It is typically used in logging, auditing, or request/response objects to specify what kind of operation is being executed or has been completed.
 
 ## Enum Constants
 
-The `OperationStatus` enum defines the following constants:
+| Constant | Description |
+|----------|-------------|
+| `RETRIEVE` | Indicates a read or fetch operation (e.g., getting data from a database). |
+| `SAVE` | Indicates a create or insert operation (e.g., persisting new data). |
+| `UPDATE` | Indicates a modification operation (e.g., updating existing data). |
+| `DELETE` | Indicates a removal operation (e.g., deleting data). |
+| `OTHER` | A fallback value for any operation not covered by the standard CRUD types. |
 
-| Constant | Description                                                                 |
-|----------|-----------------------------------------------------------------------------|
-| RETRIEVE | Represents the action of retrieving data from a source.                     |
-| SAVE     | Represents the action of saving data to a storage medium.                   |
-| UPDATE   | Represents the action of updating existing data.                            |
-| DELETE   | Represents the action of deleting data from a storage medium.               |
-| OTHER    | Represents any other operation status that does not fall into the above categories. |
+## Usage Example
 
-## Usage
+```java
+OperationStatus status = OperationStatus.SAVE;
 
-This enum can be used in various parts of the application where operation statuses need to be tracked or specified. By using an enum, the code becomes more readable and less error-prone compared to using raw strings or integers to represent these statuses.
+switch (status) {
+    case RETRIEVE:
+        System.out.println("Performing a retrieve operation.");
+        break;
+    case SAVE:
+        System.out.println("Performing a save operation.");
+        break;
+    case UPDATE:
+        System.out.println("Performing an update operation.");
+        break;
+    case DELETE:
+        System.out.println("Performing a delete operation.");
+        break;
+    case OTHER:
+        System.out.println("Performing an unspecified operation.");
+        break;
+}
+```
+
+## Notes
+
+- This enum is immutable and thread-safe by design.
+- It can be serialized and deserialized using standard Java serialization or JSON frameworks like Jackson.
+- The `OTHER` constant provides flexibility for future extensions without breaking existing code.

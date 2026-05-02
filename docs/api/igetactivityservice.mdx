@@ -1,39 +1,44 @@
 ---
-id: igetactivityservice
+id: iget-activity-service
 title: IGetActivityService Interface
 sidebar_label: IGetActivityService
 ---
 
-## Overview
+# IGetActivityService Interface
 
-The `IGetActivityService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for retrieving activity details based on a unique identifier. This interface is designed to be implemented by classes that provide the actual logic for fetching activity data.
+The `IGetActivityService` interface defines the contract for retrieving a single activity by its unique identifier. It is a sealed interface, meaning only the explicitly permitted class `GetActivityService` can implement it. This design enforces a controlled and secure implementation hierarchy, ensuring that the activity retrieval logic is centralized and cannot be extended arbitrarily.
 
 ## Purpose
 
-The primary purpose of the `IGetActivityService` interface is to abstract the operation of retrieving an activity by its unique identifier (`UUID`). This allows for different implementations of the service, promoting flexibility and scalability within the application.
+- **Sealed Contract**: Restricts implementation to a single class (`GetActivityService`), preventing unauthorized or unintended implementations.
+- **Single Responsibility**: Provides a clear, focused method for fetching an activity by its UUID.
+- **Type Safety**: Returns a strongly-typed `ActivityResponse` object, ensuring consistent data handling across the application.
 
-## Public Methods
+## Interface Definition
 
-The interface defines the following public method:
+```java
+public sealed interface IGetActivityService permits GetActivityService {
+    ActivityResponse execute(UUID id);
+}
+```
 
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `ActivityResponse execute(UUID id)` | Retrieves the activity details associated with the specified `UUID`. |
+## Methods
 
-### Method Details
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `execute` | `UUID id` – The unique identifier of the activity to retrieve. | `ActivityResponse` | Executes the retrieval of an activity by its UUID. Returns the corresponding `ActivityResponse` object. |
 
-#### `execute`
+## Usage Example
 
-- **Parameters:**
+```java
+// Assuming GetActivityService is properly instantiated
+IGetActivityService activityService = new GetActivityService();
+UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+ActivityResponse response = activityService.execute(activityId);
+```
 
-  | Name | Type | Description |
-  | ---- | ---- | ----------- |
-  | `id` | `UUID` | The unique identifier of the activity to be retrieved. |
+## Notes
 
-- **Returns:** 
-
-  | Type | Description |
-  | ---- | ----------- |
-  | `ActivityResponse` | An object containing the details of the activity. |
-
-The `execute` method is the core operation of the `IGetActivityService` interface, providing a standardized way to fetch activity information using a unique identifier.
+- The `execute` method is the sole entry point for retrieving an activity by ID.
+- The interface is sealed to `GetActivityService` only; no other class may implement it.
+- The `ActivityResponse` class is expected to contain the activity data returned from the service.

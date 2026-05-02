@@ -1,35 +1,57 @@
 ---
 id: transit-line-response
-title: TransitLineResponse Class
+title: TransitLineResponse Documentation
 sidebar_label: TransitLineResponse
 ---
 
+# TransitLineResponse
+
+The `TransitLineResponse` is a Java record class designed to represent a simplified view of a transit line associated with a specific station. It is used as a Data Transfer Object (DTO) to expose transit line information in API responses, typically within a venue or transit context.
+
 ## Purpose
 
-The `TransitLineResponse` class is a record in the `com.upmatches.app.features.venue.responses` package. It is designed to encapsulate the response data for a transit line, providing a structured way to represent transit line information such as code, name, color, and the number of stations associated with it. This class is particularly useful for transforming `StationLine` entities into a simplified response format that can be easily consumed by other parts of the application or external clients.
+This record serves as a lightweight, immutable data carrier that extracts and flattens relevant fields from a `StationLine` entity. It is particularly useful for:
+
+- Returning transit line details (code, name, color) along with the station number in a single response.
+- Decoupling the internal entity structure from the API contract.
+- Improving performance by avoiding serialization of full entity graphs.
+
+## Record Components
+
+| Field           | Type      | Description                                      |
+|-----------------|-----------|--------------------------------------------------|
+| `code`          | `String`  | The unique code identifying the transit line.    |
+| `name`          | `String`  | The human-readable name of the transit line.     |
+| `color`         | `String`  | The color associated with the transit line.      |
+| `stationNumber` | `Integer` | The station number along the transit line.       |
 
 ## Public Methods
 
-The `TransitLineResponse` class provides the following public method:
+### `fromStationLine(StationLine stationLine)`
 
-### fromStationLine
+Creates a `TransitLineResponse` instance from a `StationLine` entity.
 
-Converts a `StationLine` entity into a `TransitLineResponse` object.
+**Parameters:**
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public static TransitLineResponse fromStationLine(StationLine stationLine)` | Creates a `TransitLineResponse` from a given `StationLine` object. |
+| Parameter      | Type           | Description                                      |
+|----------------|----------------|--------------------------------------------------|
+| `stationLine`  | `StationLine`  | The source entity containing transit line and station number data. |
 
-#### Parameters
+**Returns:**
 
-| Parameter Name | Type          | Description                              |
-|----------------|---------------|------------------------------------------|
-| `stationLine`  | `StationLine` | The `StationLine` entity to be converted.|
+| Type                   | Description                                      |
+|------------------------|--------------------------------------------------|
+| `TransitLineResponse`  | A new `TransitLineResponse` populated with data from the provided `StationLine`. |
 
-#### Return Type
+**Example Usage:**
 
-| Type                  | Description                                      |
-|-----------------------|--------------------------------------------------|
-| `TransitLineResponse` | A new instance of `TransitLineResponse` containing the transit line details extracted from the `StationLine`. |
+```java
+StationLine stationLine = stationLineRepository.findById(stationLineId);
+TransitLineResponse response = TransitLineResponse.fromStationLine(stationLine);
+```
 
-This method extracts the transit line code, name, color, and station number from the provided `StationLine` object and uses them to instantiate a new `TransitLineResponse`.
+## Notes
+
+- This record is immutable and thread-safe by design.
+- The `fromStationLine` factory method assumes that `stationLine.getTransitLine()` is not null. Ensure proper null handling in the calling code if necessary.
+- The record is intended for read-only API responses and should not be used for database persistence.

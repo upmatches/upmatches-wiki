@@ -1,50 +1,88 @@
 ---
-id: station
-title: Station Class
+id: station-entity
+title: Station Entity
 sidebar_label: Station
 ---
 
-## Overview
+# Station Entity
 
-The `Station` class represents a geographical station entity within a venue management system. It is an entity class mapped to the `stations` table in a database, utilizing JPA annotations for ORM (Object-Relational Mapping). The class is designed to handle station-related data, including its name, geographical coordinates, and associated transit lines.
+The `Station` class is a JPA entity representing a physical transit station or stop within the venue system. It stores the station's geographic coordinates (latitude and longitude) and maintains a one-to-many relationship with `StationLine` entities, which link the station to specific transit lines.
 
-## Class Structure
+## Purpose
 
-The `Station` class is annotated with `@Entity` and `@Table` to indicate that it is a JPA entity. It includes several fields that map to columns in the `stations` table:
+This entity serves as the core data model for managing station information in a transit or venue management application. It provides:
+- Persistent storage of station metadata (name, coordinates)
+- Association management between stations and transit lines
+- A factory method for creating new station instances
+- Support for adding transit lines to a station
 
-- **id**: A unique identifier for the station, automatically generated.
-- **name**: The name of the station, with a maximum length of 150 characters.
-- **latitude**: The latitude coordinate of the station, with high precision.
-- **longitude**: The longitude coordinate of the station, also with high precision.
-- **stationLines**: A list of `StationLine` objects representing the transit lines associated with the station.
+## Entity Details
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `Long` | Auto-generated primary key |
+| `name` | `String` | Station name (max 150 characters, required) |
+| `latitude` | `BigDecimal` | Geographic latitude (precision 13, scale 10, required) |
+| `longitude` | `BigDecimal` | Geographic longitude (precision 13, scale 10, required) |
+| `stationLines` | `List<StationLine>` | Collection of associated station-line mappings |
 
 ## Public Methods
 
-The `Station` class provides several public methods to interact with its data. Below is a detailed description of these methods:
+### `create(String name, BigDecimal latitude, BigDecimal longitude)`
 
-### `create`
+Factory method to create a new `Station` instance.
 
-Creates a new instance of the `Station` class with the specified name and geographical coordinates.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `String` | The name of the station |
+| `latitude` | `BigDecimal` | The geographic latitude coordinate |
+| `longitude` | `BigDecimal` | The geographic longitude coordinate |
 
-| Parameter   | Type        | Description                      |
-|-------------|-------------|----------------------------------|
-| `name`      | `String`    | The name of the station.         |
-| `latitude`  | `BigDecimal`| The latitude of the station.     |
-| `longitude` | `BigDecimal`| The longitude of the station.    |
+**Returns:** `Station` - A new station entity with the specified properties.
 
-**Returns**: `Station` - A new instance of the `Station` class.
+### `addLine(TransitLine transitLine, Integer stationNumber)`
 
-### `addLine`
+Associates a transit line with this station by creating a `StationLine` mapping.
 
-Adds a new transit line to the station's list of lines.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `transitLine` | `TransitLine` | The transit line to associate with this station |
+| `stationNumber` | `Integer` | The station number or order on the transit line |
 
-| Parameter       | Type          | Description                                    |
-|-----------------|---------------|------------------------------------------------|
-| `transitLine`   | `TransitLine` | The transit line to be associated with the station. |
-| `stationNumber` | `Integer`     | The station number on the transit line.        |
+**Returns:** `void`
 
-**Returns**: `void` - This method does not return a value.
+## Database Mapping
 
-## Usage
+The entity is mapped to the `stations` database table with the following column mappings:
 
-The `Station` class is typically used in the context of a venue management application to manage and persist station data. It provides methods to create new stations and associate them with transit lines, facilitating the management of complex transit systems.
+| Column | Database Type | Constraints |
+|--------|---------------|-------------|
+| `id` | `BIGINT` | Primary key, auto-increment |
+| `name` | `VARCHAR(150)` | NOT NULL |
+| `latitude` | `DECIMAL(13,10)` | NOT NULL |
+| `longitude` | `DECIMAL(13,10)` | NOT NULL |
+
+## Relationships
+
+- **One-to-Many with StationLine**: The `stationLines` field uses `CascadeType.ALL` and `orphanRemoval = true`, meaning all operations (persist, merge, remove) are cascaded to associated `StationLine` entities, and orphaned `StationLine` records are automatically deleted when removed from the collection.
+
+## Usage Example
+
+```java
+// Create a new station
+Station station = Station.create(
+    "Central Station",
+    new BigDecimal("40.7128000"),
+    new BigDecimal("-74.0060000")
+);
+
+// Add a transit line
+TransitLine lineA = transitLineRepository.findById(1L).orElseThrow();
+station.addLine(lineA, 1);
+```
+
+## Notes
+
+- The protected no-argument constructor is required by JPA and should not be used directly.
+- The class uses Lombok's `@Getter` annotation to generate getters for all fields.
+- Geographic coordinates use `BigDecimal` with high precision (13 digits total, 10 decimal places) for accurate positioning.

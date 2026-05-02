@@ -4,40 +4,40 @@ title: IMintDevTokenService Interface
 sidebar_label: IMintDevTokenService
 ---
 
-import com.upmatches.app.features.auth.responses.TokenResponse;
+# IMintDevTokenService Interface
 
-import java.util.UUID;
+## Purpose
 
-/**
- * The `IMintDevTokenService` interface is a part of the authentication services within the application. 
- * It defines the contract for generating development tokens for users, which can be used for authentication purposes.
- * This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `MintDevTokenService` class.
- */
+The `IMintDevTokenService` interface defines a contract for minting (creating) development tokens associated with a specific user. It serves as a sealed interface, restricting its implementation to only the `MintDevTokenService` class. This pattern enforces a controlled hierarchy and ensures that token generation logic follows a single, well-defined path within the application's authentication and authorization module.
 
-## Purpose of the Class
+## Interface Definition
 
-The `IMintDevTokenService` interface is designed to provide a method for generating development tokens for users. These tokens are essential for user authentication and authorization processes within the application. By defining this interface, the application ensures a consistent approach to token generation across different implementations.
+```java
+public sealed interface IMintDevTokenService permits MintDevTokenService {
+    TokenResponse execute(UUID userId);
+}
+```
 
-## Public Methods
+## Methods
 
-### `execute`
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `execute` | `TokenResponse` | `UUID userId` | Executes the token minting operation for the specified user. Returns a `TokenResponse` containing the generated token details. |
 
-Generates a development token for a specified user.
+## Usage Notes
 
-| Method Signature                  | Description                                      |
-|-----------------------------------|--------------------------------------------------|
-| `TokenResponse execute(UUID userId)` | Generates a token for the user identified by the given `userId`. |
+- The interface is **sealed**, meaning only `MintDevTokenService` is allowed to implement it. This design choice prevents unauthorized extensions and centralizes token minting logic.
+- The `userId` parameter is of type `UUID`, ensuring a unique and universally identifiable user reference.
+- The return type `TokenResponse` is expected to encapsulate the minted token data (e.g., token string, expiration, etc.).
 
-#### Parameters
+## Example Implementation Skeleton
 
-| Parameter | Type   | Description                        |
-|-----------|--------|------------------------------------|
-| `userId`  | `UUID` | The unique identifier of the user for whom the token is to be generated. |
-
-#### Return Type
-
-| Type            | Description                                      |
-|-----------------|--------------------------------------------------|
-| `TokenResponse` | An object containing the generated token and related information. |
-
-This interface is crucial for the authentication feature of the application, ensuring that each user can be securely authenticated using a unique token.
+```java
+public final class MintDevTokenService implements IMintDevTokenService {
+    @Override
+    public TokenResponse execute(UUID userId) {
+        // Implementation logic for token minting
+        return new TokenResponse(/* ... */);
+    }
+}
+```

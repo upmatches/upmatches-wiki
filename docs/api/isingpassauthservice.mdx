@@ -1,20 +1,83 @@
 ---
-id: isingpassauthservice
-title: ISingpassAuthService Interface
+id: isingpass-auth-service
+title: ISingpassAuthService
 sidebar_label: ISingpassAuthService
 ---
 
-## Overview
+# ISingpassAuthService
 
-The `ISingpassAuthService` interface is part of the `com.upmatches.app.features.auth.services` package. It defines the contract for authentication services that interact with the Singpass system. This interface is designed to be implemented by classes that handle the authentication process, specifically focusing on sending authorization requests and exchanging authorization codes.
+The `ISingpassAuthService` interface defines the contract for Singpass authentication operations within the application. It encapsulates the core OAuth 2.0 authorization flow specific to Singpass, providing methods for initiating authorization requests and exchanging authorization codes for tokens.
 
-## Public Methods
+This interface is declared as a **sealed interface**, meaning only the permitted class `SingpassAuthService` can implement it. This design enforces a controlled hierarchy and ensures that all Singpass authentication logic is centralized in a single implementation.
 
-The `ISingpassAuthService` interface declares the following public methods:
+## Interface Definition
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `sendPushedAuthorizationRequest` | `String state`, `String nonce`, `String codeVerifier` | `String` | Sends a pushed authorization request to the Singpass system. The method requires a `state`, `nonce`, and `codeVerifier` as parameters and returns a `String` response. |
-| `exchangeAuthorizationCode` | `String authorizationCode`, `String codeVerifier`, `String nonce` | `String` | Exchanges an authorization code for an access token. This method takes an `authorizationCode`, `codeVerifier`, and `nonce` as parameters and returns a `String` response. |
+```java
+public sealed interface ISingpassAuthService permits SingpassAuthService {
+    // Methods
+}
+```
 
-The interface is sealed, permitting only the `SingpassAuthService` class to implement it, ensuring controlled extension and implementation within the application.
+## Methods
+
+### `sendPushedAuthorizationRequest`
+
+Initiates a Pushed Authorization Request (PAR) to the Singpass authorization server. This method is the first step in the OAuth 2.0 authorization code flow, where the client sends the authorization parameters to the server and receives a request URI.
+
+| Parameter      | Type     | Description                                                                 |
+|----------------|----------|-----------------------------------------------------------------------------|
+| `state`        | `String` | A unique, non-guessable value used to maintain state between the request and callback. Prevents CSRF attacks. |
+| `nonce`        | `String` | A unique value used to associate a client session with an ID Token and to mitigate replay attacks. |
+| `codeVerifier` | `String` | A cryptographically random string used in the PKCE (Proof Key for Code Exchange) flow to secure the authorization code exchange. |
+
+**Returns:** `String` - The authorization request URI that the client should redirect the user to for authentication.
+
+### `exchangeAuthorizationCode`
+
+Exchanges an authorization code for tokens (access token, ID token, and refresh token) from the Singpass token endpoint. This is the second step in the OAuth 2.0 authorization code flow.
+
+| Parameter          | Type     | Description                                                                 |
+|--------------------|----------|-----------------------------------------------------------------------------|
+| `authorizationCode`| `String` | The authorization code received from the Singpass authorization server after user authentication. |
+| `codeVerifier`     | `String` | The same PKCE code verifier used in the initial authorization request. Must match the code challenge sent earlier. |
+| `nonce`            | `String` | The same nonce value used in the initial authorization request. Used to validate the ID Token. |
+
+**Returns:** `String` - The response from the token endpoint, typically containing the access token, ID token, and optionally a refresh token in JSON format.
+
+## Usage Example
+
+```java
+// Inject the service
+@Autowired
+private ISingpassAuthService singpassAuthService;
+
+// Step 1: Send pushed authorization request
+String state = UUID.randomUUID().toString();
+String nonce = UUID.randomUUID().toString();
+String codeVerifier = generateCodeVerifier();
+
+String authRequestUri = singpassAuthService.sendPushedAuthorizationRequest(
+    state, nonce, codeVerifier
+);
+
+// Redirect user to authRequestUri...
+
+// Step 2: Exchange authorization code for tokens
+String tokenResponse = singpassAuthService.exchangeAuthorizationCode(
+    authorizationCode, codeVerifier, nonce
+);
+```
+
+## Implementation Details
+
+The sole permitted implementation of this interface is `SingpassAuthService`. This sealed interface pattern ensures:
+
+- **Controlled Implementation**: Only the designated class can implement this interface, preventing unauthorized implementations.
+- **Clear Contract**: All Singpass authentication operations are clearly defined and centralized.
+- **Type Safety**: The compiler enforces the implementation restriction, reducing runtime errors.
+
+## Related Components
+
+- `SingpassAuthService` - The concrete implementation of this interface
+- OAuth 2.0 Authorization Code Flow with PKCE
+- Singpass API documentation for specific endpoint details

@@ -1,36 +1,77 @@
 ---
 id: create-share-link-request
 title: CreateShareLinkRequest
-sidebar_label: Create Share Link Request
+sidebar_label: CreateShareLinkRequest
 ---
 
-## Overview
+# CreateShareLinkRequest
 
-The `CreateShareLinkRequest` class is a Java record used to encapsulate the data required to create a shareable link for a resource within the application. It ensures that the necessary information is provided and validated before processing the request to generate a share link.
+The `CreateShareLinkRequest` class is a Java record that serves as a Data Transfer Object (DTO) for creating share links within the UpMatches application. It encapsulates the necessary input parameters required to generate a new shareable link for a specific resource.
 
-## Class Details
+## Purpose
 
-The `CreateShareLinkRequest` record consists of two fields: `resourceType` and `resourceId`. These fields are validated using annotations to ensure that they meet the required constraints.
+This record defines the contract for incoming API requests to create share links. It ensures that all required fields are provided and validated before processing. The class leverages Jakarta Bean Validation annotations to enforce data integrity at the application boundary.
 
-### Fields
+## Record Structure
 
-- **resourceType**: Represents the type of resource for which the share link is being created. It is of type `ResourceType` and must not be null.
-- **resourceId**: A string representing the unique identifier of the resource. It must be a non-blank valid UUID.
+The record contains two fields that must be provided when creating a share link:
 
-### Validation Constraints
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `resourceType` | `ResourceType` | `@NotNull` | The type of resource being shared (e.g., profile, post, event) |
+| `resourceId` | `String` | `@NotBlank`, `@Pattern` | The unique identifier of the resource, must be a valid UUID |
 
-- `resourceType` must not be null. If it is null, an error message "Resource type is required." is triggered.
-- `resourceId` must not be blank and must match the UUID pattern. If it does not meet these criteria, appropriate error messages are triggered:
-  - "Resource ID is required." if the field is blank.
-  - "Resource ID must be a valid UUID." if the field does not match the UUID pattern.
+## Validation Constants
 
-## Public Methods
+The class defines several static constants used for validation messages and patterns:
 
-The `CreateShareLinkRequest` record does not explicitly define public methods beyond those automatically provided by the Java record feature, such as accessors for its fields. Below is a summary of the automatically provided methods:
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `MSG_RESOURCE_TYPE_REQUIRED` | "Resource type is required." | Error message when resource type is null |
+| `MSG_RESOURCE_ID_REQUIRED` | "Resource ID is required." | Error message when resource ID is blank |
+| `MSG_INVALID_UUID` | "Resource ID must be a valid UUID." | Error message when resource ID doesn't match UUID format |
+| `UUID_PATTERN` | `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$` | Regular expression for UUID validation |
 
-| Method Name         | Parameters | Return Type | Description                                      |
-|---------------------|------------|-------------|--------------------------------------------------|
-| `resourceType()`    | None       | `ResourceType` | Returns the resource type of the share link request. |
-| `resourceId()`      | None       | `String`    | Returns the resource ID of the share link request. |
+## Constructor Parameters
 
-These methods allow access to the fields of the `CreateShareLinkRequest` record, enabling other parts of the application to retrieve the necessary information for processing share link requests.
+### `resourceType`
+- **Type**: `ResourceType` (enum)
+- **Validation**: `@NotNull`
+- **Description**: Specifies the category of resource for which the share link is being created. This enum value determines how the link will be processed and what type of content it will point to.
+
+### `resourceId`
+- **Type**: `String`
+- **Validation**: `@NotBlank` and `@Pattern(regexp = UUID_PATTERN)`
+- **Description**: The unique identifier of the specific resource. Must be a valid UUID in the standard 8-4-4-4-12 format (e.g., `123e4567-e89b-12d3-a456-426614174000`).
+
+## Usage Example
+
+```java
+// Creating a valid request
+CreateShareLinkRequest request = new CreateShareLinkRequest(
+    ResourceType.PROFILE,
+    "123e4567-e89b-12d3-a456-426614174000"
+);
+
+// This would fail validation
+CreateShareLinkRequest invalidRequest = new CreateShareLinkRequest(
+    null,  // resourceType is null - validation error
+    "invalid-id"  // not a valid UUID - validation error
+);
+```
+
+## Validation Behavior
+
+When this record is used in a Spring Boot controller with `@Valid` annotation, the following validations are automatically applied:
+
+1. **Resource Type Validation**: If `resourceType` is `null`, the system returns a validation error with the message "Resource type is required."
+2. **Resource ID Validation**: 
+   - If `resourceId` is blank (null, empty, or whitespace), the system returns "Resource ID is required."
+   - If `resourceId` doesn't match the UUID pattern, the system returns "Resource ID must be a valid UUID."
+
+## Dependencies
+
+- `jakarta.validation.constraints.NotBlank` - For non-blank string validation
+- `jakarta.validation.constraints.NotNull` - For non-null object validation
+- `jakarta.validation.constraints.Pattern` - For regex pattern matching
+- `com.upmatches.app.features.sharelink.enums.ResourceType` - Enum defining available resource types

@@ -4,33 +4,59 @@ title: IGetGameService Interface
 sidebar_label: IGetGameService
 ---
 
-## Overview
+# IGetGameService Interface
 
-The `IGetGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for retrieving game-related information. This interface is designed to be implemented by classes that provide specific logic for fetching game data, ensuring a consistent method signature across different implementations.
+The `IGetGameService` interface defines the contract for retrieving a single game by its unique identifier. It is a sealed interface, meaning only explicitly permitted classes (in this case, `GetGameService`) can implement it. This design enforces a controlled hierarchy and ensures that the retrieval logic is centralized and consistent across the application.
 
 ## Purpose
 
-The primary purpose of the `IGetGameService` interface is to provide a standardized way to execute operations that retrieve game information based on a unique identifier. This interface is sealed, meaning it restricts which classes can implement it, specifically allowing only the `GetGameService` class to do so.
+- **Sealed Contract**: Restricts implementation to `GetGameService`, preventing unauthorized or accidental implementations.
+- **Single Responsibility**: Provides a single method to fetch a game by its UUID, promoting clean separation of concerns.
+- **Type Safety**: Returns a `GameResponse` object, ensuring the caller receives a well-defined data structure.
 
-## Public Methods
+## Method Summary
 
-The `IGetGameService` interface declares the following public method:
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `execute` | `GameResponse` | `UUID id` | Retrieves a game by its unique identifier. |
 
-| Method Signature          | Description                                      |
-|---------------------------|--------------------------------------------------|
-| `GameResponse execute(UUID id)` | Retrieves game information for the specified game ID. |
+## Method Details
 
-### Method Details
+### `execute`
 
-#### `execute`
+```java
+GameResponse execute(UUID id);
+```
 
-- **Description**: This method is responsible for fetching the game details associated with the provided unique identifier.
-- **Parameters**:
+**Description**:  
+Executes the retrieval of a game entity based on the provided UUID. The implementation (`GetGameService`) is responsible for fetching the game from the data source (e.g., database, cache) and mapping it to a `GameResponse` object.
 
-  | Name | Type | Description |
-  |------|------|-------------|
-  | `id` | `UUID` | The unique identifier of the game to retrieve. |
+**Parameters**:
+- `id` (`UUID`): The unique identifier of the game to retrieve. Must not be null.
 
-- **Returns**: 
-  - **Type**: `GameResponse`
-  - **Description**: An object containing the details of the requested game.
+**Returns**:
+- `GameResponse`: A response object containing the game's data. The exact fields depend on the `GameResponse` class definition.
+
+**Throws**:
+- The interface does not declare checked exceptions, but implementations may throw runtime exceptions (e.g., `EntityNotFoundException` if the game is not found).
+
+## Usage Example
+
+```java
+// Assuming IGetGameService is injected via dependency injection
+IGetGameService getGameService = ...;
+UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+GameResponse game = getGameService.execute(gameId);
+```
+
+## Implementation Notes
+
+- The interface is **sealed**, so only `GetGameService` can implement it. This is enforced at compile time.
+- The `execute` method is intentionally simple, focusing on a single operation (get by ID). For batch retrieval or filtering, consider separate services.
+- The `GameResponse` class should be immutable or effectively immutable to ensure thread safety.
+
+## Related Components
+
+- **`GetGameService`**: The only permitted implementation of this interface.
+- **`GameResponse`**: The data transfer object returned by the `execute` method.
+- **`UUID`**: Standard Java class used for unique identification.

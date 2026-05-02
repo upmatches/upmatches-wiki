@@ -1,58 +1,110 @@
 ---
 id: security-configuration
-title: SecurityConfiguration Class
+title: Security Configuration
 sidebar_label: Security Configuration
 ---
 
-## Purpose
+# Security Configuration
 
-The `SecurityConfiguration` class is a configuration class for setting up security in a Spring Boot application. It leverages Spring Security to configure HTTP security, CORS settings, JWT decoding, and custom token resolution. This class is annotated with `@Configuration` and `@EnableWebSecurity`, indicating that it provides Spring Security configuration.
+The `SecurityConfiguration` class is a Spring Security configuration that sets up authentication, authorization, CORS, and JWT decoding for the application. It defines which endpoints are publicly accessible, configures stateless session management, and implements a custom bearer token resolver that can extract JWT tokens from either the `Authorization` header or a cookie named `accessToken`.
 
-## Public Methods
+## Public Endpoints
 
-The following table documents the public methods available in the `SecurityConfiguration` class:
+The following endpoints are configured to be accessible without authentication:
 
-| Method Name                           | Parameters                                                                                                                                           | Return Type           | Description                                                                                                                           |
-|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `securityFilterChain`                 | `HttpSecurity http`                                                                                                                                  | `SecurityFilterChain` | Configures the security filter chain, setting up CSRF, CORS, session management, request authorization, and OAuth2 resource server.   |
-| `jwtDecoder`                          | `ISingpassKeyProvider keyProvider`                                                                                                                   | `JwtDecoder`          | Configures a JWT decoder using a key provider to verify JWTs with ES256 algorithm.                                                    |
-| `cookieFallbackBearerTokenResolver`   | None                                                                                                                                                 | `BearerTokenResolver` | Provides a custom token resolver that checks the Authorization header and falls back to a cookie for the bearer token.                |
-| `corsConfigurationSource`             | `@Value("${app.cors.allowed-origins:http://localhost:3002}") String allowedOrigins`                                                                  | `CorsConfigurationSource` | Configures CORS settings, allowing specified origins and methods, and enabling credentials.                                           |
+| Pattern | HTTP Method | Description |
+|---------|-------------|-------------|
+| `/actuator/**` | Any | Actuator endpoints for monitoring and management |
+| `/v3/api-docs/**` | Any | OpenAPI documentation |
+| `/swagger-ui/**` | Any | Swagger UI interface |
+| `/api/v1/auth/login/**` | Any | Authentication login |
+| `/api/v1/auth/refresh` | Any | Token refresh |
+| `/api/v1/auth/logout` | Any | Logout |
+| `/api/v1/auth/dev/**` | Any | Development authentication endpoints |
+| `/internal/dev/**` | Any | Internal development endpoints |
+| `/callback/**` | Any | OAuth callbacks |
+| `/.well-known/jwks.json` | Any | JWKS endpoint |
+| `/.well-known/apple-app-site-association` | GET | Apple App Site Association |
+| `/games/**` | GET | Game web fallback |
+| `/s/*` | GET | Share link redirect |
+| `/api/v1/public/**` | Any | Public API endpoints |
+| `/api/v1/share-links/{8-char-id}` | GET | Share link resolution (regex pattern) |
+| `/api/v1/games` | GET | List games |
+| `/api/v1/games/cursor` | GET | Games with cursor pagination |
+| `/api/v1/games/filter-options` | GET | Game filter options |
+| `/api/v1/games/date-availability` | GET | Game date availability |
+| `/api/v1/games/*` | GET | Game by ID |
+| `/api/v1/venues` | GET | List venues |
+| `/api/v1/activities` | GET | List activities |
+| `/api/v1/activities/*` | GET | Activity by ID |
 
-### Method Details
+## Beans
 
-#### `securityFilterChain`
+### `securityFilterChain`
 
-- **Parameters**: 
-  - `HttpSecurity http`: The `HttpSecurity` object used to configure web-based security for specific HTTP requests.
-- **Return Type**: 
-  - `SecurityFilterChain`: The configured security filter chain.
-- **Description**: 
-  - This method sets up the security filter chain by disabling CSRF, enabling CORS with default settings, setting session management to stateless, and configuring request authorization. It permits access to specific URL patterns and requires authentication for others. It also configures the OAuth2 resource server with JWT support and a custom bearer token resolver.
+Configures the main security filter chain for the application.
 
-#### `jwtDecoder`
+**Parameters:**
 
-- **Parameters**: 
-  - `ISingpassKeyProvider keyProvider`: A provider for obtaining the signing key used to verify JWTs.
-- **Return Type**: 
-  - `JwtDecoder`: The configured JWT decoder.
-- **Description**: 
-  - This method creates a `JwtDecoder` using a `JWKSet` from the provided key provider. It sets up a `JWSVerificationKeySelector` for the ES256 algorithm and configures a `DefaultJWTProcessor` to use this key selector.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `http` | `HttpSecurity` | The HTTP security configuration object |
 
-#### `cookieFallbackBearerTokenResolver`
+**Returns:** `SecurityFilterChain`
 
-- **Parameters**: 
-  - None
-- **Return Type**: 
-  - `BearerTokenResolver`: The custom token resolver.
-- **Description**: 
-  - This method provides a custom `BearerTokenResolver` that first checks the `Authorization` header for a bearer token. If not found, it falls back to checking cookies for a token named `accessToken`.
+**Configuration:**
+- Disables CSRF protection
+- Enables CORS with default configuration
+- Sets session management to stateless
+- Configures authorization rules (see Public Endpoints table)
+- Enables OAuth2 resource server with JWT support
+- Uses custom bearer token resolver with cookie fallback
 
-#### `corsConfigurationSource`
+### `jwtDecoder`
 
-- **Parameters**: 
-  - `@Value("${app.cors.allowed-origins:http://localhost:3002}") String allowedOrigins`: A string of allowed origins for CORS, defaulting to `http://localhost:3002`.
-- **Return Type**: 
-  - `CorsConfigurationSource`: The configured CORS configuration source.
-- **Description**: 
-  - This method sets up CORS configuration, allowing specified origins, methods, and headers. It also enables credentials and registers the configuration for all paths.
+Creates a JWT decoder that verifies tokens using the Singpass signing key.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `keyProvider` | `ISingpassKeyProvider` | Provider for the Singpass signing key |
+
+**Returns:** `JwtDecoder`
+
+**Implementation:**
+- Creates a `JWKSet` from the public key obtained from the `ISingpassKeyProvider`
+- Configures a `JWSVerificationKeySelector` using the ES256 algorithm
+- Creates a `DefaultJWTProcessor` with the key selector
+- Returns a `NimbusJwtDecoder` wrapping the processor
+
+### `cookieFallbackBearerTokenResolver`
+
+Creates a custom bearer token resolver that first checks the `Authorization` header for a Bearer token, and if not found, falls back to checking cookies for an `accessToken` cookie.
+
+**Returns:** `BearerTokenResolver`
+
+**Behavior:**
+1. Checks the `Authorization` header for a token starting with `Bearer `
+2. If found, extracts and returns the token (removing the `Bearer ` prefix)
+3. If not found, checks cookies for one named `accessToken`
+4. Returns the cookie value if found, otherwise returns `null`
+
+### `corsConfigurationSource`
+
+Configures CORS settings for the application.
+
+**Parameters:**
+
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| `allowedOrigins` | `String` | Semicolon-separated list of allowed origins | `http://localhost:3002` |
+
+**Returns:** `CorsConfigurationSource`
+
+**Configuration:**
+- Parses the `allowedOrigins` string by splitting on semicolons
+- Allows all HTTP methods (`*`)
+- Allows all headers (`*`)
+- Enables credentials (cookies, authorization headers)
+- Applies configuration to all paths (`/**`)

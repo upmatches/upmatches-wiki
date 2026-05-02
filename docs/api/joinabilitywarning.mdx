@@ -4,19 +4,44 @@ title: JoinabilityWarning Enum
 sidebar_label: JoinabilityWarning
 ---
 
-## Overview
+# JoinabilityWarning
 
-The `JoinabilityWarning` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to represent specific warnings that might be encountered when attempting to join a game. This enum helps in categorizing and handling different types of joinability issues that a user might face.
+The `JoinabilityWarning` enum defines the possible warnings that can be returned when a user attempts to join a game session. These warnings indicate potential issues that may prevent or discourage a user from joining a particular game.
 
-## Enum Constants
+## Purpose
 
-The `JoinabilityWarning` enum defines the following constants:
+This enum is used to communicate specific reasons why a user might not be able to join a game or why joining might be inadvisable. It provides a standardized way to represent joinability constraints across the application.
 
-| Constant       | Description                                                                 |
-|----------------|-----------------------------------------------------------------------------|
-| IS_ORGANIZER   | Indicates that the user attempting to join is the organizer of the game.    |
-| SKILL_MISMATCH | Indicates that there is a skill mismatch between the user and the game requirements. |
+## Enum Values
+
+| Value | Description |
+|-------|-------------|
+| `IS_ORGANIZER` | Indicates that the user attempting to join is already the organizer of the game session. |
+| `SKILL_MISMATCH` | Indicates that there is a significant difference between the user's skill level and the skill level required or expected for the game session. |
 
 ## Usage
 
-This enum can be used in scenarios where you need to check or handle the reasons why a user might not be able to join a game. By using these constants, you can provide more specific feedback or take appropriate actions based on the type of warning encountered.
+This enum is typically used in conjunction with joinability checks within the game matching system. When a user attempts to join a game, the system evaluates various conditions and may return one or more `JoinabilityWarning` values to inform the user of potential issues.
+
+## Example
+
+```java
+// Example usage in a joinability check
+public List<JoinabilityWarning> checkJoinability(User user, GameSession session) {
+    List<JoinabilityWarning> warnings = new ArrayList<>();
+    
+    if (session.getOrganizer().equals(user)) {
+        warnings.add(JoinabilityWarning.IS_ORGANIZER);
+    }
+    
+    if (hasSkillMismatch(user, session)) {
+        warnings.add(JoinabilityWarning.SKILL_MISMATCH);
+    }
+    
+    return warnings;
+}
+```
+
+## Package Location
+
+`com.upmatches.app.features.game.enums`

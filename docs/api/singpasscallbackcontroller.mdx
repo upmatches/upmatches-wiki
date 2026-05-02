@@ -4,57 +4,146 @@ title: SingpassCallbackController
 sidebar_label: SingpassCallbackController
 ---
 
-## Overview
+# SingpassCallbackController
 
-The `SingpassCallbackController` class is a Spring REST controller responsible for handling the callback from Singpass authentication. It processes the authentication response, exchanges authorization codes for tokens, and manages user sessions and cookies. This controller is a crucial part of the authentication flow, ensuring that users are correctly authenticated and redirected to the appropriate platform (web or mobile) with the necessary tokens.
+The `SingpassCallbackController` is a Spring REST controller that handles the OAuth 2.0 callback from Singpass, Singapore's national digital identity platform. It processes the authorization code returned by Singpass, exchanges it for tokens, creates or retrieves user accounts, and generates appropriate authentication responses for both web and mobile clients.
+
+## Purpose
+
+This controller serves as the callback endpoint for the Singpass authentication flow. After a user authenticates with Singpass, the provider redirects back to this endpoint with an authorization code and state parameter. The controller:
+
+1. Validates the callback parameters and session state
+2. Exchanges the authorization code for tokens with Singpass
+3. Extracts the user's unique Singpass identifier
+4. Creates a new user account or retrieves an existing one
+5. Generates JWT access and refresh tokens
+6. Returns appropriate responses based on the client platform (web or mobile)
+
+## Endpoints
+
+### `GET /callback/singpass`
+
+Handles the Singpass OAuth callback.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `code` | `String` | No | Authorization code from Singpass |
+| `state` | `String` | No | State parameter for CSRF protection |
+
+**Response:**
+
+| Status Code | Description |
+|-------------|-------------|
+| `302 Found` | Redirect to frontend with tokens (web) or custom scheme URL (mobile) |
+| `200 OK` | Developer token page (when enabled) |
+| `400 Bad Request` | Missing required parameters |
+| `401 Unauthorized` | Authentication failure |
 
 ## Public Methods
 
 ### `callbackSingpass`
 
-Handles the Singpass callback request, processes the authentication response, and returns the appropriate HTTP response.
+```java
+public ResponseEntity<Object> callbackSingpass(
+    @RequestParam(required = false) final String code,
+    @RequestParam(required = false) final String state,
+    final HttpServletRequest request,
+    final HttpServletResponse response)
+```
 
-| Parameter | Type                  | Description                                                                 |
-|-----------|-----------------------|-----------------------------------------------------------------------------|
-| `code`    | `String`              | The authorization code returned by Singpass.                                |
-| `state`   | `String`              | The state parameter to validate the request.                                |
-| `request` | `HttpServletRequest`  | The HTTP request object.                                                    |
-| `response`| `HttpServletResponse` | The HTTP response object.                                                   |
+Main callback handler that orchestrates the entire authentication flow.
 
-**Returns**: `ResponseEntity<Object>` - The HTTP response entity containing the redirect or error information.
+**Parameters:**
 
-## Detailed Description
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `code` | `String` | Authorization code from Singpass |
+| `state` | `String` | State parameter for session validation |
+| `request` | `HttpServletRequest` | HTTP request object |
+| `response` | `HttpServletResponse` | HTTP response object |
 
-### Purpose
+**Returns:** `ResponseEntity<Object>` - Redirect response or developer token page
 
-The `SingpassCallbackController` is designed to handle the callback from Singpass, a popular authentication service in Singapore. It ensures that the authentication process is completed securely and that users are redirected appropriately based on their platform (web or mobile).
+**Throws:**
 
-### Key Responsibilities
+| Exception | Condition |
+|-----------|-----------|
+| `InvalidAuthRequestException` | Missing or blank `code` or `state` parameters |
+| `AuthenticationException` | State mismatch, token exchange failure, or invalid token payload |
 
-- **Error Handling**: The controller checks for any errors returned by Singpass and throws an `AuthenticationException` if any are found.
-- **Code Exchange**: It exchanges the authorization code for a token using the `ISingpassAuthService`.
-- **User Management**: The controller finds or creates a user based on the Singpass UUID and logs the user in.
-- **Token Management**: It generates access and refresh tokens using `IJwtTokenService` and stores the refresh token.
-- **Response Building**: Depending on the platform, it builds a redirect response for web or mobile users, setting the necessary cookies or redirect URLs.
+## Internal Flow
 
-### Private Methods
+### 1. Provider Error Check (`rejectIfProviderError`)
 
-- **`rejectIfProviderError`**: Checks for errors in the request and logs them.
-- **`exchangeCode`**: Exchanges the authorization code for a token.
-- **`parseSingpassUuid`**: Parses the Singpass UUID from the token.
-- **`findOrCreateUser`**: Finds an existing user or creates a new one based on the Singpass UUID.
-- **`buildResponse`**: Constructs the HTTP response for web users.
-- **`buildMobileRedirect`**: Constructs the HTTP response for mobile users.
+Validates that Singpass did not return an error parameter. If an error is present, it logs the error and throws an `AuthenticationException`.
 
-### Dependencies
+### 2. Parameter Validation
 
-The controller relies on several services and repositories, including:
+Ensures both `code` and `state` parameters are present and non-blank. Throws `InvalidAuthRequestException` if validation fails.
 
-- `ISingpassAuthService`: For exchanging authorization codes.
-- `IAuthSessionStore`: For managing authentication sessions.
-- `UserRepository`: For accessing user data.
-- `IJwtTokenService`: For generating JWT tokens.
-- `IRefreshTokenStore`: For storing refresh tokens.
-- `ICookieHelper`: For managing cookies.
-- `IDevTokenPageRenderer`: For rendering development token pages.
-- `JwtProperties`: For accessing JWT configuration properties.
+### 3. Session Retrieval
+
+Retrieves and removes the `AuthSession` from the session store using the `state` parameter. If no session is found, throws `AuthenticationException` indicating state mismatch.
+
+### 4. Token Exchange (`exchangeCode`)
+
+Exchanges the authorization code for a Singpass token using the stored `codeVerifier` and `nonce` from the session. Throws `AuthenticationException` if the exchange fails.
+
+### 5. UUID Parsing (`parseSingpassUuid`)
+
+Extracts the `SingpassUuid` from the `sub` claim in the Singpass token. Validates the format and throws `AuthenticationException` if invalid.
+
+### 6. User Creation/Retrieval (`findOrCreateUser`)
+
+Attempts to find an existing user by their Singpass UUID. If not found, creates a new user account. Handles concurrent creation attempts gracefully.
+
+**Returns:** `CallbackResult` record containing:
+- `user` - The authenticated user
+- `isNewUser` - Boolean indicating if this is a first-time login
+
+### 7. Response Building (`buildResponse`)
+
+Generates JWT tokens and builds the appropriate response:
+
+- **Web clients:** Sets authentication cookies and redirects to the frontend callback URL
+- **Mobile clients:** Builds a custom scheme URL with tokens as query parameters, optionally rendering a developer token page
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `ISingpassAuthService` | Service | Handles Singpass OAuth token exchange |
+| `IAuthSessionStore` | Service | Manages authentication sessions |
+| `UserRepository` | Repository | Data access for user entities |
+| `IJwtTokenService` | Service | Generates JWT access and refresh tokens |
+| `IRefreshTokenStore` | Service | Stores refresh tokens |
+| `ICookieHelper` | Service | Manages HTTP cookies |
+| `IDevTokenPageRenderer` | Service | Renders developer token page for debugging |
+| `JwtProperties` | Configuration | JWT and callback URL configuration |
+
+## Error Handling
+
+The controller handles several error scenarios:
+
+| Error | Exception | HTTP Status |
+|-------|-----------|-------------|
+| Missing `code` or `state` | `InvalidAuthRequestException` | 400 Bad Request |
+| State mismatch | `AuthenticationException` | 401 Unauthorized |
+| Token exchange failure | `AuthenticationException` | 401 Unauthorized |
+| Invalid token payload | `AuthenticationException` | 401 Unauthorized |
+| User creation failure | `AuthenticationException` | 401 Unauthorized |
+
+## Usage Example
+
+```java
+// The controller is automatically invoked by Spring when Singpass redirects to:
+// GET /callback/singpass?code=abc123&state=xyz789
+
+// For web clients, the response is a 302 redirect to:
+// https://app.example.com/auth/callback?isNewUser=true
+
+// For mobile clients, the response is a 302 redirect to:
+// myapp://auth/callback?accessToken=eyJ...&refreshToken=abc...&expiresAt=1234567890&isNewUser=true
+```

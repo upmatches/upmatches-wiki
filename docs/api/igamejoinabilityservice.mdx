@@ -4,32 +4,72 @@ title: IGameJoinabilityService Interface
 sidebar_label: IGameJoinabilityService
 ---
 
-## Overview
+# IGameJoinabilityService Interface
 
-The `IGameJoinabilityService` interface is part of the `com.upmatches.app.features.game.services` package. It defines the contract for services that determine the joinability of a game for a viewer. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `GameJoinabilityService` class.
+The `IGameJoinabilityService` interface defines the contract for determining whether a viewer can join a game. It provides methods to compute joinability for individual games and batch operations for multiple games simultaneously.
 
-## Public Methods
+This sealed interface permits only `GameJoinabilityService` as its implementation, ensuring controlled extension and type safety.
+
+## Interface Definition
+
+```java
+public sealed interface IGameJoinabilityService permits GameJoinabilityService {
+    // Methods
+}
+```
+
+## Methods
 
 ### `compute`
 
-Calculates the joinability of a single game for a viewer.
+Computes the joinability status for a single game based on the current participant count and viewer identity.
 
-| Parameter        | Type   | Description                                      |
-|------------------|--------|--------------------------------------------------|
-| `game`           | `Game` | The game for which joinability is being computed.|
-| `participantCount` | `long` | The number of participants currently in the game.|
-| `userId`         | `UUID` | The unique identifier of the user.               |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `game` | `Game` | The game entity to evaluate for joinability |
+| `participantCount` | `long` | Current number of participants in the game |
+| `userId` | `UUID` | Unique identifier of the viewer requesting to join |
 
-**Returns:** `ViewerJoinabilityResponse` - The response indicating the joinability status for the viewer.
+**Returns:** `ViewerJoinabilityResponse` - The joinability status and any relevant information for the viewer.
 
 ### `computeBatch`
 
-Calculates the joinability for multiple games for a viewer.
+Computes joinability status for multiple games simultaneously, allowing efficient bulk evaluation.
 
-| Parameter                  | Type                        | Description                                                  |
-|----------------------------|-----------------------------|--------------------------------------------------------------|
-| `games`                    | `List<Game>`                | A list of games for which joinability is being computed.     |
-| `participantCountsByGameId`| `Map<UUID, Long>`           | A map associating game IDs with their respective participant counts. |
-| `userId`                   | `UUID`                      | The unique identifier of the user.                           |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `games` | `List<Game>` | List of game entities to evaluate |
+| `participantCountsByGameId` | `Map<UUID, Long>` | Map of game IDs to their current participant counts |
+| `userId` | `UUID` | Unique identifier of the viewer requesting to join |
 
-**Returns:** `Map<UUID, ViewerJoinabilityResponse>` - A map associating each game ID with its respective joinability response for the viewer.
+**Returns:** `Map<UUID, ViewerJoinabilityResponse>` - A map of game IDs to their corresponding joinability responses.
+
+## Usage Example
+
+```java
+// Single game evaluation
+ViewerJoinabilityResponse response = joinabilityService.compute(
+    game, 
+    game.getParticipantCount(), 
+    currentUserId
+);
+
+// Batch evaluation for multiple games
+Map<UUID, Long> participantCounts = new HashMap<>();
+for (Game game : games) {
+    participantCounts.put(game.getId(), game.getParticipantCount());
+}
+
+Map<UUID, ViewerJoinabilityResponse> batchResponses = joinabilityService.computeBatch(
+    games,
+    participantCounts,
+    currentUserId
+);
+```
+
+## Implementation Notes
+
+- The interface is sealed, meaning only `GameJoinabilityService` can implement it
+- The `compute` method is suitable for real-time joinability checks on individual games
+- The `computeBatch` method optimizes performance when evaluating multiple games simultaneously
+- Both methods require the viewer's `userId` to personalize joinability decisions (e.g., checking if the viewer is already a participant)

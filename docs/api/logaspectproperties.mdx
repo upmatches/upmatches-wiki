@@ -1,32 +1,65 @@
 ---
 id: log-aspect-properties
-title: LogAspectProperties Class
+title: LogAspectProperties
 sidebar_label: LogAspectProperties
 ---
 
-import com.upmatches.app.shared.logging.constants.AspectConstant;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-## Overview
-
-The `LogAspectProperties` class is a configuration properties holder used in a Spring Boot application. It is designed to manage logging aspect properties, specifically focusing on the threshold for slow execution logging. This class utilizes Spring Boot's `@ConfigurationProperties` to bind external configuration properties to a strongly typed Java object.
+# LogAspectProperties
 
 ## Purpose
 
-The primary purpose of the `LogAspectProperties` class is to encapsulate the configuration for logging aspects, particularly the threshold for what is considered a "slow execution" in milliseconds. This allows for centralized and easily configurable logging behavior in the application.
+The `LogAspectProperties` class is a Spring Boot configuration properties record that manages logging aspect configuration for the application. It provides a centralized way to configure the slow execution threshold for logging aspects, with a default fallback value defined in `AspectConstant.SLOW_EXECUTION_THRESHOLD_MS`.
+
+This record is bound to the `app.logging.aspect` prefix in application properties files (e.g., `application.yml` or `application.properties`), allowing external configuration of logging behavior without code changes.
 
 ## Constructor
 
-The constructor of the `LogAspectProperties` class ensures that the `slowExecutionThresholdMs` is set to a valid value. If the provided value is `null` or less than or equal to zero, it defaults to a predefined constant value from `AspectConstant.SLOW_EXECUTION_THRESHOLD_MS`.
+The compact constructor validates and normalizes the `slowExecutionThresholdMs` parameter. If the provided value is `null` or less than or equal to zero, it defaults to the constant value defined in `AspectConstant.SLOW_EXECUTION_THRESHOLD_MS`.
+
+## Configuration Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `app.logging.aspect.slow-execution-threshold-ms` | `Long` | `AspectConstant.SLOW_EXECUTION_THRESHOLD_MS` | The threshold in milliseconds for considering a method execution as "slow". When a method's execution time exceeds this value, the aspect will log a warning or perform configured slow execution handling. |
 
 ## Public Methods
 
-The `LogAspectProperties` class is a record, which means it primarily consists of a constructor and accessor methods for its fields. Below is a documentation of its public methods:
+Since `LogAspectProperties` is a Java record, it automatically provides the following public methods:
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `slowExecutionThresholdMs()` | None | `Long` | Returns the threshold in milliseconds for logging slow executions. |
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `slowExecutionThresholdMs()` | `Long` | Returns the configured slow execution threshold in milliseconds. This value is guaranteed to be non-null and positive after construction. |
+| `toString()` | `String` | Returns a string representation of the record, including the `slowExecutionThresholdMs` value. |
+| `equals(Object o)` | `boolean` | Compares this record to another object for equality based on the `slowExecutionThresholdMs` field. |
+| `hashCode()` | `int` | Returns a hash code value for this record based on the `slowExecutionThresholdMs` field. |
 
-## Usage
+## Usage Example
 
-This class is typically used in a Spring Boot application where logging configurations need to be externalized and easily adjustable. By using the `@ConfigurationProperties` annotation, it allows the application to bind properties from external configuration files (such as `application.yml` or `application.properties`) to this class, making it flexible and maintainable.
+### application.yml
+```yaml
+app:
+  logging:
+    aspect:
+      slow-execution-threshold-ms: 5000
+```
+
+### application.properties
+```properties
+app.logging.aspect.slow-execution-threshold-ms=5000
+```
+
+### Java Usage
+```java
+@Autowired
+private LogAspectProperties logAspectProperties;
+
+public void someMethod() {
+    Long threshold = logAspectProperties.slowExecutionThresholdMs();
+    // Use threshold for logging aspect configuration
+}
+```
+
+## Dependencies
+
+- **Spring Boot**: `@ConfigurationProperties` annotation from `org.springframework.boot.context.properties`
+- **AspectConstant**: `com.upmatches.app.shared.logging.constants.AspectConstant` for default threshold value

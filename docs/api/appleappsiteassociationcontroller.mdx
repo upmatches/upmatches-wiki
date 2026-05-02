@@ -1,29 +1,101 @@
 ---
 id: apple-app-site-association-controller
-title: AppleAppSiteAssociationController
-sidebar_label: AppleAppSiteAssociationController
+title: Apple App Site Association Controller
+sidebar_label: Apple App Site Association
 ---
 
-## Purpose of the Class
+# Apple App Site Association Controller
 
-The `AppleAppSiteAssociationController` is a Spring Boot REST controller responsible for serving the `apple-app-site-association.json` file. This file is crucial for enabling Universal Links in iOS applications, allowing iOS devices to open specific app content directly from a web link. The controller ensures that the file is served with the appropriate content type and caching headers.
+## Purpose
 
-## Public Methods
+The `AppleAppSiteAssociationController` is a Spring Boot REST controller that serves the Apple App Site Association (AASA) file. This file is required by Apple to enable features such as Universal Links, Shared Web Credentials, and Handoff for iOS applications.
 
-### `appleAppSiteAssociation`
+The controller exposes a single endpoint at `/.well-known/apple-app-site-association` that returns the AASA JSON file with appropriate caching headers. The file is loaded from the classpath, making it easy to deploy as part of the application's resources.
 
-This method handles HTTP GET requests to the endpoint `/.well-known/apple-app-site-association`. It serves the `apple-app-site-association.json` file from the classpath.
+## Endpoint
 
-| **Method**                  | **Description**                                                                 |
-|-----------------------------|---------------------------------------------------------------------------------|
-| `appleAppSiteAssociation()` | Serves the `apple-app-site-association.json` file with JSON content type and caching. |
+### `GET /.well-known/apple-app-site-association`
 
-#### Parameters
+Returns the Apple App Site Association JSON file with caching enabled for 24 hours.
 
-This method does not take any parameters.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None | - | No request parameters required |
 
-#### Return Type
+**Response:**
 
-| **Type**                          | **Description**                                                                 |
-|-----------------------------------|---------------------------------------------------------------------------------|
-| `ResponseEntity<Resource>`        | A response entity containing the JSON resource and appropriate HTTP headers.    |
+| Property | Value |
+|----------|-------|
+| HTTP Status | `200 OK` |
+| Content-Type | `application/json` |
+| Cache-Control | `public, max-age=86400` (24 hours) |
+| Body | The contents of `apple-app-site-association.json` from the classpath |
+
+## Configuration
+
+The controller uses the following constants:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `RESOURCE_PATH` | `"apple-app-site-association.json"` | Path to the AASA file on the classpath |
+| `CACHE_HOURS` | `24L` | Cache duration in hours |
+
+## Usage
+
+### Prerequisites
+
+1. Place your `apple-app-site-association.json` file in the `src/main/resources/` directory of your Spring Boot application.
+
+2. The JSON file should follow Apple's format for Universal Links. Example:
+
+```json
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.com.example.app",
+        "paths": ["*"]
+      }
+    ]
+  }
+}
+```
+
+### Example Request
+
+```bash
+curl -i https://yourdomain.com/.well-known/apple-app-site-association
+```
+
+### Example Response
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Cache-Control: public, max-age=86400
+
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.com.example.app",
+        "paths": ["*"]
+      }
+    ]
+  }
+}
+```
+
+## Implementation Details
+
+- The controller uses `ClassPathResource` to load the AASA file from the classpath, ensuring it's bundled with the application.
+- Caching is set to 24 hours with `cachePublic()` to allow CDNs and browsers to cache the response.
+- The response content type is explicitly set to `application/json` to ensure proper parsing by Apple's systems.
+
+## Notes
+
+- Apple requires this endpoint to be served over HTTPS in production.
+- The file must be accessible at `/.well-known/apple-app-site-association` without any redirects.
+- For development testing, you can access the endpoint locally if running on HTTPS.

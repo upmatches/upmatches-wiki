@@ -4,37 +4,94 @@ title: RecordAuditEventService
 sidebar_label: RecordAuditEventService
 ---
 
+# RecordAuditEventService
+
 ## Purpose
 
-The `RecordAuditEventService` class is a service component in a Java application responsible for recording audit events. It interacts with the `AuditEventRepository` to persist audit events and logs the events for auditing purposes. This service ensures that each audit event is recorded in a new transaction, providing a reliable mechanism for tracking actions performed by users or systems.
+The `RecordAuditEventService` is a Spring service class responsible for recording audit events in the application. It implements the `IRecordAuditEventService` interface and provides a transactional mechanism to persist audit events to the database while simultaneously logging them to a dedicated audit logger.
+
+This service ensures that audit events are reliably stored and logged, with built-in error handling to prevent audit failures from impacting the main application flow. It uses a separate transaction (`REQUIRES_NEW` propagation) to ensure audit records are committed independently of the calling transaction.
+
+## Class Details
+
+| Attribute | Value |
+|-----------|-------|
+| **Package** | `com.upmatches.app.features.audit.services` |
+| **Type** | `non-sealed class` |
+| **Implements** | `IRecordAuditEventService` |
+| **Annotations** | `@Service` |
+| **Dependencies** | `AuditEventRepository`, `ObjectMapper` |
+
+## Constructor
+
+| Constructor | Description |
+|-------------|-------------|
+| `RecordAuditEventService(AuditEventRepository repository, ObjectMapper objectMapper)` | Creates a new instance with the required dependencies for database persistence and JSON serialization. |
 
 ## Public Methods
 
-### `record`
+### `record(AuditEventRequest request)`
 
-Records an audit event based on the provided `AuditEventRequest`.
+Records an audit event by persisting it to the database and logging it to the audit logger.
 
-| Parameter          | Type                  | Description                                      |
-|--------------------|-----------------------|--------------------------------------------------|
-| `request`          | `AuditEventRequest`   | The request object containing audit event details.|
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `AuditEventRequest` | The audit event request containing all event details (actor, action, resource, outcome, etc.) |
 
-| Return Type        | Description           |
-|--------------------|-----------------------|
-| `void`             | This method does not return a value.|
+**Return Type:** `void`
 
-### Method Details
+**Behavior:**
+1. Builds an `AuditEvent` entity from the request using the `buildEvent` method.
+2. Persists the event to the database using `ServiceOperationExecutor` with `OperationStatus.SAVE`.
+3. Emits a structured JSON log entry to the dedicated audit logger.
+4. Catches any `RuntimeException` and logs the failure without rethrowing, ensuring audit failures don't propagate.
 
-- **Transactional Behavior**: The `record` method is annotated with `@Transactional(propagation = Propagation.REQUIRES_NEW)`, ensuring that each audit event is recorded in a separate transaction. This isolation helps maintain data integrity and consistency.
-  
-- **Error Handling**: If an error occurs during the recording process, the method logs an error message using SLF4J logging framework, detailing the action, actor ID, and the exception message.
+**Transactional Behavior:** Uses `@Transactional(propagation = Propagation.REQUIRES_NEW)` to ensure the audit event is saved in a separate transaction, independent of any parent transaction.
 
-- **Logging**: The `emitLog` method constructs a log entry with various fields from the `AuditEventRequest` and logs it using a dedicated audit logger. If JSON processing fails, it falls back to logging the raw fields map.
+## Private Methods
+
+### `buildEvent(AuditEventRequest request)`
+
+Constructs an `AuditEvent` entity from the provided request.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `AuditEventRequest` | The audit event request containing all event details |
+
+**Return Type:** `AuditEvent`
+
+### `emitLog(AuditEventRequest request)`
+
+Generates and writes a structured JSON log entry to the dedicated audit logger.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `AuditEventRequest` | The audit event request containing all event details |
+
+**Behavior:**
+1. Builds a `LinkedHashMap` with structured audit fields (action, category, outcome, actor details, resource details, correlation ID, IP address, error code).
+2. Serializes the map to JSON using `ObjectMapper`.
+3. Logs the JSON string to the `AUDIT` logger at INFO level.
+4. Falls back to logging the map directly if JSON serialization fails.
+
+## Logging
+
+The service uses two loggers:
+- **AUDIT Logger** (`AUDIT`): Dedicated logger for structured audit log entries in JSON format.
+- **Application Logger** (`RecordAuditEventService.class`): For logging failures and errors during audit event processing.
+
+## Error Handling
+
+- If the database save operation fails, the error is logged but not propagated to the caller.
+- If JSON serialization of the audit log fails, the service falls back to logging the raw map structure.
+- All runtime exceptions during audit recording are caught and logged with the action and actor ID for traceability.
 
 ## Dependencies
 
-- **`AuditEventRepository`**: Used to persist `AuditEvent` entities.
-- **`ObjectMapper`**: Utilized for converting log fields into a JSON string format.
-- **`ServiceOperationExecutor`**: Executes the save operation and handles exceptions.
-- **SLF4J Logger**: Provides logging capabilities for audit and error logs.
-
-This service is a critical component for maintaining an audit trail within the application, ensuring that all significant actions are recorded and can be reviewed for compliance and security purposes.
+| Dependency | Description |
+|------------|-------------|
+| `AuditEventRepository` | Repository for persisting audit events to the database |
+| `ObjectMapper` | Jackson ObjectMapper for JSON serialization of audit log entries |
+| `ServiceOperationExecutor` | Utility for executing service operations with standardized error handling |
+| `AuditEvent` | Entity class representing an audit event record |
+| `AuditEventRequest` | Request DTO containing audit event details |

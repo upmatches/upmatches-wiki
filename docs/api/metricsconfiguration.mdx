@@ -1,45 +1,57 @@
 ---
 id: metrics-configuration
-title: MetricsConfiguration Class
+title: MetricsConfiguration
 sidebar_label: MetricsConfiguration
 ---
 
-## Overview
+# MetricsConfiguration
 
-The `MetricsConfiguration` class is a Spring configuration class designed to set up and customize metrics for a Java application using Micrometer. It provides beans that configure common tags for metrics and integrate Logback metrics into the application's monitoring system.
+The `MetricsConfiguration` class is a Spring Boot configuration component that sets up application-wide metrics and monitoring using Micrometer. It provides two key beans: one for adding common tags to all metrics (such as the application name) and another for enabling Logback-based metrics collection.
+
+## Purpose
+
+- **Centralized Metrics Configuration**: Ensures all metrics reported by the application include a consistent set of common tags, making it easier to filter and aggregate metrics in monitoring systems like Prometheus, Datadog, or Grafana.
+- **Logback Metrics Integration**: Registers a `LogbackMetrics` bean to capture logging-related metrics (e.g., log event counts by level) and expose them via the Micrometer `MeterRegistry`.
 
 ## Public Methods
 
-The class defines two public methods, both of which are annotated with `@Bean` to indicate that they produce beans to be managed by the Spring container.
-
-### `metricsCommonTags`
-
-This method customizes the `MeterRegistry` to include common tags for all metrics, specifically the application name.
-
-| Method Name          | Parameters                                                                 | Return Type                              | Description                                                                                          |
-|----------------------|----------------------------------------------------------------------------|------------------------------------------|------------------------------------------------------------------------------------------------------|
-| `metricsCommonTags`  | `Environment environment` - The Spring environment from which to retrieve properties. | `MeterRegistryCustomizer<MeterRegistry>` | Customizes the `MeterRegistry` to include a common tag for the application name.                      |
-
-- **Parameters:**
-  - `environment`: The `Environment` object used to access application properties.
-
-- **Return Type:** 
-  - Returns a `MeterRegistryCustomizer<MeterRegistry>` that adds a common tag for the application name to the `MeterRegistry`.
-
-### `logbackMetrics`
-
-This method provides a `LogbackMetrics` bean that integrates Logback metrics into the application's monitoring system.
-
-| Method Name     | Parameters | Return Type    | Description                                                                 |
-|-----------------|------------|----------------|-----------------------------------------------------------------------------|
-| `logbackMetrics`| None       | `LogbackMetrics`| Provides a `LogbackMetrics` instance for integrating Logback metrics.       |
-
-- **Parameters:** 
-  - None
-
-- **Return Type:** 
-  - Returns a `LogbackMetrics` instance that can be used to monitor Logback logging metrics.
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `metricsCommonTags(Environment environment)` | `MeterRegistryCustomizer<MeterRegistry>` | `Environment environment` – Spring's environment abstraction for accessing property sources. | Creates a customizer that adds a common tag `application` to all metrics. The tag value is taken from the `spring.application.name` property, defaulting to `"Upmatches"` if not set. |
+| `logbackMetrics()` | `LogbackMetrics` | None | Creates and returns a `LogbackMetrics` instance, which binds Logback's logging events to Micrometer's meter registry. |
 
 ## Usage
 
-To use the `MetricsConfiguration` class, ensure that it is included in your Spring application's context. The configuration will automatically apply common tags to all metrics and integrate Logback metrics, enhancing the observability of your application.
+This configuration is automatically picked up by Spring Boot's component scanning when placed in a package that is scanned (e.g., under the application's base package). No additional manual registration is required.
+
+### Example
+
+Once this configuration is active, all metrics reported by the application will include a tag like `application=Upmatches` (or the value of `spring.application.name`). Additionally, logging metrics such as `logback.events` will be available in the meter registry.
+
+```java
+// Example: Accessing the meter registry in a service
+@Service
+public class MyService {
+    private final MeterRegistry meterRegistry;
+
+    public MyService(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
+
+    public void doSomething() {
+        // Metrics will automatically have the "application" tag
+        meterRegistry.counter("my.custom.counter").increment();
+    }
+}
+```
+
+## Dependencies
+
+- **Micrometer**: Core metrics facade.
+- **Spring Boot Actuator**: Provides auto-configuration for Micrometer.
+- **Logback**: Logging framework (typically included by default in Spring Boot applications).
+
+## Notes
+
+- The `MeterRegistryCustomizer` bean is applied globally to all `MeterRegistry` instances in the application context.
+- The `LogbackMetrics` binder automatically registers itself with the `MeterRegistry` when the application context is ready.

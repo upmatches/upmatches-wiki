@@ -1,27 +1,71 @@
 ---
 id: database-properties
-title: DatabaseProperties Class
+title: DatabaseProperties
 sidebar_label: DatabaseProperties
 ---
 
-## Overview
+# DatabaseProperties
 
-The `DatabaseProperties` class is a Java record used to encapsulate the configuration properties for a database connection in a Spring Boot application. It is annotated with `@ConfigurationProperties` to bind the properties defined in the application's configuration files (e.g., `application.yml` or `application.properties`) to this class. The prefix used for these properties is `spring.datasource`.
+The `DatabaseProperties` class is a Spring Boot configuration properties record that maps to the `spring.datasource` prefix in application configuration files (e.g., `application.yml` or `application.properties`). It provides a type-safe way to access database connection settings including JDBC URL, credentials, driver class, and HikariCP connection pool configuration.
 
-This class is part of the `com.upmatches.app.shared.database.properties` package and is designed to hold essential database connection details such as the URL, username, password, and driver class name. Additionally, it includes a nested configuration property for HikariCP-specific settings through the `HikariProperties` class.
+## Purpose
 
-## Public Methods
+This record centralizes database connection configuration into a single, immutable data structure. By using Spring Boot's `@ConfigurationProperties` annotation, it automatically binds properties from external configuration sources, enabling clean separation of configuration from code and supporting IDE autocompletion for configuration keys.
 
-Since `DatabaseProperties` is a Java record, it automatically provides public accessor methods for each of its components. Below is a table documenting these methods:
+## Configuration Prefix
 
-| Method Name       | Parameters | Return Type | Description                                      |
-|-------------------|------------|-------------|--------------------------------------------------|
-| `url()`           | None       | `String`    | Returns the database connection URL.             |
-| `username()`      | None       | `String`    | Returns the username for the database connection.|
-| `password()`      | None       | `String`    | Returns the password for the database connection.|
-| `driverClassName()` | None     | `String`    | Returns the fully qualified name of the JDBC driver class. |
-| `hikari()`        | None       | `HikariProperties` | Returns the HikariCP-specific configuration properties. |
+All properties are prefixed with `spring.datasource`. For example, in `application.yml`:
 
-## Usage
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/mydb
+    username: dbuser
+    password: dbpass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+```
 
-To use the `DatabaseProperties` class, ensure that your Spring Boot application's configuration file includes the necessary properties under the `spring.datasource` prefix. The properties will be automatically mapped to the fields of this class, allowing you to access them in a type-safe manner within your application.
+## Public API
+
+### Record Components
+
+| Component | Type | Description |
+|-----------|------|-------------|
+| `url` | `String` | JDBC URL for the database connection |
+| `username` | `String` | Database authentication username |
+| `password` | `String` | Database authentication password |
+| `driverClassName` | `String` | Fully qualified JDBC driver class name |
+| `hikari` | `HikariProperties` | Nested HikariCP connection pool configuration (annotated with `@NestedConfigurationProperty`) |
+
+### Inherited Methods
+
+As a Java record, `DatabaseProperties` automatically provides:
+
+- **Constructor**: All-args constructor with parameters matching the component order
+- **Accessor methods**: `url()`, `username()`, `password()`, `driverClassName()`, `hikari()`
+- **`equals()`**, **`hashCode()`**, **`toString()`**: Standard implementations based on all components
+
+## Usage Example
+
+```java
+@Service
+public class DatabaseService {
+    private final DatabaseProperties databaseProperties;
+
+    public DatabaseService(DatabaseProperties databaseProperties) {
+        this.databaseProperties = databaseProperties;
+    }
+
+    public void printConnectionInfo() {
+        System.out.println("Connecting to: " + databaseProperties.url());
+        System.out.println("Pool size: " + databaseProperties.hikari().maximumPoolSize());
+    }
+}
+```
+
+## Related Classes
+
+- **HikariProperties**: Nested configuration class for HikariCP connection pool settings (defined separately in the same package)

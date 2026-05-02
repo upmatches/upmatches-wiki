@@ -1,43 +1,129 @@
 ---
 id: push-notification-service
-title: PushNotificationService Class
+title: PushNotificationService
 sidebar_label: PushNotificationService
 ---
 
+# PushNotificationService
+
+The `PushNotificationService` class is a Spring service that handles sending push notifications to mobile devices using Firebase Cloud Messaging (FCM). It manages the entire lifecycle of push notification delivery, including token management, message construction, and handling delivery failures.
+
 ## Purpose
 
-The `PushNotificationService` class is responsible for sending push notifications to users' devices using Firebase Cloud Messaging (FCM). It integrates with Firebase to deliver notifications to Android and iOS devices and handles the management of device tokens, including pruning invalid tokens.
+This service is responsible for:
+- Sending push notifications to registered device tokens
+- Managing device token validity by pruning invalid or unregistered tokens
+- Constructing platform-specific notification payloads (Android and iOS)
+- Tracking notification delivery status and badge counts
+- Handling FCM service unavailability gracefully
+
+## Class Overview
+
+- **Package**: `com.upmatches.app.features.notification.services`
+- **Implements**: `IPushNotificationService`
+- **Annotations**: `@Service`
+- **Dependencies**:
+  - `DeviceTokenRepository` - Manages device token persistence
+  - `NotificationRepository` - Manages notification persistence
+  - `ObjectProvider<FirebaseMessaging>` - Provides FCM instance (allows graceful handling when unavailable)
 
 ## Public Methods
 
-### `send`
-
-Sends a push notification to the recipient's devices.
-
-| Parameter    | Type          | Description                                   |
-|--------------|---------------|-----------------------------------------------|
-| notification | `Notification`| The notification object containing details such as the recipient, message, and title. |
-
-| Return Type          | Description                                                                 |
-|----------------------|-----------------------------------------------------------------------------|
-| `PushDeliveryResult` | The result of the push delivery attempt, indicating success, failure, or unavailability. |
-
-## Method Details
-
 ### `send(Notification notification)`
 
-- **Purpose**: This method sends a push notification to all devices associated with the recipient of the given notification. It constructs a message with the necessary configurations for both Android and iOS platforms and attempts to send it using Firebase Messaging.
-- **Process**:
-  1. Retrieves the `FirebaseMessaging` instance.
-  2. Fetches device tokens for the notification's recipient.
-  3. Constructs the notification message with platform-specific configurations.
-  4. Sends the message and processes the response to determine success or failure.
-  5. Prunes invalid device tokens based on the response.
+Sends a push notification to all registered devices for the notification's recipient.
 
-- **Error Handling**: Logs a warning if sending fails due to a `FirebaseMessagingException`.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notification` | `Notification` | The notification entity containing recipient, title, message, and metadata |
 
-### Private Methods
+| Return Type | Description |
+|-------------|-------------|
+| `PushDeliveryResult` | The result of the push delivery attempt |
 
-- **`resolveBadge(UUID recipientId)`**: Calculates the badge count for iOS notifications based on the number of unread notifications for the recipient.
+**Possible Return Values:**
+- `UNAVAILABLE` - Firebase Messaging service is not available
+- `NO_TOKENS` - No device tokens found for the recipient
+- `SENT` - At least one push notification was successfully sent
+- `FAILED` - All push attempts failed or an exception occurred
 
-- **`pruneInvalidTokens(BatchResponse response, List<String> tokenStrings)`**: Removes invalid device tokens from the repository based on the response from Firebase, specifically handling unregistered or invalid tokens.
+**Behavior:**
+1. Checks if Firebase Messaging is available; returns `UNAVAILABLE` if not
+2. Retrieves all device tokens for the notification's recipient
+3. Returns `NO_TOKENS` if no tokens are found
+4. Constructs a data payload with notification metadata (type, resource type, resource ID, notification ID)
+5. Creates platform-specific configurations:
+   - iOS: Sets badge count via APNs config
+   - Android: Sets notification count via Android config
+6. Sends multicast message to all tokens
+7. Prunes invalid tokens (unregistered or invalid) from the database
+8. Returns `SENT` if at least one message was delivered successfully, otherwise `FAILED`
+
+## Private Methods
+
+### `resolveBadge(UUID recipientId)`
+
+Calculates the badge count for the recipient based on unread notifications.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The recipient's unique identifier |
+
+| Return Type | Description |
+|-------------|-------------|
+| `int` | The number of unread notifications (capped at `Integer.MAX_VALUE`) |
+
+### `pruneInvalidTokens(BatchResponse response, List<String> tokenStrings)`
+
+Removes invalid or unregistered device tokens from the database.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `response` | `BatchResponse` | The FCM batch response containing individual send results |
+| `tokenStrings` | `List<String>` | The list of device tokens that were sent to |
+
+**Behavior:**
+- Iterates through each send response
+- For failed responses, checks if the error code is `UNREGISTERED` or `INVALID_ARGUMENT`
+- Deletes invalid tokens from the database to prevent future failed attempts
+
+## Error Handling
+
+- **FCM Unavailability**: Logs a debug message and returns `UNAVAILABLE` without throwing exceptions
+- **FCM Exceptions**: Catches `FirebaseMessagingException`, logs a warning, and returns `FAILED`
+- **Invalid Tokens**: Automatically prunes unregistered or invalid tokens to maintain a clean token database
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `DeviceTokenRepository` | Repository | Manages device token CRUD operations |
+| `NotificationRepository` | Repository | Manages notification persistence and queries |
+| `FirebaseMessaging` | External Service | Firebase Cloud Messaging client for sending push notifications |
+| SLF4J Logger | Logging | Provides structured logging for debugging and monitoring |
+
+## Usage Example
+
+```java
+@Autowired
+private PushNotificationService pushNotificationService;
+
+public void sendNotification(Notification notification) {
+    PushDeliveryResult result = pushNotificationService.send(notification);
+    
+    switch (result) {
+        case SENT:
+            // Handle successful delivery
+            break;
+        case FAILED:
+            // Handle delivery failure
+            break;
+        case NO_TOKENS:
+            // Handle no registered devices
+            break;
+        case UNAVAILABLE:
+            // Handle FCM service unavailability
+            break;
+    }
+}
+```

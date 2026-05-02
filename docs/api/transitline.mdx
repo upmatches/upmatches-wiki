@@ -1,35 +1,58 @@
 ---
 id: transit-line
-title: TransitLine Class
+title: TransitLine Entity
 sidebar_label: TransitLine
 ---
 
+# TransitLine
+
+The `TransitLine` class is a JPA entity that represents a public transit line (e.g., a subway or bus route) within the venue features module. It maps to the `transit_lines` database table and provides a simple, immutable data model for storing transit line metadata such as its code, name, and display color.
+
 ## Purpose
 
-The `TransitLine` class represents a transit line entity within a transportation system. It is designed to be used with a database, as indicated by its use of JPA annotations. This class is part of the `com.upmatches.app.features.venue.entities` package and is mapped to the `transit_lines` table in the database. The class includes fields for the transit line's code, name, and color, which are essential attributes for identifying and displaying transit lines in applications.
+This entity is used to persist and retrieve information about transit lines that serve a venue. Each transit line is uniquely identified by a short code (e.g., "B", "Red", "100") and includes a human-readable name and a hex color code for UI display purposes.
+
+## Entity Mapping
+
+| Database Column | Java Field | Type | Constraints |
+|----------------|------------|------|-------------|
+| `code` | `code` | `String` | Primary key, max length 10 |
+| `name` | `name` | `String` | Not null, max length 100 |
+| `color` | `color` | `String` | Not null, max length 7 (hex color, e.g., `#FF0000`) |
+
+## Constructor
+
+The class uses a **protected no-argument constructor** required by JPA. Direct instantiation is not intended; use the static factory method instead.
 
 ## Public Methods
 
-The `TransitLine` class provides the following public method:
+### `create(String code, String name, String color)`
 
-### `create`
+Creates a new `TransitLine` instance with the specified values.
 
-Creates a new instance of the `TransitLine` class with the specified attributes.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `code` | `String` | Unique identifier for the transit line (max 10 characters) |
+| `name` | `String` | Human-readable name of the transit line (max 100 characters) |
+| `color` | `String` | Hex color code for UI display (max 7 characters, e.g., `#FF5733`) |
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public static TransitLine create(String code, String name, String color)` | Creates a new `TransitLine` object with the given code, name, and color. |
+**Returns:** `TransitLine` — a new entity instance with the provided values.
 
-#### Parameters
+**Example usage:**
+```java
+TransitLine redLine = TransitLine.create("RED", "Red Line", "#FF0000");
+```
 
-| Parameter | Type   | Description                  |
-|-----------|--------|------------------------------|
-| `code`    | String | The unique code of the transit line. |
-| `name`    | String | The name of the transit line. |
-| `color`   | String | The color associated with the transit line, typically represented in hexadecimal format. |
+## Getters
 
-#### Return Type
+All fields are exposed via Lombok-generated getters:
 
-| Type         | Description                             |
-|--------------|-----------------------------------------|
-| `TransitLine` | Returns a new instance of the `TransitLine` class initialized with the provided parameters. |
+- `getCode()` — returns the transit line code
+- `getName()` — returns the transit line name
+- `getColor()` — returns the hex color string
+
+## Notes
+
+- The class uses Lombok's `@Getter` annotation to automatically generate getter methods.
+- The `color` field is expected to be a 7-character hex color string (e.g., `#RRGGBB`).
+- This entity is designed to be immutable after creation; there are no setter methods exposed.

@@ -4,23 +4,87 @@ title: SkillLevelController
 sidebar_label: SkillLevelController
 ---
 
-## Purpose of the SkillLevelController Class
+# SkillLevelController
 
-The `SkillLevelController` class is a REST controller in a Spring Boot application that handles HTTP requests related to skill levels. It provides an endpoint to retrieve skill levels associated with a specific activity. This controller is part of the `com.upmatches.app.features.skilllevels.controllers` package and interacts with the `ISkillLevelService` to fetch the necessary data.
+The `SkillLevelController` is a REST controller that provides endpoints for retrieving skill levels associated with specific activities. It acts as the API layer for the skill levels feature, delegating business logic to the `ISkillLevelService` interface.
 
-## Public Methods
+## Purpose
 
-### getSkillLevels
+This controller handles HTTP GET requests to fetch skill levels for a given activity. It is part of the UpMatches application's skill levels feature, allowing clients to retrieve the available skill levels (e.g., Beginner, Intermediate, Advanced) for a particular activity.
 
-The `getSkillLevels` method is a public endpoint exposed via a GET request to `/api/v1/skill-levels`. It retrieves a list of skill levels for a given activity ID.
+## Endpoints
 
-| Parameter   | Type   | Description                                   |
-|-------------|--------|-----------------------------------------------|
-| activityId  | UUID   | The unique identifier of the activity.        |
-| request     | HttpServletRequest | The HTTP request object.           |
+### GET /api/v1/skill-levels
 
-| Return Type                                  | Description                                                  |
-|----------------------------------------------|--------------------------------------------------------------|
-| ResponseEntity<ApiResponse<List<SkillLevelResponse>>> | A response entity containing an API response with a list of skill levels. |
+Retrieves all skill levels associated with a specific activity.
 
-This method utilizes the `ISkillLevelService` to fetch skill levels by activity ID and returns them wrapped in an `ApiResponse` object. The response includes a success message and the request URI.
+#### Request Parameters
+
+| Parameter   | Type   | Required | Description                                      |
+|-------------|--------|----------|--------------------------------------------------|
+| `activityId` | `UUID` | Yes      | The unique identifier of the activity to retrieve skill levels for. |
+
+#### Response
+
+Returns a `200 OK` response containing an `ApiResponse` wrapper with a list of `SkillLevelResponse` objects.
+
+**Response Body Structure:**
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "string",
+      "description": "string"
+    }
+  ],
+  "message": "Skill levels retrieved successfully.",
+  "path": "/api/v1/skill-levels?activityId=..."
+}
+```
+
+#### Example Request
+
+```http
+GET /api/v1/skill-levels?activityId=550e8400-e29b-41d4-a716-446655440000
+```
+
+#### Example Response
+
+```json
+{
+  "data": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Beginner",
+      "description": "No prior experience required"
+    },
+    {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "name": "Intermediate",
+      "description": "Some experience recommended"
+    }
+  ],
+  "message": "Skill levels retrieved successfully.",
+  "path": "/api/v1/skill-levels?activityId=550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+## Dependencies
+
+| Dependency            | Type       | Description                                      |
+|-----------------------|------------|--------------------------------------------------|
+| `ISkillLevelService`  | Service    | Interface providing business logic for retrieving skill levels. |
+
+## Error Handling
+
+The controller relies on Spring's validation framework (`@Validated`) and the `@NotNull` constraint on the `activityId` parameter. If the parameter is missing or invalid, Spring will automatically return a `400 Bad Request` response with appropriate error details.
+
+## Implementation Details
+
+- The controller is annotated with `@RestController` and mapped to the `/api/v1/skill-levels` base path.
+- It uses constructor injection for the `ISkillLevelService` dependency.
+- The `getSkillLevels` method is a GET endpoint that accepts a required `activityId` query parameter.
+- The response is wrapped in an `ApiResponse` object with a success message and the request URI for traceability.
+- The success message is defined as a static constant `MSG_SKILL_LEVELS_RETRIEVED`.

@@ -4,138 +4,113 @@ title: User Entity
 sidebar_label: User
 ---
 
-## Purpose
+# User Entity
 
-The `User` class represents a user entity in the application. It is designed to handle user-related data and operations, such as creating users from different identity providers, updating user profiles, and managing user skill levels. The class is annotated with JPA annotations to map it to a database table named `users`.
+The `User` entity represents a registered user within the UpMatches application. It serves as the core domain model for user management, supporting multiple authentication providers (Singpass, Auth0, Apple), profile management, skill level tracking, and onboarding completion status.
+
+This JPA entity is mapped to the `users` database table and uses Lombok's `@Getter` and `@NoArgsConstructor` annotations to reduce boilerplate code. The entity is designed to be immutable where appropriate, with controlled mutation through dedicated methods.
+
+## Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `UUID` | Primary key, auto-generated using UUID strategy |
+| `singpassUuid` | `String` | Unique identifier from Singpass authentication |
+| `auth0Uuid` | `String` | Unique identifier from Auth0 authentication |
+| `appleUuid` | `String` | Unique identifier from Apple authentication |
+| `lastLoginAt` | `Instant` | Timestamp of the user's last login |
+| `name` | `String` | User's display name |
+| `whatsapp` | `String` | WhatsApp contact identifier |
+| `telegram` | `String` | Telegram contact identifier |
+| `messenger` | `String` | Messenger contact identifier |
+| `avatarUrl` | `String` | URL to the user's avatar image |
+| `email` | `String` | User's email address |
+| `skillLevels` | `Set<UserSkillLevel>` | Collection of user skill levels |
+| `hasCompletedOnboarding` | `boolean` | Flag indicating if onboarding is complete |
+| `penaltyPoints` | `int` | Accumulated penalty points |
+| `createdAt` | `Instant` | Timestamp of user creation (non-updatable) |
+| `updatedAt` | `Instant` | Timestamp of last update |
 
 ## Public Methods
 
-### `createFromSingpass`
+### Factory Methods
 
-Creates a new `User` instance using a Singpass UUID.
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `createFromSingpass` | `String singpassUuid` | `User` | Creates a new user authenticated via Singpass |
+| `createFromAuth0` | `String auth0Uuid, String avatarUrl, String email` | `User` | Creates a new user authenticated via Auth0 |
+| `createFromApple` | `String appleUuid, String displayName, String email` | `User` | Creates a new user authenticated via Apple |
 
-| Parameter    | Type   | Description                  |
-|--------------|--------|------------------------------|
-| singpassUuid | String | The Singpass UUID of the user |
+### Business Logic Methods
 
-| Return Type |
-|-------------|
-| User        |
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `canCreateGame` | None | `boolean` | Returns `true` if the user has a Singpass UUID, indicating they can create games |
+| `updateAvatarUrl` | `String url` | `void` | Updates the user's avatar URL |
+| `applyIdpEmail` | `String email` | `void` | Applies an email from an identity provider if the value is not blank |
+| `recordLogin` | None | `void` | Records the current timestamp as the last login time |
+| `updateProfile` | `ProfileData data` | `void` | Fully updates the user's profile and marks onboarding as complete |
+| `patchProfile` | `PatchData data` | `void` | Partially updates the user's profile, only modifying non-null fields |
 
-### `createFromAuth0`
+### Inner Records
 
-Creates a new `User` instance using an Auth0 UUID, avatar URL, and email.
+#### `ProfileData`
 
-| Parameter | Type   | Description                  |
-|-----------|--------|------------------------------|
-| auth0Uuid | String | The Auth0 UUID of the user   |
-| avatarUrl | String | The avatar URL of the user   |
-| email     | String | The email address of the user|
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `String` | User's display name |
+| `whatsapp` | `String` | WhatsApp contact identifier |
+| `telegram` | `String` | Telegram contact identifier |
+| `messenger` | `String` | Messenger contact identifier |
+| `skillLevels` | `List<SkillLevel>` | List of skill levels to assign |
 
-| Return Type |
-|-------------|
-| User        |
+#### `PatchData`
 
-### `createFromApple`
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `String` | User's display name (nullable) |
+| `whatsapp` | `String` | WhatsApp contact identifier (nullable) |
+| `telegram` | `String` | Telegram contact identifier (nullable) |
+| `messenger` | `String` | Messenger contact identifier (nullable) |
+| `skillLevels` | `List<SkillLevel>` | List of skill levels to assign (nullable) |
 
-Creates a new `User` instance using an Apple UUID, display name, and email.
+## Usage Examples
 
-| Parameter   | Type   | Description                    |
-|-------------|--------|--------------------------------|
-| appleUuid   | String | The Apple UUID of the user     |
-| displayName | String | The display name of the user   |
-| email       | String | The email address of the user  |
+### Creating a User via Singpass
 
-| Return Type |
-|-------------|
-| User        |
+```java
+User user = User.createFromSingpass("singpass-uuid-123");
+```
 
-### `canCreateGame`
+### Updating User Profile
 
-Determines if the user can create a game based on the presence of a Singpass UUID.
+```java
+User.ProfileData profileData = new User.ProfileData(
+    "John Doe",
+    "+1234567890",
+    "@johndoe",
+    "john.messenger",
+    skillLevels
+);
+user.updateProfile(profileData);
+```
 
-| Return Type |
-|-------------|
-| boolean     |
+### Patching User Profile
 
-### `updateAvatarUrl`
+```java
+User.PatchData patchData = new User.PatchData(
+    "Jane Doe",  // Update name
+    null,        // Keep existing WhatsApp
+    null,        // Keep existing Telegram
+    null,        // Keep existing Messenger
+    null         // Keep existing skill levels
+);
+user.patchProfile(patchData);
+```
 
-Updates the user's avatar URL.
+## Notes
 
-| Parameter | Type   | Description                |
-|-----------|--------|----------------------------|
-| url       | String | The new avatar URL of the user |
-
-| Return Type |
-|-------------|
-| void        |
-
-### `applyIdpEmail`
-
-Applies an email address from an identity provider to the user.
-
-| Parameter | Type   | Description                  |
-|-----------|--------|------------------------------|
-| email     | String | The email address to apply   |
-
-| Return Type |
-|-------------|
-| void        |
-
-### `recordLogin`
-
-Records the current time as the user's last login time.
-
-| Return Type |
-|-------------|
-| void        |
-
-### `updateProfile`
-
-Updates the user's profile with the provided profile data.
-
-| Parameter | Type        | Description                  |
-|-----------|-------------|------------------------------|
-| data      | ProfileData | The profile data to update   |
-
-| Return Type |
-|-------------|
-| void        |
-
-### `patchProfile`
-
-Patches the user's profile with the provided patch data, allowing partial updates.
-
-| Parameter | Type      | Description                  |
-|-----------|-----------|------------------------------|
-| data      | PatchData | The patch data to apply      |
-
-| Return Type |
-|-------------|
-| void        |
-
-## Records
-
-### `ProfileData`
-
-A record representing the user's profile data.
-
-| Field       | Type            | Description                  |
-|-------------|-----------------|------------------------------|
-| name        | String          | The name of the user         |
-| whatsapp    | String          | The user's WhatsApp contact  |
-| telegram    | String          | The user's Telegram contact  |
-| messenger   | String          | The user's Messenger contact |
-| skillLevels | List<SkillLevel>| The user's skill levels      |
-
-### `PatchData`
-
-A record representing the patch data for updating the user's profile.
-
-| Field       | Type            | Description                  |
-|-------------|-----------------|------------------------------|
-| name        | String          | The name of the user         |
-| whatsapp    | String          | The user's WhatsApp contact  |
-| telegram    | String          | The user's Telegram contact  |
-| messenger   | String          | The user's Messenger contact |
-| skillLevels | List<SkillLevel>| The user's skill levels      |
+- The `blankToNull` utility method ensures that blank strings are stored as `null` in the database
+- The `@PrePersist` and `@PreUpdate` callbacks automatically manage `createdAt` and `updatedAt` timestamps
+- Skill levels are managed through a `UserSkillLevel` join entity with cascade operations
+- The `penaltyPoints` field is initialized to `0` by default

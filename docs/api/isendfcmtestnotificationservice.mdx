@@ -1,30 +1,66 @@
 ---
-id: isend-fcm-test-notification-service
-title: ISendFcmTestNotificationService
+id: isendfcmtestnotificationservice
+title: ISendFcmTestNotificationService Interface
 sidebar_label: ISendFcmTestNotificationService
 ---
 
-## Overview
+# ISendFcmTestNotificationService Interface
 
-The `ISendFcmTestNotificationService` is a sealed interface in the `com.upmatches.app.features.notification.services` package. It defines a contract for sending Firebase Cloud Messaging (FCM) test notifications. This interface is designed to be implemented by classes that handle the logic for sending test notifications via FCM, ensuring a consistent API for this functionality.
+## Purpose
 
-## Public Methods
+The `ISendFcmTestNotificationService` interface defines the contract for sending test Firebase Cloud Messaging (FCM) notifications. It is a **sealed interface**, meaning only the explicitly permitted class (`SendFcmTestNotificationService`) can implement it. This design enforces a single, controlled implementation for sending test notifications, ensuring consistency and security within the notification system.
 
-The interface declares the following public method:
+## Interface Definition
 
-| Method Signature | Description |
-|------------------|-------------|
-| `FcmTestNotificationResponse execute(SendFcmTestNotificationRequest request)` | Executes the process of sending a test notification using the provided request data. |
+```java
+public sealed interface ISendFcmTestNotificationService permits SendFcmTestNotificationService {
+    FcmTestNotificationResponse execute(SendFcmTestNotificationRequest request);
+}
+```
 
-### Method Details
+## Methods
 
-#### `execute`
+### `execute`
 
-- **Description**: This method is responsible for executing the process of sending a test notification via FCM. It takes a request object containing the necessary data to perform the notification sending operation and returns a response object indicating the result of the operation.
-- **Parameters**:
+Executes the logic to send a test FCM notification based on the provided request.
 
-  | Parameter | Type | Description |
-  |-----------|------|-------------|
-  | `request` | `SendFcmTestNotificationRequest` | An object containing the data required to send a test notification. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `SendFcmTestNotificationRequest` | The request object containing the necessary data to send the test notification (e.g., device token, message payload). |
 
-- **Returns**: `FcmTestNotificationResponse` - An object representing the response from the FCM service, indicating the success or failure of the notification sending process.
+| Returns | Type | Description |
+|---------|------|-------------|
+| `FcmTestNotificationResponse` | `FcmTestNotificationResponse` | The response object containing the result of the test notification operation (e.g., success status, message ID, error details). |
+
+## Permitted Implementations
+
+| Implementation Class | Description |
+|----------------------|-------------|
+| `SendFcmTestNotificationService` | The sole permitted implementation that handles the actual FCM test notification sending logic. |
+
+## Usage Example
+
+```java
+// Assuming you have an instance of the permitted implementation
+ISendFcmTestNotificationService testNotificationService = new SendFcmTestNotificationService();
+
+// Create the request
+SendFcmTestNotificationRequest request = new SendFcmTestNotificationRequest();
+// ... populate request fields ...
+
+// Execute the test notification
+FcmTestNotificationResponse response = testNotificationService.execute(request);
+
+// Process the response
+if (response.isSuccess()) {
+    System.out.println("Test notification sent successfully. Message ID: " + response.getMessageId());
+} else {
+    System.err.println("Failed to send test notification: " + response.getError());
+}
+```
+
+## Related Components
+
+- **`SendFcmTestNotificationRequest`**: The input data transfer object containing test notification parameters.
+- **`FcmTestNotificationResponse`**: The output data transfer object containing the result of the test notification operation.
+- **`SendFcmTestNotificationService`**: The concrete implementation class that fulfills this interface contract.

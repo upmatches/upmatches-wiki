@@ -1,54 +1,108 @@
 ---
 id: cookie-helper
-title: CookieHelper Class
+title: CookieHelper - Authentication Cookie Management
 sidebar_label: CookieHelper
 ---
 
+# CookieHelper
+
+The `CookieHelper` class is a Spring `@Service` component that manages authentication cookies for the UpMatches application. It implements the `ICookieHelper` interface and provides methods to set, clear, and retrieve authentication tokens stored as HTTP cookies.
+
 ## Purpose
 
-The `CookieHelper` class is a service component in a Java Spring application responsible for managing authentication cookies. It provides methods to set, clear, and retrieve cookies related to authentication tokens. This class is crucial for handling user sessions securely by storing access and refresh tokens in HTTP-only cookies.
+This helper class handles the lifecycle of three authentication cookies:
+- **accessToken**: HttpOnly cookie containing the JWT access token
+- **refreshToken**: HttpOnly cookie containing the refresh token
+- **tokenExpiry**: JavaScript-readable cookie containing the Unix timestamp of token expiration
+
+The class ensures secure cookie handling by respecting the request's security context (HTTP vs HTTPS) and applying strict SameSite policies.
+
+## Dependencies
+
+| Dependency | Description |
+|------------|-------------|
+| `JwtProperties` | Configuration properties for JWT token expiry durations |
+| `HttpServletRequest` | Used to determine if the request is secure (HTTPS) |
+| `HttpServletResponse` | Used to add cookies to the response |
 
 ## Public Methods
 
 ### `setAuthCookies`
 
-Sets authentication cookies in the HTTP response, including access token, refresh token, and token expiry.
+Sets all three authentication cookies on the HTTP response.
 
-| Parameter  | Type                      | Description                                                                 |
-|------------|---------------------------|-----------------------------------------------------------------------------|
-| `response` | `HttpServletResponse`     | The HTTP response object where cookies will be added.                       |
-| `request`  | `HttpServletRequest`      | The HTTP request object to determine if the connection is secure.           |
-| `tokenData`| `TokenData`               | An object containing access token, refresh token, and expiry time.          |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `response` | `HttpServletResponse` | The HTTP response to add cookies to |
+| `request` | `HttpServletRequest` | The HTTP request to determine security context |
+| `tokenData` | `TokenData` | Contains access token, refresh token, and expiration timestamp |
 
 **Returns:** `void`
+
+The method creates three cookies with the following characteristics:
+- **accessToken**: HttpOnly, secure (if HTTPS), SameSite=Strict, path=/, expires based on `jwtProperties.accessTokenExpiryMinutes()`
+- **refreshToken**: HttpOnly, secure (if HTTPS), SameSite=Strict, path=/, expires based on `jwtProperties.refreshTokenExpiryDays()`
+- **tokenExpiry**: Not HttpOnly (JavaScript-readable), secure (if HTTPS), SameSite=Strict, path=/, expires based on `jwtProperties.accessTokenExpiryMinutes()`
 
 ### `clearAuthCookies`
 
-Clears authentication cookies from the HTTP response, effectively logging out the user.
+Clears all three authentication cookies by setting their max age to 0.
 
-| Parameter  | Type                      | Description                                                                 |
-|------------|---------------------------|-----------------------------------------------------------------------------|
-| `response` | `HttpServletResponse`     | The HTTP response object where cookies will be cleared.                     |
-| `request`  | `HttpServletRequest`      | The HTTP request object to determine if the connection is secure.           |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `response` | `HttpServletResponse` | The HTTP response to add cleared cookies to |
+| `request` | `HttpServletRequest` | The HTTP request to determine security context |
 
 **Returns:** `void`
 
+This method creates three cookies with empty values and `maxAge(0)` to instruct the browser to delete them immediately.
+
 ### `getRefreshTokenFromCookie`
 
-Retrieves the refresh token from the cookies in the HTTP request.
+Retrieves the refresh token value from the request's cookies.
 
-| Parameter  | Type                      | Description                                                                 |
-|------------|---------------------------|-----------------------------------------------------------------------------|
-| `request`  | `HttpServletRequest`      | The HTTP request object containing cookies.                                 |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The HTTP request containing cookies |
 
-**Returns:** `String` - The refresh token if present, otherwise `null`.
+**Returns:** `String` - The refresh token value, or `null` if no refresh token cookie is found.
 
-## TokenData Record
+## Inner Types
 
-The `TokenData` record is a simple data structure used to encapsulate the access token, expiry time, and refresh token.
+### `TokenData`
 
-| Field          | Type     | Description                             |
-|----------------|----------|-----------------------------------------|
-| `accessToken`  | `String` | The access token for authentication.    |
-| `expiresAtUtc` | `Long`   | The expiry time of the access token in UTC. |
-| `refreshToken` | `String` | The refresh token for obtaining new access tokens. |
+A record class that encapsulates the token data required for setting authentication cookies.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `accessToken` | `String` | The JWT access token |
+| `expiresAtUtc` | `Long` | Unix timestamp (UTC) when the access token expires |
+| `refreshToken` | `String` | The refresh token |
+
+## Security Considerations
+
+- **HttpOnly**: Access and refresh tokens are HttpOnly to prevent XSS attacks from accessing them via JavaScript
+- **Secure flag**: Cookies are marked as secure only when the request is made over HTTPS
+- **SameSite Strict**: All cookies use `SameSite=Strict` to prevent CSRF attacks
+- **Token Expiry Cookie**: The `tokenExpiry` cookie is intentionally not HttpOnly so that the SPA can read it and proactively refresh tokens before they expire
+
+## Usage Example
+
+```java
+// Inject the service
+private final CookieHelper cookieHelper;
+
+// Setting cookies after successful authentication
+TokenData tokenData = new TokenData(
+    "eyJhbGciOiJIUzI1NiIs...", // access token
+    1700000000L,                  // expires at UTC
+    "dGhpcyBpcyBhIHJlZnJl...",  // refresh token
+);
+cookieHelper.setAuthCookies(response, request, tokenData);
+
+// Clearing cookies on logout
+cookieHelper.clearAuthCookies(response, request);
+
+// Retrieving refresh token from request
+String refreshToken = cookieHelper.getRefreshTokenFromCookie(request);
+```

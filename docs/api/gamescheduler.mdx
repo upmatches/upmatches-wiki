@@ -1,41 +1,70 @@
 ---
 id: game-scheduler
-title: GameScheduler Class
+title: GameScheduler
 sidebar_label: GameScheduler
 ---
 
-import com.upmatches.app.features.game.services.IMarkExpiredGamesService;
-import com.upmatches.app.features.game.services.IMarkStartedGamesService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+# GameScheduler
+
+The `GameScheduler` class is a Spring `@Component` that provides scheduled task execution for updating game statuses. It runs two distinct cron jobs every five minutes: one to mark games as STARTED and another to mark games as EXPIRED. This class acts as a lightweight orchestrator, delegating the actual business logic to injected service interfaces.
 
 ## Purpose
 
-The `GameScheduler` class is a Spring component responsible for scheduling and executing tasks related to updating the status of games. It uses cron expressions to periodically mark games as either started or expired. This class leverages two services, `IMarkStartedGamesService` and `IMarkExpiredGamesService`, to perform the necessary updates and logs the results.
+- **Automated Status Updates**: Periodically checks and updates game statuses without manual intervention.
+- **Separation of Concerns**: The scheduler only handles timing and logging; the `IMarkStartedGamesService` and `IMarkExpiredGamesService` implementations contain the domain logic.
+- **Observability**: Uses SLF4J logging to report how many games were updated in each execution.
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `IMarkStartedGamesService` | Service Interface | Handles logic for marking games as STARTED. |
+| `IMarkExpiredGamesService` | Service Interface | Handles logic for marking games as EXPIRED. |
+| `Logger` (SLF4J) | Logging | Logs the number of games updated per execution. |
+
+## Constructor
+
+### `GameScheduler(IMarkStartedGamesService, IMarkExpiredGamesService)`
+
+Constructor-based dependency injection for the two required services.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `markStartedGamesService` | `IMarkStartedGamesService` | Service to mark games as started. |
+| `markExpiredGamesService` | `IMarkExpiredGamesService` | Service to mark games as expired. |
 
 ## Public Methods
 
-| Method Name         | Description                                                                 | Parameters | Return Type |
-|---------------------|-----------------------------------------------------------------------------|------------|-------------|
-| `markStartedGames`  | Marks games as started by invoking the `IMarkStartedGamesService`.          | None       | void        |
-| `markExpiredGames`  | Marks games as expired by invoking the `IMarkExpiredGamesService`.          | None       | void        |
+### `markStartedGames()`
 
-### Method Details
+Scheduled method that executes every 5 minutes (cron: `0 */5 * * * *`). Calls `markStartedGamesService.execute()` and logs the number of games updated.
 
-#### `markStartedGames`
+| Aspect | Details |
+|--------|---------|
+| **Cron Expression** | `0 */5 * * * *` (every 5 minutes) |
+| **Return Type** | `void` |
+| **Log Output** | `Marked {count} games as STARTED.` |
 
-- **Description**: This method is scheduled to run every five minutes. It calls the `execute` method of the `IMarkStartedGamesService` to update the status of games to "started". The number of games updated is logged using SLF4J.
-- **Parameters**: None
-- **Return Type**: `void`
+### `markExpiredGames()`
 
-#### `markExpiredGames`
+Scheduled method that executes every 5 minutes (cron: `0 */5 * * * *`). Calls `markExpiredGamesService.execute()` and logs the number of games updated.
 
-- **Description**: This method is also scheduled to run every five minutes. It calls the `execute` method of the `IMarkExpiredGamesService` to update the status of games to "expired". The number of games updated is logged using SLF4J.
-- **Parameters**: None
-- **Return Type**: `void`
+| Aspect | Details |
+|--------|---------|
+| **Cron Expression** | `0 */5 * * * *` (every 5 minutes) |
+| **Return Type** | `void` |
+| **Log Output** | `Marked {count} games as EXPIRED.` |
 
-## Scheduling Details
+## Usage Example
 
-Both `markStartedGames` and `markExpiredGames` methods are annotated with `@Scheduled(cron = CRON_EVERY_FIVE_MINUTES)`, which means they are executed every five minutes based on the cron expression `"0 */5 * * * *"`. This ensures that the game statuses are regularly updated without manual intervention.
+```java
+// The scheduler is automatically picked up by Spring component scanning.
+// No manual instantiation is required.
+// The cron jobs will run automatically every 5 minutes.
+```
+
+## Notes
+
+- Both cron jobs run on the same schedule (every 5 minutes) but are independent of each other.
+- The actual number of games updated depends on the implementation of the injected services.
+- Logging uses parameterized messages for efficient string construction.

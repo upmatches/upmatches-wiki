@@ -1,68 +1,89 @@
 ---
 id: auth-controller
-title: AuthController Class Documentation
+title: AuthController
 sidebar_label: AuthController
 ---
 
-## Overview
+# AuthController
 
-The `AuthController` class is a Spring Boot REST controller responsible for handling authentication-related requests in the application. It provides endpoints for logging in with Singpass, Auth0, and Apple, as well as refreshing tokens and logging out. The controller interacts with various authentication services and manages user sessions and tokens.
+The `AuthController` class is a REST controller that handles authentication-related endpoints for the UpMatches application. It provides endpoints for logging in via Singpass, Auth0, and Apple, as well as token refresh and logout functionality. The controller delegates authentication logic to various service interfaces and manages session state, tokens, and cookies.
 
-## Public Methods
+## Endpoints
 
-### `loginSingpass`
+### GET /api/v1/auth/login/singpass
 
-Handles the Singpass login process by generating an authorization URL and storing session details.
+Initiates Singpass authentication by generating a Pushed Authorization Request (PAR) and returning an authorization URL.
 
-| Parameter      | Type                  | Description                                                                 |
-|----------------|-----------------------|-----------------------------------------------------------------------------|
-| `platform`     | `String` (optional)   | The platform from which the login request is made (e.g., mobile).           |
-| `request`      | `HttpServletRequest`  | The HTTP request object.                                                    |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `platform` | `String` | No | Platform identifier (e.g., "mobile"). If "mobile", returns the authorization URL in the response body; otherwise, redirects to the URL. |
 
-**Returns:** `ResponseEntity<Object>` - The response entity containing the authorization URL or a redirect.
+**Response:** Returns an `AuthorizationUrlResponse` containing the authorization URL, or a 302 redirect to the URL.
 
-### `loginAuth0`
+**Throws:** `AuthenticationException` if the PAR request fails.
 
-Handles the Auth0 login process by generating an authorization URL based on the provider and storing session details.
+### GET /api/v1/auth/login/auth0
 
-| Parameter      | Type                  | Description                                                                 |
-|----------------|-----------------------|-----------------------------------------------------------------------------|
-| `platform`     | `String` (optional)   | The platform from which the login request is made (e.g., mobile).           |
-| `provider`     | `String` (optional)   | The provider for Auth0 login (e.g., Google, Facebook).                      |
-| `request`      | `HttpServletRequest`  | The HTTP request object.                                                    |
+Initiates Auth0 authentication and returns an authorization URL.
 
-**Returns:** `ResponseEntity<Object>` - The response entity containing the authorization URL or a redirect.
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `platform` | `String` | No | Platform identifier (e.g., "mobile"). If "mobile", returns the authorization URL in the response body; otherwise, redirects to the URL. |
+| `provider` | `String` | No | Auth0 connection provider name. If provided, must be a valid `Auth0Connection`. |
 
-### `loginApple`
+**Response:** Returns an `AuthorizationUrlResponse` containing the authorization URL, or a 302 redirect to the URL.
 
-Handles the Apple login process by executing the login request and returning the response.
+**Throws:** `InvalidAuthRequestException` if the provider is unsupported.
 
-| Parameter | Type                  | Description                                                                 |
-|-----------|-----------------------|-----------------------------------------------------------------------------|
-| `body`    | `AppleLoginRequest`   | The request body containing Apple login details.                            |
-| `request` | `HttpServletRequest`  | The HTTP request object.                                                    |
+### POST /api/v1/auth/login/apple
 
-**Returns:** `ResponseEntity<Object>` - The response entity containing the Apple login response.
+Handles Apple Sign-In with the provided credentials.
 
-### `refresh`
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `body` | `AppleLoginRequest` | Yes | The Apple login request payload. |
 
-Refreshes the authentication token using the provided refresh token from the request body or cookies.
+**Response:** Returns an `AppleLoginResponse` with the authentication result.
 
-| Parameter | Type                  | Description                                                                 |
-|-----------|-----------------------|-----------------------------------------------------------------------------|
-| `body`    | `RefreshRequest`      | The request body containing the refresh token (optional).                   |
-| `request` | `HttpServletRequest`  | The HTTP request object.                                                    |
-| `response`| `HttpServletResponse` | The HTTP response object.                                                   |
+### POST /api/v1/auth/refresh
 
-**Returns:** `ResponseEntity<Object>` - The response entity containing the new token or an error message.
+Refreshes an authentication token. Supports both mobile (request body) and web (cookie) refresh token delivery.
 
-### `logout`
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `body` | `RefreshRequest` | No | Optional request body containing the refresh token (used for mobile clients). |
 
-Logs out the user by revoking the refresh token and clearing authentication cookies.
+**Response:** Returns a `TokenResponse` containing the new access token, refresh token, and expiration time for mobile clients. For web clients, sets new cookies and returns a success response.
 
-| Parameter | Type                  | Description                                                                 |
-|-----------|-----------------------|-----------------------------------------------------------------------------|
-| `request` | `HttpServletRequest`  | The HTTP request object.                                                    |
-| `response`| `HttpServletResponse` | The HTTP response object.                                                   |
+**Throws:** `InvalidAuthRequestException` if no refresh token is provided. `InvalidRefreshTokenException` if the refresh token is invalid or revoked.
 
-**Returns:** `ResponseEntity<Object>` - The response entity confirming the logout action.
+### POST /api/v1/auth/logout
+
+Logs out the current user by revoking all refresh tokens and clearing authentication cookies.
+
+**Response:** Returns a success response indicating the user has been logged out.
+
+## Dependencies
+
+The controller depends on the following service interfaces:
+
+| Service | Description |
+|---------|-------------|
+| `ISingpassAuthService` | Handles Singpass authentication flows |
+| `IAuth0AuthService` | Handles Auth0 authentication flows |
+| `IAppleLoginService` | Handles Apple Sign-In |
+| `IAuthSessionStore` | Manages authentication session state |
+| `IJwtTokenService` | Generates and manages JWT access tokens |
+| `IRefreshTokenStore` | Manages refresh token storage and validation |
+| `UserRepository` | Data access for user entities |
+| `ICookieHelper` | Manages HTTP cookies for authentication tokens |
+
+## Error Handling
+
+The controller throws the following custom exceptions:
+
+| Exception | Description |
+|-----------|-------------|
+| `AuthenticationException` | Thrown when authentication fails (e.g., Singpass PAR failure) |
+| `InvalidAuthRequestException` | Thrown when the authentication request is malformed (e.g., missing refresh token, unsupported provider) |
+| `InvalidRefreshTokenException` | Thrown when the refresh token is invalid or has been revoked |

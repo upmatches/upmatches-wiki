@@ -1,38 +1,76 @@
 ---
 id: station-line-id
-title: StationLineId Class
+title: StationLineId
 sidebar_label: StationLineId
 ---
 
-import { useBaseUrl } from '@docusaurus/core';
+# StationLineId
 
-## Overview
+The `StationLineId` class is a composite primary key class used in the UpMatches application's venue domain. It represents the unique identifier for a station line association, combining a station ID and a transit line code. This class is annotated with `@Embeddable` from Jakarta Persistence, making it suitable for use as an embedded ID in JPA entities.
 
-The `StationLineId` class is a part of the `com.upmatches.app.features.venue.entities` package. It is an embeddable entity used to represent a composite key for a station line in a transit system. This class implements the `Serializable` interface, ensuring that instances of `StationLineId` can be serialized, which is essential for their use in distributed systems or when storing them in a database.
+## Purpose
+
+This class serves as a composite key to uniquely identify the relationship between a station and a transit line. It implements `Serializable` to allow for serialization of the composite key, which is required for JPA entities that use composite primary keys.
 
 ## Class Details
 
-The `StationLineId` class is marked with the `@Embeddable` annotation, indicating that it is intended to be embedded within another entity. It uses the Lombok `@Getter` annotation to automatically generate getter methods for its fields.
+| Aspect | Description |
+|--------|-------------|
+| Package | `com.upmatches.app.features.venue.entities` |
+| Annotations | `@Embeddable`, `@Getter` (Lombok) |
+| Implements | `Serializable` |
 
-### Fields
+## Fields
 
-- **stationId**: A `Long` representing the unique identifier of a station.
-- **transitLineCode**: A `String` representing the code of the transit line, with a maximum length of 10 characters.
+| Field | Type | Column Name | Length | Description |
+|-------|------|-------------|--------|-------------|
+| `stationId` | `Long` | `station_id` | N/A | The unique identifier of the station |
+| `transitLineCode` | `String` | `transit_line_code` | 10 | The code identifying the transit line |
 
-### Constructors
+## Constructors
 
-- **StationLineId()**: A protected no-argument constructor required by JPA.
-- **StationLineId(Long stationId, String transitLineCode)**: A public constructor to create an instance of `StationLineId` with specified `stationId` and `transitLineCode`.
+| Constructor | Description |
+|-------------|-------------|
+| `StationLineId()` | Protected no-argument constructor required by JPA |
+| `StationLineId(Long stationId, String transitLineCode)` | Parameterized constructor to create a composite key with both components |
 
-### Methods
+## Methods
 
-Below is a table documenting the public methods of the `StationLineId` class:
+### `equals(Object o)`
 
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `boolean equals(Object o)` | Compares this `StationLineId` to the specified object. Returns `true` if the objects are equal, otherwise `false`. |
-| `int hashCode()` | Returns a hash code value for the object, which is used in hashing based collections like `HashMap`. |
+Compares this `StationLineId` with another object for equality.
 
-### Usage
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `o` | `Object` | The object to compare with |
 
-The `StationLineId` class is typically used as a composite key in JPA entities. It is crucial for scenarios where a combination of `stationId` and `transitLineCode` uniquely identifies a record in the database.
+**Returns:** `boolean` - `true` if the objects are equal (same station ID and transit line code), `false` otherwise.
+
+### `hashCode()`
+
+Returns a hash code value for this `StationLineId`.
+
+**Returns:** `int` - A hash code computed from both `stationId` and `transitLineCode` fields.
+
+## Usage Example
+
+```java
+// Creating a composite key
+StationLineId stationLineId = new StationLineId(123L, "RED");
+
+// Using in JPA entity
+@Entity
+public class StationLine {
+    @EmbeddedId
+    private StationLineId id;
+    
+    // other fields and methods
+}
+```
+
+## Notes
+
+- The class uses Lombok's `@Getter` annotation to automatically generate getter methods for both fields.
+- The protected no-argument constructor is required by JPA specifications for entity classes.
+- The `equals()` and `hashCode()` methods are overridden to ensure proper behavior when used in collections and JPA operations.
+- The `transitLineCode` field has a maximum length of 10 characters as specified by the `@Column` annotation.

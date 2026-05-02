@@ -1,32 +1,79 @@
 ---
 id: create-game-bookmark-service
 title: CreateGameBookmarkService
-sidebar_label: Create Game Bookmark Service
+sidebar_label: CreateGameBookmarkService
 ---
+
+# CreateGameBookmarkService
+
+The `CreateGameBookmarkService` class is a Spring service that handles the creation of game bookmarks for authenticated users. It implements the `ICreateGameBookmarkService` interface and provides transactional logic to ensure data consistency when a user bookmarks a game.
 
 ## Purpose
 
-The `CreateGameBookmarkService` class is a Spring service responsible for handling the creation of bookmarks for games by users. It ensures that a user can bookmark a game only if they have the necessary permissions and have not already bookmarked the game. The service interacts with various repositories and services to perform its operations, ensuring transactional integrity and proper authorization checks.
+This service encapsulates the business logic required to:
+- Verify user authentication and authorization
+- Validate that the game exists
+- Prevent duplicate bookmarks
+- Create and persist a new `GameBookmark` entity
+- Return a response containing bookmark details and active participant count
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameBookmarkRepository` | Repository | Persistence layer for `GameBookmark` entities |
+| `GameParticipantRepository` | Repository | Persistence layer for game participant data |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID |
+| `IGameLookupService` | Service | Provides game and user lookup operations |
+| `IGameAuthorizationService` | Service | Handles authorization checks for game access |
 
 ## Public Methods
 
-### `execute`
+### `execute(UUID gameId)`
 
-Executes the process of creating a game bookmark for the authenticated user.
+Creates a new bookmark for the authenticated user on the specified game.
 
-| Parameter | Type   | Description                         |
-|-----------|--------|-------------------------------------|
-| `gameId`  | `UUID` | The unique identifier of the game to be bookmarked. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameId` | `UUID` | The unique identifier of the game to bookmark |
 
-| Return Type            | Description                                                                 |
-|------------------------|-----------------------------------------------------------------------------|
-| `GameBookmarkResponse` | A response object containing details of the created bookmark and participant count. |
+| Returns | Type | Description |
+|---------|------|-------------|
+| Success | `GameBookmarkResponse` | Contains the created bookmark details and active participant count |
+| Error | `ResourceNotFoundException` | Thrown if the game or user is not found |
+| Error | `AlreadyBookmarkedException` | Thrown if the user has already bookmarked the game |
 
-### Method Details
+**Behavior:**
 
-- **Authorization**: The method checks if the user is authorized to view the game before proceeding with the bookmark creation.
-- **Duplicate Check**: It verifies if the user has already bookmarked the game to prevent duplicate entries.
-- **Transactional**: The method is annotated with `@Transactional` to ensure that the operations are executed within a transaction, providing atomicity and consistency.
-- **Exception Handling**: Throws `AlreadyBookmarkedException` if the user has already bookmarked the game, and uses `ResourceNotFoundException` for handling resource-related issues during the save operation.
+1. **Authentication**: Resolves the authenticated user's ID via `userResolver.requireUserId()`
+2. **Game Validation**: Looks up the game using `lookupService.findGameOrThrow(gameId)` and throws `ResourceNotFoundException` if not found
+3. **Authorization**: Verifies the user has permission to view the game via `authorizationService.assertCanViewGame(game, userId)`
+4. **Duplicate Check**: Checks if a bookmark already exists for this user and game combination; throws `AlreadyBookmarkedException` if duplicate found
+5. **User Lookup**: Retrieves the user entity via `lookupService.findUserOrThrow(userId)`
+6. **Bookmark Creation**: Creates a new `GameBookmark` entity using the factory method `GameBookmark.create(game, user)`
+7. **Persistence**: Saves the bookmark using `ServiceOperationExecutor.execute()` with error handling
+8. **Response Building**: Counts active participants for the game and returns a `GameBookmarkResponse` containing both the bookmark and participant count
 
-This service is a critical component in managing user interactions with game bookmarks, ensuring that all operations are performed securely and efficiently.
+## Transactional Behavior
+
+The `execute` method is annotated with `@Transactional`, ensuring that all database operations within the method are executed within a single transaction. If any exception occurs, the transaction is rolled back, maintaining data consistency.
+
+## Exception Handling
+
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | Game or user not found in the database |
+| `AlreadyBookmarkedException` | User has already bookmarked the specified game |
+
+## Usage Example
+
+```java
+@Service
+public class GameBookmarkController {
+    private final CreateGameBookmarkService createBookmarkService;
+    
+    public GameBookmarkResponse createBookmark(UUID gameId) {
+        return createBookmarkService.execute(gameId);
+    }
+}
+```

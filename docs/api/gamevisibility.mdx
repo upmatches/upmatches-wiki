@@ -4,19 +4,37 @@ title: GameVisibility Enum
 sidebar_label: GameVisibility
 ---
 
-## Overview
+# GameVisibility Enum
 
-The `GameVisibility` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to define the visibility status of a game within the application. This enum provides a simple way to manage and understand the visibility settings by offering predefined constants.
+The `GameVisibility` enum is part of the `com.upmatches.app.features.game.enums` package. It defines the visibility options for a game within the UpMatches application.
 
-## Enum Constants
+## Purpose
 
-The `GameVisibility` enum contains the following constants:
+This enum is used to control whether a game is publicly visible to all users or restricted to a private group. It provides a simple, type-safe way to manage game visibility settings throughout the application.
 
-| Constant | Description                                                                 |
-|----------|-----------------------------------------------------------------------------|
-| PUBLIC   | Indicates that the game is visible to all users.                            |
-| PRIVATE  | Indicates that the game is only visible to a restricted set of users.       |
+## Enum Values
+
+| Value | Description |
+|-------|-------------|
+| `PUBLIC` | The game is visible to all users of the application. |
+| `PRIVATE` | The game is only visible to invited or authorized users. |
 
 ## Usage
 
-The `GameVisibility` enum can be used to set or check the visibility status of a game. By using these constants, developers can ensure consistency and clarity when dealing with game visibility settings throughout the application.
+The `GameVisibility` enum is typically used in game creation, editing, and display logic to determine how a game should be presented to users. For example:
+
+- When creating a new game, the user can select between `PUBLIC` and `PRIVATE` visibility.
+- When displaying a list of games, only `PUBLIC` games are shown to unauthenticated users.
+- When a user views their own games, both `PUBLIC` and `PRIVATE` games are shown.
+
+## Example
+
+```java
+GameVisibility visibility = GameVisibility.PUBLIC;
+
+if (visibility == GameVisibility.PUBLIC) {
+    // Show game to all users
+} else {
+    // Restrict access to authorized users only
+}
+```

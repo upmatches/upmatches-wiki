@@ -1,33 +1,81 @@
 ---
-id: activity
-title: Activity Class
+id: activity-entity
+title: Activity Entity
 sidebar_label: Activity
 ---
 
+# Activity Entity
+
+The `Activity` class is a JPA entity that represents an activity within the UpMatches application. It maps to the `activities` database table and provides a structured way to manage activity data, including unique identification, naming, and automatic timestamp management.
+
 ## Purpose
 
-The `Activity` class represents an entity in the application that is mapped to the `activities` table in the database. It is designed to handle activities with unique identifiers and names, and it automatically manages timestamps for creation and updates. This class leverages JPA annotations for ORM (Object-Relational Mapping) and uses Lombok for boilerplate code reduction.
+This entity serves as the data model for activities, which are core domain objects in the application. It handles:
+- Unique identification via UUID and an auto-incrementing reference ID
+- Name management with uniqueness constraints
+- Automatic timestamp tracking for creation and updates
+- Immutable creation timestamps to maintain data integrity
+
+## Class Overview
+
+The `Activity` class uses Lombok's `@Getter` annotation to automatically generate getter methods for all fields. It implements JPA lifecycle callbacks to automatically manage timestamps.
+
+### Fields
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `id` | `UUID` | Primary Key, Auto-generated | Unique identifier for the activity |
+| `referenceId` | `Integer` | Not Null, Unique, Non-insertable, Non-updatable | Auto-incrementing reference number |
+| `name` | `String` | Not Null, Unique, Max 100 characters | Name of the activity |
+| `createdAt` | `Instant` | Not Null, Non-updatable | Timestamp when the activity was created |
+| `updatedAt` | `Instant` | Nullable | Timestamp when the activity was last updated |
 
 ## Public Methods
 
-The `Activity` class provides the following public methods:
+### `create(String name)`
+Creates a new `Activity` instance with the specified name.
 
-| Method Name   | Parameters          | Return Type | Description                                                                 |
-|---------------|---------------------|-------------|-----------------------------------------------------------------------------|
-| `create`      | `String name`       | `Activity`  | Static factory method to create a new `Activity` instance with the given name. |
-| `updateName`  | `String name`       | `void`      | Updates the name of the `Activity` instance.                                |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `String` | The name for the new activity |
 
-## Annotations and Lifecycle Methods
+**Returns:** `Activity` - A new Activity instance with the provided name
 
-- **JPA Annotations**: The class uses JPA annotations such as `@Entity`, `@Table`, `@Id`, `@GeneratedValue`, and `@Column` to define the mapping between the class and the database table.
-- **Lifecycle Callbacks**: 
-  - `@PrePersist`: The `onCreate` method is annotated with `@PrePersist` to set the `createdAt` and `updatedAt` timestamps before the entity is persisted.
-  - `@PreUpdate`: The `onUpdate` method is annotated with `@PreUpdate` to update the `updatedAt` timestamp before the entity is updated.
+### `updateName(String name)`
+Updates the name of the activity.
 
-## Fields
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | `String` | The new name for the activity |
 
-- **id**: A unique identifier for each `Activity`, generated automatically using UUID strategy.
-- **referenceId**: An integer reference ID that is unique and non-updatable.
-- **name**: A unique name for the `Activity`, with a maximum length of 100 characters.
-- **createdAt**: The timestamp when the `Activity` was created, set automatically and non-updatable.
-- **updatedAt**: The timestamp when the `Activity` was last updated, managed automatically.
+**Returns:** `void`
+
+## Lifecycle Callbacks
+
+### `onCreate()`
+Automatically called before the entity is persisted. Sets both `createdAt` and `updatedAt` to the current timestamp.
+
+### `onUpdate()`
+Automatically called before the entity is updated. Updates the `updatedAt` timestamp to the current time.
+
+## Usage Example
+
+```java
+// Create a new activity
+Activity hiking = Activity.create("Hiking");
+
+// Update the activity name
+hiking.updateName("Mountain Hiking");
+
+// The entity will automatically manage timestamps
+// when persisted via JPA
+```
+
+## Database Mapping
+
+The entity maps to the `activities` table with the following column mappings:
+- `id` → UUID primary key
+- `reference_id` → Auto-incrementing integer (managed by database)
+- `name` → Unique activity name (max 100 characters)
+- `created_at` → Creation timestamp (set once)
+- `updated_at` → Last update timestamp

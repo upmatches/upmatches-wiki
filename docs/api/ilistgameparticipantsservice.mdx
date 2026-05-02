@@ -1,35 +1,58 @@
 ---
-id: IListGameParticipantsService
+id: ilist-game-participants-service
 title: IListGameParticipantsService Interface
 sidebar_label: IListGameParticipantsService
 ---
 
+# IListGameParticipantsService
+
+The `IListGameParticipantsService` interface defines the contract for retrieving a list of participants for a specific game. It is a sealed interface, meaning only the explicitly permitted class (`ListGameParticipantsService`) can implement it. This design enforces a controlled hierarchy and ensures that the service logic remains centralized and maintainable.
+
 ## Purpose
 
-The `IListGameParticipantsService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that list participants in a game. This interface is designed to be implemented by classes that provide the functionality to retrieve a list of game participants based on a unique game identifier.
+This interface abstracts the operation of fetching all participants associated with a given game identifier. By defining a single method, `execute`, it provides a clear and consistent API for listing game participants, promoting separation of concerns and testability.
 
-## Public Methods
+## Method Summary
 
-The interface declares the following public method:
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute(UUID id)` | `List<GameParticipantResponse>` | Retrieves a list of game participants for the game identified by the provided UUID. |
 
-| Method Signature | Description |
-|------------------|-------------|
-| `List<GameParticipantResponse> execute(UUID id)` | Retrieves a list of participants for a game identified by the given UUID. |
+## Method Details
 
-### Method Details
+### `execute(UUID id)`
 
-#### `execute`
+- **Description**: Executes the operation to fetch all participants for a specific game.
+- **Parameters**:
+  - `id` (`UUID`): The unique identifier of the game whose participants are to be listed.
+- **Returns**: A `List<GameParticipantResponse>` containing the participant data for the specified game. The list may be empty if no participants are found.
+- **Throws**: Implementations may throw runtime exceptions (e.g., if the game ID is invalid or a data access error occurs), but this is not declared in the interface.
 
-- **Parameters:**
+## Usage Example
 
-  | Name | Type | Description |
-  |------|------|-------------|
-  | `id` | `UUID` | The unique identifier of the game for which participants are to be listed. |
+```java
+// Assuming an implementation is injected
+IListGameParticipantsService listGameParticipantsService = new ListGameParticipantsService(/* dependencies */);
 
-- **Returns:** 
+UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+List<GameParticipantResponse> participants = listGameParticipantsService.execute(gameId);
 
-  | Type | Description |
-  |------|-------------|
-  | `List<GameParticipantResponse>` | A list of `GameParticipantResponse` objects representing the participants of the specified game. |
+participants.forEach(participant -> System.out.println(participant.getPlayerName()));
+```
 
-This interface is a sealed interface, meaning it restricts which classes can implement it. In this case, only the `ListGameParticipantsService` class is permitted to implement `IListGameParticipantsService`.
+## Implementation Notes
+
+- The interface is `sealed`, which restricts implementation to the `ListGameParticipantsService` class. This ensures that all implementations adhere to the same contract and prevents unintended subclassing.
+- The `GameParticipantResponse` class is expected to contain relevant participant information (e.g., player name, join date, role).
+- The `UUID` parameter uniquely identifies the game; implementations should handle cases where the game does not exist gracefully.
+
+## Dependencies
+
+- `com.upmatches.app.features.game.responses.GameParticipantResponse`
+- `java.util.List`
+- `java.util.UUID`
+
+## See Also
+
+- `ListGameParticipantsService` (the permitted implementation)
+- `GameParticipantResponse` (the response object used in the list)

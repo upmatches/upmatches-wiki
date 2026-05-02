@@ -1,27 +1,54 @@
 ---
-id: pricing-mode
+id: pricing-mode-enum
 title: PricingMode Enum
 sidebar_label: PricingMode
 ---
 
 # PricingMode Enum
 
-The `PricingMode` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to define different modes of pricing within the application. Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like final variables).
-
-## Enum Constants
-
-The `PricingMode` enum contains the following constants:
-
-| Constant    | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `FLAT`      | Represents a flat pricing mode where the price is consistent across all conditions. |
-| `GENDERED`  | Represents a gendered pricing mode where pricing may vary based on gender.  |
-| `SHUTTLECOCK` | Represents a pricing mode specific to shuttlecock-related activities or items. |
+The `PricingMode` enum defines the different pricing strategies available for game sessions within the UpMatches application. It is located in the `com.upmatches.app.features.game.enums` package and is used to determine how the cost of a game is calculated and distributed among participants.
 
 ## Purpose
 
-The purpose of the `PricingMode` enum is to provide a clear and type-safe way to handle different pricing strategies within the application. By using an enum, the code becomes more readable and less error-prone, as it restricts the possible values to the predefined constants.
+This enum provides a clear and type-safe way to represent the pricing model for a game. By using an enum instead of raw strings or integers, the application ensures that only valid pricing modes are used, reducing the risk of errors and improving code readability.
+
+## Enum Values
+
+| Value | Description |
+|-------|-------------|
+| `FLAT` | A single, fixed price for all participants regardless of gender or other factors. |
+| `GENDERED` | Pricing varies based on the gender of the participant (e.g., different rates for male and female players). |
+| `SHUTTLECOCK` | Pricing is based on the number of shuttlecocks used or a per-shuttlecock cost model. |
 
 ## Usage
 
-Enums are typically used in switch statements or as a part of conditional logic to execute different code paths based on the selected pricing mode. This enum can be used throughout the application wherever pricing logic needs to be applied or evaluated.
+The `PricingMode` enum is typically used as a field in game-related entities or data transfer objects (DTOs) to specify how the game's cost should be calculated. For example:
+
+```java
+public class GameSession {
+    private PricingMode pricingMode;
+    // other fields, getters, and setters
+}
+```
+
+It can also be used in switch statements or conditional logic to apply the appropriate pricing calculation:
+
+```java
+public double calculatePrice(PricingMode mode, int numberOfPlayers, boolean isMale) {
+    switch (mode) {
+        case FLAT:
+            return 10.0; // flat rate per player
+        case GENDERED:
+            return isMale ? 12.0 : 8.0; // different rates
+        case SHUTTLECOCK:
+            return 5.0 * numberOfPlayers; // per shuttlecock cost
+        default:
+            throw new IllegalArgumentException("Unknown pricing mode: " + mode);
+    }
+}
+```
+
+## Related Components
+
+- **GameSession**: The primary entity that uses `PricingMode` to determine pricing.
+- **PricingService**: A service class that contains the business logic for calculating prices based on the selected mode.

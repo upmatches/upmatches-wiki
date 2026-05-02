@@ -4,20 +4,47 @@ title: AuditActorType Enum
 sidebar_label: AuditActorType
 ---
 
-## Overview
+# AuditActorType
 
-The `AuditActorType` enum is part of the `com.upmatches.app.features.audit.enums` package. It is used to categorize the type of actor involved in an audit event within the application. This classification helps in identifying the source of actions or changes in the system, which is crucial for maintaining security and accountability.
+The `AuditActorType` enum defines the possible types of actors that can perform actions within the audit system. It is used to categorize who or what initiated an auditable event, enabling clear tracking and accountability in the application's audit trail.
+
+## Purpose
+
+This enum provides a standardized way to identify the origin of an auditable action. By classifying actors into distinct types, the system can differentiate between actions performed by authenticated users, automated system processes, and unauthenticated visitors. This classification is essential for security auditing, compliance, and debugging.
 
 ## Enum Constants
 
-The `AuditActorType` enum defines the following constants:
-
-| Constant   | Description                                                                 |
-|------------|-----------------------------------------------------------------------------|
-| `USER`     | Represents an authenticated user who performs actions within the application.|
-| `SYSTEM`   | Represents automated processes or system-level actions that occur without direct user intervention.|
-| `ANONYMOUS`| Represents actions performed by an unauthenticated user or an unknown source. |
+| Constant    | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `USER`      | Represents an action performed by an authenticated user of the application. |
+| `SYSTEM`    | Represents an action performed by the system itself (e.g., scheduled tasks, background jobs). |
+| `ANONYMOUS` | Represents an action performed by an unauthenticated or anonymous visitor.  |
 
 ## Usage
 
-The `AuditActorType` enum can be used in logging, auditing, and monitoring features to track and record the origin of actions within the application. By distinguishing between different actor types, developers and system administrators can better understand and manage the flow of operations in the system.
+This enum is typically used as a field in audit log entities or event objects to record the type of actor that triggered the event. For example:
+
+```java
+AuditLogEntry entry = new AuditLogEntry();
+entry.setActorType(AuditActorType.USER);
+entry.setActorId(user.getId());
+entry.setAction("LOGIN");
+```
+
+## Example
+
+```java
+public class AuditEvent {
+    private AuditActorType actorType;
+    private String actorId;
+    private String action;
+    private LocalDateTime timestamp;
+
+    // Constructor, getters, and setters
+}
+```
+
+## See Also
+
+- [Audit Logging Overview](/docs/audit/overview)
+- [AuditEvent Class](/docs/audit/audit-event)

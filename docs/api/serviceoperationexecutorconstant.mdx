@@ -4,72 +4,125 @@ title: ServiceOperationExecutorConstant
 sidebar_label: ServiceOperationExecutorConstant
 ---
 
+# ServiceOperationExecutorConstant
+
 ## Purpose
 
-The `ServiceOperationExecutorConstant` class is a utility class that provides a collection of constant values used throughout the application for logging and error handling purposes. These constants are primarily used to standardize log messages and error descriptions related to service operations, database interactions, and external service communications. The class is designed to be immutable and cannot be instantiated.
+The `ServiceOperationExecutorConstant` class is a centralized constants repository for the `ServiceOperationExecutor` framework. It defines all string literals, log message templates, error messages, and configuration values used throughout the service operation execution lifecycle. This class ensures consistency across logging, error handling, and database interaction messages within the application.
 
-## Public Constants
+This is a **final utility class** with a private constructor to prevent instantiation. All members are `public static final` constants.
 
-The following table describes the public constants available in the `ServiceOperationExecutorConstant` class:
+## Constants
 
-| Constant Name                        | Type   | Description                                                                                     |
-|--------------------------------------|--------|-------------------------------------------------------------------------------------------------|
-| `TRUNCATION_INDICATOR`               | String | Indicator message used when a response is truncated due to exceeding the size limit.            |
-| `MDC_REQUEST_ID_KEY`                 | String | Key used for storing the request ID in the MDC (Mapped Diagnostic Context).                     |
-| `MAX_RESPONSE_BODY_SIZE`             | int    | Maximum allowed size for a response body in bytes.                                              |
-| `OPERATION_SUPPLIER_NOT_NULL`        | String | Error message indicating that the operation supplier must not be null.                          |
-| `OPERATION_TYPE_NOT_NULL`            | String | Error message indicating that the operation type must not be null.                              |
-| `EXCEPTION_FACTORY_NOT_NULL`         | String | Error message indicating that the exception factory must not be null.                           |
-| `LOG_EXECUTING_OPERATION`            | String | Log message template for indicating the start of an operation execution.                        |
-| `LOG_OPERATION_COMPLETED`            | String | Log message template for indicating the successful completion of an operation.                  |
-| `LOG_ILLEGAL_ARGUMENT`               | String | Log message template for an operation failure due to an illegal argument.                       |
-| `LOG_DATABASE_EXCEPTION`             | String | Log message template for an operation failure due to a database exception.                      |
-| `LOG_REST_CLIENT_EXCEPTION`          | String | Log message template for an operation failure due to a RestClient exception.                    |
-| `LOG_INVALID_FILE`                   | String | Log message template for an operation failure due to an invalid file.                           |
-| `LOG_RESOURCE_NOT_FOUND`             | String | Log message template for an operation failure due to a resource not being found.                |
-| `LOG_PROGRAMMER_ERROR`               | String | Log message template for an operation failure due to a programmer error.                        |
-| `LOG_UNEXPECTED_EXCEPTION`           | String | Log message template for an operation failure due to an unexpected exception.                   |
-| `UNEXPECTED_ERROR_DURING`            | String | Prefix for error messages indicating an unexpected error during an operation.                   |
-| `LOG_HANDLING_DATABASE_EXCEPTION`    | String | Log message template for handling a database exception.                                         |
-| `LOG_UNHANDLED_DATABASE_EXCEPTION`   | String | Log message template for an unhandled database exception type.                                  |
-| `UNEXPECTED_DATABASE_ERROR_DURING`   | String | Prefix for error messages indicating an unexpected database error during an operation.          |
-| `CONCURRENT_MODIFICATION_DETECTED`   | String | Error message indicating a concurrent modification was detected.                                |
-| `DATABASE_DEADLOCK_DETECTED`         | String | Error message indicating a database deadlock was detected.                                      |
-| `CANNOT_ACQUIRE_DATABASE_LOCK`       | String | Error message indicating that a database lock cannot be acquired.                               |
-| `RESOURCE_LOCKED_BY_ANOTHER_TRANSACTION` | String | Error message indicating that a resource is locked by another transaction.                      |
-| `ENTITY_ALREADY_EXISTS`              | String | Error message indicating that an entity already exists.                                         |
-| `JPA_SYSTEM_ERROR`                   | String | Error message indicating a JPA system error occurred.                                           |
-| `INVALID_DATA_ACCESS_API_USAGE`      | String | Error message indicating invalid usage of the Data Access API.                                  |
-| `PERSISTENCE_ERROR`                  | String | Error message indicating a persistence error occurred.                                          |
-| `TABLE_KEYWORD`                      | String | Keyword used to identify table-related errors.                                                  |
-| `TABLE_DOESNT_EXIST_KEYWORD`         | String | Keyword used to identify errors related to non-existent tables.                                 |
-| `TABLE_DOES_NOT_EXIST_MESSAGE`       | String | Error message indicating that a database table does not exist.                                  |
-| `COLUMN_KEYWORD`                     | String | Keyword used to identify column-related errors.                                                 |
-| `COLUMN_DOES_NOT_EXIST_KEYWORD`      | String | Keyword used to identify errors related to non-existent columns.                                |
-| `COLUMN_DOES_NOT_EXIST_MESSAGE`      | String | Error message indicating that a database column does not exist.                                 |
-| `UNKNOWN_COLUMN_KEYWORD`             | String | Keyword used to identify unknown column errors.                                                 |
-| `COLUMN_MISMATCH_MESSAGE`            | String | Error message indicating a database column mismatch.                                            |
-| `SYNTAX_ERROR_KEYWORD`               | String | Keyword used to identify syntax errors.                                                         |
-| `INVALID_SQL_SYNTAX_MESSAGE`         | String | Error message indicating invalid SQL query syntax.                                              |
-| `UNABLE_TO_ACCESS_DATABASE_RESOURCE` | String | Error message indicating inability to access a database resource.                               |
-| `ENTITY_NOT_FOUND_MESSAGE`           | String | Error message indicating that an entity was not found.                                          |
-| `ENTITY_CANNOT_UPDATE`               | String | Error message indicating that an entity cannot be updated because it does not exist or was deleted. |
-| `ENTITY_ALREADY_DELETED`             | String | Error message indicating that an entity does not exist or was already deleted.                  |
-| `INTEGRITY_DUPLICATE_ENTRY`          | String | Error message indicating a duplicate entry or constraint failure.                               |
-| `INTEGRITY_UPDATE_VIOLATES`          | String | Error message indicating that an update violates constraints.                                   |
-| `INTEGRITY_FOREIGN_KEY`              | String | Error message indicating a foreign key constraint violation.                                    |
-| `INTEGRITY_DEFAULT`                  | String | Default error message for constraint violations.                                                |
-| `DATA_INTEGRITY_VIOLATION_PREFIX`    | String | Prefix for data integrity violation messages.                                                   |
-| `CONSTRAINT_ENTITY_FAILS`            | String | Error message indicating that an entity fails validation rules.                                 |
-| `CONSTRAINT_UPDATE_FAILS`            | String | Error message indicating that an update fails validation rules.                                 |
-| `CONSTRAINT_DELETE_PREVENTED`        | String | Error message indicating that a delete operation was prevented.                                 |
-| `CONSTRAINT_DEFAULT`                 | String | Default error message for validation rule violations.                                           |
-| `CONSTRAINT_VIOLATION_PREFIX`        | String | Prefix for constraint violation messages.                                                       |
-| `EXTERNAL_SERVICE_ERROR_FORMAT`      | String | Format string for external service error messages.                                              |
-| `EXTERNAL_SERVICE_UNAVAILABLE_FORMAT`| String | Format string for external service unavailable messages.                                        |
-| `LOG_RESPONSE_BODY_TRUNCATED`        | String | Log message template for indicating a truncated RestClient response body.                       |
-| `HTTP_PREFIX`                        | String | Prefix used for HTTP-related messages.                                                          |
+### Configuration Constants
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `TRUNCATION_INDICATOR` | `String` | `"\n\n--- RESPONSE TRUNCATED (exceeded 10KB limit) ---"` | Marker appended to truncated response bodies |
+| `MDC_REQUEST_ID_KEY` | `String` | `"requestId"` | MDC key for request correlation ID |
+| `MAX_RESPONSE_BODY_SIZE` | `int` | `10_000` | Maximum response body size in bytes before truncation |
+
+### Validation Messages
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `OPERATION_SUPPLIER_NOT_NULL` | `String` | `"Operation supplier must not be null"` | Null check message for operation supplier |
+| `OPERATION_TYPE_NOT_NULL` | `String` | `"Operation type must not be null"` | Null check message for operation type |
+| `EXCEPTION_FACTORY_NOT_NULL` | `String` | `"ExceptionFactory must not be null"` | Null check message for exception factory |
+
+### Log Templates
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `LOG_EXECUTING_OPERATION` | `String` | `"[{}] Executing {} operation"` | Log template when operation execution starts |
+| `LOG_OPERATION_COMPLETED` | `String` | `"[{}] {} operation completed successfully"` | Log template on successful operation completion |
+| `LOG_ILLEGAL_ARGUMENT` | `String` | `"[{}] {} operation failed with illegal argument: {}"` | Log template for illegal argument errors |
+| `LOG_DATABASE_EXCEPTION` | `String` | `"[{}] {} operation failed with database exception: {}"` | Log template for database exceptions |
+| `LOG_REST_CLIENT_EXCEPTION` | `String` | `"[{}] {} operation failed with RestClient exception: {}"` | Log template for REST client exceptions |
+| `LOG_INVALID_FILE` | `String` | `"[{}] {} operation failed with invalid file: {}"` | Log template for invalid file errors |
+| `LOG_RESOURCE_NOT_FOUND` | `String` | `"[{}] {} operation failed - resource not found: {}"` | Log template for resource not found errors |
+| `LOG_PROGRAMMER_ERROR` | `String` | `"[{}] {} operation failed with programmer error - bubbling up: {}"` | Log template for programmer errors |
+| `LOG_UNEXPECTED_EXCEPTION` | `String` | `"[{}] {} operation failed with unexpected exception: {}"` | Log template for unexpected exceptions |
+| `LOG_HANDLING_DATABASE_EXCEPTION` | `String` | `"[{}] Handling database exception: {}"` | Log template when handling database exceptions |
+| `LOG_UNHANDLED_DATABASE_EXCEPTION` | `String` | `"[{}] Unhandled database exception type: {}"` | Log template for unhandled database exceptions |
+| `LOG_RESPONSE_BODY_TRUNCATED` | `String` | `"[{}] RestClient response body truncated from {} to {} bytes"` | Log template when response body is truncated |
+
+### Error Messages
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `UNEXPECTED_ERROR_DURING` | `String` | `"Unexpected error occurred during "` | Prefix for unexpected error messages |
+| `UNEXPECTED_DATABASE_ERROR_DURING` | `String` | `"Unexpected database error during "` | Prefix for unexpected database errors |
+| `CONCURRENT_MODIFICATION_DETECTED` | `String` | `"Concurrent modification detected - please retry the operation"` | Message for concurrent modification errors |
+| `DATABASE_DEADLOCK_DETECTED` | `String` | `"Database deadlock detected - please retry the operation"` | Message for database deadlock errors |
+| `CANNOT_ACQUIRE_DATABASE_LOCK` | `String` | `"Cannot acquire database lock - resource may be in use"` | Message for lock acquisition failures |
+| `RESOURCE_LOCKED_BY_ANOTHER_TRANSACTION` | `String` | `"Resource is locked by another transaction"` | Message for resource lock conflicts |
+| `ENTITY_ALREADY_EXISTS` | `String` | `"Entity already exists"` | Message for duplicate entity errors |
+| `JPA_SYSTEM_ERROR` | `String` | `"JPA system error occurred"` | Message for JPA system errors |
+| `INVALID_DATA_ACCESS_API_USAGE` | `String` | `"Invalid usage of the Data Access API"` | Message for invalid API usage |
+| `PERSISTENCE_ERROR` | `String` | `"Persistence error occurred"` | Message for persistence errors |
+
+### Database Schema Messages
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `TABLE_KEYWORD` | `String` | `"Table"` | Keyword for table-related errors |
+| `TABLE_DOESNT_EXIST_KEYWORD` | `String` | `"doesn't exist"` | Keyword for missing table detection |
+| `TABLE_DOES_NOT_EXIST_MESSAGE` | `String` | `"Database table does not exist. Please ensure the database schema is up to date"` | User-friendly message for missing tables |
+| `COLUMN_KEYWORD` | `String` | `"column"` | Keyword for column-related errors |
+| `COLUMN_DOES_NOT_EXIST_KEYWORD` | `String` | `"does not exist"` | Keyword for missing column detection |
+| `COLUMN_DOES_NOT_EXIST_MESSAGE` | `String` | `"Database column does not exist. Please verify entity mappings match the database schema"` | User-friendly message for missing columns |
+| `UNKNOWN_COLUMN_KEYWORD` | `String` | `"Unknown column"` | Keyword for unknown column detection |
+| `COLUMN_MISMATCH_MESSAGE` | `String` | `"Database column mismatch detected. Please verify entity mappings match the database schema"` | User-friendly message for column mismatches |
+| `SYNTAX_ERROR_KEYWORD` | `String` | `"Syntax error"` | Keyword for SQL syntax errors |
+| `INVALID_SQL_SYNTAX_MESSAGE` | `String` | `"Invalid SQL query syntax detected"` | User-friendly message for syntax errors |
+| `UNABLE_TO_ACCESS_DATABASE_RESOURCE` | `String` | `"Unable to access database resource. Please verify the database configuration and schema"` | User-friendly message for resource access failures |
+
+### Entity Messages
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `ENTITY_NOT_FOUND_MESSAGE` | `String` | `"Entity not found"` | Message when entity is not found |
+| `ENTITY_CANNOT_UPDATE` | `String` | `"Entity does not exist or was deleted - cannot update"` | Message when update fails due to missing entity |
+| `ENTITY_ALREADY_DELETED` | `String` | `"Entity does not exist or was already deleted"` | Message when entity is already deleted |
+
+### Data Integrity Messages
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `INTEGRITY_DUPLICATE_ENTRY` | `String` | `"duplicate entry or constraint failure"` | Description for duplicate entry violations |
+| `INTEGRITY_UPDATE_VIOLATES` | `String` | `"update violates constraints"` | Description for update constraint violations |
+| `INTEGRITY_FOREIGN_KEY` | `String` | `"cannot delete due to foreign key constraint"` | Description for foreign key violations |
+| `INTEGRITY_DEFAULT` | `String` | `"constraint violation"` | Default integrity violation description |
+| `DATA_INTEGRITY_VIOLATION_PREFIX` | `String` | `"Data integrity violation - "` | Prefix for data integrity violation messages |
+
+### Constraint Violation Messages
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `CONSTRAINT_ENTITY_FAILS` | `String` | `"entity fails validation rules"` | Description for entity validation failures |
+| `CONSTRAINT_UPDATE_FAILS` | `String` | `"update fails validation rules"` | Description for update validation failures |
+| `CONSTRAINT_DELETE_PREVENTED` | `String` | `"delete operation prevented"` | Description for delete prevention |
+| `CONSTRAINT_DEFAULT` | `String` | `"validation rules violated"` | Default constraint violation description |
+| `CONSTRAINT_VIOLATION_PREFIX` | `String` | `"Constraint violation - "` | Prefix for constraint violation messages |
+
+### External Service Messages
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `EXTERNAL_SERVICE_ERROR_FORMAT` | `String` | `"External service error during %s: %s"` | Format for external service errors |
+| `EXTERNAL_SERVICE_UNAVAILABLE_FORMAT` | `String` | `"External service unavailable during %s: %s"` | Format for external service unavailability |
+
+### Miscellaneous
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `HTTP_PREFIX` | `String` | `"HTTP "` | Prefix for HTTP status codes |
 
 ## Constructor
 
-The `ServiceOperationExecutorConstant` class has a private constructor to prevent instantiation, as it is intended to be used as a utility class for accessing constants.
+```java
+private ServiceOperationExecutorConstant()
+```
+
+The private constructor prevents instantiation of this utility class.

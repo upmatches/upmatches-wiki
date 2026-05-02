@@ -4,43 +4,88 @@ title: ICookieHelper Interface
 sidebar_label: ICookieHelper
 ---
 
-## Overview
+# ICookieHelper Interface
 
-The `ICookieHelper` interface is part of the `com.upmatches.app.features.auth.services` package and is designed to manage authentication-related cookies in a web application. It provides methods for setting, clearing, and retrieving authentication cookies, specifically focusing on handling tokens used for user authentication.
+The `ICookieHelper` interface defines the contract for managing authentication cookies in the UpMatches application. It provides a sealed interface pattern that restricts implementation to the `CookieHelper` class, ensuring a single, controlled implementation for cookie management operations.
 
-This interface is sealed, meaning it restricts which classes can implement it. In this case, only the `CookieHelper` class is permitted to implement `ICookieHelper`.
+## Purpose
 
-## Public Methods
+This interface serves as the abstraction layer for authentication cookie operations, including:
+- Setting authentication tokens (access and refresh tokens) as HTTP cookies
+- Clearing authentication cookies during logout
+- Extracting refresh tokens from incoming HTTP requests
 
-### `setAuthCookies`
+## Interface Definition
 
-Sets authentication cookies in the HTTP response, using the provided token data.
+```java
+public sealed interface ICookieHelper permits CookieHelper {
+    // Methods defined below
+}
+```
 
-| Parameter      | Type                      | Description                                      |
-|----------------|---------------------------|--------------------------------------------------|
-| `response`     | `HttpServletResponse`     | The HTTP response where cookies will be set.     |
-| `request`      | `HttpServletRequest`      | The HTTP request associated with the response.   |
-| `tokenData`    | `TokenData`               | The token data used to set authentication cookies.|
+The `sealed` keyword ensures that only the `CookieHelper` class can implement this interface, providing compile-time safety and a clear contract for cookie management.
 
-**Return Type:** `void`
+## Methods
 
-### `clearAuthCookies`
+### setAuthCookies
 
-Clears authentication cookies from the HTTP response.
+Sets authentication cookies (access token and refresh token) in the HTTP response.
 
-| Parameter      | Type                      | Description                                      |
-|----------------|---------------------------|--------------------------------------------------|
-| `response`     | `HttpServletResponse`     | The HTTP response where cookies will be cleared. |
-| `request`      | `HttpServletRequest`      | The HTTP request associated with the response.   |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `response` | `HttpServletResponse` | The HTTP response object to which cookies will be added |
+| `request` | `HttpServletRequest` | The HTTP request object (may be used for domain/path context) |
+| `tokenData` | `TokenData` | Contains the authentication token data (access token, refresh token, expiration) |
 
-**Return Type:** `void`
+**Returns:** `void`
 
-### `getRefreshTokenFromCookie`
+### clearAuthCookies
 
-Retrieves the refresh token from the cookies in the HTTP request.
+Removes authentication cookies from the HTTP response, typically used during logout.
 
-| Parameter      | Type                      | Description                                      |
-|----------------|---------------------------|--------------------------------------------------|
-| `request`      | `HttpServletRequest`      | The HTTP request from which to retrieve the token.|
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `response` | `HttpServletResponse` | The HTTP response object from which cookies will be removed |
+| `request` | `HttpServletRequest` | The HTTP request object (may be used for domain/path context) |
 
-**Return Type:** `String`
+**Returns:** `void`
+
+### getRefreshTokenFromCookie
+
+Extracts the refresh token value from the cookies present in the HTTP request.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The HTTP request object containing cookies |
+
+**Returns:** `String` - The refresh token value, or `null` if not found
+
+## Usage Example
+
+```java
+// Inject the cookie helper
+private final ICookieHelper cookieHelper;
+
+// Setting authentication cookies
+cookieHelper.setAuthCookies(response, request, tokenData);
+
+// Clearing cookies on logout
+cookieHelper.clearAuthCookies(response, request);
+
+// Retrieving refresh token from request
+String refreshToken = cookieHelper.getRefreshTokenFromCookie(request);
+```
+
+## Implementation Details
+
+The sole implementation of this interface is the `CookieHelper` class, which handles:
+- Secure cookie configuration (HttpOnly, Secure flags)
+- Cookie path and domain settings
+- Token expiration mapping to cookie max-age
+- Proper cookie clearing by setting max-age to 0
+
+## Related Components
+
+- **CookieHelper** - The concrete implementation of this interface
+- **TokenData** - Inner class of `CookieHelper` containing token information
+- **Auth Services** - Services that utilize this interface for authentication flows

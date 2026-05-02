@@ -1,33 +1,77 @@
 ---
 id: game-repository
-title: GameRepository Interface
+title: GameRepository
 sidebar_label: GameRepository
 ---
 
+# GameRepository
+
+The `GameRepository` interface provides data access operations for the `Game` entity in the UpMatches application. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD functionality and defines custom query methods for retrieving, filtering, and updating game records.
+
 ## Purpose
 
-The `GameRepository` interface is a part of the data access layer in a Spring application, responsible for managing `Game` entities. It extends the `JpaRepository` interface, providing CRUD operations and custom queries to interact with the `Game` database table. This repository supports operations such as finding games by various criteria, updating game statuses, and counting games based on user participation.
+This repository serves as the data access layer for game management, offering methods to:
+- Find games by ID with soft-delete awareness
+- Retrieve games visible to specific users based on permissions
+- Filter games by various criteria (time, location, skill level, venue)
+- Track games joined or hosted by users
+- Perform batch status updates for game lifecycle management
 
 ## Public Methods
 
-Below is a detailed description of the public methods available in the `GameRepository` interface:
+### Basic Queries
 
-### Methods
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findByIdAndDeletedAtIsNull` | `Optional<Game>` | `UUID id` | Finds a game by ID that hasn't been soft-deleted |
+| `findForUpdateById` | `Optional<Game>` | `UUID id` | Finds a game with pessimistic write lock for concurrent updates |
 
-| Method Name                          | Parameters                                                                                                                                                                                                                                           | Return Type          | Description                                                                                           |
-|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------|-------------------------------------------------------------------------------------------------------|
-| `findByIdAndDeletedAtIsNull`         | `UUID id`                                                                                                                                                                                                                                            | `Optional<Game>`     | Finds a game by its ID, ensuring it is not marked as deleted.                                         |
-| `findForUpdateById`                  | `UUID id`                                                                                                                                                                                                                                            | `Optional<Game>`     | Finds a game by its ID with a pessimistic write lock, ensuring it is not marked as deleted.           |
-| `findVisibleToUser`                  | `UUID userId`, `Pageable pageable`                                                                                                                                                                                                                   | `Page<Game>`         | Finds games visible to a user, considering their participation and access rights.                     |
-| `findVisibleToUserFiltered`          | `UUID userId`, `Instant afterStartTime`, `UUID afterId`, `Long[] venueIds`, `Long[] skillLevelIds`, `Instant fromInstant`, `Instant toInstant`, `Integer fromMinutes`, `Integer toMinutes`, `BigDecimal latitude`, `BigDecimal longitude`, `Integer radiusKm`, `BigDecimal latMin`, `BigDecimal latMax`, `BigDecimal lngMin`, `BigDecimal lngMax`, `int size` | `List<Game>`         | Finds games visible to a user with various filters applied, such as time, location, and skill level.  |
-| `findVisibleForFilterOptions`        | `UUID userId`, `Instant fromInstant`, `Instant toInstant`, `Long[] venueIds`, `Long[] skillLevelIds`, `Integer fromMinutes`, `Integer toMinutes`, `String gameType`, `BigDecimal latitude`, `BigDecimal longitude`, `Integer radiusKm`, `BigDecimal latMin`, `BigDecimal latMax`, `BigDecimal lngMin`, `BigDecimal lngMax`, `int maxGames` | `List<Game>`         | Finds games visible to a user with additional filter options, including game type.                    |
-| `findJoinedByUser`                   | `UUID userId`, `Instant afterStartTime`, `UUID afterId`, `int size`                                                                                                                                                                                  | `List<Game>`         | Finds games that a user has joined, with optional pagination.                                          |
-| `findHostedByUser`                   | `UUID userId`, `Instant afterStartTime`, `UUID afterId`, `int size`                                                                                                                                                                                  | `List<Game>`         | Finds games hosted by a user, with optional pagination.                                                |
-| `countJoinedByUser`                  | `UUID userId`                                                                                                                                                                                                                                        | `long`               | Counts the number of expired games a user has joined.                                                  |
-| `countHostedByUser`                  | `UUID userId`                                                                                                                                                                                                                                        | `long`               | Counts the number of expired games hosted by a user.                                                   |
-| `markStartedBefore`                  | `Instant cutoff`, `Instant now`                                                                                                                                                                                                                      | `int`                | Marks games as started if they were scheduled to start before a given cutoff time.                     |
-| `markExpiredBefore`                  | `Collection<GameStatus> statuses`, `Instant cutoff`, `Instant now`                                                                                                                                                                                   | `int`                | Marks games as expired if they ended before a given cutoff time and match specified statuses.          |
-| `findScheduledStartingBetween`       | `Instant from`, `Instant to`                                                                                                                                                                                                                         | `List<Game>`         | Finds games scheduled to start between two given instants.                                             |
-| `findDistinctStartTimesBetween`      | `Instant from`, `Instant to`                                                                                                                                                                                                                         | `List<Instant>`      | Finds distinct start times of games between two given instants.                                        |
+### Visibility and Filtering
 
-This interface is crucial for managing game-related data and operations, providing both standard and complex query capabilities to support the application's business logic.
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findVisibleToUser` | `Page<Game>` | `UUID userId, Pageable pageable` | Returns paginated games visible to a user (public, organized, joined, or shared) |
+| `findVisibleToUserFiltered` | `List<Game>` | Multiple filter parameters | Returns games visible to user with advanced filtering (time, venue, skill level, location, availability) |
+| `findVisibleForFilterOptions` | `List<Game>` | Multiple filter parameters | Returns games for filter options with additional game type filtering |
+
+### User-Specific Queries
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findJoinedByUser` | `List<Game>` | `UUID userId, Instant afterStartTime, UUID afterId, int size` | Returns games the user has joined, with cursor-based pagination |
+| `findHostedByUser` | `List<Game>` | `UUID userId, Instant afterStartTime, UUID afterId, int size` | Returns games the user is hosting, with cursor-based pagination |
+| `countJoinedByUser` | `long` | `UUID userId` | Counts expired games the user has joined |
+| `countHostedByUser` | `long` | `UUID userId` | Counts expired games the user has hosted |
+
+### Batch Status Updates
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `markStartedBefore` | `int` | `Instant cutoff, Instant now` | Updates scheduled games that should have started to `STARTED` status |
+| `markExpiredBefore` | `int` | `Collection<GameStatus> statuses, Instant cutoff, Instant now` | Updates games that should have expired to `EXPIRED` status |
+
+### Time-Based Queries
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findScheduledStartingBetween` | `List<Game>` | `Instant from, Instant to` | Finds scheduled games starting within a time range |
+| `findDistinctStartTimesBetween` | `List<Instant>` | `Instant from, Instant to` | Returns distinct start times for games within a time range |
+
+## Filtering Capabilities
+
+The repository supports comprehensive filtering through native queries:
+
+- **Time Filters**: Start time ranges, time-of-day filtering (in minutes from midnight, Singapore timezone)
+- **Location Filters**: Geographic radius search using the Haversine formula
+- **Skill Level Filters**: Skill level range matching based on sort order
+- **Venue Filters**: Filtering by specific venue IDs
+- **Game Type Filter**: Filtering by game type (available in `findVisibleForFilterOptions`)
+- **Availability Filter**: Only returns games with available slots
+
+## Usage Notes
+
+- All queries respect soft-delete by checking `deletedAt IS NULL`
+- Visibility queries consider public games, user-organized games, active participations, and shared access
+- Cursor-based pagination is used for efficient large dataset traversal
+- Batch update methods (`markStartedBefore`, `markExpiredBefore`) return the number of affected rows
+- The `findForUpdateById` method uses `PESSIMISTIC_WRITE` lock to prevent concurrent modifications

@@ -1,37 +1,70 @@
 ---
 id: token-response
-title: TokenResponse Class
+title: TokenResponse
 sidebar_label: TokenResponse
 ---
 
-## Purpose of the TokenResponse Class
+# TokenResponse
 
-The `TokenResponse` class is a part of the `com.upmatches.app.features.auth.responses` package. It is designed to encapsulate the response data related to authentication tokens. This class uses Java's `record` feature to define a simple data carrier for holding an access token, a refresh token, and an expiration timestamp.
+The `TokenResponse` class is a Java record that represents the response payload returned by the authentication server after a successful login or token refresh operation. It encapsulates the essential tokens and expiration information required for maintaining a user's authenticated session.
 
-## Public Methods
+## Purpose
 
-The `TokenResponse` class provides the following public method:
+This record serves as a data transfer object (DTO) for authentication responses. It contains:
+- An **access token** used for authorizing API requests
+- A **refresh token** used to obtain new access tokens without requiring the user to re-authenticate
+- The **expiration timestamp** indicating when the access token will expire
 
-| Method Signature | Description |
-|------------------|-------------|
-| `static TokenResponse of(String accessToken, String refreshToken, Long expiresAt)` | A static factory method that creates a new instance of `TokenResponse` with the specified access token, refresh token, and expiration time. |
+## Record Components
 
-### Method Details
+| Component | Type | Description |
+|-----------|------|-------------|
+| `accessToken` | `String` | The JWT or bearer token used to authenticate API requests |
+| `refreshToken` | `String` | A long-lived token used to obtain new access tokens |
+| `expiresAt` | `Long` | Unix timestamp (in seconds or milliseconds) indicating when the access token expires |
 
-#### `of`
+## Methods
 
-- **Parameters:**
+### `of`
 
-  | Name          | Type   | Description                      |
-  |---------------|--------|----------------------------------|
-  | accessToken   | String | The access token string.         |
-  | refreshToken  | String | The refresh token string.        |
-  | expiresAt     | Long   | The expiration timestamp in milliseconds. |
+```java
+public static TokenResponse of(String accessToken, String refreshToken, Long expiresAt)
+```
 
-- **Returns:** 
+Factory method to create a new `TokenResponse` instance.
 
-  | Type          | Description                                      |
-  |---------------|--------------------------------------------------|
-  | TokenResponse | A new instance of `TokenResponse` containing the specified tokens and expiration time. |
+**Parameters:**
 
-This method provides a convenient way to create a `TokenResponse` object without directly invoking the constructor, enhancing code readability and maintainability.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `accessToken` | `String` | The access token string |
+| `refreshToken` | `String` | The refresh token string |
+| `expiresAt` | `Long` | The expiration timestamp |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `TokenResponse` | A new `TokenResponse` instance with the provided values |
+
+## Usage Example
+
+```java
+// Creating a TokenResponse from authentication server response
+TokenResponse response = TokenResponse.of(
+    "eyJhbGciOiJIUzI1NiIs...",  // access token
+    "dGhpcyBpcyBhIHJlZnJl...",  // refresh token
+    1700000000L                   // expires at timestamp
+);
+
+// Accessing record components
+String accessToken = response.accessToken();
+String refreshToken = response.refreshToken();
+Long expiresAt = response.expiresAt();
+```
+
+## Notes
+
+- As a Java record, `TokenResponse` automatically provides `equals()`, `hashCode()`, `toString()`, and component accessor methods.
+- The record is immutable, ensuring thread-safety when passing token data between components.
+- The `of` static factory method provides a convenient way to construct instances while maintaining the immutability guarantees of the record.

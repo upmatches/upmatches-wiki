@@ -4,105 +4,231 @@ title: IGenericService Interface
 sidebar_label: IGenericService
 ---
 
-## Overview
+# IGenericService Interface
 
-The `IGenericService` interface defines a generic service contract for managing entities in an application. It provides methods for common operations such as retrieving, saving, updating, and deleting entities. This interface is designed to be implemented by service classes that handle specific types of entities.
+The `IGenericService` interface defines a generic service layer contract for CRUD (Create, Read, Update, Delete) operations in the application. It provides a standardized way to handle business logic for different entity types while maintaining consistency across the service layer.
 
-## Public Methods
+## Purpose
 
-### `getAll`
+This interface serves as a template for implementing service classes that manage domain entities. By using Java generics (`<T, K>`), it allows for type-safe operations where:
+- `T` represents the request/input DTO (Data Transfer Object) type
+- `K` represents the response/output DTO type
 
-Retrieves a paginated list of entities.
+The interface supports both numeric (Long) and UUID-based entity identification, providing flexibility for different entity identification strategies.
 
-| Parameter     | Type   | Description                        |
-|---------------|--------|------------------------------------|
-| `page`        | `int`  | The page number to retrieve.       |
-| `size`        | `int`  | The number of items per page.      |
-| `sortBy`      | `String` | The field to sort by.             |
-| `sortDirection` | `String` | The direction of sorting (e.g., "asc" or "desc"). |
+## Method Summary
 
-**Returns:** `PagedResponse<K>` - A paginated response containing the entities.
+| Method | Description |
+|--------|-------------|
+| `getAll` | Retrieves a paginated list of entities with sorting support |
+| `getById` | Fetches a single entity by its numeric ID |
+| `getByUuid` | Fetches a single entity by its UUID |
+| `save` | Creates a new entity from the provided DTO |
+| `update` | Updates an existing entity identified by numeric ID |
+| `updateByUuid` | Updates an existing entity identified by UUID |
+| `softDelete` | Performs a logical deletion by numeric ID |
+| `softDeleteByUuid` | Performs a logical deletion by UUID |
+| `delete` | Permanently removes an entity by numeric ID |
+| `deleteByUuid` | Permanently removes an entity by UUID |
 
-### `getById`
+## Method Details
 
-Retrieves an entity by its ID.
+### getAll
 
-| Parameter | Type   | Description         |
-|-----------|--------|---------------------|
-| `id`      | `Long` | The ID of the entity.|
+```java
+PagedResponse<K> getAll(int page, int size, String sortBy, String sortDirection)
+```
 
-**Returns:** `K` - The entity corresponding to the given ID.
+Retrieves a paginated list of entities with configurable sorting.
 
-### `getByUuid`
+**Parameters:**
 
-Retrieves an entity by its UUID.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | `int` | The page number to retrieve (0-indexed) |
+| `size` | `int` | The number of records per page |
+| `sortBy` | `String` | The field name to sort by |
+| `sortDirection` | `String` | The sort direction (`ASC` or `DESC`) |
 
-| Parameter | Type   | Description          |
-|-----------|--------|----------------------|
-| `uuid`    | `UUID` | The UUID of the entity.|
+**Returns:** `PagedResponse<K>` - A paginated response containing the requested page of entities
 
-**Returns:** `K` - The entity corresponding to the given UUID.
+### getById
 
-### `save`
+```java
+K getById(Long id)
+```
 
-Saves a new entity.
+Fetches a single entity by its numeric identifier.
 
-| Parameter | Type | Description         |
-|-----------|------|---------------------|
-| `entity`  | `T`  | The entity to save. |
+**Parameters:**
 
-**Returns:** `K` - The saved entity.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `Long` | The numeric identifier of the entity |
 
-### `update`
+**Returns:** `K` - The response DTO of the found entity
 
-Updates an existing entity by its ID.
+**Throws:** May throw an exception if the entity is not found
 
-| Parameter | Type   | Description         |
-|-----------|--------|---------------------|
-| `id`      | `Long` | The ID of the entity to update. |
-| `entity`  | `T`    | The updated entity data.        |
+### getByUuid
 
-**Returns:** `K` - The updated entity.
+```java
+K getByUuid(UUID uuid)
+```
 
-### `updateByUuid`
+Fetches a single entity by its UUID identifier.
 
-Updates an existing entity by its UUID.
+**Parameters:**
 
-| Parameter | Type   | Description          |
-|-----------|--------|----------------------|
-| `uuid`    | `UUID` | The UUID of the entity to update. |
-| `entity`  | `T`    | The updated entity data.          |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `uuid` | `UUID` | The UUID identifier of the entity |
 
-**Returns:** `K` - The updated entity.
+**Returns:** `K` - The response DTO of the found entity
 
-### `softDelete`
+**Throws:** May throw an exception if the entity is not found
 
-Marks an entity as deleted by its ID without removing it from the database.
+### save
 
-| Parameter | Type   | Description         |
-|-----------|--------|---------------------|
-| `id`      | `Long` | The ID of the entity to soft delete. |
+```java
+K save(T entity)
+```
 
-### `softDeleteByUuid`
+Creates a new entity from the provided request DTO.
 
-Marks an entity as deleted by its UUID without removing it from the database.
+**Parameters:**
 
-| Parameter | Type   | Description          |
-|-----------|--------|----------------------|
-| `uuid`    | `UUID` | The UUID of the entity to soft delete. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `entity` | `T` | The request DTO containing entity data |
 
-### `delete`
+**Returns:** `K` - The response DTO of the created entity
 
-Permanently removes an entity by its ID from the database.
+### update
 
-| Parameter | Type   | Description         |
-|-----------|--------|---------------------|
-| `id`      | `Long` | The ID of the entity to delete. |
+```java
+K update(Long id, T entity)
+```
 
-### `deleteByUuid`
+Updates an existing entity identified by its numeric ID.
 
-Permanently removes an entity by its UUID from the database.
+**Parameters:**
 
-| Parameter | Type   | Description          |
-|-----------|--------|----------------------|
-| `uuid`    | `UUID` | The UUID of the entity to delete. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `Long` | The numeric identifier of the entity to update |
+| `entity` | `T` | The request DTO containing updated entity data |
+
+**Returns:** `K` - The response DTO of the updated entity
+
+**Throws:** May throw an exception if the entity is not found
+
+### updateByUuid
+
+```java
+K updateByUuid(UUID uuid, T entity)
+```
+
+Updates an existing entity identified by its UUID.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `uuid` | `UUID` | The UUID identifier of the entity to update |
+| `entity` | `T` | The request DTO containing updated entity data |
+
+**Returns:** `K` - The response DTO of the updated entity
+
+**Throws:** May throw an exception if the entity is not found
+
+### softDelete
+
+```java
+void softDelete(Long id)
+```
+
+Performs a logical deletion of an entity identified by its numeric ID. The entity remains in the database but is marked as deleted.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `Long` | The numeric identifier of the entity to soft delete |
+
+**Throws:** May throw an exception if the entity is not found
+
+### softDeleteByUuid
+
+```java
+void softDeleteByUuid(UUID uuid)
+```
+
+Performs a logical deletion of an entity identified by its UUID. The entity remains in the database but is marked as deleted.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `uuid` | `UUID` | The UUID identifier of the entity to soft delete |
+
+**Throws:** May throw an exception if the entity is not found
+
+### delete
+
+```java
+void delete(Long id)
+```
+
+Permanently removes an entity from the database by its numeric ID.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `Long` | The numeric identifier of the entity to permanently delete |
+
+**Throws:** May throw an exception if the entity is not found
+
+### deleteByUuid
+
+```java
+void deleteByUuid(UUID uuid)
+```
+
+Permanently removes an entity from the database by its UUID.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `uuid` | `UUID` | The UUID identifier of the entity to permanently delete |
+
+**Throws:** May throw an exception if the entity is not found
+
+## Usage Example
+
+```java
+// Example implementation for a User entity
+public class UserService implements IGenericService<UserRequestDTO, UserResponseDTO> {
+    
+    @Override
+    public PagedResponse<UserResponseDTO> getAll(int page, int size, String sortBy, String sortDirection) {
+        // Implementation logic
+    }
+    
+    @Override
+    public UserResponseDTO getById(Long id) {
+        // Implementation logic
+    }
+    
+    // ... other method implementations
+}
+```
+
+## Notes
+
+- The interface uses Java generics to provide type safety across different entity types
+- Soft delete operations mark entities as inactive rather than removing them permanently
+- The `PagedResponse` class provides pagination metadata along with the actual data
+- Implementations should handle appropriate exception cases (entity not found, validation errors, etc.)

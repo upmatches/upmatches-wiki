@@ -4,34 +4,58 @@ title: CreateGameBookmarkRequest
 sidebar_label: CreateGameBookmarkRequest
 ---
 
-## Overview
+# CreateGameBookmarkRequest
 
-The `CreateGameBookmarkRequest` class is a Java record used in the `com.upmatches.app.features.game.requests` package. It is designed to encapsulate the data required to create a bookmark for a game. This record ensures that the `gameId` is provided and is not null, leveraging the `@NotNull` annotation for validation.
+The `CreateGameBookmarkRequest` is a Java record class used as a Data Transfer Object (DTO) for creating a new game bookmark. It encapsulates the necessary input data required when a user wants to bookmark a specific game.
 
-## Public Methods
+This record is part of the `com.upmatches.app.features.game.requests` package and leverages Jakarta Bean Validation to ensure data integrity at the API boundary.
 
-Since `CreateGameBookmarkRequest` is a Java record, it automatically provides the following methods:
+## Purpose
 
-### Constructor
+- Provides a structured and immutable request payload for the game bookmark creation endpoint.
+- Ensures that the `gameId` field is always provided (non-null) before processing the request.
+- Simplifies data handling by using Java's record feature, which automatically generates constructors, getters, `equals()`, `hashCode()`, and `toString()` methods.
 
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `CreateGameBookmarkRequest(@NotNull UUID gameId)` | Constructs a new `CreateGameBookmarkRequest` instance with the specified `gameId`. |
+## Record Components
 
-### Accessor Methods
+| Component | Type   | Validation Constraints | Description                                      |
+|-----------|--------|------------------------|--------------------------------------------------|
+| `gameId`  | `UUID` | `@NotNull`             | The unique identifier of the game to be bookmarked. |
 
-| Method | Description | Return Type |
-| ------ | ----------- | ----------- |
-| `gameId()` | Returns the `UUID` of the game to be bookmarked. | `UUID` |
+## Constructor
 
-## Parameters
+The record has a canonical constructor that accepts all components as parameters.
 
-The `CreateGameBookmarkRequest` record has the following parameter:
+```java
+public CreateGameBookmarkRequest(@NotNull UUID gameId)
+```
 
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
+### Parameters
+
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
 | `gameId`  | `UUID` | The unique identifier of the game to be bookmarked. Must not be null. |
 
-## Usage
+## Usage Example
 
-This record is typically used in scenarios where a client needs to send a request to bookmark a game, ensuring that the request contains a valid `gameId`. The use of the `@NotNull` annotation helps in validating the input data before processing the request.
+```java
+// Creating a new request
+UUID gameUuid = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+CreateGameBookmarkRequest request = new CreateGameBookmarkRequest(gameUuid);
+
+// Accessing the gameId
+UUID id = request.gameId();
+```
+
+## Validation
+
+The `@NotNull` annotation on the `gameId` field ensures that:
+
+- The request will be rejected if `gameId` is `null`.
+- A validation error will be thrown before the request reaches the service layer.
+- This validation is typically enforced by a controller method annotated with `@Valid`.
+
+## Related Components
+
+- **GameBookmarkService**: The service class that processes the bookmark creation request.
+- **GameBookmarkController**: The REST controller that accepts this request object as a request body.

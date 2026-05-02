@@ -1,39 +1,65 @@
 ---
 id: currency
-title: Currency Class
+title: Currency
 sidebar_label: Currency
 ---
 
-import java.util.regex.Pattern;
+# Currency
 
-## Purpose of the `Currency` Class
+The `Currency` class is a Java record that represents a currency code compliant with the ISO 4217 standard. It provides a type-safe way to handle currency values in the application, ensuring that only valid 3-letter uppercase currency codes (e.g., 'SGD', 'USD', 'EUR') are accepted.
 
-The `Currency` class is a value object that represents a currency using a 3-letter ISO-4217 code. It ensures that the currency code is valid by enforcing constraints during instantiation. This class is immutable and uses Java's `record` feature to define its structure concisely.
+## Purpose
+
+This value object is designed to:
+- Enforce ISO 4217 currency code validation at construction time
+- Provide an immutable representation of a currency
+- Offer a factory method for convenient creation
+- Prevent null or malformed currency values from propagating through the system
+
+## Constructor
+
+The record's canonical constructor performs validation on the provided `value` parameter.
+
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `value`   | String | The ISO 4217 currency code to validate and store |
+
+**Validation Rules:**
+- The value must not be `null` (throws `IllegalArgumentException` with message "Currency value must not be null.")
+- The value must match the pattern `^[A-Z]{3}$` (throws `IllegalArgumentException` with message "Currency must be a 3-letter ISO-4217 code (e.g. 'SGD'). Got: '%s'")
 
 ## Public Methods
 
-The `Currency` class provides the following public method:
+### `create(String value)`
 
-| Method Signature            | Description                                                                 |
-|-----------------------------|-----------------------------------------------------------------------------|
-| `public static Currency create(String value)` | Creates a new `Currency` instance with the specified 3-letter ISO-4217 code. |
+Factory method for creating a `Currency` instance.
 
-### Method Details
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `value`   | String | The ISO 4217 currency code to validate and store |
 
-#### `create`
+| Returns   | Type       | Description                                      |
+|-----------|------------|--------------------------------------------------|
+| `Currency`| `Currency` | A new `Currency` instance with the validated code|
 
-- **Description**: This static method is used to create a new instance of the `Currency` class. It validates the input to ensure it is a non-null, 3-letter ISO-4217 currency code.
-- **Parameters**:
+**Example Usage:**
+```java
+Currency sgd = Currency.create("SGD");
+Currency usd = Currency.create("USD");
+```
 
-  | Name  | Type   | Description                               |
-  |-------|--------|-------------------------------------------|
-  | value | String | The 3-letter ISO-4217 currency code.      |
+## Record Components
 
-- **Returns**: A new instance of the `Currency` class.
+As a Java record, `Currency` automatically provides:
+- `String value()` - accessor method to retrieve the currency code
+- `equals()` - value-based equality comparison
+- `hashCode()` - consistent hash code based on the value
+- `toString()` - string representation of the record
 
-## Validation
+## Constants
 
-The `Currency` class performs the following validations:
-
-1. **Null Check**: Ensures that the currency value is not null. If null, it throws an `IllegalArgumentException` with the message "Currency value must not be null."
-2. **Pattern Check**: Ensures that the currency value matches the ISO-4217 format, which is a 3-letter uppercase code. If the value does not match, it throws an `IllegalArgumentException` with a message indicating the expected format and the invalid value provided.
+| Constant    | Type    | Value                                      | Description                                      |
+|-------------|---------|--------------------------------------------|--------------------------------------------------|
+| `ISO_4217`  | Pattern | `^[A-Z]{3}$`                               | Regex pattern for validating ISO 4217 codes      |
+| `MSG_NULL`  | String  | "Currency value must not be null."         | Error message for null value                     |
+| `MSG_INVALID`| String | "Currency must be a 3-letter ISO-4217 code (e.g. 'SGD'). Got: '%s'" | Error message for invalid format |

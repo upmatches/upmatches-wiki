@@ -4,49 +4,87 @@ title: PublicReadRateLimitFilter
 sidebar_label: PublicReadRateLimitFilter
 ---
 
+# PublicReadRateLimitFilter
+
 ## Purpose
 
-The `PublicReadRateLimitFilter` class is a Spring component designed to enforce rate limiting on public read operations for specific API endpoints. It extends `OncePerRequestFilter` to ensure that the filter logic is applied once per request. The filter is conditional on the presence of a `StringRedisTemplate` bean, indicating that Redis is used for storing rate limit data. The class distinguishes between authenticated and anonymous users, applying different rate limits for each.
+The `PublicReadRateLimitFilter` is a Spring Boot servlet filter that implements rate limiting for public read endpoints in the UpMatches application. It extends `OncePerRequestFilter` to ensure each request is processed exactly once.
+
+This filter protects three categories of endpoints from excessive requests:
+- **Games** (`/api/v1/games/**`)
+- **Venues** (`/api/v1/venues`)
+- **Activities** (`/api/v1/activities/**`)
+
+Rate limiting is applied per client, with different limits for anonymous and authenticated users. The filter uses Redis as a distributed counter store to track request counts across multiple application instances.
+
+## Rate Limits
+
+| User Type | Limit | Window |
+|-----------|-------|--------|
+| Anonymous | 60 requests | 60 seconds |
+| Authenticated | 240 requests | 60 seconds |
+
+## How It Works
+
+1. **Request Filtering**: The filter only processes GET requests to the configured public read endpoints.
+2. **Client Identification**: For authenticated users, the JWT subject is used as the identifier. For anonymous users, the client IP address (respecting `X-Forwarded-For` headers) is used.
+3. **Rate Checking**: Each request increments a Redis counter keyed by `rl:{bucket}:{clientId}`. If the counter exceeds the limit, a `429 Too Many Requests` response is returned.
+4. **Window Management**: The first request in a window sets the key expiration to 60 seconds.
+
+## Dependencies
+
+- `StringRedisTemplate` (Redis) - Required for rate limit tracking
+- `ObjectMapper` - For serializing error responses
+- Spring Security - For authentication context
 
 ## Public Methods
 
-### Constructor
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `shouldNotFilter` | `boolean` | `HttpServletRequest request` | Determines if the request should bypass rate limiting. Returns `true` for non-GET methods or requests to non-monitored endpoints. |
+| `doFilterInternal` | `void` | `HttpServletRequest request, HttpServletResponse response, FilterChain filterChain` | Main filter logic: resolves the rate limit bucket, checks limits, and either allows the request or returns a 429 response. |
 
-| Method Signature | Description |
-|------------------|-------------|
-| `PublicReadRateLimitFilter(StringRedisTemplate redisTemplate)` | Constructs a new `PublicReadRateLimitFilter` with the provided `StringRedisTemplate` for Redis operations. |
+## Error Response
 
-### Overridden Methods
+When rate limit is exceeded, the filter returns a `429 Too Many Requests` response with a `ProblemDetail` JSON body:
 
-#### `shouldNotFilter`
+```json
+{
+  "type": "https://upmatches.com/problems/rate-limit-exceeded",
+  "title": "Too Many Requests",
+  "status": 429,
+  "detail": "Rate limit exceeded for 'games' endpoint. Retry after 60 seconds.",
+  "instance": "/api/v1/games"
+}
+```
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `request` | `HttpServletRequest` | The HTTP request to check against the filter conditions. |
+The response also includes a `Retry-After` header set to `60`.
 
-| Return Type | Description |
-|-------------|-------------|
-| `boolean`   | Returns `true` if the request should not be filtered, otherwise `false`. |
+## Configuration
 
-#### `doFilterInternal`
+The filter is conditionally enabled via `@ConditionalOnBean(StringRedisTemplate.class)`, meaning it only activates when Redis is configured in the application context.
 
-| Parameter   | Type                  | Description |
-|-------------|-----------------------|-------------|
-| `request`   | `HttpServletRequest`  | The HTTP request to be filtered. |
-| `response`  | `HttpServletResponse` | The HTTP response to be sent. |
-| `filterChain` | `FilterChain`       | The filter chain to pass the request and response to the next filter. |
+## Internal Implementation Details
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | Executes the filter logic, potentially modifying the response if rate limits are exceeded. |
+### Bucket Resolution
 
-## Key Functionalities
+The `resolveBucket` method maps request URIs to rate limit buckets:
 
-- **Rate Limiting**: The filter applies rate limits based on the request URI and the authentication status of the user. It uses Redis to track request counts and enforce limits.
-- **Bucket Resolution**: Determines the appropriate rate limit bucket based on the request URI.
-- **Client Identification**: Identifies the client either by JWT subject for authenticated users or by IP address for anonymous users.
-- **Rate Limit Response**: Constructs and sends a `429 Too Many Requests` response when rate limits are exceeded, including a `Retry-After` header.
+| URI Pattern | Bucket Name | Redis Key Prefix |
+|-------------|-------------|------------------|
+| `/api/v1/games/**` | `games` | `rl:public:games:` |
+| `/api/v1/venues` | `venues` | `rl:public:venues:` |
+| `/api/v1/activities/**` | `activities` | `rl:public:activities:` |
 
-## Usage
+### Client IP Resolution
 
-This filter is typically used in applications where public API endpoints need to be protected against excessive requests, ensuring fair usage and preventing abuse. It is particularly useful in scenarios where different rate limits are required for authenticated versus anonymous users.
+The `resolveClientIp` method extracts the client IP from:
+1. The `X-Forwarded-For` header (first IP in comma-separated list)
+2. Falls back to `request.getRemoteAddr()` if no forwarded header exists
+
+### Rate Limit Check
+
+The `isRateLimited` method uses Redis atomic increment to track request counts:
+- Increments the counter for the key
+- Sets key expiration on first request in window
+- Returns `true` if count exceeds the limit

@@ -4,36 +4,83 @@ title: AuthenticatedUserResolver
 sidebar_label: AuthenticatedUserResolver
 ---
 
+# AuthenticatedUserResolver
+
+The `AuthenticatedUserResolver` class is a Spring `@Service` that provides a centralized way to extract the authenticated user's ID from the current security context. It implements the `IAuthenticatedUserResolver` interface and is designed to work with OAuth2 JWT tokens in a Spring Security environment.
+
 ## Purpose
 
-The `AuthenticatedUserResolver` class is a service component in a Spring application that provides methods to resolve the authenticated user's ID from the security context. It implements the `IAuthenticatedUserResolver` interface and is designed to handle authentication scenarios using JWT (JSON Web Tokens). The class offers methods to either require or optionally retrieve the user ID from the authentication token.
+This service resolves the currently authenticated user's unique identifier (UUID) from the JWT token stored in the Spring Security context. It offers two methods:
+- A **required** variant that throws an exception if no valid authentication is found
+- An **optional** variant that returns an empty `Optional` when authentication is missing or invalid
+
+## Class Details
+
+| Property | Value |
+|----------|-------|
+| **Package** | `com.upmatches.app.features.game.services` |
+| **Type** | `non-sealed` class |
+| **Implements** | `IAuthenticatedUserResolver` |
+| **Annotations** | `@Service` |
 
 ## Public Methods
 
-### `requireUserId`
+### `requireUserId()`
 
-This method retrieves the user ID from the current authentication token. It throws an `AuthenticationException` if no valid authentication is found or if the token's subject is invalid.
+Returns the authenticated user's UUID, throwing an exception if no valid authentication is present.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None      |      |             |
+| Aspect | Details |
+|--------|---------|
+| **Return Type** | `UUID` |
+| **Throws** | `AuthenticationException` - if no authentication exists, the principal is not a JWT, or the token's subject is not a valid UUID |
 
-| Return Type | Description |
-|-------------|-------------|
-| `UUID`      | The user ID extracted from the JWT subject. |
+**Behavior:**
+1. Retrieves the `Authentication` object from `SecurityContextHolder`
+2. Validates that authentication exists and the principal is a `Jwt` instance
+3. Extracts the `subject` claim from the JWT and parses it as a `UUID`
+4. Throws `AuthenticationException` with descriptive messages for any failure
 
-**Exceptions:**
+### `optionalUserId()`
 
-- `AuthenticationException`: Thrown if no valid authentication is found or if the token's subject is invalid.
+Returns an `Optional` containing the authenticated user's UUID, or empty if authentication is missing or invalid.
 
-### `optionalUserId`
+| Aspect | Details |
+|--------|---------|
+| **Return Type** | `Optional<UUID>` |
 
-This method attempts to retrieve the user ID from the current authentication token. It returns an `Optional<UUID>`, which will be empty if no valid authentication is found or if the token's subject is invalid.
+**Behavior:**
+1. Retrieves the `Authentication` object from `SecurityContextHolder`
+2. Returns `Optional.empty()` if authentication is missing, the principal is not a `Jwt`, or the subject cannot be parsed as a UUID
+3. Returns `Optional.of(uuid)` if the subject is a valid UUID
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None      |      |             |
+## Usage Example
 
-| Return Type      | Description |
-|------------------|-------------|
-| `Optional<UUID>` | An optional containing the user ID if present and valid, otherwise an empty optional. |
+```java
+@RestController
+public class GameController {
+    
+    @Autowired
+    private AuthenticatedUserResolver userResolver;
+    
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile() {
+        // Required - throws if not authenticated
+        UUID userId = userResolver.requireUserId();
+        
+        // Optional - returns empty if not authenticated
+        Optional<UUID> optionalUserId = userResolver.optionalUserId();
+        
+        return ResponseEntity.ok("User ID: " + userId);
+    }
+}
+```
+
+## Error Handling
+
+The class uses two constant error messages:
+- `MSG_NO_AUTH`: "No valid authentication found." - thrown when authentication is missing or the principal is not a JWT
+- `MSG_INVALID_SUBJECT`: "Invalid user ID in token subject: %s" - thrown when the JWT subject cannot be parsed as a UUID
+
+Both methods handle the `IllegalArgumentException` that may occur when parsing the UUID, but handle it differently:
+- `requireUserId()` wraps it in an `AuthenticationException`
+- `optionalUserId()` silently returns `Optional.empty()`

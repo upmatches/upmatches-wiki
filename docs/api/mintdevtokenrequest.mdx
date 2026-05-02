@@ -1,37 +1,46 @@
 ---
 id: mint-dev-token-request
-title: MintDevTokenRequest Class
+title: MintDevTokenRequest
 sidebar_label: MintDevTokenRequest
 ---
 
+# MintDevTokenRequest
+
+The `MintDevTokenRequest` class is a Java record used as a Data Transfer Object (DTO) for requesting the minting of a developer token. It encapsulates the required user identifier for token generation.
+
 ## Purpose
 
-The `MintDevTokenRequest` class is a simple data structure used to encapsulate the request for minting a developer token. This class is part of the authentication feature in the application and ensures that a valid user ID is provided when making such a request. It utilizes Java's `record` feature to provide an immutable and concise representation of the data.
+This record serves as the request payload for an API endpoint that creates or "mints" a developer token for a specific user. By using a Java record, it provides an immutable data carrier with automatically generated constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods.
 
-## Public Methods
+## Record Definition
 
-The `MintDevTokenRequest` class does not explicitly define any public methods beyond those automatically provided by the Java `record` construct. However, it implicitly provides the following methods:
+```java
+public record MintDevTokenRequest(@NotNull UUID userId)
+```
 
-### Constructor
+### Fields
 
-| Method Signature | Description |
-|------------------|-------------|
-| `MintDevTokenRequest(UUID userId)` | Constructs a new `MintDevTokenRequest` with the specified `userId`. |
-
-### Parameters
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `userId`  | `UUID` | A non-null universally unique identifier representing the user for whom the developer token is being minted. |
-
-### Return Types
-
-Since `MintDevTokenRequest` is a record, it automatically provides accessor methods for its components:
-
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `userId()` | `UUID` | Returns the `userId` associated with this request. |
+| Field    | Type   | Validation | Description                                      |
+|----------|--------|------------|--------------------------------------------------|
+| `userId` | `UUID` | `@NotNull` | The unique identifier of the user requesting the developer token. |
 
 ## Validation
 
-The `userId` parameter is annotated with `@NotNull`, indicating that it must not be null. This is enforced at runtime, ensuring that every `MintDevTokenRequest` instance is created with a valid `UUID`.
+The `@NotNull` annotation (from `jakarta.validation.constraints`) ensures that the `userId` field cannot be `null` when the request is validated. This validation is typically enforced by a validation framework (e.g., Hibernate Validator) at the API layer before the request reaches the service logic.
+
+## Usage Example
+
+```java
+// Creating a new request
+UUID userUuid = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+MintDevTokenRequest request = new MintDevTokenRequest(userUuid);
+
+// Accessing the field
+UUID userId = request.userId();
+```
+
+## Related Components
+
+- **Package**: `com.upmatches.app.features.auth.requests`
+- **Validation Framework**: Jakarta Bean Validation (via `jakarta.validation.constraints.NotNull`)
+- **Typical Consumer**: An authentication controller or service that processes developer token minting requests.

@@ -4,27 +4,41 @@ title: UnreadCountResponse
 sidebar_label: UnreadCountResponse
 ---
 
-## Overview
+# UnreadCountResponse
 
-The `UnreadCountResponse` class is a simple Java record used to encapsulate the count of unread notifications. It is part of the `com.upmatches.app.features.notification.responses` package. This class provides a structured way to handle the unread count response, ensuring that the data is immutable and easily accessible.
+The `UnreadCountResponse` class is a Java record that serves as a simple data transfer object (DTO) for representing the number of unread notifications for a user. It is used in the notification feature of the application to encapsulate the unread count value in a type-safe and immutable manner.
+
+## Purpose
+
+This record provides a lightweight, immutable container for a single `Long` value representing the count of unread notifications. By using a record, the class automatically generates constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods, reducing boilerplate code. The static factory method `of()` offers a convenient way to create instances.
 
 ## Public Methods
 
-The `UnreadCountResponse` class provides the following public method:
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `of(Long count)` | `UnreadCountResponse` | Static factory method that creates a new `UnreadCountResponse` instance with the specified unread count. |
+| `count()` | `Long` | Auto-generated accessor method that returns the unread count value. |
 
-| Method Signature | Description |
-|------------------|-------------|
-| `static UnreadCountResponse of(Long count)` | A static factory method that creates a new instance of `UnreadCountResponse` with the specified count. |
+## Parameters
 
-### Method Details
+### `of(Long count)`
 
-#### `of(Long count)`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `count` | `Long` | The number of unread notifications. Must not be null. |
 
-- **Description**: This static method is a factory method that returns a new instance of `UnreadCountResponse` initialized with the given count.
-- **Parameters**:
+## Usage Example
 
-  | Name  | Type  | Description                          |
-  |-------|-------|--------------------------------------|
-  | count | Long  | The count of unread notifications.   |
+```java
+// Create an UnreadCountResponse with 5 unread notifications
+UnreadCountResponse response = UnreadCountResponse.of(5L);
 
-- **Returns**: An instance of `UnreadCountResponse` containing the specified unread count.
+// Access the count value
+Long unreadCount = response.count(); // returns 5L
+```
+
+## Notes
+
+- This record is immutable by design, ensuring thread safety and predictability.
+- The `count` field is declared as `Long` (object type) rather than `long` (primitive) to allow for null values if needed, though in practice it should always be provided.
+- The static factory method `of()` provides a clean, expressive way to instantiate the record without using the `new` keyword directly.

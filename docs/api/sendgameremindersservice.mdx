@@ -4,54 +4,135 @@ title: SendGameRemindersService
 sidebar_label: SendGameRemindersService
 ---
 
+# SendGameRemindersService
+
 ## Purpose
 
-The `SendGameRemindersService` class is responsible for sending notifications to users about upcoming games. It handles both individual game reminders and aggregated reminders for games occurring in the next three days. The service interacts with various repositories and services to fetch game data, create notifications, and deliver them via push notifications or email.
+The `SendGameRemindersService` is a Spring service responsible for sending game reminders to users. It handles two types of reminders:
+
+1. **3-day aggregated reminders**: Groups upcoming games by date and sends a single notification summarizing the number of courts booked on each date.
+2. **1-day per-game reminders**: Sends individual notifications for each game scheduled for the next day.
+
+The service ensures that duplicate notifications are not sent by checking existing records in the `NotificationRepository`. It also attempts to deliver notifications via push first, falling back to email if push delivery fails or is unavailable.
 
 ## Public Methods
 
-### `execute`
+### `execute(NotificationType type, long minHoursAhead, long maxHoursAhead)`
 
-Executes the process of sending game reminders based on the specified notification type and time range.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The type of reminder to send (`GAME_REMINDER_3_DAYS` or `GAME_REMINDER_1_DAY`). |
+| `minHoursAhead` | `long` | Minimum hours ahead of the game start time to consider. |
+| `maxHoursAhead` | `long` | Maximum hours ahead of the game start time to consider. |
 
-| Parameter     | Type            | Description                                                                 |
-|---------------|-----------------|-----------------------------------------------------------------------------|
-| `type`        | `NotificationType` | The type of notification to send (e.g., GAME_REMINDER_3_DAYS).              |
-| `minHoursAhead` | `long`          | The minimum number of hours ahead to consider for sending reminders.       |
-| `maxHoursAhead` | `long`          | The maximum number of hours ahead to consider for sending reminders.       |
+**Returns:** `int` - The number of notifications successfully sent.
 
-**Returns:** `int` - The number of notifications sent.
+**Description:**  
+This is the main entry point for sending reminders. It queries games scheduled within the specified time window and dispatches the appropriate reminder logic based on the notification type.
 
-## Detailed Description
+## Private Methods
 
-### Class Dependencies
+### `sendPerGameReminders(List<Game> games, NotificationType type)`
 
-- **Repositories:**
-  - `GameRepository`: Used to fetch scheduled games within a specified time range.
-  - `GameParticipantRepository`: Used to find active participants of a game.
-  - `NotificationRepository`: Used to check for existing notifications and store new ones.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `games` | `List<Game>` | List of games to send reminders for. |
+| `type` | `NotificationType` | The type of reminder (typically 1-day reminder). |
 
-- **Services:**
-  - `ICreateNotificationService`: Used to create new notification entities.
-  - `IPushNotificationService`: Used to send push notifications.
-  - `IEmailNotificationService`: Used to send email notifications.
+**Returns:** `int` - Number of notifications sent.
 
-- **Properties:**
-  - `ShareLinkProperties`: Provides configuration for generating game URLs.
+**Description:**  
+Iterates over each game and sends a reminder to all active participants and the organizer. Skips recipients who already have a notification for the same game and type.
 
-### Notification Process
+### `sendAggregatedThreeDayReminders(List<Game> games)`
 
-1. **Fetch Games:** The service retrieves games scheduled to start within a specified time window.
-2. **Determine Notification Type:** Depending on the `NotificationType`, it either sends individual game reminders or aggregated reminders for games occurring in the next three days.
-3. **Create and Send Notifications:** For each game or group of games, the service creates a notification and attempts to deliver it via push notification. If push delivery fails, it falls back to email delivery.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `games` | `List<Game>` | List of games to aggregate reminders for. |
 
-### Helper Methods
+**Returns:** `int` - Number of notifications sent.
 
-- **`sendPerGameReminders`:** Sends individual reminders for each game.
-- **`sendAggregatedThreeDayReminders`:** Sends aggregated reminders for games occurring in the next three days.
-- **`deliverExternally`:** Handles the external delivery of notifications via push or email.
-- **`recipientIdsFor`:** Retrieves the set of recipient IDs for a given game.
-- **`localDateFor`:** Converts a game's start time to a local date in the Singapore timezone.
-- **`dateResourceId`:** Generates a UUID for a notification resource based on its type and date.
-- **`courtLabel`:** Returns the appropriate label ("court" or "courts") based on the count.
-- **`formatDate`:** Formats a date using a predefined pattern.
+**Description:**  
+Groups games by recipient and date, then sends a single aggregated notification per recipient per date summarizing the number of courts booked. Uses a deterministic UUID based on the notification type and date to prevent duplicate notifications.
+
+### `deliverExternally(Notification notification, EmailContext emailContext)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notification` | `Notification` | The notification to deliver. |
+| `emailContext` | `EmailContext` | Context data for email delivery. |
+
+**Description:**  
+Attempts to send a push notification first. If push delivery fails (returns anything other than `SENT`), falls back to sending an email if the recipient has a valid email address.
+
+### `recipientIdsFor(Game game)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `game` | `Game` | The game to find recipients for. |
+
+**Returns:** `Set<UUID>` - Set of recipient user IDs.
+
+**Description:**  
+Collects the IDs of the game organizer and all active participants.
+
+### `localDateFor(Game game)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `game` | `Game` | The game to extract the date from. |
+
+**Returns:** `LocalDate` - The game's start date in Singapore Time (SGT).
+
+### `dateResourceId(NotificationType type, LocalDate date)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The notification type. |
+| `date` | `LocalDate` | The date to generate the resource ID for. |
+
+**Returns:** `UUID` - A deterministic UUID based on the type and date.
+
+### `courtLabel(int count)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `count` | `int` | Number of courts. |
+
+**Returns:** `String` - "court" if count is 1, otherwise "courts".
+
+### `formatDate(LocalDate date)`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `date` | `LocalDate` | The date to format. |
+
+**Returns:** `String` - Formatted date string (e.g., "15-Mar").
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameRepository` | Repository | Provides access to game data. |
+| `GameParticipantRepository` | Repository | Provides access to participant data. |
+| `NotificationRepository` | Repository | Provides access to notification records for deduplication. |
+| `ICreateNotificationService` | Service | Creates notification records in the database. |
+| `IPushNotificationService` | Service | Sends push notifications to users. |
+| `IEmailNotificationService` | Service | Sends email notifications to users. |
+| `ShareLinkProperties` | Configuration | Provides the base URL for generating game links. |
+
+## Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `SGT` | `Asia/Singapore` | Time zone used for date calculations. |
+| `DATE_FORMATTER` | `dd-MMM` | Date format for display (e.g., "15-Mar"). |
+| `TITLE_3_DAYS` | "Upcoming games in 3 days" | Title for 3-day aggregated reminders. |
+| `TITLE_1_DAY` | "Upcoming game tomorrow" | Title for 1-day per-game reminders. |
+| `MESSAGE_3_DAYS` | "You have %d %s on %s." | Message template for 3-day reminders. |
+| `MESSAGE_1_DAY` | "Your game starts on %s." | Message template for 1-day reminders. |
+| `COURT_SINGULAR` | "court" | Singular form of court. |
+| `COURT_PLURAL` | "courts" | Plural form of court. |
+| `RESOURCE_TYPE_GAME` | "GAME" | Resource type identifier. |
+| `RESOURCE_ID_DELIMITER` | ":" | Delimiter for constructing resource IDs. |
+| `GAME_URL_TEMPLATE` | "%s/games/%s" | URL template for game links. |

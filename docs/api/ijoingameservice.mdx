@@ -1,27 +1,51 @@
 ---
-id: ijoingameservice
+id: i-join-game-service
 title: IJoinGameService Interface
 sidebar_label: IJoinGameService
 ---
 
-## Overview
+# IJoinGameService Interface
 
-The `IJoinGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that handle the logic of joining a game. This interface is designed to be implemented by classes that provide the actual functionality for joining a game, ensuring a consistent method signature across different implementations.
+The `IJoinGameService` interface defines the contract for joining a game within the UpMatches application. It serves as the abstraction layer for the game joining functionality, ensuring that any implementation adheres to a standardized method signature.
 
-## Public Methods
+This interface is declared as `sealed`, meaning it restricts which classes or interfaces can implement it. In this case, only `JoinGameService` is permitted to provide the concrete implementation.
 
-The `IJoinGameService` interface declares the following public method:
+## Interface Definition
 
-| Method Signature                  | Description                                                                 |
-|-----------------------------------|-----------------------------------------------------------------------------|
-| `GameParticipantResponse execute(UUID id)` | Executes the logic to join a game using the provided game identifier. |
+```java
+public sealed interface IJoinGameService permits JoinGameService {
 
-### Method Details
+    GameParticipantResponse execute(UUID id);
 
-#### `execute(UUID id)`
+}
+```
 
-- **Description**: This method is responsible for executing the logic required to join a game. It takes a unique identifier for the game and returns a response indicating the result of the join operation.
-- **Parameters**:
-  - `UUID id`: The unique identifier of the game that a participant wants to join.
-- **Returns**: 
-  - `GameParticipantResponse`: An object containing details about the game participant after the join operation is executed.
+## Methods
+
+### `execute`
+
+The single method defined by this interface. It processes a request to join a game based on the provided unique identifier.
+
+| Parameter | Type   | Description                                                                 |
+|-----------|--------|-----------------------------------------------------------------------------|
+| `id`      | `UUID` | The unique identifier of the game or participant request to join.           |
+
+| Returns                   | Description                                                                 |
+|---------------------------|-----------------------------------------------------------------------------|
+| `GameParticipantResponse` | A response object containing the result of the join operation.              |
+
+## Usage Example
+
+```java
+// Assuming an implementation is injected
+IJoinGameService joinGameService = new JoinGameService();
+
+UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+GameParticipantResponse response = joinGameService.execute(gameId);
+```
+
+## Implementation Details
+
+The only permitted implementation of this interface is `JoinGameService`. This sealed design ensures that all game joining logic flows through a single, controlled implementation, promoting consistency and maintainability.
+
+For the concrete implementation details, refer to the `JoinGameService` class documentation.

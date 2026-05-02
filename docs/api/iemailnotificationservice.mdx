@@ -1,30 +1,72 @@
 ---
-id: iemailnotificationservice
+id: iemail-notification-service
 title: IEmailNotificationService Interface
 sidebar_label: IEmailNotificationService
 ---
 
+# IEmailNotificationService Interface
+
+The `IEmailNotificationService` interface defines the contract for sending email notifications within the UpMatches application. It is a **sealed interface**, meaning only explicitly permitted classes can implement it, ensuring controlled extension and type safety.
+
 ## Purpose
 
-The `IEmailNotificationService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines the contract for sending email notifications within the application. This interface is designed to be implemented by classes that handle the specifics of email notification delivery, ensuring a consistent method signature for sending notifications.
+This interface abstracts the email sending functionality, allowing the application to depend on an abstraction rather than a concrete implementation. By using a sealed interface, the design enforces that only `EmailNotificationService` can provide the actual email sending logic, preventing unauthorized implementations and promoting a clear, maintainable architecture.
 
-## Public Methods
+## Interface Definition
 
-### `send`
+```java
+package com.upmatches.app.features.notification.services;
 
-The `send` method is responsible for dispatching an email notification based on the provided `Notification` and `EmailContext` objects.
+import com.upmatches.app.features.notification.entities.Notification;
+import com.upmatches.app.features.notification.models.EmailContext;
 
-| Method Signature | Description |
-|------------------|-------------|
-| `void send(Notification notification, EmailContext context)` | Sends an email notification using the specified `Notification` and `EmailContext`. |
+public sealed interface IEmailNotificationService permits EmailNotificationService {
 
-#### Parameters
+    void send(Notification notification, EmailContext context);
 
-| Parameter   | Type                          | Description |
-|-------------|-------------------------------|-------------|
-| `notification` | `Notification`              | The notification entity containing the details of the message to be sent. |
-| `context`      | `EmailContext`              | The context for the email, including any additional information required for sending the email. |
+}
+```
 
-#### Return Type
+## Permitted Implementations
 
-This method does not return any value (`void`).
+| Implementation Class | Description |
+|----------------------|-------------|
+| `EmailNotificationService` | The sole permitted implementation that provides the actual email sending logic. |
+
+## Methods
+
+### `send(Notification notification, EmailContext context)`
+
+Sends an email notification using the provided notification data and email context.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notification` | `Notification` | The notification entity containing the message and metadata to be sent. |
+| `context` | `EmailContext` | The email context containing additional configuration such as recipient addresses, subject, and template data. |
+
+**Return Type:** `void`
+
+**Behavior:** This method is responsible for composing and dispatching the email based on the information provided in the `Notification` and `EmailContext` objects. The exact implementation details (e.g., SMTP configuration, email template rendering) are handled by the permitted `EmailNotificationService` class.
+
+## Usage Example
+
+```java
+// Assuming EmailNotificationService is properly instantiated
+IEmailNotificationService emailService = new EmailNotificationService();
+
+Notification notification = new Notification();
+// ... populate notification with message and metadata
+
+EmailContext context = new EmailContext();
+context.setRecipient("user@example.com");
+context.setSubject("Welcome to UpMatches!");
+// ... set other context properties
+
+emailService.send(notification, context);
+```
+
+## Related Components
+
+- **`Notification`** - Entity class representing a notification with its content and metadata.
+- **`EmailContext`** - Model class containing email-specific configuration like recipients, subject, and template variables.
+- **`EmailNotificationService`** - The concrete implementation that fulfills the contract defined by this interface.

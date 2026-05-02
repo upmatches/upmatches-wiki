@@ -4,30 +4,84 @@ title: MarkNotificationReadService
 sidebar_label: MarkNotificationReadService
 ---
 
+# MarkNotificationReadService
+
+The `MarkNotificationReadService` is a Spring service class responsible for marking a specific notification as read for the currently authenticated user. It ensures that only the intended recipient can mark a notification as read, providing both security and data integrity.
+
 ## Purpose
 
-The `MarkNotificationReadService` class is a Spring service responsible for marking a notification as read for an authenticated user. It interacts with the `NotificationRepository` to update the notification status and ensures that the operation is performed within a transactional context. This service is part of the notification feature in the application.
+This service encapsulates the business logic for updating a notification's read status. It performs the following operations:
+- Resolves the authenticated user's ID
+- Retrieves the notification by its ID and ensures it belongs to the authenticated user
+- Marks the notification as read
+- Persists the updated notification to the database
+- Returns a `NotificationResponse` DTO
+
+## Class Details
+
+| Aspect | Description |
+|--------|-------------|
+| **Package** | `com.upmatches.app.features.notification.services` |
+| **Annotations** | `@Service` |
+| **Modifiers** | `public non-sealed` |
+| **Implements** | `IMarkNotificationReadService` |
+| **Dependencies** | `NotificationRepository`, `IAuthenticatedUserResolver` |
+
+## Constructor
+
+### `MarkNotificationReadService(NotificationRepository, IAuthenticatedUserResolver)`
+
+Initializes the service with required dependencies.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notificationRepository` | `NotificationRepository` | Repository for notification persistence operations |
+| `userResolver` | `IAuthenticatedUserResolver` | Service to resolve the currently authenticated user |
 
 ## Public Methods
 
-### `execute`
+### `execute(UUID id)`
 
 Marks a notification as read for the authenticated user.
 
-| Parameter | Type   | Description                                      |
-|-----------|--------|--------------------------------------------------|
-| `id`      | `UUID` | The unique identifier of the notification to mark as read. |
+| Aspect | Details |
+|--------|---------|
+| **Return Type** | `NotificationResponse` |
+| **Parameters** | `id` (`UUID`) - The unique identifier of the notification to mark as read |
+| **Exceptions** | `NotificationNotFoundException` - If the notification is not found or does not belong to the authenticated user |
+| **Transactional** | Yes - The operation is wrapped in a database transaction |
 
-| Return Type          | Description                                                  |
-|----------------------|--------------------------------------------------------------|
-| `NotificationResponse` | Returns a response object representing the updated notification. |
+**Behavior:**
+1. Resolves the authenticated user's ID using `userResolver.requireUserId()`
+2. Attempts to find the notification by its ID and the user's ID
+3. If not found, throws a `NotificationNotFoundException` with a descriptive message
+4. Calls `notification.markRead()` to update the notification's read status
+5. Persists the updated notification using `ServiceOperationExecutor.execute()`
+6. Returns a `NotificationResponse` built from the saved notification
 
-### Method Details
+## Error Handling
 
-- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction. This guarantees that the changes to the notification's read status are committed to the database only if the entire operation completes successfully.
+The service handles the following error scenarios:
 
-- **User Authentication**: The method uses `IAuthenticatedUserResolver` to retrieve the current user's ID, ensuring that only the intended recipient can mark their notifications as read.
+| Error | Condition | Exception |
+|-------|-----------|-----------|
+| Notification not found | No notification exists with the given ID for the authenticated user | `NotificationNotFoundException` |
+| Persistence failure | Database operation fails during save | `ResourceNotFoundException` (wrapped) |
 
-- **Exception Handling**: If the notification is not found for the given user, a `NotificationNotFoundException` is thrown with a detailed message. This ensures that the user is informed if they attempt to mark a non-existent or unauthorized notification as read.
+## Usage Example
 
-- **Service Operation Execution**: The `ServiceOperationExecutor` is used to execute the save operation on the `NotificationRepository`, providing a consistent approach to handling service operations and potential exceptions.
+```java
+// Inject the service
+private final MarkNotificationReadService markNotificationReadService;
+
+// Mark a notification as read
+UUID notificationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+NotificationResponse response = markNotificationReadService.execute(notificationId);
+```
+
+## Dependencies
+
+- **Spring Framework**: `@Service`, `@Transactional`
+- **NotificationRepository**: For database operations
+- **IAuthenticatedUserResolver**: For user authentication context
+- **ServiceOperationExecutor**: For standardized service operation execution with error handling

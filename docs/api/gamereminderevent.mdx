@@ -1,48 +1,47 @@
 ---
 id: game-reminder-event
-title: GameReminderEvent Class
+title: GameReminderEvent
 sidebar_label: GameReminderEvent
 ---
 
-import com.upmatches.app.features.notification.enums.NotificationType;
+# GameReminderEvent
 
-## Overview
+The `GameReminderEvent` is a Java record that represents a notification event for a game reminder. It is part of the notification system within the `com.upmatches.app` application, specifically designed to encapsulate the data required to trigger or process a reminder notification related to a game.
 
-The `GameReminderEvent` class is a Java record that represents an event for game reminders within the application. It is part of the `com.upmatches.app.features.notification.events` package. This class is designed to encapsulate the details of a game reminder, specifically the unique identifier of the game and the type of notification associated with the reminder.
+This record is immutable and provides a concise way to carry the necessary information—namely, the unique identifier of the game and the type of notification to be sent.
 
 ## Purpose
 
-The primary purpose of the `GameReminderEvent` class is to serve as a data structure for passing information about game reminder events. It leverages Java's record feature to provide an immutable and concise way to store and access the event data.
+- **Encapsulation of Event Data**: Bundles the game ID and notification type into a single, immutable object.
+- **Event-Driven Architecture**: Used as a payload in event-driven systems (e.g., message queues, event buses) to trigger reminder notifications.
+- **Type Safety**: Leverages Java records to ensure that the data structure is clear and type-safe.
 
-## Public Methods
+## Record Components
 
-The `GameReminderEvent` class, being a record, automatically provides the following public methods:
+The `GameReminderEvent` record has two components:
 
-### Constructor
-
-| Method Signature | Description |
-|------------------|-------------|
-| `GameReminderEvent(UUID gameId, NotificationType type)` | Constructs a new `GameReminderEvent` with the specified game ID and notification type. |
-
-### Accessor Methods
-
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `gameId()` | `UUID` | Returns the unique identifier of the game associated with this reminder event. |
-| `type()` | `NotificationType` | Returns the type of notification for this reminder event. |
-
-## Parameters
-
-The constructor of the `GameReminderEvent` class takes the following parameters:
-
-| Parameter | Type | Description |
+| Component | Type | Description |
 |-----------|------|-------------|
-| `gameId`  | `UUID` | The unique identifier of the game for which the reminder is set. |
-| `type`    | `NotificationType` | The type of notification to be sent for the game reminder. |
+| `gameId` | `UUID` | The unique identifier of the game for which the reminder is being sent. |
+| `type` | `NotificationType` | The type of notification to be dispatched (e.g., push, email, in-app). |
 
-## Return Types
+## Usage Example
 
-The accessor methods return the following types:
+```java
+import com.upmatches.app.features.notification.enums.NotificationType;
+import java.util.UUID;
 
-- `UUID`: Represents the unique identifier of the game.
-- `NotificationType`: Enum representing the type of notification.
+// Create a new GameReminderEvent
+UUID gameId = UUID.randomUUID();
+GameReminderEvent event = new GameReminderEvent(gameId, NotificationType.PUSH);
+
+// Access the components
+System.out.println("Game ID: " + event.gameId());
+System.out.println("Notification Type: " + event.type());
+```
+
+## Notes
+
+- The `NotificationType` enum is defined in the `com.upmatches.app.features.notification.enums` package and contains the possible notification types (e.g., `PUSH`, `EMAIL`, `IN_APP`).
+- As a record, `GameReminderEvent` automatically provides `equals()`, `hashCode()`, `toString()`, and accessor methods (`gameId()`, `type()`).
+- This class is immutable and thread-safe by design.

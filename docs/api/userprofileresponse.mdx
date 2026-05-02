@@ -1,42 +1,71 @@
 ---
 id: user-profile-response
-title: UserProfileResponse Class
+title: UserProfileResponse
 sidebar_label: UserProfileResponse
 ---
 
-## Overview
+# UserProfileResponse
 
-The `UserProfileResponse` class is a Java record that encapsulates the response structure for a user's profile in the application. It aggregates various user-related data, including authentication details, contact methods, skill levels, and game participation statistics. This class is designed to be immutable and provides a static method to create an instance from a `User` entity.
+The `UserProfileResponse` record is a Data Transfer Object (DTO) used to represent a user's profile information in API responses. It encapsulates all relevant user data, including authentication provider details, contact methods, skill levels, and gaming statistics, ensuring a consistent and secure data structure for client-server communication.
+
+## Purpose
+
+This record serves as the response model for user profile endpoints. It transforms a `User` entity into a flat, serializable format suitable for JSON responses, while also computing derived fields such as the authentication provider and aggregated contact methods.
+
+## Record Components
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | `UUID` | Unique identifier for the user |
+| `authProvider` | `String` | Authentication provider (e.g., "singpass", "apple", "auth0") |
+| `providerUuid` | `String` | Unique identifier from the authentication provider |
+| `name` | `String` | User's display name |
+| `contactMethods` | `List<ContactMethod>` | List of available contact methods (WhatsApp, Telegram, Messenger) |
+| `skillLevels` | `List<SkillLevelResponse>` | User's associated skill levels |
+| `hasCompletedOnboarding` | `Boolean` | Whether the user has completed the onboarding process |
+| `totalGamesJoined` | `Long` | Total number of games the user has joined |
+| `totalGamesHosted` | `Long` | Total number of games the user has hosted |
+| `penaltyPoints` | `Integer` | Accumulated penalty points for the user |
+| `avatarUrl` | `String` | URL to the user's avatar image |
+| `canCreateGame` | `Boolean` | Whether the user is allowed to create new games |
 
 ## Public Methods
 
-### `fromUser`
+### `fromUser(User user, long totalGamesJoined, long totalGamesHosted)`
 
-The `fromUser` method is a static factory method that constructs a `UserProfileResponse` object from a `User` entity. It gathers necessary information such as contact methods, authentication provider details, and skill levels to populate the response object.
+Creates a `UserProfileResponse` instance from a `User` entity and aggregated game statistics.
 
-| Parameter         | Type      | Description                                                                 |
-|-------------------|-----------|-----------------------------------------------------------------------------|
-| `user`            | `User`    | The user entity from which to create the profile response.                  |
-| `totalGamesJoined`| `long`    | The total number of games the user has joined.                              |
-| `totalGamesHosted`| `long`    | The total number of games the user has hosted.                              |
+**Parameters:**
 
-| Return Type             | Description                                                                 |
-|-------------------------|-----------------------------------------------------------------------------|
-| `UserProfileResponse`   | A new instance of `UserProfileResponse` populated with data from the `User`. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `user` | `User` | The user entity to convert |
+| `totalGamesJoined` | `long` | Total number of games the user has joined |
+| `totalGamesHosted` | `long` | Total number of games the user has hosted |
 
-## Fields
+**Returns:** `UserProfileResponse` - A new instance populated with data from the provided user entity.
 
-The `UserProfileResponse` record contains the following fields:
+**Behavior:**
+- Builds a list of `ContactMethod` objects from non-null contact fields (WhatsApp, Telegram, Messenger)
+- Determines the authentication provider based on priority: Singpass > Apple > Auth0
+- Maps the user's `UserSkillLevel` entities to `SkillLevelResponse` objects
+- Copies all remaining fields directly from the `User` entity
 
-- `UUID userId`: The unique identifier for the user.
-- `String authProvider`: The authentication provider used by the user (e.g., "singpass", "apple", "auth0").
-- `String providerUuid`: The unique identifier provided by the authentication provider.
-- `String name`: The name of the user.
-- `List<ContactMethod> contactMethods`: A list of contact methods associated with the user.
-- `List<SkillLevelResponse> skillLevels`: A list of skill levels associated with the user.
-- `Boolean hasCompletedOnboarding`: Indicates whether the user has completed the onboarding process.
-- `Long totalGamesJoined`: The total number of games the user has joined.
-- `Long totalGamesHosted`: The total number of games the user has hosted.
-- `Integer penaltyPoints`: The penalty points accumulated by the user.
-- `String avatarUrl`: The URL of the user's avatar image.
-- `Boolean canCreateGame`: Indicates whether the user has the permission to create a game.
+## Usage Example
+
+```java
+// Assuming 'user' is a User entity retrieved from the database
+UserProfileResponse profile = UserProfileResponse.fromUser(user, 15L, 8L);
+
+// Access fields
+UUID id = profile.userId();
+String provider = profile.authProvider();
+List<ContactMethod> contacts = profile.contactMethods();
+```
+
+## Notes
+
+- The record is immutable by design, ensuring thread safety and data integrity
+- Contact methods are only included if they are non-null in the user entity
+- The authentication provider is determined by a priority chain: Singpass takes precedence over Apple, which takes precedence over Auth0
+- Skill levels are transformed from the intermediate `UserSkillLevel` entity to the response-friendly `SkillLevelResponse` format

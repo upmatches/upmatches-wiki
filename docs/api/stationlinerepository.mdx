@@ -4,26 +4,75 @@ title: StationLineRepository
 sidebar_label: StationLineRepository
 ---
 
-import com.upmatches.app.features.venue.entities.StationLine;
-import com.upmatches.app.features.venue.entities.StationLineId;
-import org.springframework.data.jpa.repository.JpaRepository;
+# StationLineRepository
 
-## Purpose of the Class
+The `StationLineRepository` interface provides database access operations for the `StationLine` entity. It extends Spring Data JPA's `JpaRepository`, which automatically provides standard CRUD (Create, Read, Update, Delete) functionality without requiring any implementation code.
 
-The `StationLineRepository` interface is a part of the data access layer in a Java application using Spring Data JPA. It extends the `JpaRepository` interface, which provides CRUD (Create, Read, Update, Delete) operations for the `StationLine` entity. This repository is responsible for interacting with the database to perform operations on `StationLine` entities, identified by their `StationLineId`.
+## Purpose
 
-By extending `JpaRepository`, `StationLineRepository` inherits several methods for working with `StationLine` persistence, including methods for saving, deleting, and finding `StationLine` entities.
+This repository serves as the data access layer for managing station line records in the venue management system. By extending `JpaRepository<StationLine, StationLineId>`, it inherits a comprehensive set of methods for interacting with the `StationLine` entity in the database, using `StationLineId` as the composite primary key type.
 
-## Public Methods
+## Key Features
 
-The `StationLineRepository` interface inherits several methods from the `JpaRepository`. Below is a table documenting these methods, their parameters, and return types:
+- **Automatic CRUD Operations**: Inherits standard methods like `save()`, `findById()`, `findAll()`, `deleteById()`, and `count()` from `JpaRepository`
+- **Composite Primary Key Support**: Works with `StationLineId` as the entity's composite key type
+- **No Boilerplate Code**: Eliminates the need for manual implementation of basic database operations
+- **Spring Data Integration**: Leverages Spring Data JPA's powerful repository abstraction
 
-| Method Signature | Parameters | Return Type | Description |
-|------------------|------------|-------------|-------------|
-| `save(S entity)` | `entity`: The `StationLine` entity to be saved or updated. | `S` | Saves a given `StationLine` entity. |
-| `findById(ID id)` | `id`: The `StationLineId` of the entity to be retrieved. | `Optional<StationLine>` | Retrieves an entity by its id. |
-| `findAll()` | None | `List<StationLine>` | Returns all instances of the `StationLine` type. |
-| `deleteById(ID id)` | `id`: The `StationLineId` of the entity to be deleted. | `void` | Deletes the entity with the given id. |
-| `delete(S entity)` | `entity`: The `StationLine` entity to be deleted. | `void` | Deletes a given `StationLine` entity. |
+## Inherited Methods
 
-These methods are part of the standard operations provided by Spring Data JPA, allowing for efficient database interactions without requiring boilerplate code.
+The following table lists the most commonly used methods inherited from `JpaRepository`:
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `save(S entity)` | `S` | Saves a given entity (insert or update) |
+| `saveAll(Iterable<S> entities)` | `List<S>` | Saves all given entities |
+| `findById(ID id)` | `Optional<T>` | Retrieves an entity by its primary key |
+| `findAll()` | `List<T>` | Returns all instances of the entity |
+| `findAllById(Iterable<ID> ids)` | `List<T>` | Returns all entities with the given IDs |
+| `count()` | `long` | Returns the number of entities |
+| `deleteById(ID id)` | `void` | Deletes an entity by its primary key |
+| `delete(T entity)` | `void` | Deletes a given entity |
+| `deleteAll()` | `void` | Deletes all entities managed by the repository |
+| `existsById(ID id)` | `boolean` | Returns whether an entity with the given ID exists |
+
+## Usage Example
+
+```java
+@Service
+public class StationLineService {
+    
+    private final StationLineRepository stationLineRepository;
+    
+    public StationLineService(StationLineRepository stationLineRepository) {
+        this.stationLineRepository = stationLineRepository;
+    }
+    
+    public StationLine createStationLine(StationLine stationLine) {
+        return stationLineRepository.save(stationLine);
+    }
+    
+    public Optional<StationLine> findStationLineById(StationLineId id) {
+        return stationLineRepository.findById(id);
+    }
+    
+    public List<StationLine> getAllStationLines() {
+        return stationLineRepository.findAll();
+    }
+    
+    public void deleteStationLine(StationLineId id) {
+        stationLineRepository.deleteById(id);
+    }
+}
+```
+
+## Dependencies
+
+- **Spring Data JPA**: Provides the `JpaRepository` interface and automatic implementation
+- **StationLine Entity**: The domain entity this repository manages
+- **StationLineId**: The composite primary key class for the `StationLine` entity
+
+## Notes
+
+- This repository is designed to work with a composite primary key (`StationLineId`), which typically consists of multiple fields that together uniquely identify a station line record
+- For custom query methods beyond the standard CRUD operations, additional methods can be added to this interface using Spring Data JPA's query derivation mechanism or `@Query` annotations

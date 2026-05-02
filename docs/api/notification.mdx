@@ -1,53 +1,88 @@
 ---
-id: notification
-title: Notification Class
+id: notification-entity
+title: Notification Entity
 sidebar_label: Notification
 ---
 
+# Notification Entity
+
+The `Notification` class is a JPA entity that represents a notification within the UpMatches application. It is mapped to the `notifications` database table and is responsible for storing and managing notification data for users.
+
 ## Purpose
 
-The `Notification` class is an entity representing a notification within the application. It is designed to store and manage information about notifications sent to users. This class is mapped to a database table named `notifications` and includes various attributes such as the recipient, type, title, message, and read status of the notification.
+This entity serves as the core data model for the notification system. It captures all relevant information about a notification, including:
+- The recipient user
+- The type of notification
+- The notification content (title and message)
+- Optional resource references (e.g., a specific match or message)
+- Read status and timestamps
+
+The class provides factory methods for creating new notifications and a method to mark notifications as read.
+
+## Entity Details
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `UUID` | Primary key, auto-generated using UUID strategy |
+| `recipient` | `User` | The user who receives the notification (Many-to-One relationship) |
+| `type` | `NotificationType` | Enum indicating the notification type (stored as string) |
+| `title` | `String` | Short title of the notification (max 255 characters) |
+| `message` | `String` | Full notification message (TEXT column) |
+| `resourceType` | `String` | Optional type of the related resource (max 64 characters) |
+| `resourceId` | `UUID` | Optional ID of the related resource |
+| `isRead` | `Boolean` | Flag indicating whether the notification has been read |
+| `readAt` | `Instant` | Timestamp when the notification was read |
+| `createdAt` | `Instant` | Timestamp when the notification was created (non-updatable) |
 
 ## Public Methods
 
-The `Notification` class provides the following public methods:
+### `create(User recipient, NotificationType type, String title, String message, String resourceType, UUID resourceId)`
 
-### `create`
-
-Creates a new `Notification` instance with the specified parameters.
-
-| Parameter     | Type               | Description                                      |
-|---------------|--------------------|--------------------------------------------------|
-| `recipient`   | `User`             | The user who will receive the notification.      |
-| `type`        | `NotificationType` | The type of the notification.                    |
-| `title`       | `String`           | The title of the notification.                   |
-| `message`     | `String`           | The message content of the notification.         |
-| `resourceType`| `String`           | The type of resource associated with the notification. |
-| `resourceId`  | `UUID`             | The ID of the resource associated with the notification. |
-
-**Returns:** `Notification` - A new instance of the `Notification` class.
-
-### `markRead`
-
-Marks the notification as read and sets the read timestamp.
+Static factory method to create a new `Notification` instance.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| *(none)*  |      |             |
+| `recipient` | `User` | The user who will receive the notification |
+| `type` | `NotificationType` | The type of notification |
+| `title` | `String` | The notification title |
+| `message` | `String` | The notification message body |
+| `resourceType` | `String` | Optional type of the related resource (can be null) |
+| `resourceId` | `UUID` | Optional ID of the related resource (can be null) |
 
-**Returns:** `void` - This method does not return a value.
+**Returns:** `Notification` - A new notification instance with `isRead` set to `false`.
 
-## Attributes
+### `markRead()`
 
-The `Notification` class includes the following attributes:
+Marks the notification as read. If the notification is already marked as read, this method does nothing. When called, it sets `isRead` to `true` and records the current timestamp in `readAt`.
 
-- `id`: `UUID` - The unique identifier for the notification.
-- `recipient`: `User` - The user who receives the notification.
-- `type`: `NotificationType` - The type of the notification.
-- `title`: `String` - The title of the notification.
-- `message`: `String` - The message content of the notification.
-- `resourceType`: `String` - The type of resource associated with the notification.
-- `resourceId`: `UUID` - The ID of the resource associated with the notification.
-- `isRead`: `Boolean` - Indicates whether the notification has been read.
-- `readAt`: `Instant` - The timestamp when the notification was marked as read.
-- `createdAt`: `Instant` - The timestamp when the notification was created.
+**Parameters:** None
+
+**Returns:** `void`
+
+## Lifecycle Callbacks
+
+### `onCreate()`
+
+A `@PrePersist` callback that automatically sets the `createdAt` timestamp to the current time and initializes `isRead` to `false` if it is null. This ensures that every notification has a creation timestamp and a default read status before being persisted to the database.
+
+## Usage Example
+
+```java
+// Create a new notification
+User recipient = userRepository.findById(userId).orElseThrow();
+Notification notification = Notification.create(
+    recipient,
+    NotificationType.MATCH,
+    "New Match!",
+    "You have a new match with Sarah.",
+    "match",
+    matchId
+);
+
+// Save the notification
+notificationRepository.save(notification);
+
+// Later, mark it as read
+notification.markRead();
+notificationRepository.save(notification);
+```

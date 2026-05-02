@@ -1,49 +1,112 @@
 ---
 id: email-content-renderer
-title: EmailContentRenderer Class
+title: EmailContentRenderer
 sidebar_label: EmailContentRenderer
 ---
 
-## Purpose of the `EmailContentRenderer` Class
+# EmailContentRenderer
 
-The `EmailContentRenderer` class is a utility class designed to generate HTML content for email notifications. It provides methods to wrap content in a styled HTML template, create call-to-action buttons, and build detailed tables for notification emails. This class is particularly useful for rendering consistent and styled email content for different types of notifications within the application.
+The `EmailContentRenderer` class is a utility for generating HTML email content for the Upmatches application. It provides methods to create structured email bodies with consistent styling, including title, body text, details tables, and call-to-action buttons.
+
+This class is designed to work with `NotificationType` and `EmailContext` objects to produce context-aware email content, such as game reminders and other notifications.
+
+## Features
+
+- Generates HTML email content with a consistent wrapper template
+- Creates styled details tables for notification data
+- Builds call-to-action buttons with customizable URLs
+- Supports different notification types with varying detail requirements
+- Escapes HTML to prevent XSS vulnerabilities
+- Formats dates and times in a human-readable format (English locale)
 
 ## Public Methods
 
-### `wrap`
+### `wrap(String title, String body, String detailsHtml, String ctaHtml)`
 
-Wraps the provided title, body, details, and call-to-action HTML into a styled email template.
+Generates a complete HTML email body wrapped in a styled container.
 
-| Parameter   | Type   | Description                                      |
-|-------------|--------|--------------------------------------------------|
-| `title`     | String | The title of the email.                          |
-| `body`      | String | The main body content of the email.              |
-| `detailsHtml` | String | The HTML content for additional details.        |
-| `ctaHtml`   | String | The HTML content for the call-to-action button.  |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `title` | `String` | The email title (will be HTML-escaped) |
+| `body` | `String` | The email body text (will be HTML-escaped) |
+| `detailsHtml` | `String` | Pre-rendered HTML for the details section (optional) |
+| `ctaHtml` | `String` | Pre-rendered HTML for the call-to-action button (optional) |
 
-**Returns:** `String` - The complete HTML content wrapped in a styled template.
+**Returns:** `String` - The complete HTML email content.
 
-### `buildCtaButton`
+**Example:**
+```java
+String emailHtml = EmailContentRenderer.wrap(
+    "Game Reminder",
+    "Your game is coming up soon!",
+    detailsTableHtml,
+    ctaButtonHtml
+);
+```
 
-Creates an HTML call-to-action button linking to a specified game URL.
+### `buildCtaButton(String gameUrl)`
 
-| Parameter | Type   | Description                         |
-|-----------|--------|-------------------------------------|
-| `gameUrl` | String | The URL to be linked by the button. |
+Creates an HTML call-to-action button linking to a game page.
 
-**Returns:** `String` - The HTML for the call-to-action button, or an empty string if the URL is null or blank.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `gameUrl` | `String` | The URL for the game (will be HTML-escaped) |
 
-### `buildDetailsTable`
+**Returns:** `String` - HTML for a styled button link, or empty string if URL is null/blank.
 
-Generates an HTML table with details based on the notification type and context.
+**Example:**
+```java
+String buttonHtml = EmailContentRenderer.buildCtaButton("https://upmatches.com/game/123");
+```
 
-| Parameter  | Type             | Description                                      |
-|------------|------------------|--------------------------------------------------|
-| `type`     | NotificationType | The type of notification to determine table content. |
-| `context`  | EmailContext     | The context containing details for the email.    |
+### `buildDetailsTable(NotificationType type, EmailContext context)`
 
-**Returns:** `String` - The HTML for the details table, or an empty string if the type or context is null.
+Generates an HTML table with notification-specific details based on the notification type.
 
-## Usage
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The type of notification (determines which fields to display) |
+| `context` | `EmailContext` | The context object containing notification data |
 
-The `EmailContentRenderer` class is used to create consistent and styled email content for notifications. It ensures that all emails have a uniform look and feel, and it simplifies the process of generating complex HTML structures for email content.
+**Returns:** `String` - HTML table with details rows, or empty string if type or context is null.
+
+**Behavior by Notification Type:**
+
+- **GAME_REMINDER_3_DAYS**: Displays only Date and Courts fields
+- **All other types**: Displays Game, Venue, Date, Time, and Skill level fields
+
+**Example:**
+```java
+EmailContext context = new EmailContext(
+    "Soccer Match",
+    "Central Park",
+    LocalDate.of(2024, 3, 15),
+    LocalTime.of(14, 0),
+    LocalTime.of(16, 0),
+    "Intermediate",
+    2
+);
+String detailsHtml = EmailContentRenderer.buildDetailsTable(
+    NotificationType.GAME_INVITATION,
+    context
+);
+```
+
+## Private Helper Methods
+
+The class includes several private methods for internal formatting:
+
+- `formatDate(LocalDate date)` - Formats a date as "Thursday, 15 March 2024"
+- `formatTimeRange(LocalTime startTime, LocalTime endTime)` - Formats time range as "2:00 PM – 4:00 PM"
+- `formatCourts(Integer count)` - Formats court count as "2 courts" or "1 court"
+- `appendRowIfPresent(StringBuilder rows, String label, String value)` - Adds a table row if the value is non-null and non-blank
+- `appendRow(StringBuilder rows, String label, String value)` - Adds a table row with HTML-escaped label and value
+
+## Usage Notes
+
+- All user-provided strings are HTML-escaped to prevent XSS attacks
+- The class is designed as a utility with a private constructor and static methods
+- The email wrapper includes a footer with "Sent by Upmatches." text
+- The CTA button uses a blue (#1a73e8) background with white text
+- Details tables have a light gray (#f6f7f9) background for labels and white for values
+- The class uses English locale for date and time formatting

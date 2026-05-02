@@ -1,32 +1,66 @@
 ---
 id: create-game-request
-title: CreateGameRequest Class
+title: CreateGameRequest
 sidebar_label: CreateGameRequest
 ---
 
+# CreateGameRequest
+
+The `CreateGameRequest` record is a Java DTO (Data Transfer Object) used to encapsulate all the necessary data for creating a new game in the UpMatches application. It leverages Jakarta Bean Validation annotations to enforce data integrity and business rules before the request is processed.
+
+This record is immutable, thread-safe, and automatically provides `equals()`, `hashCode()`, `toString()`, and a canonical constructor.
+
 ## Purpose
 
-The `CreateGameRequest` class is a Java record used to encapsulate the data required to create a new game request within the application. It ensures that all necessary fields are provided and validated according to specified constraints. This class is part of the `com.upmatches.app.features.game.requests` package and utilizes various validation annotations to enforce data integrity.
+- **Data Transfer**: Carries game creation data from the API layer to the service layer.
+- **Validation**: Ensures all required fields are present and conform to expected formats and constraints.
+- **Type Safety**: Uses enums (`GameType`, `GameVisibility`) and specific types (`UUID`, `BigDecimal`, `Instant`) to prevent invalid data.
 
-## Public Methods
+## Record Components
 
-Since `CreateGameRequest` is a record, it automatically provides a constructor, accessor methods, `equals()`, `hashCode()`, and `toString()` methods. Below is a table documenting the parameters of the record:
+| Component | Type | Validation | Description |
+|-----------|------|------------|-------------|
+| `activityId` | `UUID` | `@NotNull` | The unique identifier of the activity associated with the game. |
+| `venueId` | `Long` | `@NotNull` | The unique identifier of the venue where the game will take place. |
+| `skillLevelFromId` | `Long` | `@NotNull` | The minimum skill level required to join the game. |
+| `skillLevelToId` | `Long` | `@NotNull` | The maximum skill level allowed to join the game. |
+| `currency` | `String` | `@NotNull`, `@Pattern(regexp = "^[A-Z]{3}$")` | ISO-4217 three-letter currency code (e.g., "USD", "EUR"). |
+| `price` | `BigDecimal` | `@NotNull`, `@DecimalMin("0.00")`, `@Digits(integer = 8, fraction = 2)` | The price of the game, with up to 8 integer digits and 2 decimal places. |
+| `pricing` | `PricingRequest` | `@Valid` | An optional nested pricing configuration object (validated recursively). |
+| `slots` | `Integer` | `@NotNull`, `@Min(1)`, `@Max(100)` | The number of available slots for participants (1–100). |
+| `startTime` | `Instant` | `@NotNull` | The start time of the game (UTC). |
+| `endTime` | `Instant` | `@NotNull` | The end time of the game (UTC). |
+| `visibility` | `GameVisibility` | `@NotNull` | The visibility setting for the game (e.g., PUBLIC, PRIVATE). |
+| `gameType` | `GameType` | `@NotNull` | The type of game (e.g., SINGLE, TEAM, TOURNAMENT). |
+| `joinAsOrganizer` | `Boolean` | None | Optional flag indicating whether the creator should join as an organizer. |
+| `remark` | `String` | `@Size(max = 500)` | Optional remark or note about the game (max 500 characters). |
 
-| Parameter         | Type           | Description                                                                                     |
-|-------------------|----------------|-------------------------------------------------------------------------------------------------|
-| `activityId`      | `UUID`         | Unique identifier for the activity. Must not be null.                                           |
-| `venueId`         | `Long`         | Unique identifier for the venue. Must not be null.                                              |
-| `skillLevelFromId`| `Long`         | Identifier for the starting skill level. Must not be null.                                      |
-| `skillLevelToId`  | `Long`         | Identifier for the ending skill level. Must not be null.                                        |
-| `currency`        | `String`       | Currency code in 3-letter ISO-4217 format. Must not be null and must match the pattern.         |
-| `price`           | `BigDecimal`   | Price of the game. Must not be null, must be >= 0, and have at most 8 digits and 2 decimals.    |
-| `pricing`         | `PricingRequest`| Pricing details. Must be valid if provided.                                                    |
-| `slots`           | `Integer`      | Number of slots available. Must not be null, must be between 1 and 100 inclusive.               |
-| `startTime`       | `Instant`      | Start time of the game. Must not be null.                                                       |
-| `endTime`         | `Instant`      | End time of the game. Must not be null.                                                         |
-| `visibility`      | `GameVisibility`| Visibility setting for the game. Must not be null.                                             |
-| `gameType`        | `GameType`     | Type of the game. Must not be null.                                                             |
-| `joinAsOrganizer` | `Boolean`      | Indicates if the requester wants to join as an organizer.                                       |
-| `remark`          | `String`       | Additional remarks about the game. Must be at most 500 characters.                              |
+## Usage Example
 
-This class leverages Java's record feature to provide a concise and immutable data structure, ensuring that all fields are initialized and validated upon creation.
+```java
+CreateGameRequest request = new CreateGameRequest(
+    UUID.fromString("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+    42L,
+    1L,
+    5L,
+    "USD",
+    new BigDecimal("25.00"),
+    null,
+    20,
+    Instant.parse("2025-06-15T14:00:00Z"),
+    Instant.parse("2025-06-15T16:00:00Z"),
+    GameVisibility.PUBLIC,
+    GameType.SINGLE,
+    true,
+    "Bring your own equipment."
+);
+```
+
+## Validation Summary
+
+- All fields except `pricing`, `joinAsOrganizer`, and `remark` are **required** (`@NotNull`).
+- `currency` must be exactly three uppercase letters.
+- `price` must be non-negative, with up to 8 integer digits and 2 decimal places.
+- `slots` must be between 1 and 100.
+- `remark` is optional but limited to 500 characters.
+- `pricing` is validated recursively via `@Valid`.

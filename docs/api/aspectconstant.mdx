@@ -1,41 +1,111 @@
 ---
 id: aspect-constant
-title: AspectConstant Class
+title: AspectConstant
 sidebar_label: AspectConstant
 ---
 
+# AspectConstant
+
+The `AspectConstant` class is a utility class that provides a centralized repository of constants used across the application's logging and monitoring aspects. It is designed to be used with Spring AOP (Aspect-Oriented Programming) to standardize logging, metrics, and performance monitoring across different components such as controllers and services.
+
 ## Purpose
 
-The `AspectConstant` class is a utility class that defines a set of constants used for logging and monitoring method execution within an application. These constants are primarily used for managing logging contexts, defining metric names, and constructing log messages related to method execution performance and status.
+This class serves as a single source of truth for:
+- **Performance thresholds**: Defines the threshold for slow method execution detection
+- **MDC (Mapped Diagnostic Context) keys**: Standardizes keys used for logging context
+- **Metric definitions**: Provides consistent naming and tagging for application metrics
+- **Status indicators**: Defines success and failure status constants
+- **Log message templates**: Predefined log message formats for consistent logging
 
-This class is designed to be non-instantiable and provides a centralized location for constants that are used across different components of the application, such as controllers and services.
+## Constants
 
-## Public Constants
+### Performance Threshold
 
-The `AspectConstant` class contains several public static final constants. Below is a table documenting each constant, its type, and its purpose:
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `SLOW_EXECUTION_THRESHOLD_MS` | `long` | `1000` | Threshold in milliseconds for considering a method execution as slow |
 
-| Constant Name                  | Type   | Description                                                                 |
-|--------------------------------|--------|-----------------------------------------------------------------------------|
-| `SLOW_EXECUTION_THRESHOLD_MS`  | `long` | Threshold in milliseconds to determine if a method execution is considered slow. |
-| `MDC_REQUEST_ID`               | `String` | Key for storing the request ID in the MDC (Mapped Diagnostic Context).      |
-| `MDC_METHOD`                   | `String` | Key for storing the method name in the MDC.                                 |
-| `MDC_HTTP_METHOD`              | `String` | Key for storing the HTTP method in the MDC.                                 |
-| `MDC_ENDPOINT`                 | `String` | Key for storing the endpoint in the MDC.                                    |
-| `STATUS_TAG`                   | `String` | Tag used to represent the status of an operation.                           |
-| `COMPONENT_CONTROLLER`         | `String` | Tag used to represent the controller component in metrics.                  |
-| `COMPONENT_SERVICE`            | `String` | Tag used to represent the service component in metrics.                     |
-| `METRIC_NAME`                  | `String` | Name of the metric for method execution.                                    |
-| `METRIC_TAG_COMPONENT`         | `String` | Tag used to represent the component in metrics.                             |
-| `STATUS_FAILURE`               | `String` | Status value indicating a failure.                                          |
-| `STATUS_SUCCESS`               | `String` | Status value indicating success.                                            |
-| `REQUEST_ID_SEPARATOR`         | `String` | Separator used in request IDs.                                              |
-| `LOG_METHOD_SLOW`              | `String` | Log message template for slow method execution.                             |
-| `LOG_METHOD_SUCCESS`           | `String` | Log message template for successful method execution.                       |
-| `LOG_METHOD_FAILURE`           | `String` | Log message template for failed method execution.                           |
+### MDC Keys
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `MDC_REQUEST_ID` | `String` | `"requestId"` | Key for storing request identifier in MDC |
+| `MDC_METHOD` | `String` | `"method"` | Key for storing method name in MDC |
+| `MDC_HTTP_METHOD` | `String` | `"httpMethod"` | Key for storing HTTP method in MDC |
+| `MDC_ENDPOINT` | `String` | `"endpoint"` | Key for storing endpoint path in MDC |
+
+### Component Types
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `COMPONENT_CONTROLLER` | `String` | `"controller"` | Identifier for controller components |
+| `COMPONENT_SERVICE` | `String` | `"service"` | Identifier for service components |
+
+### Metric Definitions
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `METRIC_NAME` | `String` | `"app.method.execution"` | Base name for method execution metrics |
+| `METRIC_TAG_COMPONENT` | `String` | `"component"` | Tag name for component type in metrics |
+
+### Status Indicators
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `STATUS_TAG` | `String` | `"status"` | Tag name for execution status |
+| `STATUS_FAILURE` | `String` | `"failure"` | Value indicating failed execution |
+| `STATUS_SUCCESS` | `String` | `"success"` | Value indicating successful execution |
+
+### Utility Constants
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `REQUEST_ID_SEPARATOR` | `String` | `"-"` | Separator used in request ID generation |
+
+### Log Message Templates
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `LOG_METHOD_SLOW` | `String` | `"Method {} executed slowly in {} ms"` | Template for slow method execution logs |
+| `LOG_METHOD_SUCCESS` | `String` | `"Method {} executed successfully in {} ms"` | Template for successful method execution logs |
+| `LOG_METHOD_FAILURE` | `String` | `"Method {} failed in {} ms with {}: {}"` | Template for failed method execution logs |
 
 ## Constructor
 
-The `AspectConstant` class has a private constructor to prevent instantiation:
+The class has a private constructor that throws an `AssertionError` to prevent instantiation, as this is a utility class designed to be used statically.
 
-- **Constructor:** `private AspectConstant()`
-  - **Description:** Throws an `AssertionError` to prevent instantiation of the class, as it is intended to be used only for its constants.
+```java
+private AspectConstant() {
+    throw new AssertionError();
+}
+```
+
+## Usage Example
+
+These constants are typically used in AOP aspects for logging and monitoring:
+
+```java
+@Around("@annotation(LogExecutionTime)")
+public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+    long start = System.currentTimeMillis();
+    String methodName = joinPoint.getSignature().getName();
+    
+    try {
+        Object result = joinPoint.proceed();
+        long executionTime = System.currentTimeMillis() - start;
+        
+        if (executionTime > AspectConstant.SLOW_EXECUTION_THRESHOLD_MS) {
+            logger.warn(AspectConstant.LOG_METHOD_SLOW, methodName, executionTime);
+        } else {
+            logger.info(AspectConstant.LOG_METHOD_SUCCESS, methodName, executionTime);
+        }
+        
+        return result;
+    } catch (Exception e) {
+        long executionTime = System.currentTimeMillis() - start;
+        logger.error(AspectConstant.LOG_METHOD_FAILURE, methodName, executionTime, 
+                     e.getClass().getSimpleName(), e.getMessage());
+        throw e;
+    }
+}
+```

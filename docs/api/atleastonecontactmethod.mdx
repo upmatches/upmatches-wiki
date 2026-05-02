@@ -4,20 +4,59 @@ title: AtLeastOneContactMethod Annotation
 sidebar_label: AtLeastOneContactMethod
 ---
 
+# AtLeastOneContactMethod Annotation
+
 ## Purpose
 
-The `AtLeastOneContactMethod` annotation is a custom validation annotation used in Java applications to ensure that at least one contact method is provided. This annotation can be applied to fields within a class to enforce that the field meets the specified validation criteria. It is part of the `com.upmatches.app.features.user.validators` package and relies on the `AtLeastOneContactMethodValidator` class to perform the actual validation logic.
+The `AtLeastOneContactMethod` annotation is a custom Jakarta Bean Validation constraint used to ensure that at least one contact method (such as email, phone, or social media handle) is provided for a user entity. This annotation is applied at the field level and triggers validation logic defined in the associated `AtLeastOneContactMethodValidator` class.
 
-## Public Methods
+This annotation is particularly useful in user registration or profile update scenarios where you want to guarantee that users provide at least one way to be contacted, without mandating a specific contact method.
 
-The `AtLeastOneContactMethod` annotation provides the following public methods:
+## Annotation Details
 
-| Method Signature | Description |
-|------------------|-------------|
-| `String message() default AtLeastOneContactMethodValidator.DEFAULT_VALIDATION_MESSAGE;` | Returns the default validation message that will be used if the validation fails. |
-| `Class<?>[] groups() default { };` | Allows the specification of validation groups, which can be used to restrict the set of constraints applied during validation. |
-| `Class<? extends Payload>[] payload() default { };` | Can be used by clients of the Bean Validation API to assign custom payload objects to a constraint. |
+| Attribute | Value |
+|-----------|-------|
+| **Package** | `com.upmatches.app.features.user.validators` |
+| **Target** | Field-level (`ElementType.FIELD`) |
+| **Retention** | Runtime (`RetentionPolicy.RUNTIME`) |
+| **Constraint Validator** | `AtLeastOneContactMethodValidator` |
+| **Default Message** | Defined in `AtLeastOneContactMethodValidator.DEFAULT_VALIDATION_MESSAGE` |
 
-## Usage
+## Public API
 
-To use the `AtLeastOneContactMethod` annotation, apply it to a field within a class where you want to ensure that at least one contact method is provided. The annotation will trigger the associated validator to check the field's value and enforce the validation rule.
+### Annotation Attributes
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `message` | `String` | `AtLeastOneContactMethodValidator.DEFAULT_VALIDATION_MESSAGE` | The validation error message to display when the constraint is violated |
+| `groups` | `Class<?>[]` | `{}` | Allows specifying validation groups for partial validation |
+| `payload` | `Class<? extends Payload>[]` | `{}` | Used by clients to assign custom payload objects to a constraint |
+
+## Usage Example
+
+```java
+import com.upmatches.app.features.user.validators.AtLeastOneContactMethod;
+
+public class UserProfile {
+
+    @AtLeastOneContactMethod
+    private ContactInfo contactInfo;
+
+    // getters and setters
+}
+```
+
+## Validation Behavior
+
+The annotation delegates validation to the `AtLeastOneContactMethodValidator` class, which implements `ConstraintValidator<AtLeastOneContactMethod, ContactInfo>`. The validator checks that at least one contact method (e.g., email, phone number, or social media handle) is non-null and non-empty within the annotated `ContactInfo` object.
+
+## Dependencies
+
+- **Jakarta Bean Validation API** (e.g., `jakarta.validation-api`)
+- **Hibernate Validator** or any other Bean Validation implementation
+
+## Notes
+
+- The annotation is documented (`@Documented`) so it appears in generated JavaDoc.
+- The default validation message is centralized in the validator class for consistency.
+- This annotation is designed to work with a `ContactInfo` class that contains multiple contact method fields.

@@ -1,39 +1,97 @@
 ---
 id: dev-token-page-renderer
-title: DevTokenPageRenderer Class
+title: DevTokenPageRenderer
 sidebar_label: DevTokenPageRenderer
 ---
 
-## Purpose of the Class
+# DevTokenPageRenderer
 
-The `DevTokenPageRenderer` class is a service component in a Spring application that generates an HTML page for displaying development tokens. It is primarily used in development environments to facilitate the testing of authentication flows by rendering access and refresh tokens along with additional metadata. The class ensures that the token page is only accessible from a predefined set of allowed hosts and provides a user-friendly interface for copying tokens and viewing mobile deep links.
+The `DevTokenPageRenderer` class is a Spring `@Service` that renders an HTML page for development purposes. It is part of the authentication services in the Upmatches application and is used to display authentication tokens (access and refresh tokens) in a user-friendly HTML format during development.
 
-## Public Methods
+This service is only active when the application is running in development mode (`MOCKPASS_DEV_MODE=true`). It provides a visual callback page that developers can use to inspect tokens and test authentication flows without needing a real mobile client.
 
-### `isEnabledFor`
+## Purpose
 
-Determines if the token page rendering is enabled for a given HTTP request based on the host.
+- **Development Tool**: Provides a visual representation of authentication tokens during development
+- **Token Display**: Renders access tokens, refresh tokens, and expiration times in an HTML page
+- **Host Restriction**: Only serves the token page from allowed hosts (localhost, 127.0.0.1, etc.)
+- **Mobile Simulation**: Simulates mobile deep links for testing purposes
 
-| Parameter | Type                      | Description                                  |
-|-----------|---------------------------|----------------------------------------------|
-| request   | `HttpServletRequest`      | The HTTP request to check against allowed hosts. |
+## Configuration
 
-| Return Type | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `boolean`   | Returns `true` if the token page is enabled for the request's host; otherwise, `false`. |
+The class uses `AuthDevProperties` for configuration, which includes:
+- `tokenPageEnabled`: Boolean flag to enable/disable the token page
+- `tokenPageAllowedHosts`: Additional hosts allowed to access the token page
 
-### `render`
+## Default Allowed Hosts
 
-Generates an HTML page containing the access token, refresh token, expiration time, and a mobile deep link.
+| Host | Description |
+|------|-------------|
+| `localhost` | Standard localhost |
+| `127.0.0.1` | IPv4 loopback |
+| `[::1]` | IPv6 loopback |
+| `0:0:0:0:0:0:0:1` | IPv6 full notation |
 
-| Parameter         | Type       | Description                                                  |
-|-------------------|------------|--------------------------------------------------------------|
-| accessToken       | `String`   | The access token to display.                                 |
-| refreshToken      | `String`   | The refresh token to display.                                |
-| expiresAtUtc      | `Long`     | The expiration time in UTC epoch seconds.                    |
-| isNewUser         | `Boolean`  | Indicates if the user is new, affecting the display of a badge. |
-| mobileRedirectUrl | `String`   | The URL to which mobile clients would be redirected.         |
+## Methods
 
-| Return Type                | Description                                                                 |
-|----------------------------|-----------------------------------------------------------------------------|
-| `ResponseEntity<String>`   | Returns a `ResponseEntity` containing the HTML content of the token page.   |
+### `isEnabledFor(HttpServletRequest request)`
+
+Checks if the token page is enabled for the given request.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request |
+
+**Returns**: `boolean` - `true` if the token page is enabled and the request comes from an allowed host
+
+### `render(String accessToken, String refreshToken, Long expiresAtUtc, Boolean isNewUser, String mobileRedirectUrl)`
+
+Renders the HTML page with token information.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `accessToken` | `String` | The access token to display |
+| `refreshToken` | `String` | The refresh token to display |
+| `expiresAtUtc` | `Long` | Token expiration time in UTC epoch seconds |
+| `isNewUser` | `Boolean` | Whether this is a new user (shows "new user" badge) |
+| `mobileRedirectUrl` | `String` | The mobile deep link URL |
+
+**Returns**: `ResponseEntity<String>` - HTML response with content type `text/html`
+
+## HTML Page Features
+
+The rendered page includes:
+- **Title**: "Upmatches Dev Callback" with optional "new user" badge
+- **Note**: Indicates that the dev token page is active
+- **Access Token**: Read-only textarea with copy button
+- **Refresh Token**: Read-only textarea with copy button
+- **Expires At**: Display of expiration time in UTC epoch seconds
+- **Mobile Deep Link**: Clickable link for mobile testing
+- **Copy Functionality**: JavaScript-powered copy buttons with visual feedback
+
+## Usage Example
+
+```java
+@Autowired
+private DevTokenPageRenderer renderer;
+
+public ResponseEntity<String> handleCallback(HttpServletRequest request) {
+    if (renderer.isEnabledFor(request)) {
+        return renderer.render(
+            "access_token_here",
+            "refresh_token_here",
+            1234567890L,
+            true,
+            "upmatches://callback?token=abc"
+        );
+    }
+    // Handle non-development requests
+}
+```
+
+## Security Considerations
+
+- The token page is only accessible from allowed hosts (localhost and configured hosts)
+- All displayed values are HTML-escaped to prevent XSS attacks
+- The service is disabled by default and must be explicitly enabled via configuration
+- Tokens are displayed in read-only fields to prevent accidental modification

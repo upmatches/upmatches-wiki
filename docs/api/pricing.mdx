@@ -1,55 +1,110 @@
 ---
 id: pricing
-title: Pricing Class Documentation
+title: Pricing Record
 sidebar_label: Pricing
 ---
 
 ## Purpose
 
-The `Pricing` class is a value object representing different pricing strategies for a game. It supports three modes of pricing: flat, gendered, and shuttlecock. Each mode has specific requirements and constraints on the pricing fields. The class ensures that the pricing data is valid according to the selected mode and provides methods to create instances for each pricing strategy.
+The `Pricing` record is a value object that encapsulates different pricing models for a service or product. It supports three distinct pricing modes:
+
+- **Flat**: A single price for all users.
+- **Gendered**: Different prices for male and female users.
+- **Shuttlecock**: A base price plus a per-shuttle price.
+
+The record enforces strict validation rules to ensure that only the fields relevant to the selected pricing mode are populated, and that all monetary amounts are non-negative.
+
+## Constructor
+
+The canonical constructor performs the following validations:
+
+- `mode` and `currency` must not be `null`.
+- All `BigDecimal` fields must be non-negative (or `null`).
+- The combination of fields must be valid for the selected `PricingMode`:
+  - `FLAT`: requires `flatPrice`; all other price fields must be `null`.
+  - `GENDERED`: requires `malePrice` and `femalePrice`; `flatPrice`, `basePrice`, and `pricePerShuttle` must be `null`.
+  - `SHUTTLECOCK`: requires `basePrice` and `pricePerShuttle`; `flatPrice`, `malePrice`, and `femalePrice` must be `null`.
 
 ## Public Methods
 
-### `flat`
+### Static Factory Methods
 
-Creates a `Pricing` instance with a flat pricing mode.
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `flat` | `BigDecimal amount, Currency currency` | `Pricing` | Creates a `Pricing` instance with `FLAT` mode. |
+| `gendered` | `BigDecimal male, BigDecimal female, Currency currency` | `Pricing` | Creates a `Pricing` instance with `GENDERED` mode. |
+| `shuttlecock` | `BigDecimal base, BigDecimal perShuttle, Currency currency` | `Pricing` | Creates a `Pricing` instance with `SHUTTLECOCK` mode. |
 
-| Parameter | Type          | Description                      |
-|-----------|---------------|----------------------------------|
-| `amount`  | `BigDecimal`  | The flat price amount.           |
-| `currency`| `Currency`    | The currency for the pricing.    |
+### Instance Methods
 
-**Returns:** `Pricing` - A new `Pricing` instance with flat pricing mode.
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `representativeAmount()` | `BigDecimal` | Returns a single representative price for backward compatibility: <ul><li>`FLAT`: the flat price</li><li>`GENDERED`: the lower of male and female prices</li><li>`SHUTTLECOCK`: the base price</li></ul> |
+| `semanticEquals(Pricing other)` | `boolean` | Compares two `Pricing` instances using `BigDecimal.compareTo()` for scale-tolerant equality. This is useful when comparing values from different sources (e.g., API vs. database) where scale may differ. |
 
-### `gendered`
+## Record Components
 
-Creates a `Pricing` instance with a gendered pricing mode.
+| Component | Type | Description |
+|-----------|------|-------------|
+| `mode` | `PricingMode` | The pricing mode (FLAT, GENDERED, or SHUTTLECOCK). |
+| `currency` | `Currency` | The currency of all monetary amounts. |
+| `flatPrice` | `BigDecimal` | The flat price (used only in FLAT mode). |
+| `malePrice` | `BigDecimal` | The male price (used only in GENDERED mode). |
+| `femalePrice` | `BigDecimal` | The female price (used only in GENDERED mode). |
+| `basePrice` | `BigDecimal` | The base price (used only in SHUTTLECOCK mode). |
+| `pricePerShuttle` | `BigDecimal` | The price per shuttle (used only in SHUTTLECOCK mode). |
 
-| Parameter | Type          | Description                      |
-|-----------|---------------|----------------------------------|
-| `male`    | `BigDecimal`  | The price for male participants. |
-| `female`  | `BigDecimal`  | The price for female participants.|
-| `currency`| `Currency`    | The currency for the pricing.    |
+## Usage Example
 
-**Returns:** `Pricing` - A new `Pricing` instance with gendered pricing mode.
+```java
+// Create a flat pricing of $10.00 USD
+Pricing flatPricing = Pricing.flat(new BigDecimal("10.00"), Currency.getInstance("USD"));
 
-### `shuttlecock`
+// Create gendered pricing
+Pricing genderedPricing = Pricing.gendered(
+    new BigDecimal("12.00"),
+    new BigDecimal("10.00"),
+    Currency.getInstance("USD")
+);
 
-Creates a `Pricing` instance with a shuttlecock pricing mode.
+// Create shuttlecock pricing
+Pricing shuttlePricing = Pricing.shuttlecock(
+    new BigDecimal("5.00"),
+    new BigDecimal("2.50"),
+    Currency.getInstance("USD")
+);
 
-| Parameter     | Type          | Description                      |
-|---------------|---------------|----------------------------------|
-| `base`        | `BigDecimal`  | The base price amount.           |
-| `perShuttle`  | `BigDecimal`  | The price per shuttle.           |
-| `currency`    | `Currency`    | The currency for the pricing.    |
+// Get representative amount
+BigDecimal repAmount = flatPricing.representativeAmount(); // 10.00
 
-**Returns:** `Pricing` - A new `Pricing` instance with shuttlecock pricing mode.
+// Compare with scale tolerance
+Pricing other = Pricing.flat(new BigDecimal("10"), Currency.getInstance("USD"));
+boolean equal = flatPricing.semanticEquals(other); // true (10.00 vs 10)
+```
 
-### `representativeAmount`
+## Validation Rules
 
-Calculates the representative amount for the pricing, used for backward compatibility with legacy systems.
+The record enforces the following constraints:
 
-**Returns:** `BigDecimal` - The representative amount based on the pricing mode:
-- **FLAT**: Returns the flat price.
-- **GENDERED**: Returns the lower of the male or female price.
-- **SHUTTLECOCK**: Returns the base price.
+1. **Mode and Currency**: Both must be non-null.
+2. **Non-negative amounts**: All `BigDecimal` fields must be non-negative (or `null`).
+3. **Mode-specific field requirements**:
+   - `FLAT`: `flatPrice` must be non-null; all other price fields must be null.
+   - `GENDERED`: `malePrice` and `femalePrice` must be non-null; `flatPrice`, `basePrice`, and `pricePerShuttle` must be null.
+   - `SHUTTLECOCK`: `basePrice` and `pricePerShuttle` must be non-null; `flatPrice`, `malePrice`, and `femalePrice` must be null.
+
+## Error Messages
+
+The record uses predefined error messages for validation failures:
+
+| Constant | Message |
+|----------|---------|
+| `MSG_MODE_REQUIRED` | "Pricing mode is required." |
+| `MSG_CURRENCY_REQUIRED` | "Pricing currency is required." |
+| `MSG_NEGATIVE_AMOUNT` | "Pricing amount '%s' must be >= 0. Got: '%s'" |
+| `MSG_FLAT_REQUIRED` | "Flat pricing requires 'flatPrice'." |
+| `MSG_FLAT_EXCLUSIVE` | "Flat pricing must not include male/female/base/per-shuttle amounts." |
+| `MSG_GENDERED_REQUIRED` | "Gendered pricing requires both 'malePrice' and 'femalePrice'." |
+| `MSG_GENDERED_EXCLUSIVE` | "Gendered pricing must not include flat/base/per-shuttle amounts." |
+| `MSG_SHUTTLECOCK_REQUIRED` | "Shuttlecock pricing requires both 'basePrice' and 'pricePerShuttle'." |
+| `MSG_SHUTTLECOCK_EXCLUSIVE` | "Shuttlecock pricing must not include flat/male/female amounts." |

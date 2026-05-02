@@ -4,23 +4,31 @@ title: AuditCategory Enum
 sidebar_label: AuditCategory
 ---
 
-import { useBaseUrl } from '@docusaurus/core';
+# AuditCategory Enum
+
+The `AuditCategory` enum defines the categories of audit events within the application. It is used to classify and filter audit log entries based on the type of operation being performed.
 
 ## Purpose
 
-The `AuditCategory` enum is part of the `com.upmatches.app.features.audit.enums` package. It is used to categorize different types of audit actions within an application. This categorization helps in identifying and managing audit logs based on their nature, such as write operations, authentication, authorization, and sensitive read operations.
+This enum provides a standardized set of audit categories to ensure consistent logging across the application. Each category represents a distinct area of system activity that may require monitoring, compliance tracking, or security auditing.
 
-## Enum Constants
+## Enum Values
 
-The `AuditCategory` enum defines the following constants:
-
-| Constant        | Description                                                                 |
-|-----------------|-----------------------------------------------------------------------------|
-| `WRITE`         | Represents audit actions related to write operations.                       |
-| `AUTH`          | Represents audit actions related to authentication processes.               |
-| `AUTHZ`         | Represents audit actions related to authorization processes.                |
-| `SENSITIVE_READ`| Represents audit actions related to reading sensitive information.          |
+| Value | Description |
+|-------|-------------|
+| `WRITE` | Represents data write operations (e.g., create, update, delete). |
+| `AUTH` | Represents authentication events (e.g., login, logout, token refresh). |
+| `AUTHZ` | Represents authorization events (e.g., access control checks, permission evaluations). |
+| `SENSITIVE_READ` | Represents read operations on sensitive data (e.g., PII, financial records). |
 
 ## Usage
 
-The `AuditCategory` enum can be used to specify the category of an audit log entry. This allows for better filtering and handling of logs based on their type. For instance, you might want to apply different retention policies or alerting mechanisms depending on the category of the audit action.
+This enum is typically used in conjunction with an audit logging system to tag log entries with their corresponding category. Example usage:
+
+```java
+AuditCategory category = AuditCategory.WRITE;
+```
+
+## Package
+
+`com.upmatches.app.features.audit.enums`

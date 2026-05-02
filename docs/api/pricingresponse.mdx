@@ -1,27 +1,70 @@
 ---
 id: pricing-response
-title: PricingResponse Class
+title: PricingResponse
 sidebar_label: PricingResponse
 ---
 
-## Purpose of the PricingResponse Class
+# PricingResponse
 
-The `PricingResponse` class is a Java record that encapsulates pricing details for a game feature within the application. It is designed to provide a structured response containing various pricing components such as mode, currency, and different price types. This class is part of the `com.upmatches.app.features.game.responses` package and is used to facilitate the transfer of pricing data in a consistent and type-safe manner.
+The `PricingResponse` class is a Java record that serves as a Data Transfer Object (DTO) for exposing pricing information in API responses. It encapsulates various pricing details such as the pricing mode, currency, and different price components (flat, male, female, base, and per-shuttle prices). The class also provides a static factory method to convert a domain `Pricing` object into this response format.
+
+## Purpose
+
+- **Data Transfer**: Transfers pricing data from the backend to the client in a structured, immutable format.
+- **Decoupling**: Separates the internal domain model (`Pricing`) from the API response, allowing changes to the domain without affecting the API contract.
+- **Null Safety**: The factory method handles `null` input gracefully by returning `null`.
+
+## Record Components
+
+| Component       | Type          | Description                                                                 |
+|-----------------|---------------|-----------------------------------------------------------------------------|
+| `mode`          | `PricingMode` | The pricing mode (e.g., FLAT, PER_SHUTTLE, etc.).                          |
+| `currency`      | `String`      | The currency code (e.g., "USD", "EUR").                                    |
+| `flatPrice`     | `BigDecimal`  | The flat price for the service.                                            |
+| `malePrice`     | `BigDecimal`  | The price for male participants.                                           |
+| `femalePrice`   | `BigDecimal`  | The price for female participants.                                         |
+| `basePrice`     | `BigDecimal`  | The base price before any additional charges.                              |
+| `pricePerShuttle` | `BigDecimal`| The price per shuttle (e.g., per ride or per shuttle service).             |
 
 ## Public Methods
 
-The `PricingResponse` class provides the following public method:
+### `fromPricing(Pricing pricing)`
 
-### `fromPricing`
+Creates a `PricingResponse` instance from a domain `Pricing` object.
 
-Converts a `Pricing` object into a `PricingResponse` object.
+**Parameters:**
 
-| Parameter | Type     | Description                        |
-|-----------|----------|------------------------------------|
-| pricing   | Pricing  | The `Pricing` object to convert.   |
+| Parameter | Type      | Description                                      |
+|-----------|-----------|--------------------------------------------------|
+| `pricing` | `Pricing` | The domain pricing object to convert. Can be `null`. |
 
-| Return Type    | Description                                      |
-|----------------|--------------------------------------------------|
-| PricingResponse | A new `PricingResponse` object with values extracted from the provided `Pricing` object. Returns `null` if the input `Pricing` object is `null`. |
+**Returns:**
 
-The `fromPricing` method is a static factory method that takes a `Pricing` object as input and returns a `PricingResponse` object. It extracts various pricing details from the `Pricing` object, such as mode, currency, flat price, male price, female price, base price, and price per shuttle, and uses them to construct a new `PricingResponse` instance. If the input `Pricing` object is `null`, the method returns `null`.
+| Type               | Description                                                                 |
+|--------------------|-----------------------------------------------------------------------------|
+| `PricingResponse`  | A new `PricingResponse` instance populated with data from the `Pricing` object, or `null` if the input is `null`. |
+
+**Example Usage:**
+
+```java
+Pricing domainPricing = new Pricing(
+    PricingMode.FLAT,
+    new Currency("USD"),
+    new BigDecimal("100.00"),
+    new BigDecimal("50.00"),
+    new BigDecimal("40.00"),
+    new BigDecimal("30.00"),
+    new BigDecimal("10.00")
+);
+
+PricingResponse response = PricingResponse.fromPricing(domainPricing);
+// response.mode() == PricingMode.FLAT
+// response.currency() == "USD"
+// response.flatPrice() == 100.00
+```
+
+## Notes
+
+- The record is immutable by design, ensuring thread safety and consistency.
+- The `currency` field is extracted from the `Pricing` object's `currency().value()` method, which returns a `String`.
+- All price fields use `BigDecimal` for precise monetary calculations, avoiding floating-point rounding errors.

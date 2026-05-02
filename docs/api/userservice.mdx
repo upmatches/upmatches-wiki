@@ -1,68 +1,197 @@
 ---
 id: user-service
-title: UserService Class Documentation
+title: UserService
 sidebar_label: UserService
 ---
 
-## Overview
+# UserService
 
-The `UserService` class is a part of the `com.upmatches.app.features.user.services` package and implements the `IUserService` interface. It is a Spring `@Service` component designed to manage user profiles, including retrieving, completing, updating, and deleting user profiles. The class leverages repositories for user, skill level, and game data management, and it includes transactional operations and auditing capabilities.
+The `UserService` class is a Spring service that manages user profile operations within the UpMatches application. It provides methods for retrieving, completing, updating, and deleting user profiles, with built-in authentication and authorization checks.
+
+## Purpose
+
+This service handles all user profile-related business logic, including:
+- Retrieving the authenticated user's profile
+- Completing the initial onboarding profile
+- Updating existing profile information
+- Deleting user accounts
+- Managing skill level selections with validation
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `UserRepository` | Repository | Data access for user entities |
+| `SkillLevelRepository` | Repository | Data access for skill level entities |
+| `GameRepository` | Repository | Data access for game-related queries |
 
 ## Public Methods
 
-### `getProfile`
+### `getProfile()`
 
-Retrieves the profile of the authenticated user.
+Retrieves the profile of the currently authenticated user.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None      |      |             |
+**Returns:** `UserProfileResponse` - The user's profile information including game statistics.
 
-| Return Type          | Description                        |
-|----------------------|------------------------------------|
-| `UserProfileResponse`| The profile of the authenticated user.|
+**Throws:**
+- `UnauthorizedException` - If no valid authentication is found
+- `ResourceNotFoundException` - If the authenticated user is not found
 
-### `completeProfile`
+### `completeProfile(CompleteProfileRequest request)`
 
-Completes the profile of the authenticated user based on the provided request.
+Completes the initial onboarding profile for the authenticated user.
 
-| Parameter | Type                     | Description                      |
-|-----------|--------------------------|----------------------------------|
-| `request` | `CompleteProfileRequest` | The request containing profile completion data.|
-
-| Return Type          | Description                        |
-|----------------------|------------------------------------|
-| `UserProfileResponse`| The updated profile of the user.   |
-
-### `updateProfile`
-
-Updates the profile of the authenticated user based on the provided request.
-
-| Parameter | Type                   | Description                      |
-|-----------|------------------------|----------------------------------|
-| `request` | `UpdateProfileRequest` | The request containing profile update data.|
-
-| Return Type          | Description                        |
-|----------------------|------------------------------------|
-| `UserProfileResponse`| The updated profile of the user.   |
-
-### `deleteUser`
-
-Deletes the profile of the authenticated user.
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| None      |      |             |
+| `request` | `CompleteProfileRequest` | Contains name, contact methods, and skill level selections |
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      |             |
+**Returns:** `UserProfileResponse` - The completed user profile.
 
-## Key Concepts
+**Throws:**
+- `UnauthorizedException` - If no valid authentication is found
+- `ResourceNotFoundException` - If the user or skill levels are not found
+- `ProfileAlreadyCompletedException` - If the user has already completed onboarding
+- `DuplicateSkillLevelActivityException` - If multiple skill levels are selected for the same activity
+- `IllegalArgumentException` - If a skill level does not belong to the specified activity
 
-- **Transactional Operations**: The class uses Spring's `@Transactional` annotation to manage transactions, ensuring data consistency during profile operations.
-- **Auditing**: Methods are annotated with `@Auditable` to log actions like profile completion, update, and deletion.
-- **Security**: The class retrieves the authenticated user's ID from the security context, ensuring that operations are performed on the correct user profile.
-- **Exception Handling**: Custom exceptions like `ProfileAlreadyCompletedException`, `DuplicateSkillLevelActivityException`, and `ResourceNotFoundException` are used to handle specific error scenarios.
+**Auditable:** This method is annotated with `@Auditable(action = "PROFILE_COMPLETED")`.
 
-This documentation provides a concise overview of the `UserService` class, detailing its purpose, public methods, and key concepts for effective usage and understanding.
+### `updateProfile(UpdateProfileRequest request)`
+
+Updates the profile of the authenticated user.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `UpdateProfileRequest` | Contains optional name, contact methods, and skill level selections |
+
+**Returns:** `UserProfileResponse` - The updated user profile.
+
+**Throws:**
+- `UnauthorizedException` - If no valid authentication is found
+- `ResourceNotFoundException` - If the user or skill levels are not found
+- `DuplicateSkillLevelActivityException` - If multiple skill levels are selected for the same activity
+- `IllegalArgumentException` - If a skill level does not belong to the specified activity
+
+**Auditable:** This method is annotated with `@Auditable(action = "PROFILE_UPDATED")`.
+
+### `deleteUser()`
+
+Deletes the authenticated user's account.
+
+**Throws:**
+- `UnauthorizedException` - If no valid authentication is found
+- `ResourceNotFoundException` - If the authenticated user is not found
+
+**Auditable:** This method is annotated with `@Auditable(action = "PROFILE_DELETED")`.
+
+## Private Methods
+
+### `getAuthenticatedUserId()`
+
+Extracts the user ID from the JWT token in the security context.
+
+**Returns:** `UUID` - The authenticated user's ID.
+
+**Throws:** `UnauthorizedException` - If no valid authentication or invalid user ID.
+
+### `buildProfileResponse(User user)`
+
+Constructs a `UserProfileResponse` from a `User` entity, including game statistics.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `user` | `User` | The user entity |
+
+**Returns:** `UserProfileResponse` - The formatted profile response.
+
+### `findUserOrThrow(UUID userId)`
+
+Finds a user by ID or throws an exception.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | `UUID` | The user's ID |
+
+**Returns:** `User` - The found user entity.
+
+**Throws:** `ResourceNotFoundException` - If the user is not found.
+
+### `findSkillLevelsOrThrow(List<SkillLevelSelection> selections)`
+
+Validates and retrieves skill levels from selections.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `selections` | `List<SkillLevelSelection>` | List of skill level selections |
+
+**Returns:** `List<SkillLevel>` - The validated skill level entities.
+
+**Throws:**
+- `ResourceNotFoundException` - If any skill level is not found
+- `IllegalArgumentException` - If a skill level doesn't belong to the specified activity
+- `DuplicateSkillLevelActivityException` - If multiple skill levels are selected for the same activity
+
+### `validateOneSkillLevelPerActivity(List<SkillLevel> skillLevels)`
+
+Ensures no more than one skill level is selected per activity.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `skillLevels` | `List<SkillLevel>` | List of skill level entities |
+
+**Throws:** `DuplicateSkillLevelActivityException` - If validation fails.
+
+### `extractContact(List<ContactMethod> contacts, String name)`
+
+Extracts a specific contact method value from the contact methods list.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `contacts` | `List<ContactMethod>` | List of contact methods |
+| `name` | `String` | The contact method name to extract |
+
+**Returns:** `String` - The contact method value, or `null` if not found.
+
+## Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `WHATSAPP` | `"whatsapp"` | WhatsApp contact method identifier |
+| `TELEGRAM` | `"telegram"` | Telegram contact method identifier |
+| `MESSENGER` | `"messenger"` | Messenger contact method identifier |
+| `MSG_USER_NOT_FOUND` | `"The authenticated user was not found."` | Error message for missing user |
+| `MSG_NO_VALID_AUTH` | `"No valid authentication found."` | Error message for missing authentication |
+| `MSG_INVALID_USER_ID` | `"Invalid user ID in token subject: "` | Error message for invalid user ID |
+| `MSG_SKILL_LEVELS_NOT_FOUND` | `"One or more skill levels not found."` | Error message for missing skill levels |
+| `MSG_ACTIVITY_MISMATCH` | `"Skill level ID '%d' does not belong to activity ID '%s'."` | Error message for activity mismatch |
+
+## Usage Example
+
+```java
+@Service
+public class UserController {
+    private final UserService userService;
+    
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+    
+    public UserProfileResponse getCurrentUserProfile() {
+        return userService.getProfile();
+    }
+}
+```

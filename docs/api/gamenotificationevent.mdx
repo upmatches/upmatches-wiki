@@ -1,24 +1,64 @@
 ---
 id: game-notification-event
-title: GameNotificationEvent Class
+title: GameNotificationEvent
 sidebar_label: GameNotificationEvent
 ---
 
-import com.upmatches.app.features.notification.enums.NotificationType;
+# GameNotificationEvent
 
-## Purpose of the GameNotificationEvent Class
+The `GameNotificationEvent` class is a Java record that represents a notification event related to a game within the UpMatches application. It encapsulates the essential data required to trigger and process game-related notifications, such as when a user performs an action on a game (e.g., liking, commenting, or sharing).
 
-The `GameNotificationEvent` class is a record in Java that represents an event related to game notifications. It encapsulates the details of a notification event, including the game ID, the actor ID, the type of notification, and the game title. This class is part of the `com.upmatches.app.features.notification.events` package and is used to manage and process game-related notifications within the application.
+This record is immutable and thread-safe by design, leveraging Java's `record` feature to automatically generate constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods.
 
-## Public Methods
+## Package
 
-The `GameNotificationEvent` class is a record, which means it automatically provides several public methods. Below is a table documenting these methods, their parameters, and return types:
+`com.upmatches.app.features.notification.events`
 
-| Method Name       | Parameters | Return Type | Description                                                                 |
-|-------------------|------------|-------------|-----------------------------------------------------------------------------|
-| `gameId`          | None       | `UUID`      | Returns the unique identifier of the game associated with the notification. |
-| `actorId`         | None       | `UUID`      | Returns the unique identifier of the actor who triggered the notification.  |
-| `type`            | None       | `NotificationType` | Returns the type of notification.                                           |
-| `gameTitle`       | None       | `String`    | Returns the title of the game associated with the notification.             |
+## Record Definition
 
-The `GameNotificationEvent` record provides a concise and immutable way to handle game notification events, leveraging Java's record feature to automatically generate boilerplate code such as getters, `equals()`, `hashCode()`, and `toString()` methods.
+```java
+public record GameNotificationEvent(
+    UUID gameId,
+    UUID actorId,
+    NotificationType type,
+    String gameTitle
+) {}
+```
+
+## Components
+
+| Component    | Type             | Description                                                                 |
+|--------------|------------------|-----------------------------------------------------------------------------|
+| `gameId`     | `UUID`           | The unique identifier of the game associated with the notification.         |
+| `actorId`    | `UUID`           | The unique identifier of the user who performed the action triggering the notification. |
+| `type`       | `NotificationType` | An enum value indicating the type of notification (e.g., LIKE, COMMENT, SHARE). |
+| `gameTitle`  | `String`         | The title of the game, used for display purposes in the notification message. |
+
+## Usage
+
+This record is typically used in event-driven architectures where a notification service listens for `GameNotificationEvent` instances and processes them accordingly. Example usage:
+
+```java
+GameNotificationEvent event = new GameNotificationEvent(
+    UUID.randomUUID(),
+    UUID.randomUUID(),
+    NotificationType.LIKE,
+    "Super Adventure"
+);
+
+// Access components
+UUID gameId = event.gameId();
+UUID actorId = event.actorId();
+NotificationType type = event.type();
+String gameTitle = event.gameTitle();
+```
+
+## Related Types
+
+- `NotificationType` – An enum located in `com.upmatches.app.features.notification.enums` that defines the possible notification categories.
+
+## Notes
+
+- The record is immutable; once created, its components cannot be changed.
+- All components are non-nullable by convention; ensure that valid UUIDs and non-null strings are provided.
+- This class is part of the notification feature module and is intended for internal use within the UpMatches application.
