@@ -6,11 +6,11 @@ sidebar_label: MintDevTokenRequest
 
 ## Purpose
 
-The `MintDevTokenRequest` class is a part of the `com.upmatches.app.features.auth.requests` package. It is designed to encapsulate the data required to request the minting of a development token. This class is implemented as a Java Record, which provides a compact syntax for declaring immutable data carriers.
+The `MintDevTokenRequest` class is a simple data structure used to encapsulate the request for minting a developer token. This class is part of the authentication feature in the application and ensures that a valid user ID is provided when making such a request. It utilizes Java's `record` feature to provide an immutable and concise representation of the data.
 
 ## Public Methods
 
-The `MintDevTokenRequest` class does not explicitly declare any public methods, as it is a Java Record. However, it implicitly provides the following methods:
+The `MintDevTokenRequest` class does not explicitly define any public methods beyond those automatically provided by the Java `record` construct. However, it implicitly provides the following methods:
 
 ### Constructor
 
@@ -18,20 +18,20 @@ The `MintDevTokenRequest` class does not explicitly declare any public methods, 
 |------------------|-------------|
 | `MintDevTokenRequest(UUID userId)` | Constructs a new `MintDevTokenRequest` with the specified `userId`. |
 
-### Accessor Methods
-
-| Method | Description | Return Type |
-|--------|-------------|-------------|
-| `userId()` | Returns the `userId` associated with this request. | `UUID` |
-
-## Parameters
-
-The `MintDevTokenRequest` class has the following parameter:
+### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `userId`  | `UUID` | A non-null universally unique identifier representing the user for whom the development token is being requested. |
+| `userId`  | `UUID` | A non-null universally unique identifier representing the user for whom the developer token is being minted. |
 
-## Annotations
+### Return Types
 
-- `@NotNull`: This annotation is used to indicate that the `userId` parameter must not be null, ensuring that a valid UUID is always provided when creating an instance of `MintDevTokenRequest`.
+Since `MintDevTokenRequest` is a record, it automatically provides accessor methods for its components:
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `userId()` | `UUID` | Returns the `userId` associated with this request. |
+
+## Validation
+
+The `userId` parameter is annotated with `@NotNull`, indicating that it must not be null. This is enforced at runtime, ensuring that every `MintDevTokenRequest` instance is created with a valid `UUID`.

@@ -6,45 +6,41 @@ sidebar_label: IAuth0AuthService
 
 ## Overview
 
-The `IAuth0AuthService` interface is part of the `com.upmatches.app.features.auth.services` package. It defines a contract for authentication services that interact with Auth0, a popular identity management platform. This interface is designed to be implemented by classes that handle authentication processes, such as generating authorization URLs and exchanging authorization codes for verified claims.
+The `IAuth0AuthService` is a sealed interface in the `com.upmatches.app.features.auth.services` package. It defines the contract for authentication services using Auth0. This interface is designed to be implemented by classes that handle authentication processes, specifically dealing with authorization URLs and exchanging authorization codes for verified claims.
 
 ## Public Methods
 
-The `IAuth0AuthService` interface declares the following public methods:
-
 ### `getAuthorizationUrl`
 
-Generates an authorization URL that can be used to initiate the authentication process with Auth0.
+This method generates an authorization URL that can be used to initiate the authentication process with Auth0.
 
-| Parameter      | Type   | Description                                          |
-|----------------|--------|------------------------------------------------------|
-| `state`        | String | A unique state parameter to maintain request state.  |
-| `nonce`        | String | A nonce value to associate a client session with an ID token. |
-| `codeVerifier` | String | A code verifier for PKCE (Proof Key for Code Exchange). |
+| Parameter      | Type   | Description                                      |
+|----------------|--------|--------------------------------------------------|
+| `state`        | String | A unique state parameter to maintain state between the request and callback. |
+| `nonce`        | String | A nonce parameter to associate a client session with an ID token. |
+| `codeVerifier` | String | A code verifier for the PKCE (Proof Key for Code Exchange) flow. |
 | `connection`   | String | The connection to use for authentication (e.g., database, social). |
 
 **Returns:** `String` - The generated authorization URL.
 
 ### `exchangeAuthorizationCode`
 
-Exchanges an authorization code for verified claims from Auth0.
+This method exchanges an authorization code for verified claims, which include user information.
 
-| Parameter            | Type   | Description                                          |
-|----------------------|--------|------------------------------------------------------|
-| `authorizationCode`  | String | The authorization code received from Auth0.          |
-| `codeVerifier`       | String | The code verifier used in the PKCE flow.             |
-| `nonce`              | String | The nonce value used to associate a client session.  |
+| Parameter            | Type   | Description                                      |
+|----------------------|--------|--------------------------------------------------|
+| `authorizationCode`  | String | The authorization code received from the Auth0 authorization server. |
+| `codeVerifier`       | String | The code verifier used in the PKCE flow.         |
+| `nonce`              | String | The nonce used to validate the ID token.         |
 
 **Returns:** `Auth0VerifiedClaims` - An object containing verified claims such as subject, picture URL, and email.
 
-## Nested Record
+## Auth0VerifiedClaims Record
 
-### `Auth0VerifiedClaims`
+The `Auth0VerifiedClaims` is a record that encapsulates the verified claims received after exchanging an authorization code. It includes the following fields:
 
-A record that holds the verified claims obtained from Auth0 after exchanging an authorization code.
-
-| Field         | Type   | Description                                    |
-|---------------|--------|------------------------------------------------|
-| `sub`         | String | The subject (unique identifier) of the user.   |
-| `pictureUrl`  | String | The URL of the user's profile picture.         |
-| `email`       | String | The email address of the user.                 |
+| Field        | Type   | Description                                      |
+|--------------|--------|--------------------------------------------------|
+| `sub`        | String | The subject identifier for the user.             |
+| `pictureUrl` | String | The URL of the user's profile picture.           |
+| `email`      | String | The email address of the user.                   |

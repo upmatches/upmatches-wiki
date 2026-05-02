@@ -1,32 +1,34 @@
 ---
-id: iupdate-activity-service
+id: iupdateactivityservice
 title: IUpdateActivityService Interface
 sidebar_label: IUpdateActivityService
 ---
 
 ## Overview
 
-The `IUpdateActivityService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for updating activities within the application. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `UpdateActivityService` class. The primary purpose of this interface is to ensure that any implementing class provides a method to update an activity based on a unique identifier and a request object containing the update details.
+The `IUpdateActivityService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for updating activities within the application. This interface is designed to be implemented by classes that handle the logic for updating activity details based on a given request.
 
 ## Public Methods
 
-### `execute`
-
-The `execute` method is the core function of the `IUpdateActivityService` interface. It is responsible for processing an update request for a specific activity identified by a UUID.
+The `IUpdateActivityService` interface includes the following public method:
 
 | Method Signature | Description |
 |------------------|-------------|
-| `ActivityResponse execute(UUID id, UpdateActivityRequest request)` | Updates an activity with the given ID using the details provided in the `UpdateActivityRequest`. |
+| `ActivityResponse execute(UUID id, UpdateActivityRequest request)` | Executes the update operation for an activity identified by the given UUID. |
 
-#### Parameters
+### Method Details
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the activity to be updated. |
-| `request` | `UpdateActivityRequest` | An object containing the details of the update to be applied to the activity. |
+#### `execute`
 
-#### Return Type
+- **Description**: This method is responsible for executing the update operation on an activity. It takes a unique identifier for the activity and an update request containing the new activity details.
+- **Parameters**:
+  | Name    | Type                           | Description                           |
+  |---------|--------------------------------|---------------------------------------|
+  | `id`    | `UUID`                         | The unique identifier of the activity to be updated. |
+  | `request` | `UpdateActivityRequest`      | An object containing the new details for the activity. |
+- **Returns**: 
+  | Type                | Description |
+  |---------------------|-------------|
+  | `ActivityResponse`  | An object containing the updated activity details. |
 
-| Type | Description |
-|------|-------------|
-| `ActivityResponse` | Returns an `ActivityResponse` object that contains the updated details of the activity after the execution of the update. |
+This interface is sealed, meaning it restricts which classes can implement it, ensuring that only specific classes, such as `UpdateActivityService`, can provide the implementation for the update logic.

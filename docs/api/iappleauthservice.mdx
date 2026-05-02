@@ -1,32 +1,40 @@
 ---
-id: iappleauthservice
+id: iapple-auth-service
 title: IAppleAuthService Interface
 sidebar_label: IAppleAuthService
 ---
 
 ## Purpose
 
-The `IAppleAuthService` interface is part of the `com.upmatches.app.features.auth.services` package and serves as a contract for implementing Apple authentication services. It defines the necessary method for verifying Apple identity tokens, ensuring that any class implementing this interface provides a concrete implementation for this functionality. This interface is sealed, meaning it restricts which classes can implement it, specifically allowing only the `AppleAuthService` class.
+The `IAppleAuthService` interface is part of the authentication services in the `com.upmatches.app.features.auth.services` package. It defines a contract for verifying identity tokens issued by Apple, ensuring that implementations provide a method to verify these tokens and return verified claims.
 
 ## Public Methods
 
 ### `verifyIdentityToken`
 
-Verifies the provided Apple identity token and returns the verified claims.
+Verifies an identity token issued by Apple and returns the verified claims.
 
-| Parameter     | Type   | Description                          |
-|---------------|--------|--------------------------------------|
-| identityToken | String | The identity token to be verified.   |
+| Method Signature | Description |
+|------------------|-------------|
+| `AppleVerifiedClaims verifyIdentityToken(String identityToken)` | Verifies the provided Apple identity token and returns the associated claims. |
 
-| Return Type           | Description                                      |
-|-----------------------|--------------------------------------------------|
-| `AppleVerifiedClaims` | A record containing the subject and email claims.|
+#### Parameters
+
+| Parameter Name | Type   | Description                    |
+|----------------|--------|--------------------------------|
+| `identityToken`| String | The identity token to be verified. |
+
+#### Return Type
+
+| Return Type          | Description                                      |
+|----------------------|--------------------------------------------------|
+| `AppleVerifiedClaims`| A record containing the subject and email claims. |
 
 ## AppleVerifiedClaims Record
 
-The `AppleVerifiedClaims` record is a simple data structure used to hold the claims extracted from a verified Apple identity token.
+The `AppleVerifiedClaims` record encapsulates the claims extracted from a verified Apple identity token.
 
-| Field | Type   | Description                      |
-|-------|--------|----------------------------------|
-| sub   | String | The subject claim from the token.|
-| email | String | The email claim from the token.  |
+| Field Name | Type   | Description                    |
+|------------|--------|--------------------------------|
+| `sub`      | String | The subject claim, typically a unique identifier for the user. |
+| `email`    | String | The email claim, representing the user's email address. |

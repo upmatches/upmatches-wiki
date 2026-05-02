@@ -6,19 +6,21 @@ sidebar_label: AuthSession
 
 ## Overview
 
-The `AuthSession` class is a Java record that is part of the `com.upmatches.app.features.auth.models` package. This class is designed to encapsulate authentication session data, which includes a state, nonce, code verifier, and platform. Java records are a special kind of class in Java that are immutable and provide a concise way to model data.
-
-## Public Methods
-
-The `AuthSession` record automatically provides the following public methods for accessing its fields:
-
-| Method          | Parameters | Return Type | Description                                      |
-|-----------------|------------|-------------|--------------------------------------------------|
-| `state()`       | None       | `String`    | Returns the state associated with the auth session. |
-| `nonce()`       | None       | `String`    | Returns the nonce value used in the auth session.  |
-| `codeVerifier()`| None       | `String`    | Returns the code verifier for the auth session.    |
-| `platform()`    | None       | `String`    | Returns the platform information for the auth session. |
+The `AuthSession` class is a simple data structure used to encapsulate authentication session details within the application. It is implemented as a Java Record, which provides a concise way to model immutable data. This class is part of the `com.upmatches.app.features.auth.models` package.
 
 ## Purpose
 
-The `AuthSession` class is used to store and manage authentication session details in a structured and immutable way. By using a record, the class benefits from automatic generation of constructor, accessors, `equals()`, `hashCode()`, and `toString()` methods, making it a convenient choice for modeling simple data carriers.
+The purpose of the `AuthSession` class is to store and manage authentication-related information such as the state, nonce, code verifier, and platform. These fields are typically used in authentication flows to ensure security and integrity.
+
+## Public Methods
+
+The `AuthSession` class automatically provides the following public methods due to its nature as a Java Record:
+
+| Method Name   | Parameters | Return Type | Description                                                                 |
+|---------------|------------|-------------|-----------------------------------------------------------------------------|
+| `state`       | None       | `String`    | Returns the state associated with the authentication session.               |
+| `nonce`       | None       | `String`    | Returns the nonce value used in the authentication process.                 |
+| `codeVerifier`| None       | `String`    | Returns the code verifier used for PKCE (Proof Key for Code Exchange).      |
+| `platform`    | None       | `String`    | Returns the platform information related to the authentication session.     |
+
+Each of these methods corresponds to the fields defined in the `AuthSession` record, providing a straightforward way to access the encapsulated data.

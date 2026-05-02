@@ -4,28 +4,31 @@ title: IMarkNotificationReadService Interface
 sidebar_label: IMarkNotificationReadService
 ---
 
-## Overview
+import com.upmatches.app.features.notification.responses.NotificationResponse;
+import java.util.UUID;
 
-The `IMarkNotificationReadService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for marking notifications as read within the application. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `MarkNotificationReadService` class.
+## Purpose
+
+The `IMarkNotificationReadService` interface is a part of the notification service feature in the application. It defines the contract for marking a notification as read. This interface ensures that any implementing class will provide the necessary functionality to update the read status of a notification identified by a unique identifier (UUID).
 
 ## Public Methods
 
-The interface declares the following public method:
+### `execute`
 
-| Method Signature                        | Description                                      |
-|-----------------------------------------|--------------------------------------------------|
+This method is responsible for marking a specific notification as read.
+
+| Method Signature | Description |
+|------------------|-------------|
 | `NotificationResponse execute(UUID id)` | Marks the notification identified by the given UUID as read and returns a `NotificationResponse` object. |
 
-### Method Details
+#### Parameters
 
-#### `execute`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id`      | `UUID` | The unique identifier of the notification to be marked as read. |
 
-- **Description**: Marks a notification as read based on the provided UUID and returns a response object encapsulating the result.
-- **Parameters**:
-  | Name | Type | Description |
-  |------|------|-------------|
-  | `id` | `UUID` | The unique identifier of the notification to be marked as read. |
-  
-- **Returns**: 
-  - **Type**: `NotificationResponse`
-  - **Description**: An object containing the details of the notification after being marked as read.
+#### Return Type
+
+| Type | Description |
+|------|-------------|
+| `NotificationResponse` | An object containing the details of the notification after it has been marked as read. |

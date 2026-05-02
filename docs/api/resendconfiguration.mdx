@@ -6,24 +6,24 @@ sidebar_label: ResendConfiguration
 
 ## Overview
 
-The `ResendConfiguration` class is a Spring configuration class responsible for setting up the `Resend` client used for email notifications. It leverages the `ResendProperties` to obtain necessary configuration details such as the API key. This class ensures that the `Resend` client is only initialized if a valid API key is provided, thus enabling or disabling email notifications accordingly.
+The `ResendConfiguration` class is a Spring configuration class responsible for setting up the `Resend` client used for email notifications. It utilizes the `ResendProperties` to configure the client and conditionally enables or disables email notifications based on the presence of an API key.
+
+## Purpose
+
+The primary purpose of the `ResendConfiguration` class is to initialize the `Resend` client if an API key is provided. This setup is crucial for enabling email notifications within the application. If the API key is not configured, the class ensures that email notifications are disabled, and a log message is generated to indicate this status.
 
 ## Public Methods
 
-The `ResendConfiguration` class provides the following public method:
+The class provides the following public method:
 
-| Method Signature | Description |
-|------------------|-------------|
-| `Resend resend()` | Configures and returns a `Resend` client instance if a valid API key is present. Returns `null` if the API key is not configured. |
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `resend()` | None | `Resend` | Initializes and returns a `Resend` client if the API key is configured; otherwise, returns `null`. |
 
 ### Method Details
 
-#### `Resend resend()`
+#### `resend()`
 
-- **Purpose**: Initializes the `Resend` client for sending email notifications.
 - **Parameters**: None
-- **Returns**: 
-  - `Resend`: An instance of the `Resend` client if the API key is configured.
-  - `null`: If the API key is not configured, indicating that email notifications are disabled.
-
-This method checks if the `ResendProperties` contains a valid API key. If the API key is present, it logs a message indicating that the `Resend` client has been initialized and returns a new `Resend` instance. If the API key is absent, it logs a message indicating that email notifications are disabled and returns `null`.
+- **Return Type**: `Resend`
+- **Description**: This method checks if the API key is configured in the `ResendProperties`. If the API key is present, it initializes a new `Resend` client and logs that email notifications are enabled. If the API key is absent, it logs that email notifications are disabled and returns `null`.

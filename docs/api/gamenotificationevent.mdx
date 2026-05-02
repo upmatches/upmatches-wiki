@@ -6,26 +6,19 @@ sidebar_label: GameNotificationEvent
 
 import com.upmatches.app.features.notification.enums.NotificationType;
 
-## Purpose
+## Purpose of the GameNotificationEvent Class
 
-The `GameNotificationEvent` class is a record in the `com.upmatches.app.features.notification.events` package. It is designed to encapsulate the details of a notification event related to a game. This class is immutable and provides a concise way to store and access notification event data, such as the game ID, actor ID, notification type, and game title.
+The `GameNotificationEvent` class is a record in Java that represents an event related to game notifications. It encapsulates the details of a notification event, including the game ID, the actor ID, the type of notification, and the game title. This class is part of the `com.upmatches.app.features.notification.events` package and is used to manage and process game-related notifications within the application.
 
 ## Public Methods
 
-Since `GameNotificationEvent` is a record, it automatically provides the following public methods for accessing its fields:
+The `GameNotificationEvent` class is a record, which means it automatically provides several public methods. Below is a table documenting these methods, their parameters, and return types:
 
-| Method Name       | Parameters | Return Type     | Description                                      |
-|-------------------|------------|-----------------|--------------------------------------------------|
-| `gameId()`        | None       | `UUID`          | Returns the unique identifier of the game.       |
-| `actorId()`       | None       | `UUID`          | Returns the unique identifier of the actor.      |
-| `type()`          | None       | `NotificationType` | Returns the type of the notification.            |
-| `gameTitle()`     | None       | `String`        | Returns the title of the game.                   |
+| Method Name       | Parameters | Return Type | Description                                                                 |
+|-------------------|------------|-------------|-----------------------------------------------------------------------------|
+| `gameId`          | None       | `UUID`      | Returns the unique identifier of the game associated with the notification. |
+| `actorId`         | None       | `UUID`      | Returns the unique identifier of the actor who triggered the notification.  |
+| `type`            | None       | `NotificationType` | Returns the type of notification.                                           |
+| `gameTitle`       | None       | `String`    | Returns the title of the game associated with the notification.             |
 
-## Fields
-
-The `GameNotificationEvent` record consists of the following fields:
-
-- **gameId**: A `UUID` representing the unique identifier of the game.
-- **actorId**: A `UUID` representing the unique identifier of the actor involved in the event.
-- **type**: A `NotificationType` enum indicating the type of notification.
-- **gameTitle**: A `String` containing the title of the game.
+The `GameNotificationEvent` record provides a concise and immutable way to handle game notification events, leveraging Java's record feature to automatically generate boilerplate code such as getters, `equals()`, `hashCode()`, and `toString()` methods.

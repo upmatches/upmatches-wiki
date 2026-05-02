@@ -4,30 +4,40 @@ title: HealthCheckController
 sidebar_label: HealthCheckController
 ---
 
+import { HttpServletRequest } from 'jakarta.servlet.http';
+import { ResponseEntity } from 'org.springframework.http';
+import { GetMapping, RequestMapping, RestController } from 'org.springframework.web.bind.annotation';
+import { ApiResponse } from 'com.upmatches.app.shared.responses';
+
 ## Overview
 
-The `HealthCheckController` class is a REST controller in a Spring Boot application that provides a health check endpoint. This endpoint is used to verify that the service is running and accessible. It responds with a status message indicating the health of the service.
+The `HealthCheckController` class is a Spring Boot REST controller designed to provide a simple health check endpoint for the application. It is part of the `com.upmatches.app.features.health.controllers` package. This controller is responsible for handling HTTP GET requests to verify that the service is running and accessible.
 
 ## Public Methods
 
 ### healthCheck
 
-The `healthCheck` method is a GET endpoint that returns the health status of the service.
+The `healthCheck` method is a public endpoint that responds to HTTP GET requests. It returns a response indicating the service status.
 
-| Method      | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| `healthCheck(HttpServletRequest request)` | Returns the health status of the service. |
+| Method Signature | Description |
+|------------------|-------------|
+| `public ResponseEntity<ApiResponse<String>> healthCheck(HttpServletRequest request)` | Handles GET requests to the health check endpoint and returns a status message. |
 
 #### Parameters
 
-| Parameter | Type                  | Description                              |
-|-----------|-----------------------|------------------------------------------|
-| `request` | `HttpServletRequest`  | The HTTP request object containing request details. |
+| Parameter | Type                      | Description                              |
+|-----------|---------------------------|------------------------------------------|
+| `request` | `HttpServletRequest`      | The HTTP request object containing request details. |
 
 #### Return Type
 
-| Type                                      | Description                                      |
-|-------------------------------------------|--------------------------------------------------|
-| `ResponseEntity<ApiResponse<String>>`     | A response entity containing the health status.  |
+| Type                                | Description                                      |
+|-------------------------------------|--------------------------------------------------|
+| `ResponseEntity<ApiResponse<String>>` | A response entity containing the status and message of the service. |
 
-The method returns a `ResponseEntity` with an `ApiResponse` object that includes a status message and the request URI. The status message indicates that the service is running, and the URI provides the endpoint that was accessed.
+## Constants
+
+The class defines two constants used in the response:
+
+- `STATUS_OK`: A `String` constant with the value `"OK"`, indicating the service status.
+- `MESSAGE`: A `String` constant with the value `"Service is running"`, providing a message about the service state.

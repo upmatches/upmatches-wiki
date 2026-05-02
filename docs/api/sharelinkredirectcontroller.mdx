@@ -4,36 +4,40 @@ title: ShareLinkRedirectController
 sidebar_label: ShareLinkRedirectController
 ---
 
-## Overview
+## Purpose
 
-The `ShareLinkRedirectController` is a Spring Boot REST controller responsible for handling HTTP requests to redirect users based on a share link code. It validates the share link code, determines the client platform from the user agent, and redirects the user to the appropriate URL (App Store, Play Store, or a web URL).
+The `ShareLinkRedirectController` class is a Spring Boot REST controller responsible for handling HTTP GET requests to redirect users based on a share link code. It validates the share link code, resolves the corresponding web URL, and redirects the user to that URL with additional query parameters.
 
 ## Public Methods
 
 ### `redirect`
 
-Handles HTTP GET requests to redirect users based on the share link code and user agent.
+Handles HTTP GET requests to redirect users based on a share link code.
 
-| Parameter      | Type   | Description                                                                 |
-|----------------|--------|-----------------------------------------------------------------------------|
-| `code`         | String | The share link code, which must be 8 alphanumeric characters.               |
-| `userAgent`    | String | The user agent string from the request header, used to determine the platform. |
+| Parameter | Type   | Description                                                                 |
+|-----------|--------|-----------------------------------------------------------------------------|
+| `code`    | String | The share link code, which must be 8 alphanumeric characters.               |
 
-| Return Type              | Description                                                                 |
-|--------------------------|-----------------------------------------------------------------------------|
-| `ResponseEntity<Void>`   | A response entity with a status of 302 (FOUND) and a `Location` header pointing to the appropriate URL based on the client platform. |
+| Return Type           | Description                                                                                   |
+|-----------------------|-----------------------------------------------------------------------------------------------|
+| `ResponseEntity<Void>`| A response entity with HTTP status 302 (Found) and a `Location` header pointing to the target URL. |
 
-## Detailed Description
+## Method Details
 
-- **Purpose**: The controller's primary function is to redirect users to a specific URL based on the share link code and the user's platform (iOS, Android, or Web).
-  
-- **Code Validation**: The `code` parameter is validated using a regular expression to ensure it is exactly 8 alphanumeric characters. If the code does not match this pattern, an error message is returned.
+### `redirect`
 
-- **Platform Detection**: The `userAgent` header is used to classify the client's platform using the `UserAgentClassifier`. This classification determines the redirection URL.
+- **Path**: `/s/{code}`
+- **HTTP Method**: GET
+- **Description**: Redirects to a resolved web URL based on the provided share link code. The code is validated to ensure it is exactly 8 alphanumeric characters. If valid, the service resolves the code to a web URL and appends the code as a query parameter before redirecting.
+- **Validation**: Uses a regular expression to ensure the code is valid. If the code does not match the pattern, an error message is returned indicating the code must be 8 alphanumeric characters.
 
-- **Redirection Logic**: 
-  - If the platform is iOS, the user is redirected to the App Store URL.
-  - If the platform is Android, the user is redirected to the Play Store URL.
-  - If the platform is Web, the user is redirected to a web URL provided by the `PublicShareLinkResponse`.
+### Private Methods
 
-This controller is a crucial part of the application's share link feature, ensuring users are directed to the correct platform-specific resources.
+#### `appendFromCode`
+
+This method constructs the final URL by appending the share link code as a query parameter to the resolved web URL.
+
+- **Parameters**:
+  - `webUrl`: The base URL to which the user will be redirected.
+  - `code`: The share link code to be appended as a query parameter.
+- **Returns**: A `String` representing the complete URL with the appended query parameter.

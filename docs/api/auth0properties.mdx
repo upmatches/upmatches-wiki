@@ -4,22 +4,26 @@ title: Auth0Properties Class
 sidebar_label: Auth0Properties
 ---
 
+import { ConfigurationProperties } from 'org.springframework.boot.context.properties.ConfigurationProperties';
+
 ## Purpose
 
-The `Auth0Properties` class is a configuration properties holder designed for use with Spring Boot applications. It is annotated with `@ConfigurationProperties`, which allows it to bind external configuration properties prefixed with `app.auth0` to the fields of this class. This class is specifically tailored for managing Auth0 authentication settings, including domain, client ID, client secret, redirect URI, and scopes.
+The `Auth0Properties` class is a configuration properties holder for Auth0 authentication settings in a Spring Boot application. It is designed to map properties prefixed with `app.auth0` from the application's configuration files (e.g., `application.yml` or `application.properties`) to a structured Java object. This class is implemented as a Java record, providing an immutable data structure with built-in methods for accessing its fields.
 
 ## Public Methods
 
-The `Auth0Properties` class is a Java record, which means it primarily serves as a data carrier with automatically generated methods for its fields. Below is a documentation of its public methods:
+The `Auth0Properties` class does not explicitly define public methods beyond those automatically provided by the Java record. However, it includes a custom constructor logic to ensure default values for certain fields. Below is a summary of the fields and their initialization logic:
 
-| Method Name      | Parameters | Return Type | Description                                                                                  |
-|------------------|------------|-------------|----------------------------------------------------------------------------------------------|
-| `domain()`       | None       | `String`    | Returns the Auth0 domain configured for the application.                                     |
-| `clientId()`     | None       | `String`    | Returns the client ID used for Auth0 authentication.                                         |
-| `clientSecret()` | None       | `String`    | Returns the client secret associated with the Auth0 client ID.                               |
-| `redirectUri()`  | None       | `String`    | Returns the redirect URI used in the OAuth2 authentication flow.                             |
-| `scopes()`       | None       | `String`    | Returns the scopes for the Auth0 authentication. Defaults to `openid profile email` if blank.|
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `Auth0Properties` | `String domain`, `String clientId`, `String clientSecret`, `String redirectUri`, `String scopes` | `Auth0Properties` | Constructs an instance of `Auth0Properties`. If the `scopes` parameter is `null` or blank, it defaults to `"openid profile email"`. |
 
-## Constructor
+## Fields
 
-The constructor of the `Auth0Properties` record ensures that the `scopes` field is never null or blank by defaulting it to `openid profile email` if no value is provided. This behavior is crucial for maintaining a valid set of scopes for authentication purposes.
+The `Auth0Properties` record includes the following fields:
+
+- **domain**: The domain of the Auth0 tenant.
+- **clientId**: The client ID for the Auth0 application.
+- **clientSecret**: The client secret for the Auth0 application.
+- **redirectUri**: The URI to which Auth0 will redirect after authentication.
+- **scopes**: The scopes requested during authentication. Defaults to `"openid profile email"` if not provided.

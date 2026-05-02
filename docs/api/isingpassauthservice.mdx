@@ -4,67 +4,17 @@ title: ISingpassAuthService Interface
 sidebar_label: ISingpassAuthService
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 ## Overview
 
-The `ISingpassAuthService` interface is part of the `com.upmatches.app.features.auth.services` package. It defines the contract for implementing Singpass authentication services. This interface is designed to be implemented by classes that handle the authentication process using Singpass, a digital identity platform. The interface ensures that any implementing class provides methods for sending a pushed authorization request and exchanging an authorization code.
+The `ISingpassAuthService` interface is part of the `com.upmatches.app.features.auth.services` package. It defines the contract for authentication services that interact with the Singpass system. This interface is designed to be implemented by classes that handle the authentication process, specifically focusing on sending authorization requests and exchanging authorization codes.
 
 ## Public Methods
 
-### `sendPushedAuthorizationRequest`
+The `ISingpassAuthService` interface declares the following public methods:
 
-Sends a pushed authorization request to the Singpass service.
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `sendPushedAuthorizationRequest` | `String state`, `String nonce`, `String codeVerifier` | `String` | Sends a pushed authorization request to the Singpass system. The method requires a `state`, `nonce`, and `codeVerifier` as parameters and returns a `String` response. |
+| `exchangeAuthorizationCode` | `String authorizationCode`, `String codeVerifier`, `String nonce` | `String` | Exchanges an authorization code for an access token. This method takes an `authorizationCode`, `codeVerifier`, and `nonce` as parameters and returns a `String` response. |
 
-<Tabs>
-<TabItem value="signature" label="Signature" default>
-
-```java
-String sendPushedAuthorizationRequest(String state, String nonce, String codeVerifier);
-```
-
-</TabItem>
-<TabItem value="parameters" label="Parameters">
-
-| Parameter     | Type   | Description                                           |
-|---------------|--------|-------------------------------------------------------|
-| `state`       | String | A unique state value to maintain the request context. |
-| `nonce`       | String | A unique nonce value to ensure request integrity.     |
-| `codeVerifier`| String | A code verifier for PKCE (Proof Key for Code Exchange).|
-
-</TabItem>
-<TabItem value="returns" label="Returns">
-
-Returns a `String` representing the response from the Singpass service.
-
-</TabItem>
-</Tabs>
-
-### `exchangeAuthorizationCode`
-
-Exchanges an authorization code for an access token with the Singpass service.
-
-<Tabs>
-<TabItem value="signature" label="Signature" default>
-
-```java
-String exchangeAuthorizationCode(String authorizationCode, String codeVerifier, String nonce);
-```
-
-</TabItem>
-<TabItem value="parameters" label="Parameters">
-
-| Parameter          | Type   | Description                                           |
-|--------------------|--------|-------------------------------------------------------|
-| `authorizationCode`| String | The authorization code received from Singpass.        |
-| `codeVerifier`     | String | A code verifier for PKCE (Proof Key for Code Exchange).|
-| `nonce`            | String | A unique nonce value to ensure request integrity.     |
-
-</TabItem>
-<TabItem value="returns" label="Returns">
-
-Returns a `String` representing the access token or response from the Singpass service.
-
-</TabItem>
-</Tabs>
+The interface is sealed, permitting only the `SingpassAuthService` class to implement it, ensuring controlled extension and implementation within the application.

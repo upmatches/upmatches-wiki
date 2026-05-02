@@ -6,32 +6,22 @@ sidebar_label: AuditingConfiguration
 
 ## Overview
 
-The `AuditingConfiguration` class is a Spring configuration class that sets up JPA auditing for the application. It provides an implementation of the `AuditorAware` interface to determine the current auditor (user) for auditing purposes. This is particularly useful for automatically populating auditing fields such as `createdBy` and `lastModifiedBy` in your JPA entities.
+The `AuditingConfiguration` class is a Spring configuration class that enables JPA auditing in a Spring Boot application. It provides a mechanism to automatically populate auditing fields, such as created by and last modified by, with the current user's information. This class is particularly useful in applications where tracking the user responsible for data changes is crucial.
 
 ## Public Methods
 
-The class contains the following public method:
+The `AuditingConfiguration` class provides the following public method:
 
-### `auditorAware`
+| Method Signature | Description |
+|------------------|-------------|
+| `public AuditorAware<String> auditorAware()` | This method returns an `AuditorAware` implementation that determines the current auditor (user) for auditing purposes. |
 
-This method is a Spring Bean that provides an implementation of the `AuditorAware<String>` interface. It determines the current auditor based on the security context.
+### Method Details
 
-| Method Name   | Parameters | Return Type         | Description                                                                 |
-|---------------|------------|---------------------|-----------------------------------------------------------------------------|
-| `auditorAware`| None       | `AuditorAware<String>` | Returns an `AuditorAware` instance that determines the current auditor's username. |
+#### `auditorAware`
 
-#### Parameters
+- **Purpose**: Provides an `AuditorAware` bean that determines the current user for auditing purposes.
+- **Parameters**: None
+- **Return Type**: `AuditorAware<String>`
 
-- **None**
-
-#### Return Type
-
-- **`AuditorAware<String>`**: An instance that provides the current auditor's username, which is used by JPA auditing.
-
-### Logic
-
-- The method retrieves the current `Authentication` object from the `SecurityContextHolder`.
-- If the authentication is null, not authenticated, or the principal is an anonymous user, it returns a default auditor (`system`).
-- If the principal is an instance of `Jwt`, it attempts to retrieve the subject from the JWT token.
-- If the subject is not available or is blank, it defaults to the `system` auditor.
-- Otherwise, it uses the authenticated user's name as the auditor.
+This method uses Spring Security to obtain the current `Authentication` object from the `SecurityContextHolder`. It checks if the user is authenticated and not anonymous. If the user is authenticated and the principal is a JWT token, it extracts the subject from the token. If the principal is not a JWT, it uses the authentication name. If no valid user information is available, it defaults to using "system" as the auditor.

@@ -1,34 +1,55 @@
 ---
 id: viewer-joinability-response
-title: ViewerJoinabilityResponse
+title: ViewerJoinabilityResponse Class
 sidebar_label: ViewerJoinabilityResponse
 ---
 
-## ViewerJoinabilityResponse Class
+import com.upmatches.app.features.game.enums.JoinabilityReason;
+import com.upmatches.app.features.game.enums.JoinabilityWarning;
 
-The `ViewerJoinabilityResponse` class is a Java record that encapsulates the response related to a viewer's ability to join a game. It provides information on whether a viewer can join, the reason if they cannot, and any warnings associated with the joinability status.
+## Purpose
 
-### Public Methods
+The `ViewerJoinabilityResponse` class is a Java record that encapsulates the response for a viewer's ability to join a game. It provides information on whether joining is allowed, the reason for any restriction, and any warnings associated with the joinability status.
 
-The class provides two static factory methods to create instances of `ViewerJoinabilityResponse`. These methods are designed to clearly indicate whether joining is allowed or blocked, along with any relevant warnings.
+## Public Methods
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `allowed` | `List<JoinabilityWarning> warnings` | `ViewerJoinabilityResponse` | Creates a response indicating that joining is allowed. It accepts a list of warnings that might be relevant even when joining is permitted. |
-| `blocked` | `JoinabilityReason reason`, `List<JoinabilityWarning> warnings` | `ViewerJoinabilityResponse` | Creates a response indicating that joining is blocked. It requires a reason for blocking and accepts a list of warnings. |
+The class provides the following public static methods:
 
-### Parameters
+### `allowed`
 
-- **canJoin**: A `Boolean` indicating if the viewer can join the game.
-- **reason**: A `JoinabilityReason` enum value providing the reason for blocking, if applicable.
-- **warnings**: A `List` of `JoinabilityWarning` enum values that provide additional context or warnings related to the joinability status.
+Creates a `ViewerJoinabilityResponse` indicating that joining is allowed.
 
-### Private Methods
+| Parameter | Type                              | Description                              |
+|-----------|-----------------------------------|------------------------------------------|
+| warnings  | `List<JoinabilityWarning>`        | A list of warnings associated with the joinability status. |
 
-The class includes a private utility method to handle warnings safely:
+| Return Type                      | Description                              |
+|----------------------------------|------------------------------------------|
+| `ViewerJoinabilityResponse`      | A response indicating joining is allowed. |
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `safeWarnings` | `List<JoinabilityWarning> warnings` | `List<JoinabilityWarning>` | Ensures that the list of warnings is non-null by returning an empty list if the input is null, or a copy of the list if it is not. |
+### `blocked`
 
-This design ensures that the `ViewerJoinabilityResponse` is robust and handles null warnings gracefully, providing a consistent API for determining a viewer's joinability status.
+Creates a `ViewerJoinabilityResponse` indicating that joining is blocked.
+
+| Parameter | Type                              | Description                              |
+|-----------|-----------------------------------|------------------------------------------|
+| reason    | `JoinabilityReason`               | The reason why joining is blocked.       |
+| warnings  | `List<JoinabilityWarning>`        | A list of warnings associated with the joinability status. |
+
+| Return Type                      | Description                              |
+|----------------------------------|------------------------------------------|
+| `ViewerJoinabilityResponse`      | A response indicating joining is blocked. |
+
+## Private Methods
+
+### `safeWarnings`
+
+A helper method that ensures the warnings list is safe to use by returning an empty list if the input is `null`, or a copy of the list otherwise.
+
+| Parameter | Type                              | Description                              |
+|-----------|-----------------------------------|------------------------------------------|
+| warnings  | `List<JoinabilityWarning>`        | A list of warnings to be processed.      |
+
+| Return Type                      | Description                              |
+|----------------------------------|------------------------------------------|
+| `List<JoinabilityWarning>`       | A safe list of warnings.                 |

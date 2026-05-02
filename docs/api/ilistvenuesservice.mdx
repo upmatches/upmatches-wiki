@@ -6,18 +6,28 @@ sidebar_label: IListVenuesService
 
 ## Purpose
 
-The `IListVenuesService` interface is part of the `com.upmatches.app.features.venue.services` package. It defines a contract for services that list venues, providing a method to execute the listing operation with pagination support. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `ListVenuesService` class.
+The `IListVenuesService` interface is part of the `com.upmatches.app.features.venue.services` package. It defines a contract for listing venues in a paginated manner. This interface is sealed, allowing only specific implementations, such as `ListVenuesService`, to implement it. The primary purpose of this interface is to provide a method to retrieve a paginated list of venues, encapsulated in a `PagedResponse` object.
 
 ## Public Methods
 
 ### `execute`
 
-Executes the venue listing operation with pagination.
+This method is responsible for executing the service to retrieve a paginated list of venues.
 
-| Parameter | Type                      | Description                                      |
-|-----------|---------------------------|--------------------------------------------------|
-| pageable  | `org.springframework.data.domain.Pageable` | Provides pagination information such as page number and size. |
+| Method Signature | Description |
+|------------------|-------------|
+| `PagedResponse<VenueResponse> execute(Pageable pageable)` | Retrieves a paginated list of venues based on the provided pagination information. |
 
-| Return Type                              | Description                                      |
-|------------------------------------------|--------------------------------------------------|
-| `PagedResponse<VenueResponse>`           | A paginated response containing venue details.   |
+#### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pageable` | `Pageable` | An object that specifies the pagination information, such as page number and page size. |
+
+#### Return Type
+
+| Type | Description |
+|------|-------------|
+| `PagedResponse<VenueResponse>` | A paginated response containing a list of `VenueResponse` objects. |
+
+This interface is crucial for applications that need to display venue information in a paginated format, ensuring efficient data retrieval and presentation.

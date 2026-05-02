@@ -6,69 +6,69 @@ sidebar_label: DatabaseConstant
 
 ## Overview
 
-The `DatabaseConstant` class is a utility class that provides a collection of constants used for database configuration and logging within the application. It is designed to be immutable and cannot be instantiated. This class includes constants for JDBC URLs, default pool configurations, logging messages, and various database-specific settings.
+The `DatabaseConstant` class is a utility class that provides a collection of constants used for database configuration and logging within the application. These constants include JDBC URL prefixes, default pool settings, logging messages, and various configuration parameters for H2 and PostgreSQL databases. This class is designed to be non-instantiable and is marked as `final` to prevent inheritance.
 
 ## Public Constants
 
 The following table documents the public constants available in the `DatabaseConstant` class:
 
-| Constant Name                              | Type     | Description                                                                 |
-|--------------------------------------------|----------|-----------------------------------------------------------------------------|
-| `JDBC_H2`                                  | `String` | JDBC URL prefix for H2 databases.                                           |
-| `JDBC_POSTGRESQL`                          | `String` | JDBC URL prefix for PostgreSQL databases.                                   |
-| `JDBC_MYSQL`                               | `String` | JDBC URL prefix for MySQL databases.                                        |
-| `DEFAULT_POOL_NAME`                        | `String` | Default name for the HikariCP connection pool.                              |
-| `DEFAULT_APPLICATION_NAME`                 | `String` | Default application name used in database connections.                      |
-| `DEFAULT_MAXIMUM_POOL_SIZE`                | `int`    | Default maximum size of the connection pool.                                |
-| `DEFAULT_MINIMUM_IDLE`                     | `int`    | Default minimum number of idle connections in the pool.                     |
-| `DEFAULT_CONNECTION_TIMEOUT`               | `long`   | Default connection timeout in milliseconds.                                 |
-| `DEFAULT_IDLE_TIMEOUT`                     | `long`   | Default idle timeout in milliseconds.                                       |
-| `DEFAULT_MAX_LIFETIME`                     | `long`   | Default maximum lifetime of a connection in milliseconds.                   |
-| `DEFAULT_INITIALIZATION_FAIL_TIMEOUT`      | `long`   | Default timeout for initialization failures in milliseconds.                |
-| `PROFILE_SEPARATOR`                        | `String` | Separator used in profile names.                                            |
-| `UNKNOWN_DATABASE_TYPE`                    | `String` | Placeholder for unknown database types.                                     |
-| `NOT_AVAILABLE`                            | `String` | Placeholder for unavailable values.                                         |
-| `SPRING_APPLICATION_NAME_PROPERTY`         | `String` | Property name for Spring application name.                                  |
-| `VALUE_TRUE`                               | `String` | String representation of the boolean value `true`.                          |
-| `VALUE_FALSE`                              | `String` | String representation of the boolean value `false`.                         |
-| `LOG_INITIALIZING_DATASOURCE`              | `String` | Log message for initializing the HikariCP DataSource.                       |
-| `LOG_UNSUPPORTED_JDBC_URL`                 | `String` | Log message for unsupported JDBC URLs.                                      |
-| `LOG_H2_OPTIMIZATIONS`                     | `String` | Log message for applied H2-specific optimizations.                          |
-| `LOG_METRICS_ENABLED`                      | `String` | Log message for enabled metrics.                                            |
-| `LOG_HIKARI_CONFIGURED`                    | `String` | Log message indicating HikariCP configuration.                              |
-| `LOG_POOL_NAME`                            | `String` | Log message for the pool name.                                              |
-| `LOG_POOL_SIZE`                            | `String` | Log message for pool size configuration.                                    |
-| `LOG_TIMEOUTS`                             | `String` | Log message for connection timeouts.                                        |
-| `LOG_LEAK_DETECTION`                       | `String` | Log message for leak detection status.                                      |
-| `LOG_DATABASE_URL`                         | `String` | Log message for the database URL.                                           |
-| `LOG_DRIVER`                               | `String` | Log message for the database driver.                                        |
-| `LOG_APPLICATION_NAME`                     | `String` | Log message for the application name.                                       |
-| `UNIT_MS`                                  | `String` | Unit of measurement for milliseconds.                                       |
-| `LEAK_DETECTION_DISABLED`                  | `String` | Indicator that leak detection is disabled.                                  |
-| `PG_TCP_KEEP_ALIVE`                        | `String` | PostgreSQL setting for TCP keep-alive.                                      |
-| `PG_APPLICATION_NAME`                      | `String` | PostgreSQL setting for application name.                                    |
-| `PG_ASSUME_MIN_SERVER_VERSION`             | `String` | PostgreSQL setting for minimum server version assumption.                   |
-| `PG_ASSUME_MIN_SERVER_VERSION_VALUE`       | `String` | Default value for minimum server version assumption.                        |
-| `PG_REWRITE_BATCHED_INSERTS`               | `String` | PostgreSQL setting for rewriting batched inserts.                           |
-| `PG_PREPARE_THRESHOLD`                     | `String` | PostgreSQL setting for prepare threshold.                                   |
-| `PG_PREPARE_THRESHOLD_VALUE`               | `String` | Default value for prepare threshold.                                        |
-| `PG_PREPARED_STATEMENT_CACHE_QUERIES`      | `String` | PostgreSQL setting for prepared statement cache queries.                    |
-| `PG_PREPARED_STATEMENT_CACHE_QUERIES_VALUE`| `String` | Default value for prepared statement cache queries.                         |
-| `PG_PREPARED_STATEMENT_CACHE_SIZE_MIB`     | `String` | PostgreSQL setting for prepared statement cache size in MiB.                |
-| `PG_PREPARED_STATEMENT_CACHE_SIZE_MIB_VALUE`| `String` | Default value for prepared statement cache size in MiB.                     |
-| `PG_MAINTAIN_TIME_STATS`                   | `String` | PostgreSQL setting for maintaining time statistics.                         |
-| `H2_DB_CLOSE_DELAY`                        | `String` | H2 database setting for close delay.                                        |
-| `H2_DB_CLOSE_DELAY_VALUE`                  | `String` | Default value for H2 database close delay.                                  |
-| `H2_DB_CLOSE_ON_EXIT`                      | `String` | H2 database setting for close on exit.                                      |
-| `H2_DB_CLOSE_ON_EXIT_VALUE`                | `String` | Default value for H2 database close on exit.                                |
-| `H2_CACHE_SIZE`                            | `String` | H2 database setting for cache size.                                         |
-| `H2_CACHE_SIZE_VALUE`                      | `String` | Default value for H2 database cache size.                                   |
-| `H2_LOCK_TIMEOUT`                          | `String` | H2 database setting for lock timeout.                                       |
-| `H2_LOCK_TIMEOUT_VALUE`                    | `String` | Default value for H2 database lock timeout.                                 |
-| `URL_CREDENTIALS_PATTERN`                  | `String` | Regex pattern for matching credentials in URLs.                             |
-| `URL_CREDENTIALS_MASK`                     | `String` | Mask for credentials in URLs.                                               |
-| `URL_PASSWORD_PATTERN`                     | `String` | Regex pattern for matching passwords in URLs.                               |
-| `URL_PASSWORD_MASK`                        | `String` | Mask for passwords in URLs.                                                 |
+| Constant Name                           | Type    | Description                                                                 |
+|-----------------------------------------|---------|-----------------------------------------------------------------------------|
+| `JDBC_H2`                               | String  | Prefix for H2 database JDBC URL.                                            |
+| `JDBC_POSTGRESQL`                       | String  | Prefix for PostgreSQL database JDBC URL.                                    |
+| `JDBC_MYSQL`                            | String  | Prefix for MySQL database JDBC URL.                                         |
+| `DEFAULT_POOL_NAME`                     | String  | Default name for the HikariCP connection pool.                              |
+| `DEFAULT_APPLICATION_NAME`              | String  | Default application name used in database connections.                      |
+| `DEFAULT_MAXIMUM_POOL_SIZE`             | int     | Default maximum size of the connection pool.                                |
+| `DEFAULT_MINIMUM_IDLE`                  | int     | Default minimum number of idle connections in the pool.                     |
+| `DEFAULT_CONNECTION_TIMEOUT`            | long    | Default connection timeout in milliseconds.                                 |
+| `DEFAULT_IDLE_TIMEOUT`                  | long    | Default idle timeout in milliseconds.                                       |
+| `DEFAULT_MAX_LIFETIME`                  | long    | Default maximum lifetime of a connection in milliseconds.                   |
+| `DEFAULT_INITIALIZATION_FAIL_TIMEOUT`   | long    | Default initialization fail timeout in milliseconds.                        |
+| `PROFILE_SEPARATOR`                     | String  | Separator used in profile names.                                            |
+| `UNKNOWN_DATABASE_TYPE`                 | String  | Placeholder for unknown database types.                                     |
+| `NOT_AVAILABLE`                         | String  | Placeholder for unavailable values.                                         |
+| `SPRING_APPLICATION_NAME_PROPERTY`      | String  | Property key for the Spring application name.                               |
+| `VALUE_TRUE`                            | String  | String representation of the boolean value `true`.                          |
+| `VALUE_FALSE`                           | String  | String representation of the boolean value `false`.                         |
+| `LOG_INITIALIZING_DATASOURCE`           | String  | Log message for initializing the HikariCP DataSource.                       |
+| `LOG_UNSUPPORTED_JDBC_URL`              | String  | Log message for unsupported JDBC URLs.                                      |
+| `LOG_H2_OPTIMIZATIONS`                  | String  | Log message for applied H2-specific optimizations.                          |
+| `LOG_METRICS_ENABLED`                   | String  | Log message indicating metrics are enabled.                                 |
+| `LOG_HIKARI_CONFIGURED`                 | String  | Log message indicating HikariCP is configured.                              |
+| `LOG_POOL_NAME`                         | String  | Log message for pool name configuration.                                    |
+| `LOG_POOL_SIZE`                         | String  | Log message for pool size configuration.                                    |
+| `LOG_TIMEOUTS`                          | String  | Log message for timeout configurations.                                     |
+| `LOG_LEAK_DETECTION`                    | String  | Log message for leak detection configuration.                               |
+| `LOG_DATABASE_URL`                      | String  | Log message for database URL configuration.                                 |
+| `LOG_DRIVER`                            | String  | Log message for driver configuration.                                       |
+| `LOG_APPLICATION_NAME`                  | String  | Log message for application name configuration.                             |
+| `UNIT_MS`                               | String  | Unit of time in milliseconds.                                               |
+| `LEAK_DETECTION_DISABLED`               | String  | Indicator that leak detection is disabled.                                  |
+| `PG_TCP_KEEP_ALIVE`                     | String  | PostgreSQL TCP keep-alive parameter.                                        |
+| `PG_APPLICATION_NAME`                   | String  | PostgreSQL application name parameter.                                      |
+| `PG_ASSUME_MIN_SERVER_VERSION`          | String  | PostgreSQL parameter for assuming minimum server version.                   |
+| `PG_ASSUME_MIN_SERVER_VERSION_VALUE`    | String  | Default value for minimum server version assumption.                        |
+| `PG_REWRITE_BATCHED_INSERTS`            | String  | PostgreSQL parameter for rewriting batched inserts.                         |
+| `PG_PREPARE_THRESHOLD`                  | String  | PostgreSQL parameter for prepare threshold.                                 |
+| `PG_PREPARE_THRESHOLD_VALUE`            | String  | Default value for prepare threshold.                                        |
+| `PG_PREPARED_STATEMENT_CACHE_QUERIES`   | String  | PostgreSQL parameter for prepared statement cache queries.                  |
+| `PG_PREPARED_STATEMENT_CACHE_QUERIES_VALUE` | String | Default value for prepared statement cache queries.                         |
+| `PG_PREPARED_STATEMENT_CACHE_SIZE_MIB`  | String  | PostgreSQL parameter for prepared statement cache size in MiB.              |
+| `PG_PREPARED_STATEMENT_CACHE_SIZE_MIB_VALUE` | String | Default value for prepared statement cache size in MiB.                     |
+| `PG_MAINTAIN_TIME_STATS`                | String  | PostgreSQL parameter for maintaining time statistics.                       |
+| `H2_DB_CLOSE_DELAY`                     | String  | H2 database close delay parameter.                                          |
+| `H2_DB_CLOSE_DELAY_VALUE`               | String  | Default value for H2 database close delay.                                  |
+| `H2_DB_CLOSE_ON_EXIT`                   | String  | H2 database close on exit parameter.                                        |
+| `H2_DB_CLOSE_ON_EXIT_VALUE`             | String  | Default value for H2 database close on exit.                                |
+| `H2_CACHE_SIZE`                         | String  | H2 cache size parameter.                                                    |
+| `H2_CACHE_SIZE_VALUE`                   | String  | Default value for H2 cache size.                                            |
+| `H2_LOCK_TIMEOUT`                       | String  | H2 lock timeout parameter.                                                  |
+| `H2_LOCK_TIMEOUT_VALUE`                 | String  | Default value for H2 lock timeout.                                          |
+| `URL_CREDENTIALS_PATTERN`               | String  | Regex pattern for matching credentials in a URL.                            |
+| `URL_CREDENTIALS_MASK`                  | String  | Mask for credentials in a URL.                                              |
+| `URL_PASSWORD_PATTERN`                  | String  | Regex pattern for matching password in a URL.                               |
+| `URL_PASSWORD_MASK`                     | String  | Mask for password in a URL.                                                 |
 
 ## Constructor
 
@@ -80,4 +80,4 @@ private DatabaseConstant() {
 }
 ```
 
-This constructor throws an `AssertionError` if an attempt is made to instantiate the class, ensuring that it remains a utility class with only static members.
+This constructor throws an `AssertionError` if called, ensuring that the class cannot be instantiated or extended.

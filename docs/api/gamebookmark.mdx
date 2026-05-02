@@ -4,38 +4,45 @@ title: GameBookmark Class
 sidebar_label: GameBookmark
 ---
 
-import com.upmatches.app.features.user.entities.User;
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import { Game } from './Game';
+import { User } from './User';
 
-import java.time.Instant;
-import java.util.UUID;
+## Overview
 
-## Purpose
+The `GameBookmark` class is an entity representing a bookmark for a game by a user. It is part of the `com.upmatches.app.features.game.entities` package and is used to persist bookmark data in the database. This class is annotated with JPA annotations to map it to the `game_bookmarks` table, ensuring that each bookmark is unique per game and user combination.
 
-The `GameBookmark` class is an entity that represents a bookmark for a game by a user. It is part of the persistence layer and is mapped to the `game_bookmarks` table in the database. Each bookmark is uniquely identified by a combination of `game_id` and `user_id`, ensuring that a user can bookmark a specific game only once.
+## Class Details
+
+### Annotations
+
+- `@Entity`: Specifies that the class is an entity and is mapped to a database table.
+- `@Table`: Provides the table name and unique constraints for the entity.
+- `@Getter`: Lombok annotation to generate getter methods for all fields.
+- `@NoArgsConstructor`: Lombok annotation to generate a no-argument constructor with protected access.
+
+### Fields
+
+- `UUID id`: The unique identifier for each bookmark, automatically generated.
+- `Game game`: The game that is bookmarked, represented as a `ManyToOne` relationship.
+- `User user`: The user who bookmarked the game, also represented as a `ManyToOne` relationship.
+- `Instant bookmarkedAt`: The timestamp when the bookmark was created, set automatically before persisting.
 
 ## Public Methods
 
-The `GameBookmark` class provides the following public methods:
-
 | Method | Parameters | Return Type | Description |
 |--------|------------|-------------|-------------|
-| `create` | `Game game`, `User user` | `GameBookmark` | Static factory method to create a new `GameBookmark` instance for a given game and user. |
+| `create` | `Game game`, `User user` | `GameBookmark` | Static method to create a new `GameBookmark` instance for a given game and user. |
 
-## Detailed Explanation
+### Method Details
 
-- **Entity Annotation**: The class is annotated with `@Entity`, indicating that it is a JPA entity. The `@Table` annotation specifies the table name and unique constraints.
-  
-- **Fields**:
-  - `id`: A unique identifier for each bookmark, generated using the UUID strategy.
-  - `game`: A reference to the `Game` entity, representing the game being bookmarked.
-  - `user`: A reference to the `User` entity, representing the user who bookmarked the game.
-  - `bookmarkedAt`: A timestamp indicating when the bookmark was created. It is automatically set to the current time when the entity is persisted.
+#### `create(Game game, User user)`
 
-- **Lifecycle Callback**:
-  - `onCreate`: A method annotated with `@PrePersist` to set the `bookmarkedAt` field to the current timestamp when the entity is first persisted.
+- **Parameters:**
+  - `game`: The `Game` object that is being bookmarked.
+  - `user`: The `User` object who is bookmarking the game.
+- **Return Type:** `GameBookmark`
+- **Description:** This static method initializes a new `GameBookmark` object with the provided game and user, setting up the necessary relationships.
 
-The `GameBookmark` class leverages Lombok annotations for boilerplate code reduction, such as `@Getter` for generating getter methods and `@NoArgsConstructor` for creating a protected no-argument constructor.
+### Lifecycle Callback
+
+- `@PrePersist void onCreate()`: This method is automatically called before the entity is persisted to the database, setting the `bookmarkedAt` field to the current timestamp.

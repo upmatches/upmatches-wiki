@@ -4,28 +4,21 @@ title: GameStatus Enum
 sidebar_label: GameStatus
 ---
 
-## Overview
+## Purpose
 
-The `GameStatus` enum is part of the `com.upmatches.app.features.game.enums` package. It represents the various states a game can be in within the application. Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like final variables).
+The `GameStatus` enum is part of the `com.upmatches.app.features.game.enums` package. It represents the various states that a game can be in within the application. Enumerations in Java are a special type of class that is used to define collections of constants. In this case, `GameStatus` defines four possible states for a game: `SCHEDULED`, `STARTED`, `EXPIRED`, and `CANCELLED`.
 
 ## Enum Constants
 
-The `GameStatus` enum defines the following constants:
+The `GameStatus` enum contains the following constants:
 
-- **SCHEDULED**: Indicates that the game is scheduled to occur at a future date and time.
-- **STARTED**: Indicates that the game has commenced.
-- **EXPIRED**: Indicates that the game has ended and is no longer active.
-- **CANCELLED**: Indicates that the game has been cancelled and will not take place.
+| Constant   | Description                                                                 |
+|------------|-----------------------------------------------------------------------------|
+| SCHEDULED  | Indicates that the game is scheduled to occur at a future time.             |
+| STARTED    | Indicates that the game has begun and is currently in progress.             |
+| EXPIRED    | Indicates that the game has ended and is no longer active.                  |
+| CANCELLED  | Indicates that the game has been cancelled and will not take place.         |
 
-## Public Methods
+## Usage
 
-The `GameStatus` enum does not explicitly define any public methods beyond those inherited from the `java.lang.Enum` class. However, it implicitly provides the following methods:
-
-| Method Signature | Description |
-|------------------|-------------|
-| `String name()` | Returns the name of this enum constant, exactly as declared in its enum declaration. |
-| `int ordinal()` | Returns the ordinal of this enumeration constant (its position in its enum declaration, where the initial constant is assigned an ordinal of zero). |
-| `static GameStatus[] values()` | Returns an array containing all of the values of the enum in the order they are declared. |
-| `static GameStatus valueOf(String name)` | Returns the enum constant of this type with the specified name. |
-
-These methods are part of the standard functionality provided by Java for all enum types.
+Enums are typically used in switch statements or for controlling the flow of a program based on the state of an object. The `GameStatus` enum can be used to manage game state transitions and ensure that the application logic handles each state appropriately.

@@ -6,40 +6,50 @@ sidebar_label: ShareLinkResponse
 
 ## Overview
 
-The `ShareLinkResponse` class is a Java record that encapsulates the response details for a shared link within the application. It is part of the `com.upmatches.app.features.sharelink.responses` package. This class is designed to provide a structured response containing essential information about a shared link, such as its unique identifier, associated URLs, and metadata like click count and creation timestamp.
+The `ShareLinkResponse` class is a Java record that encapsulates the response details for a shared link within the application. It is part of the `com.upmatches.app.features.sharelink.responses` package and provides a structured way to represent the essential information about a shared link, including its identifiers, URLs, and metadata.
+
+## Purpose
+
+The primary purpose of the `ShareLinkResponse` class is to serve as a data transfer object (DTO) that carries information about a shared link from the server to the client. It includes various attributes such as the unique identifier, resource type, URLs for different platforms, and metadata like click count and creation timestamp.
 
 ## Public Methods
 
-### fromShortLink
+### `fromShortLink`
 
-The `fromShortLink` method is a static factory method that creates an instance of `ShareLinkResponse` from a `ShortLink` object and additional URL and click count information.
+The `fromShortLink` method is a static factory method that creates an instance of `ShareLinkResponse` from a `ShortLink` entity. This method is useful for converting the internal representation of a short link into a format suitable for external communication.
 
-| Parameter   | Type         | Description                                                   |
-|-------------|--------------|---------------------------------------------------------------|
-| `link`      | `ShortLink`  | The `ShortLink` entity containing basic link information.     |
-| `shareUrl`  | `String`     | The URL used for sharing the link.                            |
-| `webUrl`    | `String`     | The web URL associated with the link.                         |
-| `mobileUrl` | `String`     | The mobile URL associated with the link.                      |
-| `clickCount`| `Long`       | The number of times the link has been clicked.                |
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `public static ShareLinkResponse fromShortLink(ShortLink link, String shareUrl, String webUrl, String mobileUrl, Long clickCount)` | Creates a `ShareLinkResponse` instance from a `ShortLink` entity and additional URL and click count information. |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `link` | `ShortLink` | The `ShortLink` entity containing the core link data. |
+| `shareUrl` | `String` | The URL used for sharing the link. |
+| `webUrl` | `String` | The URL for accessing the link via a web browser. |
+| `mobileUrl` | `String` | The URL for accessing the link via a mobile device. |
+| `clickCount` | `Long` | The number of times the link has been clicked. |
 
 #### Return Type
 
-- **`ShareLinkResponse`**: Returns a new instance of `ShareLinkResponse` populated with data from the `ShortLink` entity and additional parameters.
+| Type | Description |
+| ---- | ----------- |
+| `ShareLinkResponse` | Returns a new instance of `ShareLinkResponse` populated with data from the `ShortLink` entity and additional parameters. |
 
-## Fields
+## Attributes
 
-The `ShareLinkResponse` record contains the following fields:
+The `ShareLinkResponse` record includes the following attributes:
 
-| Field Name   | Type          | Description                                                  |
-|--------------|---------------|--------------------------------------------------------------|
-| `id`         | `UUID`        | Unique identifier for the shared link.                       |
-| `code`       | `String`      | Code representing the shared link.                           |
-| `resourceType` | `ResourceType` | Enum indicating the type of resource being shared.          |
-| `resourceId` | `String`      | Identifier for the resource associated with the link.        |
-| `shareUrl`   | `String`      | URL used for sharing the link.                               |
-| `webUrl`     | `String`      | Web URL associated with the link.                            |
-| `mobileUrl`  | `String`      | Mobile URL associated with the link.                         |
-| `clickCount` | `Long`        | Number of times the link has been clicked.                   |
-| `createdAt`  | `Instant`     | Timestamp indicating when the link was created.              |
-
-This structured approach allows for easy integration and use of shared link data across different parts of the application.
+| Attribute | Type | Description |
+| --------- | ---- | ----------- |
+| `id` | `UUID` | The unique identifier of the shared link. |
+| `code` | `String` | The code associated with the shared link. |
+| `resourceType` | `ResourceType` | The type of resource being shared. |
+| `resourceId` | `String` | The identifier of the resource being shared. |
+| `shareUrl` | `String` | The URL used for sharing the link. |
+| `webUrl` | `String` | The URL for accessing the link via a web browser. |
+| `mobileUrl` | `String` | The URL for accessing the link via a mobile device. |
+| `clickCount` | `Long` | The number of times the link has been clicked. |
+| `createdAt` | `Instant` | The timestamp when the link was created. |

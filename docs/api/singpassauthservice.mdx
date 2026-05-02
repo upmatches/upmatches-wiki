@@ -4,9 +4,9 @@ title: SingpassAuthService
 sidebar_label: SingpassAuthService
 ---
 
-## Purpose
+## Overview
 
-The `SingpassAuthService` class is a service component in a Spring application that facilitates authentication with Singpass, a digital identity platform. It handles the creation and exchange of authorization codes, the generation of client assertions and DPoP proofs, and the verification of ID tokens. This service is crucial for integrating Singpass authentication into applications, ensuring secure and verified user identity management.
+The `SingpassAuthService` class is a service component in a Spring application that handles authentication with Singpass, a digital identity platform. It implements the `ISingpassAuthService` interface and provides methods to generate code verifiers and challenges, send pushed authorization requests, and exchange authorization codes for ID tokens. The class also includes functionality to decrypt and verify ID tokens using JSON Web Tokens (JWT) and JSON Web Encryption (JWE).
 
 ## Public Methods
 
@@ -14,42 +14,42 @@ The `SingpassAuthService` class is a service component in a Spring application t
 
 Generates a secure random code verifier for PKCE (Proof Key for Code Exchange).
 
-| Parameter | Type   | Description |
-|-----------|--------|-------------|
-| None      | N/A    | N/A         |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      |      |             |
 
-| Return Type | Description                      |
-|-------------|----------------------------------|
-| `String`    | A base64 URL-encoded code verifier. |
+| Return Type | Description                    |
+|-------------|--------------------------------|
+| `String`    | A base64-url-encoded code verifier. |
 
 ### `sendPushedAuthorizationRequest`
 
-Sends a Pushed Authorization Request (PAR) to the Singpass server.
+Sends a Pushed Authorization Request (PAR) to the Singpass authorization server.
 
-| Parameter      | Type     | Description                        |
-|----------------|----------|------------------------------------|
+| Parameter      | Type   | Description                          |
+|----------------|--------|--------------------------------------|
 | `state`        | `String` | The state parameter for the request. |
-| `nonce`        | `String` | A unique nonce for the request.    |
-| `codeVerifier` | `String` | The code verifier for PKCE.        |
+| `nonce`        | `String` | The nonce parameter for the request. |
+| `codeVerifier` | `String` | The code verifier for PKCE.          |
 
-| Return Type | Description                      |
-|-------------|----------------------------------|
-| `String`    | The authorization URL with the request URI. |
+| Return Type | Description                                      |
+|-------------|--------------------------------------------------|
+| `String`    | The authorization URL with the request URI.      |
 
 ### `exchangeAuthorizationCode`
 
 Exchanges an authorization code for an ID token.
 
-| Parameter         | Type     | Description                        |
-|-------------------|----------|------------------------------------|
-| `authorizationCode` | `String` | The authorization code received from Singpass. |
-| `codeVerifier`    | `String` | The code verifier for PKCE.        |
-| `nonce`           | `String` | The nonce used in the initial request. |
+| Parameter          | Type   | Description                                |
+|--------------------|--------|--------------------------------------------|
+| `authorizationCode`| `String` | The authorization code received from Singpass. |
+| `codeVerifier`     | `String` | The code verifier used in the initial request. |
+| `nonce`            | `String` | The nonce used in the initial request.    |
 
-| Return Type | Description                      |
-|-------------|----------------------------------|
-| `String`    | The subject (user identifier) from the verified ID token. |
+| Return Type | Description                                      |
+|-------------|--------------------------------------------------|
+| `String`    | The subject (sub) claim from the verified ID token. |
 
-## Additional Information
+## Usage
 
-The `SingpassAuthService` class relies on several external dependencies, including Nimbus JOSE+JWT for handling JWT operations and Spring's `RestClient` for HTTP requests. It also uses an `ObjectMapper` for JSON parsing and a `SingpassKeyProvider` for key management. The service is designed to be thread-safe and efficiently caches JSON Web Key Sets (JWKS) to minimize network calls.
+The `SingpassAuthService` class is designed to be used as a Spring service. It requires configuration properties and dependencies such as `RestClient`, `SingpassProperties`, `SingpassKeyProvider`, and `ObjectMapper` to function correctly. The service handles the complexities of interacting with Singpass's OAuth 2.0 and OpenID Connect endpoints, including generating necessary JWTs and handling cryptographic operations.

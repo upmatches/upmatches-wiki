@@ -4,23 +4,23 @@ title: IGameLookupService Interface
 sidebar_label: IGameLookupService
 ---
 
-## Overview
+## Purpose
 
-The `IGameLookupService` interface is a part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide lookup functionalities for various entities such as `Game`, `Activity`, `Venue`, `User`, and `SkillLevel`. This interface ensures that any implementing class, such as `GameLookupService`, provides concrete implementations for these lookup methods, which are essential for retrieving entities by their identifiers and handling scenarios where entities might not be found.
+The `IGameLookupService` interface is designed to provide a contract for services that perform lookup operations for various entities within a gaming application. This interface ensures that implementing classes provide methods to retrieve `Game`, `Activity`, `Venue`, `User`, and `SkillLevel` entities by their identifiers. It is a sealed interface, meaning it restricts which classes can implement it, specifically allowing only the `GameLookupService` class.
 
 ## Public Methods
 
 The following table documents the public methods available in the `IGameLookupService` interface:
 
-| Method Name                   | Parameters          | Return Type | Description                                                                 |
-|-------------------------------|---------------------|-------------|-----------------------------------------------------------------------------|
-| `findGameOrThrow`             | `UUID id`           | `Game`      | Finds a `Game` by its UUID or throws an exception if not found.             |
-| `findGameForUpdateOrThrow`    | `UUID id`           | `Game`      | Finds a `Game` for update by its UUID or throws an exception if not found.  |
-| `findGameIgnoringDeletedOrThrow` | `UUID id`       | `Game`      | Finds a `Game` ignoring its deleted status by its UUID or throws an exception if not found. |
-| `findActivityOrThrow`         | `UUID id`           | `Activity`  | Finds an `Activity` by its UUID or throws an exception if not found.        |
-| `findVenueOrThrow`            | `Long id`           | `Venue`     | Finds a `Venue` by its ID or throws an exception if not found.              |
-| `findUserOrThrow`             | `UUID id`           | `User`      | Finds a `User` by its UUID or throws an exception if not found.             |
-| `findUserForUpdateOrThrow`    | `UUID id`           | `User`      | Finds a `User` for update by its UUID or throws an exception if not found.  |
-| `findSkillLevelOrThrow`       | `Long id`           | `SkillLevel`| Finds a `SkillLevel` by its ID or throws an exception if not found.         |
+| Method Name                     | Parameters          | Return Type | Description                                                                 |
+|---------------------------------|---------------------|-------------|-----------------------------------------------------------------------------|
+| `findGameOrThrow`               | `UUID id`           | `Game`      | Finds a `Game` by its UUID or throws an exception if not found.             |
+| `findGameForUpdateOrThrow`      | `UUID id`           | `Game`      | Finds a `Game` by its UUID for update purposes or throws if not found.      |
+| `findGameIgnoringDeletedOrThrow`| `UUID id`           | `Game`      | Finds a `Game` by its UUID, ignoring deleted ones, or throws if not found.  |
+| `findActivityOrThrow`           | `UUID id`           | `Activity`  | Finds an `Activity` by its UUID or throws an exception if not found.        |
+| `findVenueOrThrow`              | `Long id`           | `Venue`     | Finds a `Venue` by its ID or throws an exception if not found.              |
+| `findUserOrThrow`               | `UUID id`           | `User`      | Finds a `User` by its UUID or throws an exception if not found.             |
+| `findUserForUpdateOrThrow`      | `UUID id`           | `User`      | Finds a `User` by its UUID for update purposes or throws if not found.      |
+| `findSkillLevelOrThrow`         | `Long id`           | `SkillLevel`| Finds a `SkillLevel` by its ID or throws an exception if not found.         |
 
-This interface is designed to facilitate robust and reliable entity retrieval operations, ensuring that the application can handle missing entities gracefully by throwing exceptions when entities are not found.
+This interface is crucial for ensuring that the application can reliably access and manipulate game-related entities, providing a consistent API for lookup operations.

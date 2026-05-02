@@ -6,25 +6,33 @@ sidebar_label: IJwtTokenService
 
 ## Overview
 
-The `IJwtTokenService` interface is part of the `com.upmatches.app.features.auth.services` package. It defines the contract for generating JWT tokens, specifically access and refresh tokens, which are essential for authentication and authorization processes in applications. This interface is implemented by the `JwtTokenService` class.
+The `IJwtTokenService` interface is part of the `com.upmatches.app.features.auth.services` package. It defines the contract for generating JWT tokens, specifically access and refresh tokens, which are crucial for authentication and authorization processes in applications. This interface is implemented by the `JwtTokenService` class.
 
 ## Public Methods
 
 ### `generateAccessToken`
 
-Generates an access token for a user based on various unique identifiers.
+Generates an access token for a user based on various UUIDs associated with different authentication providers.
 
-| Parameter     | Type   | Description                                |
-|---------------|--------|--------------------------------------------|
-| `userId`      | `UUID` | The unique identifier for the user.        |
-| `singpassUuid`| `String` | The Singpass unique identifier.           |
-| `auth0Uuid`   | `String` | The Auth0 unique identifier.              |
-| `appleUuid`   | `String` | The Apple unique identifier.              |
+| Parameter     | Type   | Description                                      |
+|---------------|--------|--------------------------------------------------|
+| `userId`      | `UUID` | The unique identifier for the user.              |
+| `singpassUuid`| `String` | The UUID associated with Singpass authentication. |
+| `auth0Uuid`   | `String` | The UUID associated with Auth0 authentication.   |
+| `appleUuid`   | `String` | The UUID associated with Apple authentication.   |
 
-**Returns**: `AccessTokenResult` - An object containing the result of the access token generation.
+| Return Type            | Description                                      |
+|------------------------|--------------------------------------------------|
+| `AccessTokenResult`    | An object containing the generated access token. |
 
 ### `generateRefreshToken`
 
 Generates a refresh token which can be used to obtain a new access token without re-authenticating the user.
 
-**Returns**: `String` - A newly generated refresh token.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| *(none)*  |      |             |
+
+| Return Type | Description                                      |
+|-------------|--------------------------------------------------|
+| `String`    | A string representing the generated refresh token. |

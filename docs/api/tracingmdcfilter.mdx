@@ -1,41 +1,40 @@
 ---
 id: tracing-mdc-filter
-title: TracingMdcFilter Class
+title: TracingMdcFilter
 sidebar_label: TracingMdcFilter
 ---
 
 ## Overview
 
-The `TracingMdcFilter` class is a Spring component designed to integrate with the Micrometer Tracing library. It extends the `OncePerRequestFilter` to ensure that the filter is executed once per request within a web application. The primary purpose of this filter is to add tracing information, specifically the trace ID and span ID, to the Mapped Diagnostic Context (MDC) for logging purposes. This allows for enhanced traceability and correlation of log messages with specific requests and spans.
+The `TracingMdcFilter` class is a Spring component that integrates with the Micrometer Tracing library to add tracing information to the SLF4J Mapped Diagnostic Context (MDC). This filter ensures that each HTTP request is associated with a trace and span ID, which can be used for logging and debugging purposes. It extends the `OncePerRequestFilter` to guarantee that the filter is executed once per request.
 
 ## Public Methods
 
-The `TracingMdcFilter` class provides the following public methods:
+The `TracingMdcFilter` class contains the following public methods:
 
-### Constructor
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `TracingMdcFilter` | `Tracer tracer` |  | Constructor that initializes the filter with a `Tracer` instance. |
+| `doFilterInternal` | `HttpServletRequest request`, `HttpServletResponse response`, `FilterChain filterChain` | `void` | Overrides the `doFilterInternal` method to add trace and span IDs to the MDC for the duration of the request. |
 
-| Method Signature | Description |
-|------------------|-------------|
-| `TracingMdcFilter(Tracer tracer)` | Constructs a new `TracingMdcFilter` with the specified `Tracer` instance. The `Tracer` is used to obtain the current span and its context. |
+### Method Details
 
-### doFilterInternal
+#### TracingMdcFilter Constructor
 
-| Method Signature | Description |
-|------------------|-------------|
-| `protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException` | This method is overridden from `OncePerRequestFilter` and is executed for each HTTP request. It retrieves the current span from the `Tracer`, extracts the trace ID and span ID, and adds them to the MDC. After the request is processed, it ensures that the MDC entries are removed to prevent leakage of trace information across requests. |
+- **Parameters:**
+  - `Tracer tracer`: An instance of the `Tracer` used to obtain the current span and its context.
 
-#### Parameters
+- **Description:** 
+  - Initializes the `TracingMdcFilter` with the provided `Tracer` instance. This is essential for retrieving the current span's trace and span IDs.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `request` | `HttpServletRequest` | The HTTP request object. |
-| `response` | `HttpServletResponse` | The HTTP response object. |
-| `filterChain` | `FilterChain` | The filter chain to pass the request and response to the next filter. |
+#### doFilterInternal Method
 
-#### Return Type
+- **Parameters:**
+  - `HttpServletRequest request`: The HTTP request object.
+  - `HttpServletResponse response`: The HTTP response object.
+  - `FilterChain filterChain`: The filter chain to pass the request and response to the next filter.
 
-This method does not return a value. It throws `ServletException` and `IOException` if an error occurs during request processing.
+- **Return Type:** `void`
 
-## Usage
-
-The `TracingMdcFilter` is automatically registered as a Spring component and is conditionally enabled when a `Tracer` bean is present in the application context. It is ordered with a high precedence to ensure that tracing information is available early in the request processing lifecycle.
+- **Description:** 
+  - This method is called once per request. It retrieves the current span from the `Tracer` and adds its trace and span IDs to the MDC. This allows the trace information to be included in logs, facilitating easier tracking and debugging of requests. After the request is processed, the trace and span IDs are removed from the MDC to prevent leakage into subsequent requests.

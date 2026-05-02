@@ -4,31 +4,24 @@ title: AsyncConfiguration Class
 sidebar_label: AsyncConfiguration
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+## Purpose of the AsyncConfiguration Class
 
-## Purpose
-
-The `AsyncConfiguration` class is a Spring configuration class that enables asynchronous processing and scheduling within a Spring application. It defines a custom `Executor` bean that is used to manage asynchronous tasks. By configuring a `ThreadPoolTaskExecutor`, this class allows for the concurrent execution of tasks, improving the application's performance and responsiveness.
+The `AsyncConfiguration` class is a Spring configuration class designed to enable asynchronous processing and scheduling within a Spring application. By using the `@EnableAsync` and `@EnableScheduling` annotations, this configuration allows the application to run tasks asynchronously and schedule tasks for future execution. The class defines a custom `Executor` bean that manages a thread pool, optimizing the execution of concurrent tasks.
 
 ## Public Methods
 
-<Tabs>
-<TabItem value="taskExecutor" label="taskExecutor">
+The `AsyncConfiguration` class provides the following public method:
 
-| Method Name | Parameters | Return Type | Description |
-|-------------|------------|-------------|-------------|
-| `taskExecutor` | None | `Executor` | Configures and returns a `ThreadPoolTaskExecutor` bean with specified core pool size, max pool size, queue capacity, and thread name prefix. |
-
-</TabItem>
-</Tabs>
+| Method Name   | Parameters | Return Type | Description |
+|---------------|------------|-------------|-------------|
+| `taskExecutor` | None       | `Executor`  | Configures and returns a `ThreadPoolTaskExecutor` with specified core pool size, max pool size, queue capacity, and thread name prefix. |
 
 ### Method Details
 
-#### taskExecutor
+#### `taskExecutor`
 
-- **Purpose**: Configures a `ThreadPoolTaskExecutor` with specific settings for core pool size, maximum pool size, queue capacity, and thread name prefix.
+- **Purpose**: This method configures a `ThreadPoolTaskExecutor` to manage asynchronous task execution. It sets the core pool size, maximum pool size, queue capacity, and thread name prefix to optimize task handling.
 - **Parameters**: This method does not take any parameters.
-- **Return Type**: Returns an `Executor` instance, specifically a `ThreadPoolTaskExecutor`.
+- **Return Type**: `Executor` - The method returns an instance of `ThreadPoolTaskExecutor` configured with the specified properties.
 
-The `taskExecutor` method is annotated with `@Bean`, indicating that it returns a Spring bean to be managed by the Spring container. This executor is used for executing asynchronous tasks within the application, allowing for efficient task management and execution.
+By configuring the `ThreadPoolTaskExecutor`, the `AsyncConfiguration` class ensures that the application can efficiently handle multiple asynchronous tasks, improving performance and responsiveness.

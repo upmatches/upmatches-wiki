@@ -4,9 +4,9 @@ title: MeGameController
 sidebar_label: MeGameController
 ---
 
-## Overview
+## Purpose
 
-The `MeGameController` class is a Spring Boot REST controller responsible for handling HTTP requests related to games that a user has either joined or hosted. It provides endpoints to retrieve paginated lists of these games, utilizing cursor-based pagination for efficient data retrieval.
+The `MeGameController` class is a REST controller in a Spring Boot application that handles HTTP requests related to games associated with the current user. It provides endpoints to retrieve games that the user has joined or hosted. The controller utilizes cursor-based pagination to efficiently manage large datasets.
 
 ## Public Methods
 
@@ -14,24 +14,24 @@ The `MeGameController` class is a Spring Boot REST controller responsible for ha
 
 Retrieves a paginated list of games that the user has joined.
 
-| Parameter | Type    | Description                                                                 | Required | Default Value |
-|-----------|---------|-----------------------------------------------------------------------------|----------|---------------|
-| cursor    | String  | The cursor for pagination.                                                   | No       | `null`        |
-| size      | Integer | The number of records to retrieve per page.                                  | No       | `20`          |
-| request   | HttpServletRequest | The HTTP request object.                                          | Yes      | N/A           |
+| Parameter | Type    | Description                                    |
+|-----------|---------|------------------------------------------------|
+| cursor    | String  | An optional cursor for pagination.             |
+| size      | Integer | The number of records to retrieve per page. Defaults to 20. |
+| request   | HttpServletRequest | The HTTP request object.             |
 
 **Returns:** `ResponseEntity<ApiResponse<CursorPagedResponse<GameResponse>>>`  
-A response entity containing the API response with a paginated list of joined games.
+A response entity containing the paginated list of joined games and a success message.
 
 ### listHostedGames
 
 Retrieves a paginated list of games that the user has hosted.
 
-| Parameter | Type    | Description                                                                 | Required | Default Value |
-|-----------|---------|-----------------------------------------------------------------------------|----------|---------------|
-| cursor    | String  | The cursor for pagination.                                                   | No       | `null`        |
-| size      | Integer | The number of records to retrieve per page.                                  | No       | `20`          |
-| request   | HttpServletRequest | The HTTP request object.                                          | Yes      | N/A           |
+| Parameter | Type    | Description                                    |
+|-----------|---------|------------------------------------------------|
+| cursor    | String  | An optional cursor for pagination.             |
+| size      | Integer | The number of records to retrieve per page. Defaults to 20. |
+| request   | HttpServletRequest | The HTTP request object.             |
 
 **Returns:** `ResponseEntity<ApiResponse<CursorPagedResponse<GameResponse>>>`  
-A response entity containing the API response with a paginated list of hosted games.
+A response entity containing the paginated list of hosted games and a success message.

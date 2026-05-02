@@ -6,32 +6,34 @@ sidebar_label: CorrelationIdFilter
 
 ## Purpose
 
-The `CorrelationIdFilter` class is a servlet filter that ensures each HTTP request is associated with a unique correlation ID. This ID is used for tracing and logging purposes, allowing for better tracking of requests as they flow through a distributed system. The filter checks for an existing correlation ID in the request headers and generates a new one if necessary. This ID is then added to the response headers and the logging context.
+The `CorrelationIdFilter` class is a Spring component that ensures each HTTP request is assigned a unique correlation ID. This ID is used for tracing and logging purposes, allowing for better tracking of requests as they flow through a distributed system. The filter checks for an existing correlation ID in the request headers and generates a new one if none is found. It then adds this ID to the response headers and manages it within the logging context using SLF4J's MDC (Mapped Diagnostic Context).
 
 ## Public Methods
 
 ### `doFilterInternal`
 
-This method is an overridden implementation of the `doFilterInternal` method from the `OncePerRequestFilter` class. It processes the incoming HTTP request and response, managing the correlation ID for tracing purposes.
+This method is the core of the `CorrelationIdFilter` class, responsible for processing each HTTP request and response to manage the correlation ID.
 
-| Parameter   | Type                      | Description                                                                 |
-|-------------|---------------------------|-----------------------------------------------------------------------------|
-| `request`   | `HttpServletRequest`      | The HTTP request object.                                                    |
-| `response`  | `HttpServletResponse`     | The HTTP response object.                                                   |
-| `filterChain` | `FilterChain`           | The filter chain to pass the request and response to the next filter.       |
+| Parameter    | Type                      | Description                                                                 |
+|--------------|---------------------------|-----------------------------------------------------------------------------|
+| `request`    | `HttpServletRequest`      | The HTTP request object.                                                    |
+| `response`   | `HttpServletResponse`     | The HTTP response object.                                                   |
+| `filterChain`| `FilterChain`             | The filter chain to pass the request and response to the next filter.       |
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | This method does not return a value. |
+**Return Type:** `void`
+
+**Exceptions:** 
+- `ServletException` - if an error occurs during the filtering process.
+- `IOException` - if an I/O error occurs during the filtering process.
 
 ### `resolveCorrelationId`
 
-This private method resolves the correlation ID from the request. It checks if the request contains a correlation ID header and returns it. If the header is absent or blank, it generates a new correlation ID.
+This private method determines the correlation ID for the current request. It checks for an existing ID in the request headers and generates a new one if necessary.
 
-| Parameter   | Type                      | Description                                                                 |
-|-------------|---------------------------|-----------------------------------------------------------------------------|
-| `request`   | `HttpServletRequest`      | The HTTP request object from which to extract the correlation ID.           |
+| Parameter    | Type                      | Description                                                                 |
+|--------------|---------------------------|-----------------------------------------------------------------------------|
+| `request`    | `HttpServletRequest`      | The HTTP request object from which to extract the correlation ID.           |
 
-| Return Type | Description |
-|-------------|-------------|
-| `String`    | Returns the resolved or newly generated correlation ID. |
+**Return Type:** `String`
+
+**Description:** Returns the correlation ID as a string, either extracted from the request header or newly generated.

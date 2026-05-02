@@ -6,42 +6,40 @@ sidebar_label: PagedResponse
 
 ## Purpose
 
-The `PagedResponse` class is a generic wrapper designed to encapsulate paginated responses. It is particularly useful in RESTful APIs where data is returned in pages. This class leverages Spring Data's `Page` interface to provide a structured response that includes both the content of the current page and pagination metadata.
+The `PagedResponse` class is a generic wrapper designed to encapsulate paginated responses. It is particularly useful in RESTful APIs where data is returned in pages. This class utilizes Spring Data's `Page` interface to provide a structured way to handle pagination metadata along with the actual content of the current page.
 
 ## Public Methods
 
-The `PagedResponse` class provides two static methods to create instances of paginated responses. These methods are designed to be flexible, allowing for straightforward creation of paginated data responses with or without transformation of the data items.
+The `PagedResponse` class provides two static methods to create instances of paginated responses. These methods are designed to be flexible, allowing for straightforward conversion from a `Page` object to a `PagedResponse`.
 
 ### Method: `of(Page<T> page)`
 
-Creates a `PagedResponse` instance from a given `Page` object.
+This method creates a `PagedResponse` from a given `Page` object, encapsulating the content and pagination metadata.
 
-| Parameter | Type     | Description                           |
-|-----------|----------|---------------------------------------|
-| page      | `Page<T>`| The page object containing data items.|
+| Parameter | Type     | Description                       |
+|-----------|----------|-----------------------------------|
+| page      | `Page<T>`| The page object containing data.  |
 
-| Return Type | Description                                |
-|-------------|--------------------------------------------|
-| `PagedResponse<T>` | A new instance of `PagedResponse` containing the content and pagination metadata from the provided page. |
+| Return Type      | Description                                      |
+|------------------|--------------------------------------------------|
+| `PagedResponse<T>` | A new instance of `PagedResponse` with content and pagination metadata. |
 
 ### Method: `of(Page<T> page, Function<T, R> mapper)`
 
-Creates a `PagedResponse` instance from a given `Page` object and applies a transformation function to each item.
+This method creates a `PagedResponse` from a given `Page` object and applies a mapping function to transform the content.
 
-| Parameter | Type                | Description                                                   |
-|-----------|---------------------|---------------------------------------------------------------|
-| page      | `Page<T>`           | The page object containing data items.                        |
-| mapper    | `Function<T, R>`    | A function to transform each item in the page to a different type. |
+| Parameter | Type                  | Description                                         |
+|-----------|-----------------------|-----------------------------------------------------|
+| page      | `Page<T>`             | The page object containing data.                    |
+| mapper    | `Function<T, R>`      | A function to transform each element in the content.|
 
-| Return Type | Description                                |
-|-------------|--------------------------------------------|
-| `PagedResponse<R>` | A new instance of `PagedResponse` containing the transformed content and pagination metadata from the provided page. |
+| Return Type      | Description                                      |
+|------------------|--------------------------------------------------|
+| `PagedResponse<R>` | A new instance of `PagedResponse` with transformed content and pagination metadata. |
 
 ## PageInfo Record
 
-The `PageInfo` record is a nested static record within the `PagedResponse` class. It holds metadata about the pagination state.
-
-### Fields
+The `PageInfo` record is a nested static record within `PagedResponse` that holds pagination metadata. It provides detailed information about the current page, including the page number, size, total elements, total pages, and navigation flags.
 
 | Field         | Type      | Description                                           |
 |---------------|-----------|-------------------------------------------------------|

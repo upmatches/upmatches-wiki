@@ -4,30 +4,28 @@ title: UserRepository Interface
 sidebar_label: UserRepository
 ---
 
-## Overview
+## Purpose
 
-The `UserRepository` interface is a part of the `com.upmatches.app.features.user.repositories` package and extends the `JpaRepository` interface provided by Spring Data JPA. It is designed to manage `User` entities, which are identified by a `UUID`. This interface provides several methods for retrieving `User` entities based on different unique identifiers and supports locking mechanisms for concurrent data access.
+The `UserRepository` interface is a part of the `com.upmatches.app.features.user.repositories` package and extends the `JpaRepository` interface provided by Spring Data JPA. It is designed to manage `User` entities, which are identified by a `UUID`. This repository interface provides several methods for querying `User` entities based on different unique identifiers such as Singpass UUID, Auth0 UUID, Apple UUID, and email. Additionally, it supports a method for obtaining a user entity with a pessimistic write lock.
 
 ## Public Methods
 
-The `UserRepository` interface includes the following public methods:
+| Method Signature | Description |
+|------------------|-------------|
+| `Optional<User> findBySingpassUuid(String singpassUuid)` | Retrieves a `User` entity based on the provided Singpass UUID. |
+| `Optional<User> findByAuth0Uuid(String auth0UserId)` | Retrieves a `User` entity based on the provided Auth0 UUID. |
+| `Optional<User> findByAppleUuid(String appleUuid)` | Retrieves a `User` entity based on the provided Apple UUID. |
+| `Optional<User> findFirstByEmail(String email)` | Retrieves the first `User` entity that matches the provided email. |
+| `Optional<User> findForUpdateById(@Param("id") UUID id)` | Retrieves a `User` entity by its ID with a pessimistic write lock, ensuring that the entity is locked for updates. |
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `findBySingpassUuid` | `String singpassUuid` | `Optional<User>` | Retrieves a `User` entity by its Singpass UUID. |
-| `findByAuth0Uuid` | `String auth0UserId` | `Optional<User>` | Retrieves a `User` entity by its Auth0 UUID. |
-| `findByAppleUuid` | `String appleUuid` | `Optional<User>` | Retrieves a `User` entity by its Apple UUID. |
-| `findFirstByEmail` | `String email` | `Optional<User>` | Retrieves the first `User` entity found with the specified email. |
-| `findForUpdateById` | `UUID id` | `Optional<User>` | Retrieves a `User` entity by its ID with a pessimistic write lock to prevent concurrent modifications. |
+## Parameters and Return Types
 
-## Method Details
+| Method | Parameters | Return Type |
+|--------|------------|-------------|
+| `findBySingpassUuid` | `singpassUuid` (String): The Singpass UUID of the user. | `Optional<User>` |
+| `findByAuth0Uuid` | `auth0UserId` (String): The Auth0 UUID of the user. | `Optional<User>` |
+| `findByAppleUuid` | `appleUuid` (String): The Apple UUID of the user. | `Optional<User>` |
+| `findFirstByEmail` | `email` (String): The email of the user. | `Optional<User>` |
+| `findForUpdateById` | `id` (UUID): The unique identifier of the user. | `Optional<User>` |
 
-- **findBySingpassUuid**: This method is used to find a `User` entity using the Singpass UUID, which is a unique identifier associated with the Singpass authentication system.
-
-- **findByAuth0Uuid**: This method allows retrieval of a `User` entity using the Auth0 UUID, which is a unique identifier associated with the Auth0 authentication system.
-
-- **findByAppleUuid**: This method is used to find a `User` entity using the Apple UUID, which is a unique identifier associated with Apple's authentication system.
-
-- **findFirstByEmail**: This method retrieves the first `User` entity that matches the specified email address. It is useful for cases where email addresses are expected to be unique.
-
-- **findForUpdateById**: This method retrieves a `User` entity by its ID and applies a pessimistic write lock. This ensures that the entity cannot be modified by other transactions until the current transaction is completed, which is useful for maintaining data integrity in concurrent environments.
+The `UserRepository` interface leverages Spring Data JPA's capabilities to simplify data access layers, providing a clean and efficient way to perform CRUD operations and custom queries on `User` entities.

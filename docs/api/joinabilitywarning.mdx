@@ -6,7 +6,7 @@ sidebar_label: JoinabilityWarning
 
 ## Overview
 
-The `JoinabilityWarning` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to represent different types of warnings that may occur when a user attempts to join a game. This enum helps in identifying specific conditions that might prevent or caution a user from joining a game session.
+The `JoinabilityWarning` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to represent specific warnings that might be encountered when attempting to join a game. This enum helps in categorizing and handling different types of joinability issues that a user might face.
 
 ## Enum Constants
 
@@ -15,8 +15,8 @@ The `JoinabilityWarning` enum defines the following constants:
 | Constant       | Description                                                                 |
 |----------------|-----------------------------------------------------------------------------|
 | IS_ORGANIZER   | Indicates that the user attempting to join is the organizer of the game.    |
-| SKILL_MISMATCH | Indicates that there is a skill mismatch between the user and the game.     |
+| SKILL_MISMATCH | Indicates that there is a skill mismatch between the user and the game requirements. |
 
 ## Usage
 
-This enum can be used in game-related logic to check for conditions that might affect a user's ability to join a game. By using these constants, developers can implement logic to handle these specific warnings appropriately, such as notifying the user or preventing them from joining under certain conditions.
+This enum can be used in scenarios where you need to check or handle the reasons why a user might not be able to join a game. By using these constants, you can provide more specific feedback or take appropriate actions based on the type of warning encountered.

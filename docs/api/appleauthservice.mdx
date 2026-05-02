@@ -1,20 +1,20 @@
 ---
 id: apple-auth-service
-title: AppleAuthService
+title: AppleAuthService Class Documentation
 sidebar_label: AppleAuthService
 ---
 
 ## Overview
 
-The `AppleAuthService` class is a part of the authentication services in the `com.upmatches.app.features.auth.services` package. It is responsible for verifying Apple ID tokens using the JSON Web Key Set (JWKS) provided by Apple. This service ensures that the tokens are valid and have the correct issuer and audience claims. It also caches the JWKS to optimize performance by reducing the number of network requests.
+The `AppleAuthService` class is a part of the authentication services in the application, specifically designed to handle the verification of Apple ID tokens. It implements the `IAppleAuthService` interface and utilizes various libraries to process and verify JSON Web Tokens (JWT) issued by Apple. The service ensures that the tokens are valid, the issuer and audience match expected values, and extracts necessary claims such as the subject and email.
 
 ## Public Methods
 
-The `AppleAuthService` class implements the `IAppleAuthService` interface and provides the following public method:
+The `AppleAuthService` class provides the following public method:
 
 | Method | Parameters | Return Type | Description |
 |--------|------------|-------------|-------------|
-| `verifyIdentityToken` | `identityToken` (String) | `AppleVerifiedClaims` | Verifies the provided Apple ID token and returns the claims if the token is valid. Throws an `IllegalStateException` if verification fails. |
+| `verifyIdentityToken` | `identityToken: String` | `AppleVerifiedClaims` | Verifies the given Apple ID token and returns the verified claims. Throws an `IllegalStateException` if verification fails. |
 
 ### Method Details
 
@@ -28,4 +28,17 @@ The `AppleAuthService` class implements the `IAppleAuthService` interface and pr
 
 - **Return Type:** `AppleVerifiedClaims`
 
-- **Description:** This method verifies the provided Apple ID token by checking its claims against the expected issuer and audience. It uses the JWKS fetched from Apple to validate the token's signature. If the token is valid, it returns an `AppleVerifiedClaims` object containing the subject and email claims. If the token is invalid, it throws an `IllegalStateException` with an appropriate error message.
+- **Description:** This method attempts to verify the provided Apple ID token. It processes the token to ensure it is valid, checks the issuer and audience against expected values, and extracts the subject and email claims. If any of these checks fail, it throws an `IllegalStateException` with an appropriate error message. Upon successful verification, it returns an instance of `AppleVerifiedClaims` containing the subject and email.
+
+## Internal Logic
+
+The class uses a caching mechanism for JSON Web Key Sets (JWKS) to optimize the verification process. It fetches the JWKS from Apple's server and caches it for a specified duration (`JWKS_CACHE_SECONDS`). The `getAppleJwks` method handles this caching logic, ensuring that the JWKS is only fetched when necessary.
+
+The verification process involves:
+
+1. Fetching the JWKS from Apple's server if not cached or expired.
+2. Using the `DefaultJWTProcessor` to process the token with the fetched JWKS.
+3. Validating the issuer and audience claims against expected values from `AppleProperties`.
+4. Extracting the subject and email claims from the token.
+
+The class logs various stages of the verification process for debugging and monitoring purposes.

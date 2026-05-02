@@ -6,29 +6,37 @@ sidebar_label: List Game Bookmarks Service
 
 ## Overview
 
-The `ListGameBookmarksService` class is a service component in a Java application that manages the retrieval of game bookmarks for a user. It is part of the application's game feature set and is responsible for executing a paginated query to fetch bookmarks based on a cursor and size. This service ensures that only active participants are considered and provides a paginated response with the necessary bookmark details.
+The `ListGameBookmarksService` class is a part of the game feature services in the application. It is responsible for retrieving a paginated list of game bookmarks for a user, using a cursor-based pagination mechanism. This service ensures that the bookmarks are fetched efficiently and includes participant counts for each game.
 
 ## Public Methods
 
 ### `execute`
 
-This method retrieves a paginated list of game bookmarks for the authenticated user. It uses a cursor-based pagination mechanism to efficiently fetch the data.
+Retrieves a paginated list of game bookmarks for the authenticated user.
 
 | Parameter | Type   | Description                                                                 |
 |-----------|--------|-----------------------------------------------------------------------------|
-| `cursor`  | String | The cursor indicating the starting point for the next page of results.      |
-| `size`    | int    | The maximum number of bookmarks to retrieve in this request.                |
+| `cursor`  | String | The cursor indicating the starting point for the pagination.                |
+| `size`    | int    | The number of bookmarks to retrieve.                                        |
 
-#### Returns
+| Return Type                                | Description                                                                                     |
+|--------------------------------------------|-------------------------------------------------------------------------------------------------|
+| `CursorPagedResponse<GameBookmarkResponse>` | A response containing a list of `GameBookmarkResponse` objects and a cursor for the next page.  |
 
-- `CursorPagedResponse<GameBookmarkResponse>`: A paginated response containing the list of game bookmarks and a cursor for the next page of results, if available.
+## Detailed Description
 
-## Key Components
+The `execute` method performs the following operations:
 
-- **GameBookmarkRepository**: Used to access and retrieve game bookmark data from the database.
-- **GameParticipantRepository**: Used to count active participants for the games associated with the bookmarks.
-- **IAuthenticatedUserResolver**: Resolves the authenticated user's ID to ensure that bookmarks are fetched for the correct user.
-- **GameCursor**: Handles encoding and decoding of cursors for pagination purposes.
-- **ServiceOperationExecutor**: Executes the service operation with error handling and status management.
+1. **User Identification**: It retrieves the user ID of the authenticated user using the `userResolver`.
 
-This service is marked with the `@Service` annotation, indicating that it is a Spring service component, and it uses the `@Transactional(readOnly = true)` annotation to ensure that the database operations are performed in a read-only transaction.
+2. **Cursor Decoding**: It decodes the provided cursor to determine the starting point for fetching bookmarks.
+
+3. **Bookmark Retrieval**: It fetches a list of `GameBookmark` entities from the `bookmarkRepository` based on the user ID and the decoded cursor values.
+
+4. **Participant Count Calculation**: It calculates the number of active participants for each game associated with the bookmarks using the `participantRepository`.
+
+5. **Response Construction**: It maps the bookmarks to `GameBookmarkResponse` objects, including the participant counts, and constructs a `CursorPagedResponse` with the results and the next cursor.
+
+6. **Error Handling**: It uses `ServiceOperationExecutor` to handle the operation execution and manage exceptions, specifically throwing a `ResourceNotFoundException` if necessary.
+
+This service is marked with the `@Service` annotation, indicating that it is a Spring-managed service component, and it uses the `@Transactional(readOnly = true)` annotation to ensure that the database operations are executed in a read-only transaction.

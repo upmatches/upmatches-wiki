@@ -4,30 +4,22 @@ title: ListVenuesService
 sidebar_label: List Venues Service
 ---
 
-import { PagedResponse, VenueResponse, ResourceNotFoundException } from '/path/to/your/models';
-
 ## Overview
 
-The `ListVenuesService` class is a Spring service responsible for retrieving a paginated list of venues from the database. It leverages the `VenueRepository` to perform the database operations and returns the results wrapped in a `PagedResponse` object. This service is designed to be used in a read-only transactional context to ensure data consistency and integrity.
+The `ListVenuesService` class is a part of the `com.upmatches.app.features.venue.services` package. It is responsible for retrieving a paginated list of venues from the database. This service leverages the `VenueRepository` to access venue data and returns it in a paginated format using the `PagedResponse` class. The service is designed to be used in a read-only transactional context to ensure data consistency and integrity.
 
 ## Public Methods
 
 ### `execute`
 
-The `execute` method retrieves a paginated list of venues from the database.
+Retrieves a paginated list of venues.
 
-| Parameter | Type      | Description                                     |
-|-----------|-----------|-------------------------------------------------|
-| pageable  | `Pageable`| The pagination information for the query.       |
+| Parameter | Type            | Description                     |
+|-----------|-----------------|---------------------------------|
+| pageable  | `Pageable`      | Provides pagination information.|
 
-| Return Type                      | Description                                           |
-|----------------------------------|-------------------------------------------------------|
-| `PagedResponse<VenueResponse>`   | A paginated response containing the venue data.       |
+| Return Type                          | Description                                      |
+|--------------------------------------|--------------------------------------------------|
+| `PagedResponse<VenueResponse>`       | A paginated response containing venue data.      |
 
-#### Exceptions
-
-- `ResourceNotFoundException`: Thrown if no venues are found during the retrieval operation.
-
-## Usage
-
-To use the `ListVenuesService`, you need to inject it into your component and call the `execute` method with the appropriate `Pageable` parameter to get the paginated list of venues. This service ensures that all operations are performed within a read-only transaction, optimizing for performance and data integrity.
+The `execute` method uses the `ServiceOperationExecutor` to perform the retrieval operation. It handles the operation status and throws a `ResourceNotFoundException` if no venues are found. This method is annotated with `@Transactional(readOnly = true)` to indicate that it is a read-only transaction, ensuring that no data modifications occur during its execution.

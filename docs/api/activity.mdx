@@ -1,40 +1,33 @@
 ---
-id: activity-entity
-title: Activity Entity
+id: activity
+title: Activity Class
 sidebar_label: Activity
 ---
 
-## Purpose of the `Activity` Class
+## Purpose
 
-The `Activity` class is a JPA entity representing an activity record in the database. It is mapped to the `activities` table and includes fields such as `id`, `referenceId`, `name`, `createdAt`, and `updatedAt`. This class provides functionality to create and update activity records, automatically managing timestamps for creation and updates.
+The `Activity` class represents an entity in the application that is mapped to the `activities` table in the database. It is designed to handle activities with unique identifiers and names, and it automatically manages timestamps for creation and updates. This class leverages JPA annotations for ORM (Object-Relational Mapping) and uses Lombok for boilerplate code reduction.
 
 ## Public Methods
 
-### `create`
+The `Activity` class provides the following public methods:
 
-Creates a new instance of the `Activity` class with the specified name.
+| Method Name   | Parameters          | Return Type | Description                                                                 |
+|---------------|---------------------|-------------|-----------------------------------------------------------------------------|
+| `create`      | `String name`       | `Activity`  | Static factory method to create a new `Activity` instance with the given name. |
+| `updateName`  | `String name`       | `void`      | Updates the name of the `Activity` instance.                                |
 
-| Parameter | Type   | Description                  |
-|-----------|--------|------------------------------|
-| `name`    | String | The name of the activity.    |
+## Annotations and Lifecycle Methods
 
-| Return Type | Description                        |
-|-------------|------------------------------------|
-| `Activity`  | A new instance of the `Activity`.  |
+- **JPA Annotations**: The class uses JPA annotations such as `@Entity`, `@Table`, `@Id`, `@GeneratedValue`, and `@Column` to define the mapping between the class and the database table.
+- **Lifecycle Callbacks**: 
+  - `@PrePersist`: The `onCreate` method is annotated with `@PrePersist` to set the `createdAt` and `updatedAt` timestamps before the entity is persisted.
+  - `@PreUpdate`: The `onUpdate` method is annotated with `@PreUpdate` to update the `updatedAt` timestamp before the entity is updated.
 
-### `updateName`
+## Fields
 
-Updates the name of the activity.
-
-| Parameter | Type   | Description                  |
-|-----------|--------|------------------------------|
-| `name`    | String | The new name of the activity.|
-
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | None        |
-
-## Entity Lifecycle Callbacks
-
-- **`onCreate`**: Sets the `createdAt` and `updatedAt` timestamps to the current time when the entity is persisted.
-- **`onUpdate`**: Updates the `updatedAt` timestamp to the current time when the entity is updated.
+- **id**: A unique identifier for each `Activity`, generated automatically using UUID strategy.
+- **referenceId**: An integer reference ID that is unique and non-updatable.
+- **name**: A unique name for the `Activity`, with a maximum length of 100 characters.
+- **createdAt**: The timestamp when the `Activity` was created, set automatically and non-updatable.
+- **updatedAt**: The timestamp when the `Activity` was last updated, managed automatically.

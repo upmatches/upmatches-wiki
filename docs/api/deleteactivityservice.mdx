@@ -4,26 +4,42 @@ title: DeleteActivityService
 sidebar_label: DeleteActivityService
 ---
 
-## Purpose of the Class
+## Overview
 
-The `DeleteActivityService` class is a Spring service responsible for handling the deletion of `Activity` entities from the system. It ensures that an activity is deleted only if it exists, otherwise, it throws a `ResourceNotFoundException`. The class is marked as `non-sealed`, indicating that it can be extended by other classes. It uses Spring's `@Transactional` annotation to manage transaction boundaries and an `@Auditable` annotation to log the deletion action.
+The `DeleteActivityService` class is a part of the `com.upmatches.app.features.activity.services` package. It is responsible for handling the deletion of `Activity` entities within the application. This service ensures that activities are deleted in a transactional and auditable manner, leveraging Spring's transaction management and custom auditing annotations.
+
+## Purpose
+
+The primary purpose of the `DeleteActivityService` class is to encapsulate the logic required to delete an `Activity` entity by its unique identifier (UUID). It interacts with the `ActivityRepository` to perform the deletion and ensures that the operation is logged for auditing purposes.
 
 ## Public Methods
 
 ### `execute`
 
-Deletes an `Activity` entity identified by its unique ID.
+The `execute` method is the main entry point for deleting an activity. It takes a UUID as a parameter, which identifies the activity to be deleted. If the activity is not found, a `ResourceNotFoundException` is thrown.
 
-| Parameter | Type   | Description                          |
-|-----------|--------|--------------------------------------|
-| `id`      | `UUID` | The unique identifier of the activity to be deleted. |
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `public void execute(UUID id)` | Deletes the `Activity` identified by the given UUID. |
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | This method does not return a value. |
+#### Parameters
 
-The `execute` method performs the following operations:
-- It attempts to find the `Activity` by its ID using the `ActivityRepository`.
-- If the `Activity` is not found, it throws a `ResourceNotFoundException`.
-- If found, it deletes the `Activity` from the repository.
-- The method is annotated with `@Auditable` to log the deletion action with the specified parameters.
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `id`      | `UUID` | The unique identifier of the `Activity` to be deleted. |
+
+#### Return Type
+
+| Type | Description |
+| ---- | ----------- |
+| `void` | This method does not return a value. |
+
+## Exception Handling
+
+- **ResourceNotFoundException**: Thrown if the `Activity` with the specified UUID does not exist in the repository.
+
+## Annotations
+
+- **@Service**: Indicates that this class is a Spring service component.
+- **@Transactional**: Ensures that the delete operation is executed within a transaction.
+- **@Auditable**: Custom annotation used to log the deletion action for auditing purposes.

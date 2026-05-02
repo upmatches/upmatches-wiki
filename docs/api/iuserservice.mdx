@@ -1,12 +1,12 @@
 ---
-id: iuserservice
+id: i-user-service
 title: IUserService Interface
 sidebar_label: IUserService
 ---
 
-## Overview
+## Purpose
 
-The `IUserService` interface is part of the `com.upmatches.app.features.user.services` package. It defines a contract for user-related operations, specifically focusing on user profile management. This interface is designed to be implemented by classes that provide concrete functionality for managing user profiles, such as retrieving, completing, updating, and deleting user profiles.
+The `IUserService` interface is a part of the `com.upmatches.app.features.user.services` package. It defines a contract for user-related operations that can be performed within the application. This interface is designed to be implemented by classes that manage user profiles, allowing for operations such as retrieving, completing, updating, and deleting user profiles.
 
 ## Public Methods
 
@@ -17,14 +17,14 @@ The `IUserService` interface declares the following public methods:
 | `getProfile` | None | `UserProfileResponse` | Retrieves the current user's profile. |
 | `completeProfile` | `CompleteProfileRequest request` | `UserProfileResponse` | Completes the user's profile with the provided details. |
 | `updateProfile` | `UpdateProfileRequest request` | `UserProfileResponse` | Updates the user's profile with new information. |
-| `deleteUser` | None | `void` | Deletes the current user's profile. |
+| `deleteUser` | None | `void` | Deletes the current user's profile from the system. |
 
 ### Method Details
 
-- **`getProfile`**: This method is used to fetch the current user's profile. It returns a `UserProfileResponse` object containing the user's profile information.
+- **`getProfile`**: This method is used to fetch the profile details of the current user. It returns a `UserProfileResponse` object containing the user's profile information.
 
-- **`completeProfile`**: This method takes a `CompleteProfileRequest` object as a parameter, which contains the necessary details to complete a user's profile. It returns a `UserProfileResponse` object reflecting the updated profile.
+- **`completeProfile`**: This method takes a `CompleteProfileRequest` object as a parameter, which contains the necessary information to complete a user's profile. It returns a `UserProfileResponse` object reflecting the updated profile.
 
-- **`updateProfile`**: This method accepts an `UpdateProfileRequest` object, allowing for modifications to the user's existing profile. It returns a `UserProfileResponse` object with the updated profile data.
+- **`updateProfile`**: This method allows updating the user's profile with new data provided in an `UpdateProfileRequest` object. It returns a `UserProfileResponse` object with the updated profile details.
 
-- **`deleteUser`**: This method deletes the current user's profile. It does not return any value.
+- **`deleteUser`**: This method is responsible for deleting the current user's profile from the system. It does not return any value.

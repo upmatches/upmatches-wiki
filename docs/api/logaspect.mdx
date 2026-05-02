@@ -4,123 +4,51 @@ title: LogAspect Class Documentation
 sidebar_label: LogAspect
 ---
 
-## Purpose of the LogAspect Class
+## Purpose
 
-The `LogAspect` class is an Aspect-Oriented Programming (AOP) component designed to intercept and log the execution of service and controller methods within a Spring application. It provides detailed logging of method execution times, success, and failure statuses, and integrates with Micrometer for performance metrics. This class is conditionally enabled based on application properties and is configured to work with Spring's `@RestController` and `@Controller` annotations.
+The `LogAspect` class is an Aspect-Oriented Programming (AOP) component designed to log the execution of service and controller methods in a Spring application. It utilizes AspectJ annotations to intercept method calls and log their execution time, success, or failure. Additionally, it records metrics using Micrometer and manages logging context using SLF4J's Mapped Diagnostic Context (MDC).
 
 ## Public Methods
 
 ### `logExecution`
 
-The `logExecution` method is an around advice that wraps the execution of service and controller methods. It logs the method execution time and status, and records metrics using Micrometer.
+Logs the execution of service and controller methods, capturing execution time and handling exceptions.
 
-| Parameter    | Type                      | Description                                                                 |
-|--------------|---------------------------|-----------------------------------------------------------------------------|
-| `joinPoint`  | `ProceedingJoinPoint`     | The join point representing the method being intercepted.                   |
+| Parameter   | Type                      | Description                                                                 |
+|-------------|---------------------------|-----------------------------------------------------------------------------|
+| `joinPoint` | `ProceedingJoinPoint`     | The join point representing the method execution being intercepted.         |
 
-| Return Type  | Description                                                                 |
-|--------------|-----------------------------------------------------------------------------|
-| `Object`     | The result of the method execution, or throws an exception if an error occurs. |
+| Return Type | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `Object`    | The result of the method execution, or throws an exception if one occurs.   |
 
 ### `serviceMethods`
 
-The `serviceMethods` pointcut targets all public methods within the `com.upmatches.app..services..` package.
+Defines a pointcut for service methods within the application.
 
-| Parameter    | Type   | Description                        |
-|--------------|--------|------------------------------------|
-| N/A          | N/A    | This is a pointcut definition.     |
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| None      | N/A    | N/A         |
 
-| Return Type  | Description                        |
-|--------------|------------------------------------|
-| `void`       | Defines a pointcut for service methods. |
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | N/A         |
 
 ### `controllerMethods`
 
-The `controllerMethods` pointcut targets all classes annotated with `@RestController` or `@Controller`.
+Defines a pointcut for controller methods within the application.
 
-| Parameter    | Type   | Description                        |
-|--------------|--------|------------------------------------|
-| N/A          | N/A    | This is a pointcut definition.     |
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| None      | N/A    | N/A         |
 
-| Return Type  | Description                        |
-|--------------|------------------------------------|
-| `void`       | Defines a pointcut for controller methods. |
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | N/A         |
 
-## Private Methods
+## Key Features
 
-### `initRequestId`
-
-Generates a unique request ID for logging purposes.
-
-| Parameter    | Type   | Description                        |
-|--------------|--------|------------------------------------|
-| N/A          | N/A    | This is a private method.          |
-
-| Return Type  | Description                        |
-|--------------|------------------------------------|
-| `String`     | A unique request ID.               |
-
-### `currentHttpRequest`
-
-Retrieves the current HTTP request from the request context.
-
-| Parameter    | Type   | Description                        |
-|--------------|--------|------------------------------------|
-| N/A          | N/A    | This is a private method.          |
-
-| Return Type  | Description                        |
-|--------------|------------------------------------|
-| `HttpServletRequest` | The current HTTP request, or `null` if not available. |
-
-### `resolveComponent`
-
-Determines the component type (controller or service) based on the join point's declaring type.
-
-| Parameter    | Type                      | Description                                                                 |
-|--------------|---------------------------|-----------------------------------------------------------------------------|
-| `joinPoint`  | `ProceedingJoinPoint`     | The join point representing the method being intercepted.                   |
-
-| Return Type  | Description                        |
-|--------------|------------------------------------|
-| `String`     | The component type (`COMPONENT_CONTROLLER` or `COMPONENT_SERVICE`). |
-
-### `recordMetrics`
-
-Records execution metrics using Micrometer.
-
-| Parameter    | Type     | Description                                                                 |
-|--------------|----------|-----------------------------------------------------------------------------|
-| `component`  | `String` | The component type (controller or service).                                 |
-| `durationMs` | `Long`   | The execution duration in milliseconds.                                     |
-| `failed`     | `boolean`| Indicates whether the method execution failed.                              |
-
-| Return Type  | Description                        |
-|--------------|------------------------------------|
-| `void`       | Records metrics for the method execution. |
-
-### `logSuccess`
-
-Logs a successful method execution.
-
-| Parameter    | Type     | Description                                                                 |
-|--------------|----------|-----------------------------------------------------------------------------|
-| `method`     | `String` | The method signature.                                                       |
-| `durationMs` | `Long`   | The execution duration in milliseconds.                                     |
-
-| Return Type  | Description                        |
-|--------------|------------------------------------|
-| `void`       | Logs the success of the method execution. |
-
-### `logFailure`
-
-Logs a failed method execution.
-
-| Parameter    | Type       | Description                                                                 |
-|--------------|------------|-----------------------------------------------------------------------------|
-| `method`     | `String`   | The method signature.                                                       |
-| `durationMs` | `Long`     | The execution duration in milliseconds.                                     |
-| `t`          | `Throwable`| The exception thrown during method execution.                               |
-
-| Return Type  | Description                        |
-|--------------|------------------------------------|
-| `void`       | Logs the failure of the method execution. |
+- **Aspect-Oriented Logging**: Intercepts method executions to log their performance and outcomes.
+- **Metrics Recording**: Utilizes Micrometer to record execution metrics for monitoring.
+- **MDC Management**: Manages logging context using SLF4J's MDC for enhanced log traceability.
+- **Conditional Activation**: Enabled based on application properties, allowing for flexible configuration.

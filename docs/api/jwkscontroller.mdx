@@ -4,18 +4,21 @@ title: JwksController
 sidebar_label: JwksController
 ---
 
+import { useBaseUrl } from '@docusaurus/core';
+
 ## Overview
 
-The `JwksController` class is a Spring Boot REST controller responsible for serving JSON Web Key Set (JWKS) data. This controller exposes an endpoint that provides the public keys used for verifying JSON Web Tokens (JWTs). The keys are fetched from a service implementing the `ISingpassKeyProvider` interface. The endpoint is designed to be cacheable, improving performance and reducing server load.
+The `JwksController` class is a Spring Boot REST controller responsible for serving JSON Web Key Sets (JWKS) to clients. This controller exposes an endpoint that provides the public keys used for verifying JSON Web Tokens (JWTs). By caching the response, it optimizes performance and reduces server load.
 
 ## Public Methods
 
-### `getJwks`
+### getJwks
 
-This method handles HTTP GET requests to the JWKS endpoint and returns the public JWKS data in JSON format. It also sets appropriate cache control headers to allow clients to cache the response for a specified duration.
+The `getJwks` method is a public endpoint that returns the JWKS in JSON format. It is accessible via the `/.well-known/jwks.json` URL path.
 
-| Method Signature | `public ResponseEntity<String> getJwks()` |
-|------------------|-------------------------------------------|
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `public ResponseEntity<String> getJwks()` | Returns the JWKS as a JSON string wrapped in a `ResponseEntity`. |
 
 #### Parameters
 
@@ -23,11 +26,10 @@ This method does not take any parameters.
 
 #### Return Type
 
-| Type                      | Description                                          |
-|---------------------------|------------------------------------------------------|
-| `ResponseEntity<String>`  | A response entity containing the JWKS JSON data.     |
+| Type | Description |
+| ---- | ----------- |
+| `ResponseEntity<String>` | A response entity containing the JWKS JSON string, with appropriate HTTP headers for caching and content type. |
 
-The response entity is configured with the following:
+## Usage
 
-- **Cache Control**: The response is cacheable for up to 1 hour.
-- **Content Type**: The response content type is set to `application/json`.
+Clients can retrieve the JWKS by sending a GET request to the `/.well-known/jwks.json` endpoint. The response includes caching headers to allow clients to cache the keys for up to one hour, reducing the need for repeated requests.

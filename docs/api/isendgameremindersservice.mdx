@@ -1,6 +1,6 @@
 ---
 id: isend-game-reminders-service
-title: ISendGameRemindersService Interface
+title: ISendGameRemindersService
 sidebar_label: ISendGameRemindersService
 ---
 
@@ -8,20 +8,18 @@ import com.upmatches.app.features.notification.enums.NotificationType;
 
 ## Purpose
 
-The `ISendGameRemindersService` interface is part of the notification services in the `com.upmatches.app.features.notification.services` package. It defines a contract for sending game reminders based on specified notification types and time frames. This interface is sealed, meaning it restricts which classes can implement it, specifically allowing only the `SendGameRemindersService` class to do so.
+The `ISendGameRemindersService` is a sealed interface designed to define the contract for sending game reminders within the application. It ensures that any implementing class, such as `SendGameRemindersService`, adheres to the specified method for executing reminder notifications. This interface is part of the notification service feature, which handles the scheduling and dispatching of game-related notifications to users.
 
 ## Public Methods
 
 ### execute
 
-Executes the process of sending game reminders.
+Executes the process of sending game reminders based on the specified notification type and time constraints.
 
-| Parameter      | Type                        | Description                                                                 |
-|----------------|-----------------------------|-----------------------------------------------------------------------------|
-| `type`         | `NotificationType`          | The type of notification to be sent.                                        |
-| `minHoursAhead`| `long`                      | The minimum number of hours ahead of the event to send the reminder.        |
-| `maxHoursAhead`| `long`                      | The maximum number of hours ahead of the event to send the reminder.        |
+| Parameter      | Type                       | Description                                                                 |
+|----------------|----------------------------|-----------------------------------------------------------------------------|
+| `type`         | `NotificationType`         | The type of notification to be sent.                                        |
+| `minHoursAhead`| `long`                     | The minimum number of hours ahead of the game time to send the reminder.    |
+| `maxHoursAhead`| `long`                     | The maximum number of hours ahead of the game time to send the reminder.    |
 
-#### Returns
-
-- `int`: The method returns an integer indicating the result of the execution, typically the number of reminders sent.
+**Returns:** `int` - The method returns an integer indicating the result of the execution, typically the number of notifications sent or a status code.

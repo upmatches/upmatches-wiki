@@ -6,7 +6,7 @@ sidebar_label: SendFcmTestNotificationService
 
 ## Purpose
 
-The `SendFcmTestNotificationService` class is a Spring service designed to send Firebase Cloud Messaging (FCM) test notifications and emails in a development environment. It handles the creation and dispatch of notifications based on different types of events related to games, such as player actions and game updates. The service integrates with Firebase for push notifications and a Resend client for email notifications.
+The `SendFcmTestNotificationService` class is a Spring service designed to send test notifications via Firebase Cloud Messaging (FCM) and emails using the Resend service. It is specifically configured to operate in a development environment, as indicated by the `@Profile("dev")` annotation. This service facilitates testing of notification functionalities by sending push notifications to devices and emails to specified addresses.
 
 ## Public Methods
 
@@ -14,69 +14,39 @@ The `SendFcmTestNotificationService` class is a Spring service designed to send 
 
 Executes the process of sending a test notification based on the provided request.
 
-| Parameter | Type                                  | Description                                      |
-|-----------|---------------------------------------|--------------------------------------------------|
-| `request` | `SendFcmTestNotificationRequest`      | The request object containing notification details.|
+| Parameter | Type                                      | Description                                      |
+|-----------|-------------------------------------------|--------------------------------------------------|
+| request   | `SendFcmTestNotificationRequest`          | The request containing notification details.     |
 
-| Returns   | Type                       | Description                                      |
-|-----------|----------------------------|--------------------------------------------------|
-|           | `FcmTestNotificationResponse` | The response containing the result of the notification dispatch.|
+| Returns   | Type                                      | Description                                      |
+|-----------|-------------------------------------------|--------------------------------------------------|
+|           | `FcmTestNotificationResponse`             | The response containing the result of the operation. |
 
-### `resolveTitle`
+## Method Details
 
-Resolves the title of the notification based on the notification type.
+### `execute(SendFcmTestNotificationRequest request)`
 
-| Parameter | Type             | Description                                      |
-|-----------|------------------|--------------------------------------------------|
-| `type`    | `NotificationType` | The type of notification to determine the title for.|
+- **Purpose**: Sends a test notification based on the provided request. It determines the type of notification, constructs the message, and sends it either as a push notification or an email, or both.
+- **Parameters**:
+  - `request`: An instance of `SendFcmTestNotificationRequest` containing details such as notification type, game title, court count, date, device token, and email.
+- **Returns**: An instance of `FcmTestNotificationResponse` containing the message ID, email ID, notification type, title, body, and badge count.
 
-| Returns   | Type     | Description                                      |
-|-----------|----------|--------------------------------------------------|
-|           | `String` | The resolved title for the notification.         |
+### Private Helper Methods
 
-### `resolveBody`
+The class also contains several private helper methods that assist in constructing and sending notifications:
 
-Resolves the body content of the notification based on the notification type and other parameters.
-
-| Parameter   | Type             | Description                                      |
-|-------------|------------------|--------------------------------------------------|
-| `type`      | `NotificationType` | The type of notification to determine the body for.|
-| `gameTitle` | `String`         | The title of the game involved in the notification.|
-| `courtCount`| `int`            | The number of courts involved in the notification.|
-| `date`      | `LocalDate`      | The date related to the notification.            |
-
-| Returns   | Type     | Description                                      |
-|-----------|----------|--------------------------------------------------|
-|           | `String` | The resolved body content for the notification.  |
-
-### `sendPush`
-
-Sends a push notification to a device using Firebase Cloud Messaging.
-
-| Parameter     | Type             | Description                                      |
-|---------------|------------------|--------------------------------------------------|
-| `deviceToken` | `String`         | The device token to send the notification to.    |
-| `type`        | `NotificationType` | The type of notification being sent.             |
-| `title`       | `String`         | The title of the notification.                   |
-| `body`        | `String`         | The body content of the notification.            |
-| `badge`       | `Integer`        | The badge count for the notification.            |
-
-| Returns   | Type     | Description                                      |
-|-----------|----------|--------------------------------------------------|
-|           | `String` | The message ID of the sent push notification.    |
-
-### `sendEmail`
-
-Sends an email notification using the Resend client.
-
-| Parameter | Type             | Description                                      |
-|-----------|------------------|--------------------------------------------------|
-| `email`   | `String`         | The recipient's email address.                   |
-| `type`    | `NotificationType` | The type of notification being sent.             |
-| `title`   | `String`         | The subject of the email.                        |
-| `body`    | `String`         | The body content of the email.                   |
-| `context` | `EmailContext`   | The context for the email content.               |
-
-| Returns   | Type     | Description                                      |
-|-----------|----------|--------------------------------------------------|
-|           | `String` | The email ID of the sent email notification.     |
+- **`buildEmailContext`**: Constructs an `EmailContext` object based on the notification type and other parameters.
+- **`sendPush`**: Sends a push notification using Firebase Messaging.
+- **`sendEmail`**: Sends an email using the Resend service.
+- **`hasValue`**: Checks if a given string is non-null and non-blank.
+- **`resolveBadge`**: Determines the badge count for the notification.
+- **`countUnreadCapped`**: Counts unread notifications for a user, capped at a maximum value.
+- **`resolveTitle`**: Resolves the notification title based on the notification type.
+- **`resolveBody`**: Resolves the notification body based on the notification type and other parameters.
+- **`buildData`**: Constructs a data map for the notification.
+- **`isGameResource`**: Checks if the notification type is related to a game resource.
+- **`resourceIdPlaceholder`**: Generates a placeholder resource ID for the notification.
+- **`resolveCourtCount`**: Determines the court count for the notification.
+- **`resolveDate`**: Determines the date for the notification.
+- **`courtLabel`**: Returns the appropriate label ("court" or "courts") based on the count.
+- **`formatDate`**: Formats a date using the specified date formatter.

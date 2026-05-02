@@ -6,27 +6,37 @@ sidebar_label: HardDeleteGameService
 
 ## Overview
 
-The `HardDeleteGameService` class is a part of the `com.upmatches.app.features.game.services` package. It provides functionality to permanently delete a game from the database. This service is designed to be used by administrators and ensures that the deletion operation is auditable and secure.
+The `HardDeleteGameService` class is a service component in a Java application that handles the permanent deletion of game entities from the database. It is part of the `com.upmatches.app.features.game.services` package and is designed to be used by administrators to remove game records completely, bypassing any soft-delete mechanisms.
 
-## Purpose
+## Class Details
 
-The primary purpose of the `HardDeleteGameService` class is to handle the hard deletion of game entities. It interacts with the `GameRepository` to remove game records and uses the `IGameLookupService` to verify the existence of the game before deletion. The service is secured with role-based access control, allowing only users with the 'ADMIN' authority to execute the deletion.
+The `HardDeleteGameService` class implements the `IHardDeleteGameService` interface and is marked with the `@Service` annotation, indicating that it is a Spring service component. It is also marked as `non-sealed`, allowing other classes to extend it if necessary.
+
+### Dependencies
+
+- **GameRepository**: Used to perform database operations related to the `Game` entity.
+- **IGameLookupService**: Utilized to find games, including those that are marked as deleted.
 
 ## Public Methods
 
-### `execute(UUID id)`
+### `execute`
 
-The `execute` method is responsible for performing the hard deletion of a game. It first retrieves the game using the `IGameLookupService` and then deletes it using the `GameRepository`. The operation is wrapped in a transaction to ensure data integrity and is auditable for tracking purposes.
+The `execute` method is responsible for permanently deleting a game from the database. It is annotated with `@Transactional` to ensure that the operation is executed within a transaction context, and `@PreAuthorize` to restrict access to users with the 'ADMIN' authority. The `@Auditable` annotation is used to log the deletion action for auditing purposes.
+
+| Method Signature | Description |
+|------------------|-------------|
+| `public void execute(UUID id)` | Permanently deletes a game identified by the given UUID. |
+
+#### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `id`      | `UUID` | The unique identifier of the game to be deleted. |
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | This method does not return any value. |
+#### Return Type
 
-## Security and Auditing
+This method does not return any value (`void`).
 
-- **Security**: The method is annotated with `@PreAuthorize("hasAuthority('ADMIN')")`, ensuring that only users with the 'ADMIN' authority can execute the deletion.
-- **Auditing**: The `@Auditable` annotation is used to log the deletion action, specifying the action as "GAME_HARD_DELETED" and the resource type as "GAME". The resource ID is dynamically resolved from the method's arguments.
+## Usage
+
+The `HardDeleteGameService` is intended to be used in scenarios where a game needs to be completely removed from the system. It ensures that only users with the appropriate authority can perform this operation and logs the action for auditing purposes.

@@ -4,23 +4,26 @@ title: AppleAppSiteAssociationController
 sidebar_label: AppleAppSiteAssociationController
 ---
 
-## Purpose
+## Purpose of the Class
 
-The `AppleAppSiteAssociationController` class is a Spring Boot REST controller designed to serve the `apple-app-site-association.json` file. This file is crucial for enabling Universal Links on iOS devices, allowing apps to open specific content directly. The controller handles HTTP GET requests to the `/.well-known/apple-app-site-association` endpoint and returns the JSON file with appropriate caching headers.
+The `AppleAppSiteAssociationController` is a Spring Boot REST controller responsible for serving the `apple-app-site-association.json` file. This file is crucial for enabling Universal Links in iOS applications, allowing iOS devices to open specific app content directly from a web link. The controller ensures that the file is served with the appropriate content type and caching headers.
 
 ## Public Methods
 
-### appleAppSiteAssociation
+### `appleAppSiteAssociation`
 
-This method handles GET requests to the `/.well-known/apple-app-site-association` endpoint. It serves the `apple-app-site-association.json` file from the classpath with a JSON content type and sets caching headers to cache the response for one hour.
+This method handles HTTP GET requests to the endpoint `/.well-known/apple-app-site-association`. It serves the `apple-app-site-association.json` file from the classpath.
 
-| Method Name                | Parameters | Return Type                      | Description                                                                 |
-|----------------------------|------------|----------------------------------|-----------------------------------------------------------------------------|
-| `appleAppSiteAssociation`  | None       | `ResponseEntity<Resource>`       | Serves the `apple-app-site-association.json` file with caching headers.     |
+| **Method**                  | **Description**                                                                 |
+|-----------------------------|---------------------------------------------------------------------------------|
+| `appleAppSiteAssociation()` | Serves the `apple-app-site-association.json` file with JSON content type and caching. |
 
-- **Parameters**: This method does not take any parameters.
-- **Return Type**: Returns a `ResponseEntity<Resource>` containing the JSON file and HTTP headers for content type and caching.
+#### Parameters
 
-## Asset Routing
+This method does not take any parameters.
 
-No images or additional assets are used in this documentation. If needed, assets should be placed in the `/static` directory and referenced with absolute paths.
+#### Return Type
+
+| **Type**                          | **Description**                                                                 |
+|-----------------------------------|---------------------------------------------------------------------------------|
+| `ResponseEntity<Resource>`        | A response entity containing the JSON resource and appropriate HTTP headers.    |

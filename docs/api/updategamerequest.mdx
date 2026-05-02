@@ -6,26 +6,33 @@ sidebar_label: UpdateGameRequest
 
 ## Overview
 
-The `UpdateGameRequest` class is a Java record used to encapsulate the data required to update a game in the application. It includes various fields such as venue ID, skill levels, currency, price, slots, start and end times, visibility, game type, and remarks. This class leverages Java's record feature to provide a concise and immutable data structure.
+The `UpdateGameRequest` class is a Java record used to encapsulate the data required to update a game in the application. This record is part of the `com.upmatches.app.features.game.requests` package and is designed to handle various attributes related to a game update request, such as venue details, pricing, skill levels, and more. It utilizes Java's validation annotations to ensure data integrity and correctness.
 
 ## Public Methods
 
-The `UpdateGameRequest` record does not explicitly define methods beyond those automatically provided by the Java record, such as accessors for each field. Below is a table documenting the fields, their types, and any constraints applied to them:
+Since `UpdateGameRequest` is a Java record, it automatically provides a constructor and accessor methods for each field. Below is a documentation of the fields, which effectively act as the parameters for the record's constructor and the return types for the accessor methods.
 
-| Field Name        | Type            | Constraints                                                                                     |
-|-------------------|-----------------|-------------------------------------------------------------------------------------------------|
-| `venueId`         | `Long`          | None                                                                                            |
-| `skillLevelFromId`| `Long`          | None                                                                                            |
-| `skillLevelToId`  | `Long`          | None                                                                                            |
-| `currency`        | `String`        | Must match the pattern `^[A-Z]{3}$` (3-letter ISO-4217 code)                                    |
-| `price`           | `BigDecimal`    | Must be >= 0, with at most 8 digits and 2 decimals                                              |
-| `slots`           | `Integer`       | Must be between 1 and 100                                                                       |
-| `startTime`       | `Instant`       | None                                                                                            |
-| `endTime`         | `Instant`       | None                                                                                            |
-| `visibility`      | `GameVisibility`| None                                                                                            |
-| `gameType`        | `GameType`      | None                                                                                            |
-| `remark`          | `String`        | Maximum length of 500 characters                                                                |
+| Method/Field       | Type               | Description                                                                                     |
+|--------------------|--------------------|-------------------------------------------------------------------------------------------------|
+| `venueId`          | `Long`             | The ID of the venue where the game will take place.                                             |
+| `skillLevelFromId` | `Long`             | The ID representing the minimum skill level required for the game.                              |
+| `skillLevelToId`   | `Long`             | The ID representing the maximum skill level allowed for the game.                               |
+| `currency`         | `String`           | The currency code in ISO-4217 format for the game's pricing. Must be a 3-letter code.           |
+| `price`            | `BigDecimal`       | The price of the game. Must be a non-negative value with up to 8 digits and 2 decimal places.   |
+| `pricing`          | `PricingRequest`   | A nested object containing detailed pricing information.                                        |
+| `slots`            | `Integer`          | The number of available slots for the game. Must be between 1 and 100.                          |
+| `startTime`        | `Instant`          | The start time of the game.                                                                     |
+| `endTime`          | `Instant`          | The end time of the game.                                                                       |
+| `visibility`       | `GameVisibility`   | The visibility status of the game, indicating who can see the game details.                     |
+| `gameType`         | `GameType`         | The type of game being played, as defined by the `GameType` enum.                               |
+| `remark`           | `String`           | Additional remarks or comments about the game. Limited to 500 characters.                       |
 
-## Usage
+## Validation Annotations
 
-The `UpdateGameRequest` record is typically used in scenarios where a game needs to be updated with new details. It ensures that the data provided adheres to specified constraints, such as valid currency codes and appropriate slot numbers, enhancing data integrity and consistency within the application.
+The `UpdateGameRequest` class uses several validation annotations to ensure that the data provided is valid:
+
+- `@Pattern`: Ensures that the `currency` field matches a 3-letter ISO-4217 code.
+- `@DecimalMin` and `@Digits`: Validate that the `price` is non-negative and formatted correctly.
+- `@Min` and `@Max`: Ensure that the `slots` field is within the specified range.
+- `@Size`: Limits the length of the `remark` field to 500 characters.
+- `@Valid`: Ensures that the `pricing` field is a valid `PricingRequest` object.

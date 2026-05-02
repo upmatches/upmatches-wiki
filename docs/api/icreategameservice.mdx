@@ -6,11 +6,15 @@ sidebar_label: ICreateGameService
 
 ## Overview
 
-The `ICreateGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for creating a game within the application. This interface is designed to be implemented by classes that provide the actual logic for game creation. The use of a sealed interface ensures that only specific classes, such as `CreateGameService`, are permitted to implement it, providing a controlled and secure extension mechanism.
+The `ICreateGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for creating a game within the application. This interface is designed to be implemented by classes that handle the logic for game creation, ensuring a consistent method signature for executing the creation process.
+
+## Purpose
+
+The primary purpose of the `ICreateGameService` interface is to provide a standardized way to execute the creation of a game. It ensures that any implementing class will provide the necessary functionality to handle a `CreateGameRequest` and return a `GameResponse`.
 
 ## Public Methods
 
-The `ICreateGameService` interface declares the following public method:
+The interface defines the following public method:
 
 | Method Signature | Description |
 |------------------|-------------|
@@ -20,15 +24,16 @@ The `ICreateGameService` interface declares the following public method:
 
 #### `execute`
 
-- **Description**: This method is responsible for executing the game creation logic. It takes a `CreateGameRequest` object as input and returns a `GameResponse` object.
-- **Parameters**:
-  | Name    | Type                        | Description                          |
-  |---------|-----------------------------|--------------------------------------|
-  | request | `CreateGameRequest`         | The request object containing the necessary details to create a game. |
+- **Parameters:**
 
-- **Returns**: 
+  | Name    | Type                           | Description                          |
+  |---------|--------------------------------|--------------------------------------|
+  | request | `CreateGameRequest`            | The request object containing all necessary information to create a game. |
+
+- **Returns:** 
+
   | Type            | Description                          |
   |-----------------|--------------------------------------|
-  | `GameResponse`  | The response object containing the details of the created game. |
+  | `GameResponse`  | The response object containing the result of the game creation process. |
 
-This interface is crucial for defining the structure and behavior of game creation services within the application, ensuring consistency and reliability in how games are created and managed.
+This method is crucial for initiating the game creation workflow, taking in a request object and outputting a response that indicates the success or failure of the operation.

@@ -6,30 +6,30 @@ sidebar_label: TransitLineResponse
 
 ## Purpose
 
-The `TransitLineResponse` class is a Java record designed to encapsulate the response data for a transit line within a venue. It is part of the `com.upmatches.app.features.venue.responses` package. This class provides a structured way to represent transit line information, including its code, name, color, and the number of stations it has.
+The `TransitLineResponse` class is a record in the `com.upmatches.app.features.venue.responses` package. It is designed to encapsulate the response data for a transit line, providing a structured way to represent transit line information such as code, name, color, and the number of stations associated with it. This class is particularly useful for transforming `StationLine` entities into a simplified response format that can be easily consumed by other parts of the application or external clients.
 
 ## Public Methods
 
-The `TransitLineResponse` class includes the following public method:
+The `TransitLineResponse` class provides the following public method:
 
-### `fromStationLine`
+### fromStationLine
 
-This static method is responsible for creating an instance of `TransitLineResponse` from a `StationLine` object. It extracts the necessary information from the `StationLine` and its associated `TransitLine` to populate the fields of `TransitLineResponse`.
+Converts a `StationLine` entity into a `TransitLineResponse` object.
 
 | Method Signature | Description |
-| ---------------- | ----------- |
-| `public static TransitLineResponse fromStationLine(StationLine stationLine)` | Creates a `TransitLineResponse` instance from a given `StationLine` object. |
+|------------------|-------------|
+| `public static TransitLineResponse fromStationLine(StationLine stationLine)` | Creates a `TransitLineResponse` from a given `StationLine` object. |
 
 #### Parameters
 
-| Parameter     | Type          | Description                                  |
-| ------------- | ------------- | -------------------------------------------- |
-| `stationLine` | `StationLine` | The `StationLine` object containing transit line data. |
+| Parameter Name | Type          | Description                              |
+|----------------|---------------|------------------------------------------|
+| `stationLine`  | `StationLine` | The `StationLine` entity to be converted.|
 
 #### Return Type
 
-| Type                  | Description                                                  |
-| --------------------- | ------------------------------------------------------------ |
-| `TransitLineResponse` | A new instance of `TransitLineResponse` populated with data from the provided `StationLine`. |
+| Type                  | Description                                      |
+|-----------------------|--------------------------------------------------|
+| `TransitLineResponse` | A new instance of `TransitLineResponse` containing the transit line details extracted from the `StationLine`. |
 
-This method is particularly useful for transforming data from the entity layer (`StationLine`) to a response format (`TransitLineResponse`) that can be used in APIs or other output mechanisms.
+This method extracts the transit line code, name, color, and station number from the provided `StationLine` object and uses them to instantiate a new `TransitLineResponse`.

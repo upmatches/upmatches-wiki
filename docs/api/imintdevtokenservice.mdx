@@ -8,22 +8,36 @@ import com.upmatches.app.features.auth.responses.TokenResponse;
 
 import java.util.UUID;
 
-## Purpose
+/**
+ * The `IMintDevTokenService` interface is a part of the authentication services within the application. 
+ * It defines the contract for generating development tokens for users, which can be used for authentication purposes.
+ * This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `MintDevTokenService` class.
+ */
 
-The `IMintDevTokenService` interface is part of the authentication services in the `com.upmatches.app.features.auth.services` package. It defines a contract for generating development tokens, which are typically used for authentication and authorization purposes within the application. This interface ensures that any implementing class provides a specific method to mint a token for a given user.
+## Purpose of the Class
+
+The `IMintDevTokenService` interface is designed to provide a method for generating development tokens for users. These tokens are essential for user authentication and authorization processes within the application. By defining this interface, the application ensures a consistent approach to token generation across different implementations.
 
 ## Public Methods
 
-| Method Signature                | Description                                                                 |
-|---------------------------------|-----------------------------------------------------------------------------|
-| `TokenResponse execute(UUID userId)` | Generates a development token for the specified user. |
+### `execute`
 
-### Method Details
+Generates a development token for a specified user.
 
-#### `execute(UUID userId)`
+| Method Signature                  | Description                                      |
+|-----------------------------------|--------------------------------------------------|
+| `TokenResponse execute(UUID userId)` | Generates a token for the user identified by the given `userId`. |
 
-- **Description**: This method is responsible for generating a development token for a user identified by the provided `UUID`. The token is encapsulated within a `TokenResponse` object.
-- **Parameters**:
-  - `UUID userId`: The unique identifier of the user for whom the token is to be generated.
-- **Returns**: 
-  - `TokenResponse`: An object containing the generated token and any additional relevant information.
+#### Parameters
+
+| Parameter | Type   | Description                        |
+|-----------|--------|------------------------------------|
+| `userId`  | `UUID` | The unique identifier of the user for whom the token is to be generated. |
+
+#### Return Type
+
+| Type            | Description                                      |
+|-----------------|--------------------------------------------------|
+| `TokenResponse` | An object containing the generated token and related information. |
+
+This interface is crucial for the authentication feature of the application, ensuring that each user can be securely authenticated using a unique token.

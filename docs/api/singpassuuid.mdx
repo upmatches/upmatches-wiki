@@ -4,9 +4,11 @@ title: SingpassUuid Class
 sidebar_label: SingpassUuid
 ---
 
-## Purpose of the SingpassUuid Class
+import { SingpassUuid } from '@site/static/img/placeholder.png';
 
-The `SingpassUuid` class is a value object designed to encapsulate and validate a UUID string specific to the Singpass system. It ensures that the UUID conforms to a predefined format, which includes optional prefixes and a standard UUID structure. This class is immutable and provides a robust way to handle UUIDs within the application, ensuring that any UUID used is valid and correctly formatted.
+## Purpose of the Class
+
+The `SingpassUuid` class is a value object that encapsulates a UUID string specifically formatted for Singpass authentication. It ensures that the UUID adheres to a specific pattern and provides a convenient way to create and manage these UUIDs within the application. The class is implemented as a Java record, which is a special kind of class in Java that is immutable and primarily used to store data.
 
 ## Public Methods
 
@@ -16,27 +18,36 @@ The `SingpassUuid` class provides the following public methods:
 
 Creates a new instance of `SingpassUuid`.
 
-| Parameter | Type   | Description                  |
-|-----------|--------|------------------------------|
-| `uuid`    | String | The UUID string to validate and encapsulate. |
+| Method Signature | Description |
+|------------------|-------------|
+| `public static SingpassUuid create(final String uuid)` | Constructs a new `SingpassUuid` object with the specified UUID string. |
 
-| Return Type   | Description                           |
-|---------------|---------------------------------------|
-| `SingpassUuid`| A new instance of `SingpassUuid` if the input is valid. |
+#### Parameters
+
+| Parameter | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| `uuid`    | String | The UUID string to be encapsulated.  |
+
+#### Return Type
+
+| Type          | Description                          |
+|---------------|--------------------------------------|
+| `SingpassUuid` | A new instance of the `SingpassUuid` class. |
 
 ### `toString`
 
 Returns the string representation of the `SingpassUuid`.
 
-| Return Type | Description                           |
-|-------------|---------------------------------------|
-| `String`    | The UUID string encapsulated by this instance. |
+| Method Signature | Description |
+|------------------|-------------|
+| `public String toString()` | Returns the UUID string encapsulated by this object. |
+
+#### Return Type
+
+| Type   | Description                          |
+|--------|--------------------------------------|
+| String | The UUID string encapsulated by this object. |
 
 ## Validation
 
-The `SingpassUuid` class performs validation on the UUID string during instantiation. The validation checks include:
-
-- The UUID string must not be null or blank.
-- The UUID string must match the expected format, which includes optional prefixes (`s=` and `u=`) and a standard UUID pattern (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
-
-If the validation fails, an `IllegalArgumentException` is thrown with an appropriate error message.
+The `SingpassUuid` class performs validation on the UUID string to ensure it is not null, not blank, and matches the expected format. If any of these conditions are not met, an `IllegalArgumentException` is thrown. This ensures that only valid UUIDs are encapsulated by instances of this class.

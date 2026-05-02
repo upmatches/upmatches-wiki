@@ -1,42 +1,29 @@
 ---
 id: gametype-enum
 title: GameType Enum
-sidebar_label: GameType Enum
+sidebar_label: GameType
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+## Overview
 
-## Purpose
-
-The `GameType` enum is a part of the `com.upmatches.app.features.game.enums` package. It is used to define the types of games available in the application. Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like final variables). In this case, `GameType` provides two constants: `SINGLE` and `DOUBLE`.
+The `GameType` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to represent the type of game being played in the application. Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like final variables).
 
 ## Enum Constants
 
-The `GameType` enum contains the following constants:
+The `GameType` enum defines two constants:
 
-<Tabs>
-<TabItem value="SINGLE" label="SINGLE" default>
-
-- **Description**: Represents a single-player game type.
-- **Usage**: This constant can be used when the game involves only one player.
-
-</TabItem>
-<TabItem value="DOUBLE" label="DOUBLE">
-
-- **Description**: Represents a double-player game type.
-- **Usage**: This constant can be used when the game involves two players.
-
-</TabItem>
-</Tabs>
+- **SINGLE**: Represents a single-player game type.
+- **DOUBLE**: Represents a double-player game type.
 
 ## Public Methods
 
-Enums in Java inherently have some public methods that can be used. Here are the key methods available for the `GameType` enum:
+Enums in Java inherently provide several useful methods. Below are the public methods available for the `GameType` enum:
 
 | Method Signature | Description |
 |------------------|-------------|
-| `static GameType[] values()` | Returns an array containing all of the values of the enum in the order they are declared. This method is useful for iterating over the constants. |
-| `static GameType valueOf(String name)` | Returns the enum constant of this type with the specified name. The string must match exactly an identifier used to declare an enum constant in this type. |
+| `GameType[] values()` | Returns an array containing all of the values of the enum in the order they are declared. This method is useful for iterating over the constants. |
+| `GameType valueOf(String name)` | Returns the enum constant of this type with the specified name. The string must match exactly an identifier used to declare an enum constant in this type. |
 
-These methods are automatically provided by the Java language for all enums.
+## Usage
+
+The `GameType` enum can be used to define and manage the type of game within the application, ensuring that only valid game types are used. This can help prevent errors and improve code readability.

@@ -6,74 +6,61 @@ sidebar_label: ShortLinkRepository
 
 ## Overview
 
-The `ShortLinkRepository` interface is a part of the `com.upmatches.app.features.sharelink.repositories` package. It extends the `JpaRepository` interface provided by Spring Data JPA, which facilitates CRUD operations and additional query methods for the `ShortLink` entity. This repository is specifically designed to manage `ShortLink` entities, which are identified by a `UUID`. It provides custom query methods to interact with the database, focusing on operations related to short links.
+The `ShortLinkRepository` interface is part of the `com.upmatches.app.features.sharelink.repositories` package. It extends the `JpaRepository` interface provided by Spring Data JPA, allowing for CRUD operations and additional query methods on `ShortLink` entities. This repository is responsible for managing `ShortLink` entities, which are identified by a `UUID`.
 
 ## Public Methods
 
-The `ShortLinkRepository` interface includes several public methods that allow interaction with the `ShortLink` entities. Below is a detailed description of each method, including parameters and return types.
+The `ShortLinkRepository` interface provides several methods to interact with `ShortLink` entities. Below is a detailed description of each public method, including parameters and return types.
 
 ### Methods
 
-| Method Signature                                                                 | Description                                                                                       |
-|----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| `Optional<ShortLink> findByCode(String code)`                                    | Finds a `ShortLink` entity by its unique code.                                                    |
+| Method Signature | Description |
+|------------------|-------------|
+| `Optional<ShortLink> findByCode(String code)` | Retrieves a `ShortLink` entity by its unique code. |
+| `Optional<ShortLink> findByResourceTypeAndResourceIdAndCreatedById(ResourceType resourceType, String resourceId, UUID createdById)` | Finds a `ShortLink` entity based on the resource type, resource ID, and the ID of the creator. |
+| `boolean existsByCode(String code)` | Checks if a `ShortLink` entity exists with the specified code. |
+| `int incrementClickCount(@Param("id") UUID id)` | Increments the click count of a `ShortLink` entity identified by its ID. |
 
-#### Parameters for `findByCode`
+### Method Details
 
-| Parameter | Type   | Description                |
-|-----------|--------|----------------------------|
-| `code`    | String | The unique code of the short link. |
+#### `findByCode`
 
-#### Return Type
+- **Parameters:**
 
-- **`Optional<ShortLink>`**: An `Optional` containing the `ShortLink` entity if found, otherwise empty.
+  | Name | Type | Description |
+  |------|------|-------------|
+  | `code` | `String` | The unique code of the `ShortLink`. |
 
----
+- **Returns:** `Optional<ShortLink>` - An `Optional` containing the `ShortLink` if found, or empty if not.
 
-| Method Signature                                                                 | Description                                                                                       |
-|----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| `Optional<ShortLink> findByResourceTypeAndResourceIdAndCreatedById(ResourceType resourceType, String resourceId, UUID createdById)` | Finds a `ShortLink` entity by its resource type, resource ID, and creator's ID.                   |
+#### `findByResourceTypeAndResourceIdAndCreatedById`
 
-#### Parameters for `findByResourceTypeAndResourceIdAndCreatedById`
+- **Parameters:**
 
-| Parameter     | Type        | Description                             |
-|---------------|-------------|-----------------------------------------|
-| `resourceType`| ResourceType| The type of the resource associated with the short link. |
-| `resourceId`  | String      | The ID of the resource associated with the short link.   |
-| `createdById` | UUID        | The ID of the user who created the short link.           |
+  | Name | Type | Description |
+  |------|------|-------------|
+  | `resourceType` | `ResourceType` | The type of resource associated with the `ShortLink`. |
+  | `resourceId` | `String` | The ID of the resource associated with the `ShortLink`. |
+  | `createdById` | `UUID` | The ID of the user who created the `ShortLink`. |
 
-#### Return Type
+- **Returns:** `Optional<ShortLink>` - An `Optional` containing the `ShortLink` if found, or empty if not.
 
-- **`Optional<ShortLink>`**: An `Optional` containing the `ShortLink` entity if found, otherwise empty.
+#### `existsByCode`
 
----
+- **Parameters:**
 
-| Method Signature                                                                 | Description                                                                                       |
-|----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| `boolean existsByCode(String code)`                                              | Checks if a `ShortLink` entity exists with the given code.                                        |
+  | Name | Type | Description |
+  |------|------|-------------|
+  | `code` | `String` | The unique code of the `ShortLink`. |
 
-#### Parameters for `existsByCode`
+- **Returns:** `boolean` - `true` if a `ShortLink` with the specified code exists, `false` otherwise.
 
-| Parameter | Type   | Description                |
-|-----------|--------|----------------------------|
-| `code`    | String | The unique code of the short link. |
+#### `incrementClickCount`
 
-#### Return Type
+- **Parameters:**
 
-- **`boolean`**: Returns `true` if a `ShortLink` with the given code exists, otherwise `false`.
+  | Name | Type | Description |
+  |------|------|-------------|
+  | `id` | `UUID` | The ID of the `ShortLink` whose click count is to be incremented. |
 
----
-
-| Method Signature                                                                 | Description                                                                                       |
-|----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| `int incrementClickCount(@Param("id") UUID id)`                                  | Increments the click count of a `ShortLink` entity by 1.                                          |
-
-#### Parameters for `incrementClickCount`
-
-| Parameter | Type | Description                |
-|-----------|------|----------------------------|
-| `id`      | UUID | The unique identifier of the short link. |
-
-#### Return Type
-
-- **`int`**: The number of entities updated, typically 1 if the update was successful.
+- **Returns:** `int` - The number of entities updated (should be 1 if successful).

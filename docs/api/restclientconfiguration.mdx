@@ -6,52 +6,42 @@ sidebar_label: RestClientConfiguration
 
 ## Overview
 
-The `RestClientConfiguration` class is a Spring configuration class responsible for setting up and providing `RestClient` beans for different authentication services. It configures HTTP clients with specific settings such as timeouts and headers, and ensures that necessary properties are provided for each service.
+The `RestClientConfiguration` class is a Spring configuration class that defines and configures several `RestClient` beans for different services. It provides a centralized way to manage HTTP client configurations, such as timeouts and headers, for external service integrations like Singpass, Auth0, and Apple.
 
 ## Public Methods
 
 The class provides the following public methods:
 
-### `singpassRestClient`
+| Method Name          | Parameters                                                                 | Return Type | Description                                                                                           |
+|----------------------|----------------------------------------------------------------------------|-------------|-------------------------------------------------------------------------------------------------------|
+| `singpassRestClient` | None                                                                       | `RestClient`| Creates a `RestClient` bean configured with default headers for Singpass integration.                  |
+| `auth0RestClient`    | `Auth0Properties auth0Properties`                                          | `RestClient`| Creates a `RestClient` bean for Auth0 integration, requiring a valid domain from `Auth0Properties`.   |
+| `appleRestClient`    | `AppleProperties appleProperties`                                          | `RestClient`| Creates a `RestClient` bean for Apple integration, requiring a valid JWKS URI from `AppleProperties`. |
 
-This method creates and configures a `RestClient` bean for Singpass with default headers and a request factory.
+### Method Details
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None      | N/A  | This method does not take any parameters. |
+#### `singpassRestClient`
 
-| Return Type | Description |
-|-------------|-------------|
-| `RestClient` | A configured `RestClient` instance for Singpass. |
+- **Parameters:** None
+- **Return Type:** `RestClient`
+- **Description:** This method creates and returns a `RestClient` bean specifically configured for Singpass integration. It sets a default header for content type as `application/x-www-form-urlencoded`.
 
-### `auth0RestClient`
+#### `auth0RestClient`
 
-This method creates and configures a `RestClient` bean for Auth0, using the domain specified in `Auth0Properties`.
+- **Parameters:** 
+  - `Auth0Properties auth0Properties`: Contains configuration properties for Auth0, including the domain.
+- **Return Type:** `RestClient`
+- **Description:** This method creates and returns a `RestClient` bean for Auth0 integration. It requires the domain to be set in `Auth0Properties`. If the domain is not configured, it throws an `IllegalStateException`.
 
-| Parameter       | Type             | Description |
-|-----------------|------------------|-------------|
-| `auth0Properties` | `Auth0Properties` | Contains configuration properties for Auth0, including the domain. |
+#### `appleRestClient`
 
-| Return Type | Description |
-|-------------|-------------|
-| `RestClient` | A configured `RestClient` instance for Auth0. |
+- **Parameters:** 
+  - `AppleProperties appleProperties`: Contains configuration properties for Apple, including the JWKS URI.
+- **Return Type:** `RestClient`
+- **Description:** This method creates and returns a `RestClient` bean for Apple integration. It requires the JWKS URI to be set in `AppleProperties`. If the JWKS URI is not configured, it throws an `IllegalStateException`.
 
-**Exceptions:**
+## Configuration Details
 
-- Throws `IllegalStateException` if the Auth0 domain is not configured.
-
-### `appleRestClient`
-
-This method creates and configures a `RestClient` bean for Apple, using the JWKS URI specified in `AppleProperties`.
-
-| Parameter       | Type              | Description |
-|-----------------|-------------------|-------------|
-| `appleProperties` | `AppleProperties` | Contains configuration properties for Apple, including the JWKS URI. |
-
-| Return Type | Description |
-|-------------|-------------|
-| `RestClient` | A configured `RestClient` instance for Apple. |
-
-**Exceptions:**
-
-- Throws `IllegalStateException` if the Apple JWKS URI is not configured.
+- **Timeouts:** The `SimpleClientHttpRequestFactory` is used to set connection and read timeouts to 30,000 milliseconds (30 seconds) for all `RestClient` instances.
+- **Headers:** The `singpassRestClient` method sets a default content type header to `application/x-www-form-urlencoded`.
+- **Base URLs:** The `auth0RestClient` method constructs the base URL using the domain from `Auth0Properties`, prefixed with `https://`.

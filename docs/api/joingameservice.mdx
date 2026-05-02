@@ -1,47 +1,42 @@
 ---
 id: join-game-service
 title: JoinGameService
-sidebar_label: JoinGameService
+sidebar_label: Join Game Service
 ---
 
 ## Overview
 
-The `JoinGameService` class is a part of the game feature services in the application. It is responsible for handling the logic required for a user to join a game. This service ensures that the user can join the game by checking various conditions such as game capacity, overlapping schedules, and authorization. It also handles the publishing of notifications related to game joining events.
+The `JoinGameService` class is a part of the game services in the application. It is responsible for handling the logic when a user attempts to join a game. This service ensures that the user can join the game by checking various conditions such as game capacity, overlapping schedules, and authorization. It also manages notifications related to the game joining process.
 
 ## Public Methods
 
 ### `execute`
 
-This method is the main entry point for a user to join a game. It performs several checks and operations to ensure the user can successfully join the game.
+This method is the main entry point for a user to join a game. It performs several checks and operations to ensure that the user can successfully join the game.
 
 | Parameter | Type   | Description                          |
 |-----------|--------|--------------------------------------|
 | `id`      | `UUID` | The unique identifier of the game.   |
 
-| Return Type                  | Description                                        |
-|------------------------------|----------------------------------------------------|
-| `GameParticipantResponse`    | A response object containing details of the game participant. |
+| Return Type                   | Description                                                                 |
+|-------------------------------|-----------------------------------------------------------------------------|
+| `GameParticipantResponse`     | A response object containing details about the game participant after joining. |
 
-#### Method Details
+## Method Details
 
-- **Transactional**: The method is annotated with `@Transactional`, ensuring that all operations within it are executed within a database transaction.
-- **Auditable**: The method is annotated with `@Auditable`, which logs the action of joining a game for auditing purposes.
-- **Exceptions**: 
-  - Throws `GameFullException` if the game is already full.
-  - Throws `OverlappingGameException` if the user is already participating in another game that overlaps with the current game's schedule.
-  - Throws `ResourceNotFoundException` if the game or user cannot be found during the operation.
+### `execute(UUID id)`
 
-#### Process Flow
-
-1. **User Identification**: Retrieves the user ID of the currently authenticated user.
-2. **Game Lookup**: Finds the game by its ID and checks if it can be updated.
-3. **Authorization Checks**: Ensures the user is authorized to join the game and has not already joined.
-4. **Capacity Check**: Verifies if the game has available slots.
-5. **Overlap Check**: Ensures the user is not participating in another overlapping game.
-6. **Participant Creation**: Creates a new `GameParticipant` and saves it to the repository.
-7. **Notification Publishing**: Publishes events for notifications related to the game joining process.
+- **Purpose**: Allows a user to join a specified game by performing necessary checks and operations.
+- **Parameters**:
+  - `id`: The unique identifier of the game the user wants to join.
+- **Return Type**: `GameParticipantResponse` - Contains information about the game participant after the join operation is completed.
+- **Exceptions**:
+  - `GameFullException`: Thrown if the game has reached its maximum capacity.
+  - `OverlappingGameException`: Thrown if the user is already participating in another game that overlaps with the specified game's schedule.
+  - `ResourceNotFoundException`: Thrown if the game or user resources are not found during the operation.
 
 ## Additional Information
 
-- **Dependencies**: The service relies on several other components such as `GameParticipantRepository`, `IAuthenticatedUserResolver`, `IGameLookupService`, `IGameAuthorizationService`, and `ApplicationEventPublisher` to perform its operations.
-- **Event Handling**: The service uses `ApplicationEventPublisher` to publish events for notifications, which are handled elsewhere in the application.
+- **Notifications**: The service publishes events for different scenarios such as a player joining, the game becoming full, or a skill mismatch warning.
+- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operations are executed within a transaction, providing atomicity and consistency.
+- **Auditing**: The method is annotated with `@Auditable`, indicating that the action of joining a game is recorded for auditing purposes.

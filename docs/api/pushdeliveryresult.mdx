@@ -4,9 +4,9 @@ title: PushDeliveryResult Enum
 sidebar_label: PushDeliveryResult
 ---
 
-## Overview
+## Purpose
 
-The `PushDeliveryResult` enum is part of the `com.upmatches.app.features.notification.models` package. It represents the possible outcomes of a push notification delivery attempt. This enum is useful for handling and categorizing the results of sending push notifications, allowing developers to implement appropriate logic based on the delivery status.
+The `PushDeliveryResult` enum is part of the `com.upmatches.app.features.notification.models` package. It represents the possible outcomes of a push notification delivery attempt. This enum is useful for categorizing the result of sending a push notification, allowing developers to handle each case appropriately in their application logic.
 
 ## Enum Constants
 
@@ -16,9 +16,9 @@ The `PushDeliveryResult` enum defines the following constants:
 |-------------|-----------------------------------------------------------------------------|
 | `SENT`      | Indicates that the push notification was successfully sent.                  |
 | `NO_TOKENS` | Indicates that there were no tokens available to send the push notification. |
-| `UNAVAILABLE` | Indicates that the service required to send the push notification is unavailable. |
-| `FAILED`    | Indicates that the push notification delivery attempt failed.                |
+| `UNAVAILABLE` | Indicates that the service required to send the notification is unavailable. |
+| `FAILED`    | Indicates that the push notification failed to be sent due to an error.      |
 
 ## Usage
 
-This enum can be used in switch statements or conditional logic to handle different outcomes of push notification delivery attempts. By using `PushDeliveryResult`, developers can easily manage and respond to various delivery scenarios in their applications.
+This enum can be used in switch statements or conditional logic to handle different outcomes of a push notification delivery attempt. By using this enum, developers can ensure that their application responds appropriately to each possible result of a push notification operation.

@@ -4,41 +4,31 @@ title: JwtTokenService Class
 sidebar_label: JwtTokenService
 ---
 
-## Purpose of the JwtTokenService Class
+## Purpose
 
-The `JwtTokenService` class is a service component in a Java application responsible for generating JSON Web Tokens (JWTs) for authentication purposes. It provides functionality to create access tokens and refresh tokens, ensuring secure and efficient user authentication. The class leverages the Nimbus JOSE+JWT library for JWT creation and signing, and it is conditionally loaded based on the presence of a `SigningKeyProvider` bean.
+The `JwtTokenService` class is a part of the authentication feature in the application. It is responsible for generating JSON Web Tokens (JWTs) for user authentication. The class provides methods to create access tokens and refresh tokens, ensuring secure and efficient user session management.
 
 ## Public Methods
 
 ### `generateAccessToken`
 
-Generates a signed access token for a user, incorporating claims from different authentication providers.
+Generates an access token for a user based on their unique identifiers from different authentication providers.
 
 | Parameter     | Type   | Description                                      |
 |---------------|--------|--------------------------------------------------|
 | `userId`      | `UUID` | The unique identifier of the user.               |
-| `singpassUuid`| `String` | The UUID from Singpass authentication provider. |
-| `auth0Uuid`   | `String` | The UUID from Auth0 authentication provider.    |
-| `appleUuid`   | `String` | The UUID from Apple authentication provider.    |
+| `singpassUuid`| `String` | The Singpass unique identifier for the user.   |
+| `auth0Uuid`   | `String` | The Auth0 unique identifier for the user.      |
+| `appleUuid`   | `String` | The Apple unique identifier for the user.      |
 
-| Return Type            | Description                                      |
-|------------------------|--------------------------------------------------|
-| `AccessTokenResult`    | Contains the serialized JWT and its expiration time in UTC. |
+**Returns**: `AccessTokenResult` - An object containing the serialized JWT and its expiration time in UTC seconds.
 
 ### `generateRefreshToken`
 
-Generates a secure, random refresh token encoded in Base64 URL format.
+Generates a secure random refresh token encoded in Base64 URL format.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | *(none)*  |      |             |
 
-| Return Type | Description                                      |
-|-------------|--------------------------------------------------|
-| `String`    | A Base64 URL encoded refresh token.              |
-
-## Additional Information
-
-- **JWT Signing**: The access token is signed using the ES256 algorithm, and the signing key is provided by the `SigningKeyProvider`.
-- **Claims Handling**: The method `applyProviderClaims` ensures that only one authentication provider's UUID is included in the token claims, throwing an exception if multiple providers are detected.
-- **Security**: The class uses `SecureRandom` for generating refresh tokens, ensuring a high level of randomness and security.
+**Returns**: `String` - A Base64 URL encoded string representing the refresh token.

@@ -4,9 +4,9 @@ title: NotificationController
 sidebar_label: Notification Controller
 ---
 
-## Overview
+## Purpose
 
-The `NotificationController` class is a REST controller in a Spring Boot application that manages notification-related operations. It provides endpoints for listing notifications, retrieving the unread count, marking notifications as read, marking all notifications as read, and deleting notifications. The controller interacts with various services to perform these operations and returns appropriate HTTP responses.
+The `NotificationController` class is a REST controller in a Spring Boot application that manages notification-related operations. It provides endpoints to list notifications, get the count of unread notifications, mark notifications as read, mark all notifications as read, and delete notifications. This controller interacts with various services to perform these operations and returns appropriate HTTP responses.
 
 ## Public Methods
 
@@ -14,51 +14,51 @@ The `NotificationController` class is a REST controller in a Spring Boot applica
 
 Retrieves a paginated list of notifications.
 
-| Parameter | Type    | Description                                   |
-|-----------|---------|-----------------------------------------------|
-| page      | Integer | The page number to retrieve (default is 0).   |
-| size      | Integer | The number of notifications per page (default is 20). |
-| request   | HttpServletRequest | The HTTP request object.            |
+| Parameter | Type    | Description                              |
+|-----------|---------|------------------------------------------|
+| page      | Integer | The page number to retrieve (default 0). |
+| size      | Integer | The number of items per page (default 20).|
+| request   | HttpServletRequest | The HTTP request object.       |
 
-**Returns:** `ResponseEntity<ApiResponse<PagedResponse<NotificationResponse>>>` - A response entity containing a paged response of notifications.
+**Returns:** `ResponseEntity<ApiResponse<PagedResponse<NotificationResponse>>>` - A paginated response containing notifications.
 
 ### getUnreadCount
 
-Retrieves the count of unread notifications.
+Fetches the count of unread notifications.
 
-| Parameter | Type              | Description               |
-|-----------|-------------------|---------------------------|
-| request   | HttpServletRequest | The HTTP request object. |
+| Parameter | Type               | Description            |
+|-----------|--------------------|------------------------|
+| request   | HttpServletRequest | The HTTP request object.|
 
-**Returns:** `ResponseEntity<ApiResponse<UnreadCountResponse>>` - A response entity containing the unread count.
+**Returns:** `ResponseEntity<ApiResponse<UnreadCountResponse>>` - The count of unread notifications.
 
 ### markRead
 
 Marks a specific notification as read.
 
-| Parameter | Type | Description                      |
-|-----------|------|----------------------------------|
-| id        | UUID | The unique identifier of the notification to mark as read. |
-| request   | HttpServletRequest | The HTTP request object. |
+| Parameter | Type    | Description                  |
+|-----------|---------|------------------------------|
+| id        | UUID    | The ID of the notification.  |
+| request   | HttpServletRequest | The HTTP request object.|
 
-**Returns:** `ResponseEntity<ApiResponse<NotificationResponse>>` - A response entity containing the updated notification.
+**Returns:** `ResponseEntity<ApiResponse<NotificationResponse>>` - The updated notification marked as read.
 
 ### markAllRead
 
 Marks all notifications as read.
 
-| Parameter | Type              | Description               |
-|-----------|-------------------|---------------------------|
-| request   | HttpServletRequest | The HTTP request object. |
+| Parameter | Type               | Description            |
+|-----------|--------------------|------------------------|
+| request   | HttpServletRequest | The HTTP request object.|
 
-**Returns:** `ResponseEntity<ApiResponse<Integer>>` - A response entity containing the number of notifications marked as read.
+**Returns:** `ResponseEntity<ApiResponse<Integer>>` - The number of notifications marked as read.
 
 ### deleteNotification
 
 Deletes a specific notification.
 
-| Parameter | Type | Description                      |
-|-----------|------|----------------------------------|
-| id        | UUID | The unique identifier of the notification to delete. |
+| Parameter | Type    | Description                  |
+|-----------|---------|------------------------------|
+| id        | UUID    | The ID of the notification.  |
 
-**Returns:** `ResponseEntity<Void>` - A response entity with no content, indicating successful deletion.
+**Returns:** `ResponseEntity<Void>` - An empty response indicating successful deletion.

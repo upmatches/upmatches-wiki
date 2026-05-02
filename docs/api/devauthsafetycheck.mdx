@@ -4,43 +4,47 @@ title: DevAuthSafetyCheck Class
 sidebar_label: DevAuthSafetyCheck
 ---
 
+import { useBaseUrl } from '@docusaurus/core';
+
 ## Overview
 
-The `DevAuthSafetyCheck` class is a configuration component in a Spring application designed to ensure security by preventing the activation of development-specific authentication endpoints in a production environment. This class checks the application's active profiles and the configuration properties to ensure that potentially unsafe development features are not enabled when the application is running in production mode.
+The `DevAuthSafetyCheck` class is a Spring configuration component designed to ensure that certain development-only authentication features are not enabled in a production environment. This is crucial for maintaining the security integrity of the application by preventing unauthorized access to sensitive endpoints.
+
+## Class Purpose
+
+The primary purpose of the `DevAuthSafetyCheck` class is to perform a safety check during the application's startup process. It verifies that the development mint endpoint, which can mint access tokens for any user, is not enabled when the application is running with the 'prod' profile. If this condition is violated, the class throws an `IllegalStateException` to prevent the application from starting with an insecure configuration.
 
 ## Public Methods
 
-The class contains the following public constructor:
+The class contains the following public method:
 
 ### Constructor
 
+The constructor initializes the `DevAuthSafetyCheck` class with the necessary dependencies.
+
 | Method Signature | Description |
 |------------------|-------------|
-| `DevAuthSafetyCheck(final AuthDevProperties authDevProperties, final Environment environment)` | Initializes a new instance of the `DevAuthSafetyCheck` class with the specified authentication properties and environment. |
+| `DevAuthSafetyCheck(final AuthDevProperties authDevProperties, final Environment environment)` | Initializes the class with `AuthDevProperties` and `Environment` objects. |
 
 #### Parameters
 
-| Parameter Name     | Type                  | Description |
-|--------------------|-----------------------|-------------|
-| `authDevProperties` | `AuthDevProperties`   | The properties related to development authentication settings. |
-| `environment`       | `Environment`         | The Spring environment, used to access active profiles. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `authDevProperties` | `AuthDevProperties` | An object containing properties related to development authentication settings. |
+| `environment` | `Environment` | The Spring environment object used to access the active profiles. |
 
-## Private Methods
+### verify
 
-### `verify`
-
-The `verify` method is annotated with `@PostConstruct`, indicating that it is executed after the bean's construction and dependency injection. This method checks if the development endpoint for minting tokens is enabled and if the application is running with the 'prod' profile. If both conditions are true, it throws an `IllegalStateException` to prevent a security risk.
-
-#### Method Details
+The `verify` method is annotated with `@PostConstruct`, indicating that it should be executed after the class has been constructed and dependencies have been injected. This method performs the safety check.
 
 | Method Signature | Description |
 |------------------|-------------|
-| `void verify()`  | Checks the application's configuration to ensure that development endpoints are not enabled in a production environment. |
+| `void verify()` | Checks if the development mint endpoint is enabled in a production environment and throws an exception if it is. |
 
-#### Exceptions
+#### Behavior
 
-| Exception Type         | Condition |
-|------------------------|-----------|
-| `IllegalStateException` | Thrown if the development token minting endpoint is enabled while the application is running with the 'prod' profile. |
+- **Development Endpoint Check**: The method checks if the `mintEndpointEnabled` property is set to `true`.
+- **Production Profile Check**: It verifies if the 'prod' profile is active.
+- **Exception Handling**: If both conditions are true, it throws an `IllegalStateException` with a descriptive error message.
 
-This class is crucial for maintaining the security integrity of the application by ensuring that development features are not inadvertently exposed in a production setting.
+By ensuring that development features are not inadvertently enabled in production, the `DevAuthSafetyCheck` class plays a critical role in safeguarding the application's security posture.

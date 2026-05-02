@@ -6,34 +6,44 @@ sidebar_label: List Game Participants Service
 
 ## Overview
 
-The `ListGameParticipantsService` class is a Spring service responsible for retrieving a list of active participants in a game. This service ensures that only authorized users can view the participants of a specific game. It leverages several dependencies to perform user authentication, game lookup, and authorization checks.
+The `ListGameParticipantsService` class is a part of the `com.upmatches.app.features.game.services` package. It is responsible for retrieving a list of active participants for a specified game. This service ensures that the requesting user is authorized to view the game's participants and formats the participant data into a response format.
+
+## Purpose
+
+The primary purpose of the `ListGameParticipantsService` is to provide a mechanism to list participants of a game, ensuring that the user has the necessary permissions to access this information. It interacts with various components such as repositories and authorization services to achieve this functionality.
 
 ## Public Methods
 
-### `execute`
+### `execute(UUID id)`
 
 Retrieves a list of active game participants for a specified game.
 
-| Parameter | Type   | Description                          |
-|-----------|--------|--------------------------------------|
-| `id`      | `UUID` | The unique identifier of the game.   |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id`      | `UUID` | The unique identifier of the game for which participants are to be listed. |
 
-| Return Type                          | Description                                      |
-|--------------------------------------|--------------------------------------------------|
-| `List<GameParticipantResponse>`      | A list of responses representing active participants in the game. |
+#### Returns
+
+A list of `GameParticipantResponse` objects representing the active participants of the game.
+
+| Return Type | Description |
+|-------------|-------------|
+| `List<GameParticipantResponse>` | A list of responses containing participant details. |
 
 ## Detailed Description
 
-- **Dependencies**:
-  - `GameParticipantRepository`: Used to query the database for game participants.
-  - `IAuthenticatedUserResolver`: Resolves the currently authenticated user's ID.
-  - `IGameLookupService`: Provides functionality to find and validate the existence of a game.
-  - `IGameAuthorizationService`: Ensures that the user has the necessary permissions to view the game participants.
+- **Dependencies**: The service relies on several dependencies injected via its constructor:
+  - `GameParticipantRepository`: Used to fetch participants from the database.
+  - `IAuthenticatedUserResolver`: Resolves the current authenticated user's ID.
+  - `IGameLookupService`: Provides game lookup functionality.
+  - `IGameAuthorizationService`: Ensures the user has permission to view the game's participants.
 
-- **Transactional Behavior**: The `execute` method is annotated with `@Transactional(readOnly = true)`, indicating that it performs read-only operations within a transactional context.
+- **Transactional Behavior**: The `execute` method is annotated with `@Transactional(readOnly = true)`, indicating that it performs read-only operations on the database.
 
-- **Operation Execution**: The method uses `ServiceOperationExecutor` to execute the retrieval operation, handling any potential `ResourceNotFoundException` if the game or participants are not found.
+- **Authorization**: Before fetching participants, the service checks if the user is authorized to view the game using the `IGameAuthorizationService`.
 
-- **Participant Filtering**: The service filters participants by their status, ensuring only active participants are included in the response, and orders them by their join date in ascending order.
+- **Participant Retrieval**: Participants are fetched from the `GameParticipantRepository` based on the game ID and their active status. The results are ordered by the time they joined the game.
 
-This service is a critical component in managing game participant visibility, ensuring secure and efficient access to participant data.
+- **Response Mapping**: Each participant is mapped to a `GameParticipantResponse` object, which may include contact methods if the requesting user is the organizer of the game.
+
+This service is a crucial part of the game's feature set, ensuring that participant data is securely and efficiently retrieved and presented to authorized users.

@@ -4,29 +4,32 @@ title: TransitLine Class
 sidebar_label: TransitLine
 ---
 
-## Purpose of the TransitLine Class
+## Purpose
 
-The `TransitLine` class is an entity representation of a transit line in a transportation system. It is mapped to the `transit_lines` table in a database using JPA (Java Persistence API) annotations. This class is part of the `com.upmatches.app.features.venue.entities` package and is designed to encapsulate the details of a transit line, including its code, name, and color.
+The `TransitLine` class represents a transit line entity within a transportation system. It is designed to be used with a database, as indicated by its use of JPA annotations. This class is part of the `com.upmatches.app.features.venue.entities` package and is mapped to the `transit_lines` table in the database. The class includes fields for the transit line's code, name, and color, which are essential attributes for identifying and displaying transit lines in applications.
 
 ## Public Methods
 
 The `TransitLine` class provides the following public method:
 
+### `create`
+
+Creates a new instance of the `TransitLine` class with the specified attributes.
+
 | Method Signature | Description |
 |------------------|-------------|
-| `public static TransitLine create(String code, String name, String color)` | Creates a new instance of `TransitLine` with the specified code, name, and color. |
+| `public static TransitLine create(String code, String name, String color)` | Creates a new `TransitLine` object with the given code, name, and color. |
 
-### Method Details
+#### Parameters
 
-#### `create`
+| Parameter | Type   | Description                  |
+|-----------|--------|------------------------------|
+| `code`    | String | The unique code of the transit line. |
+| `name`    | String | The name of the transit line. |
+| `color`   | String | The color associated with the transit line, typically represented in hexadecimal format. |
 
-- **Description**: This static method is used to create a new instance of the `TransitLine` class. It initializes the `code`, `name`, and `color` fields with the provided values.
-- **Parameters**:
+#### Return Type
 
-  | Name   | Type   | Description                   |
-  |--------|--------|-------------------------------|
-  | `code` | String | The unique code of the transit line. |
-  | `name` | String | The name of the transit line. |
-  | `color`| String | The color associated with the transit line, represented as a hex code. |
-
-- **Return Type**: `TransitLine` - Returns a new instance of the `TransitLine` class initialized with the specified values.
+| Type         | Description                             |
+|--------------|-----------------------------------------|
+| `TransitLine` | Returns a new instance of the `TransitLine` class initialized with the provided parameters. |

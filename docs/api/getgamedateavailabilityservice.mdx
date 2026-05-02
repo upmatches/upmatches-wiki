@@ -4,26 +4,29 @@ title: GetGameDateAvailabilityService
 sidebar_label: GetGameDateAvailabilityService
 ---
 
-## Purpose of the Class
+## Purpose
 
-The `GetGameDateAvailabilityService` class is a Spring service responsible for determining the availability of game dates within a specified date range. It interacts with a `GameRepository` to retrieve distinct game start times and constructs a list of `GameDateAvailabilityResponse` objects indicating whether games are available on each date within the range.
+The `GetGameDateAvailabilityService` class is a Spring service that provides functionality to check the availability of game dates within a specified date range. It interacts with the `GameRepository` to retrieve game start times and determines which dates within the range have scheduled games.
 
 ## Public Methods
 
 ### `execute`
 
-This method retrieves game date availability between two specified dates.
+This method retrieves a list of `GameDateAvailabilityResponse` objects, each representing whether a game is available on a specific date within the provided date range.
 
-| Parameter | Type     | Description                                           |
-|-----------|----------|-------------------------------------------------------|
+| Parameter | Type     | Description                                      |
+|-----------|----------|--------------------------------------------------|
 | `fromDate`| `LocalDate` | The start date of the range to check for game availability. |
 | `toDate`  | `LocalDate` | The end date of the range to check for game availability.   |
 
-| Return Type                          | Description                                                                 |
-|--------------------------------------|-----------------------------------------------------------------------------|
+| Return Type                          | Description                                                  |
+|--------------------------------------|--------------------------------------------------------------|
 | `List<GameDateAvailabilityResponse>` | A list of responses indicating game availability for each date in the range. |
 
-#### Exceptions
+### Method Details
 
-- Throws `IllegalArgumentException` if `toDate` is before `fromDate`.
-- Utilizes `ResourceNotFoundException` if no game start times are found within the specified range.
+- **Transactional**: The `execute` method is marked with `@Transactional(readOnly = true)`, indicating that it performs read-only operations within a transaction.
+- **Date Validation**: It checks if `toDate` is before `fromDate` and throws an `IllegalArgumentException` if so.
+- **Time Zone**: The service uses the "Asia/Singapore" time zone for date and time calculations.
+- **Game Start Times**: It retrieves distinct game start times between the specified instants using the `GameRepository`.
+- **Response Construction**: For each date in the range, it creates a `GameDateAvailabilityResponse` indicating whether a game is scheduled on that date.

@@ -6,15 +6,19 @@ sidebar_label: IGetGameService
 
 ## Overview
 
-The `IGetGameService` interface is a part of the `com.upmatches.app.features.game.services` package. It defines a contract for retrieving game information based on a unique identifier. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting only the `GetGameService` class.
+The `IGetGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for retrieving game-related information. This interface is designed to be implemented by classes that provide specific logic for fetching game data, ensuring a consistent method signature across different implementations.
+
+## Purpose
+
+The primary purpose of the `IGetGameService` interface is to provide a standardized way to execute operations that retrieve game information based on a unique identifier. This interface is sealed, meaning it restricts which classes can implement it, specifically allowing only the `GetGameService` class to do so.
 
 ## Public Methods
 
 The `IGetGameService` interface declares the following public method:
 
-| Method Signature          | Description                                                                 |
-|---------------------------|-----------------------------------------------------------------------------|
-| `GameResponse execute(UUID id)` | Retrieves game details for the specified game ID. |
+| Method Signature          | Description                                      |
+|---------------------------|--------------------------------------------------|
+| `GameResponse execute(UUID id)` | Retrieves game information for the specified game ID. |
 
 ### Method Details
 
@@ -22,10 +26,11 @@ The `IGetGameService` interface declares the following public method:
 
 - **Description**: This method is responsible for fetching the game details associated with the provided unique identifier.
 - **Parameters**:
+
   | Name | Type | Description |
   |------|------|-------------|
-  | `id` | `UUID` | The unique identifier of the game to be retrieved. |
+  | `id` | `UUID` | The unique identifier of the game to retrieve. |
 
 - **Returns**: 
   - **Type**: `GameResponse`
-  - **Description**: Returns a `GameResponse` object containing the details of the requested game.
+  - **Description**: An object containing the details of the requested game.

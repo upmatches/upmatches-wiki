@@ -1,32 +1,39 @@
 ---
 id: igetgamedateavailabilityservice
-title: IGetGameDateAvailabilityService Interface
+title: IGetGameDateAvailabilityService
 sidebar_label: IGetGameDateAvailabilityService
 ---
 
+import com.upmatches.app.features.game.responses.GameDateAvailabilityResponse;
+
+import java.time.LocalDate;
+import java.util.List;
+
 ## Overview
 
-The `IGetGameDateAvailabilityService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that determine the availability of game dates within a specified range. This interface is designed to be implemented by classes that provide the actual logic for fetching game date availability.
+The `IGetGameDateAvailabilityService` is a sealed interface designed to define the contract for retrieving game date availability. It ensures that any implementing class, such as `GetGameDateAvailabilityService`, adheres to the specified method signature for fetching available game dates within a given range. This service is crucial for applications that need to provide users with information about available game dates, enhancing user experience by allowing them to plan accordingly.
 
 ## Public Methods
 
-The interface declares the following public method:
+### `execute`
+
+The `execute` method is the core functionality of the `IGetGameDateAvailabilityService`. It is responsible for fetching a list of game date availabilities between two specified dates.
 
 | Method Signature | Description |
-|------------------|-------------|
-| `List<GameDateAvailabilityResponse> execute(LocalDate fromDate, LocalDate toDate)` | This method retrieves a list of game date availabilities between the specified `fromDate` and `toDate`. |
+| ---------------- | ----------- |
+| `List<GameDateAvailabilityResponse> execute(LocalDate fromDate, LocalDate toDate)` | Retrieves a list of available game dates within the specified date range. |
 
-### Method Details
+#### Parameters
 
-#### `execute`
+| Parameter | Type      | Description                          |
+| --------- | --------- | ------------------------------------ |
+| `fromDate` | `LocalDate` | The start date of the range for which game availability is requested. |
+| `toDate`   | `LocalDate` | The end date of the range for which game availability is requested. |
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `fromDate` | `LocalDate` | The start date of the range for which game date availability is to be checked. |
-| `toDate` | `LocalDate` | The end date of the range for which game date availability is to be checked. |
+#### Return Type
 
-| Return Type | Description |
-|-------------|-------------|
-| `List<GameDateAvailabilityResponse>` | A list of `GameDateAvailabilityResponse` objects representing the availability of game dates within the specified range. |
+| Type | Description |
+| ---- | ----------- |
+| `List<GameDateAvailabilityResponse>` | A list of `GameDateAvailabilityResponse` objects representing the available game dates within the specified range. |
 
-This method is crucial for applications that need to provide users with information about available game dates, enabling better planning and scheduling.
+This interface is a critical component for any system that requires dynamic retrieval of game availability data, ensuring that the implementing services provide consistent and reliable information.

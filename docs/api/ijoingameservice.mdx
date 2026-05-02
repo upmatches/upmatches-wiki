@@ -4,22 +4,24 @@ title: IJoinGameService Interface
 sidebar_label: IJoinGameService
 ---
 
-## Purpose
+## Overview
 
-The `IJoinGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines the contract for services that handle the logic for joining a game. This interface is designed to be implemented by classes that provide the actual functionality for a participant to join a game, ensuring a consistent method signature across different implementations.
+The `IJoinGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that handle the logic of joining a game. This interface is designed to be implemented by classes that provide the actual functionality for joining a game, ensuring a consistent method signature across different implementations.
 
 ## Public Methods
 
+The `IJoinGameService` interface declares the following public method:
+
 | Method Signature                  | Description                                                                 |
 |-----------------------------------|-----------------------------------------------------------------------------|
-| `GameParticipantResponse execute(UUID id)` | Executes the join game operation for a participant identified by the given UUID. |
+| `GameParticipantResponse execute(UUID id)` | Executes the logic to join a game using the provided game identifier. |
 
 ### Method Details
 
-#### `execute`
+#### `execute(UUID id)`
 
-- **Parameters:**
-  - `UUID id`: The unique identifier of the participant who wants to join the game.
-
-- **Returns:**
-  - `GameParticipantResponse`: An object containing the response details of the participant joining the game. This typically includes information about the participant and the status of the join operation.
+- **Description**: This method is responsible for executing the logic required to join a game. It takes a unique identifier for the game and returns a response indicating the result of the join operation.
+- **Parameters**:
+  - `UUID id`: The unique identifier of the game that a participant wants to join.
+- **Returns**: 
+  - `GameParticipantResponse`: An object containing details about the game participant after the join operation is executed.

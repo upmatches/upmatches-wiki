@@ -4,28 +4,23 @@ title: IResolveShareLinkService Interface
 sidebar_label: IResolveShareLinkService
 ---
 
-## Purpose
+## Overview
 
-The `IResolveShareLinkService` interface is part of the `com.upmatches.app.features.sharelink.services` package. It defines a contract for resolving share links within the application. This interface is designed to be implemented by classes that provide the functionality to process a share link code and return the corresponding response.
+The `IResolveShareLinkService` interface is part of the `com.upmatches.app.features.sharelink.services` package. It defines a contract for resolving share links within the application. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `ResolveShareLinkService` class.
 
 ## Public Methods
 
-| Method Signature                          | Description                                                                 |
-|-------------------------------------------|-----------------------------------------------------------------------------|
-| `PublicShareLinkResponse execute(String code)` | Processes the given share link code and returns a `PublicShareLinkResponse`. |
+The interface declares the following public method:
+
+| Method Signature | Description |
+|------------------|-------------|
+| `PublicShareLinkResponse execute(String code)` | Resolves a share link using the provided code and returns a `PublicShareLinkResponse`. |
 
 ### Method Details
 
 #### `execute`
 
-- **Parameters:**
-
-  | Name  | Type   | Description                      |
-  |-------|--------|----------------------------------|
-  | code  | String | The share link code to be resolved. |
-
-- **Returns:** 
-
-  | Type                      | Description                                                  |
-  |---------------------------|--------------------------------------------------------------|
-  | `PublicShareLinkResponse` | The response object containing details about the share link. |
+- **Description**: This method takes a share link code as input and returns a `PublicShareLinkResponse` object, which contains the resolved information about the share link.
+- **Parameters**:
+  - `code` (String): The code representing the share link to be resolved.
+- **Returns**: `PublicShareLinkResponse` - An object containing the resolved details of the share link.

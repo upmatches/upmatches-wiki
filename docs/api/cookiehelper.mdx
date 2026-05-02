@@ -6,49 +6,49 @@ sidebar_label: CookieHelper
 
 ## Purpose
 
-The `CookieHelper` class is a service component in a Java Spring application designed to manage authentication cookies. It provides methods to set, clear, and retrieve authentication-related cookies, specifically access tokens, refresh tokens, and token expiry information. This class is crucial for handling secure cookie operations in a web application, ensuring that authentication tokens are properly managed and transmitted between the client and server.
+The `CookieHelper` class is a service component in a Java Spring application responsible for managing authentication cookies. It provides methods to set, clear, and retrieve cookies related to authentication tokens. This class is crucial for handling user sessions securely by storing access and refresh tokens in HTTP-only cookies.
 
 ## Public Methods
 
-### setAuthCookies
+### `setAuthCookies`
 
-Sets authentication cookies in the HTTP response.
+Sets authentication cookies in the HTTP response, including access token, refresh token, and token expiry.
 
-| Parameter   | Type                      | Description                                                                 |
-|-------------|---------------------------|-----------------------------------------------------------------------------|
-| response    | `HttpServletResponse`     | The HTTP response object where cookies will be added.                       |
-| request     | `HttpServletRequest`      | The HTTP request object used to determine if the connection is secure.      |
-| tokenData   | `TokenData`               | Contains the access token, refresh token, and expiry time.                  |
-
-**Returns:** `void`
-
-### clearAuthCookies
-
-Clears authentication cookies from the HTTP response.
-
-| Parameter   | Type                      | Description                                                                 |
-|-------------|---------------------------|-----------------------------------------------------------------------------|
-| response    | `HttpServletResponse`     | The HTTP response object where cookies will be cleared.                     |
-| request     | `HttpServletRequest`      | The HTTP request object used to determine if the connection is secure.      |
+| Parameter  | Type                      | Description                                                                 |
+|------------|---------------------------|-----------------------------------------------------------------------------|
+| `response` | `HttpServletResponse`     | The HTTP response object where cookies will be added.                       |
+| `request`  | `HttpServletRequest`      | The HTTP request object to determine if the connection is secure.           |
+| `tokenData`| `TokenData`               | An object containing access token, refresh token, and expiry time.          |
 
 **Returns:** `void`
 
-### getRefreshTokenFromCookie
+### `clearAuthCookies`
+
+Clears authentication cookies from the HTTP response, effectively logging out the user.
+
+| Parameter  | Type                      | Description                                                                 |
+|------------|---------------------------|-----------------------------------------------------------------------------|
+| `response` | `HttpServletResponse`     | The HTTP response object where cookies will be cleared.                     |
+| `request`  | `HttpServletRequest`      | The HTTP request object to determine if the connection is secure.           |
+
+**Returns:** `void`
+
+### `getRefreshTokenFromCookie`
 
 Retrieves the refresh token from the cookies in the HTTP request.
 
-| Parameter   | Type                      | Description                                                                 |
-|-------------|---------------------------|-----------------------------------------------------------------------------|
-| request     | `HttpServletRequest`      | The HTTP request object from which cookies will be read.                    |
+| Parameter  | Type                      | Description                                                                 |
+|------------|---------------------------|-----------------------------------------------------------------------------|
+| `request`  | `HttpServletRequest`      | The HTTP request object containing cookies.                                 |
 
-**Returns:** `String` - The refresh token value if present, otherwise `null`.
+**Returns:** `String` - The refresh token if present, otherwise `null`.
 
 ## TokenData Record
 
 The `TokenData` record is a simple data structure used to encapsulate the access token, expiry time, and refresh token.
 
-| Field          | Type      | Description                                      |
-|----------------|-----------|--------------------------------------------------|
-| accessToken    | `String`  | The access token used for authentication.        |
-| expiresAtUtc   | `Long`    | The UTC timestamp when the access token expires. |
-| refreshToken   | `String`  | The refresh token used to obtain new access tokens. |
+| Field          | Type     | Description                             |
+|----------------|----------|-----------------------------------------|
+| `accessToken`  | `String` | The access token for authentication.    |
+| `expiresAtUtc` | `Long`   | The expiry time of the access token in UTC. |
+| `refreshToken` | `String` | The refresh token for obtaining new access tokens. |

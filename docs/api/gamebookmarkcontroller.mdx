@@ -4,9 +4,9 @@ title: GameBookmarkController
 sidebar_label: Game Bookmark Controller
 ---
 
-## Overview
+## Purpose
 
-The `GameBookmarkController` class is a REST controller in a Spring Boot application that manages game bookmarks. It provides endpoints to create, list, and delete game bookmarks. This controller interacts with services responsible for handling the business logic related to game bookmarks.
+The `GameBookmarkController` class is a REST controller in a Spring Boot application that manages game bookmark operations. It provides endpoints to create, list, and delete game bookmarks. This controller interacts with services to perform the necessary business logic and returns appropriate HTTP responses.
 
 ## Public Methods
 
@@ -19,7 +19,7 @@ Creates a new game bookmark.
 | `body`    | `CreateGameBookmarkRequest`       | The request body containing the game ID to bookmark. |
 | `request` | `HttpServletRequest`              | The HTTP request object.                         |
 
-**Returns**: `ResponseEntity<ApiResponse<GameBookmarkResponse>>` - A response entity containing the result of the bookmark creation operation.
+**Returns:** `ResponseEntity<ApiResponse<GameBookmarkResponse>>` - A response entity containing the API response with the created game bookmark details.
 
 ### `listGameBookmarks`
 
@@ -28,10 +28,10 @@ Lists all game bookmarks with optional pagination.
 | Parameter | Type                | Description                                      |
 |-----------|---------------------|--------------------------------------------------|
 | `cursor`  | `String` (optional) | The cursor for pagination.                       |
-| `size`    | `Integer`           | The number of bookmarks to retrieve (default is 20). |
+| `size`    | `Integer`           | The number of items to return per page. Defaults to 20. |
 | `request` | `HttpServletRequest`| The HTTP request object.                         |
 
-**Returns**: `ResponseEntity<ApiResponse<CursorPagedResponse<GameBookmarkResponse>>>` - A response entity containing a paginated list of game bookmarks.
+**Returns:** `ResponseEntity<ApiResponse<CursorPagedResponse<GameBookmarkResponse>>>` - A response entity containing the API response with a paginated list of game bookmarks.
 
 ### `deleteGameBookmark`
 
@@ -41,4 +41,4 @@ Deletes a game bookmark by its ID.
 |-----------|--------|------------------------------|
 | `gameId`  | `UUID` | The unique identifier of the game bookmark to delete. |
 
-**Returns**: `ResponseEntity<Void>` - A response entity indicating the result of the delete operation.
+**Returns:** `ResponseEntity<Void>` - A response entity indicating the deletion status.

@@ -6,11 +6,11 @@ sidebar_label: FirebaseProperties
 
 ## Overview
 
-The `FirebaseProperties` class is a configuration properties holder for Firebase-related settings in a Spring Boot application. It is designed to map properties prefixed with `app.firebase` from the application's configuration files (e.g., `application.yml` or `application.properties`) to Java objects. This class uses the `@ConfigurationProperties` annotation to facilitate this mapping.
+The `FirebaseProperties` class is a configuration properties holder for Firebase-related settings in a Spring Boot application. It is designed to map properties prefixed with `app.firebase` from the application's configuration files (such as `application.yml` or `application.properties`) to Java objects. This class is implemented as a Java record, which provides a concise way to define immutable data carriers.
 
 ## Purpose
 
-The primary purpose of the `FirebaseProperties` class is to encapsulate Firebase configuration details, such as the service account path and JSON content, and provide utility methods to check their availability. This is useful for applications that need to interact with Firebase services and require these configurations to be set up correctly.
+The primary purpose of the `FirebaseProperties` class is to encapsulate the Firebase service account configuration details, specifically the service account path and the service account JSON content. It provides utility methods to check the presence of these configuration details.
 
 ## Public Methods
 
@@ -18,15 +18,30 @@ The `FirebaseProperties` class provides the following public methods:
 
 | Method Name | Description | Parameters | Return Type |
 |-------------|-------------|------------|-------------|
-| `hasJson()` | Checks if the `serviceAccountJson` property is set. | None | `boolean` |
-| `hasPath()` | Checks if the `serviceAccountPath` property is set. | None | `boolean` |
+| `hasJson()` | Checks if the service account JSON content is available. | None | `boolean` |
+| `hasPath()` | Checks if the service account path is available. | None | `boolean` |
 
-### Method Details
+## Method Details
 
-- **`hasJson()`**: This method returns `true` if the `serviceAccountJson` property is not `null`, indicating that the JSON content for the Firebase service account is available.
+### `hasJson()`
 
-- **`hasPath()`**: This method returns `true` if the `serviceAccountPath` property is not `null`, indicating that the path to the Firebase service account file is available.
+- **Description**: This method returns `true` if the `serviceAccountJson` property is not `null`, indicating that the JSON content for the Firebase service account is available.
+- **Return Type**: `boolean`
 
-## Usage
+### `hasPath()`
 
-To use the `FirebaseProperties` class, ensure that your Spring Boot application's configuration files contain the necessary `app.firebase` properties. The class will automatically map these properties to its fields, allowing you to access them through the provided methods.
+- **Description**: This method returns `true` if the `serviceAccountPath` property is not `null`, indicating that the path to the Firebase service account file is available.
+- **Return Type**: `boolean`
+
+## Constructor
+
+The `FirebaseProperties` record constructor ensures that any blank strings provided for `serviceAccountPath` or `serviceAccountJson` are converted to `null` using the private static method `blankToNull`. This helps in maintaining the integrity of the configuration by treating blank values as absent.
+
+## Private Methods
+
+### `blankToNull(final String val)`
+
+- **Description**: Converts a blank string to `null`. If the input string is `null` or consists only of whitespace, it returns `null`; otherwise, it returns the original string.
+- **Parameters**:
+  - `val`: The string to be checked and potentially converted.
+- **Return Type**: `String`

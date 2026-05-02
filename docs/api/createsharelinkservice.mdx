@@ -1,39 +1,38 @@
 ---
 id: create-share-link-service
 title: CreateShareLinkService
-sidebar_label: Create Share Link Service
+sidebar_label: CreateShareLinkService
 ---
 
-## Purpose
+## Purpose of the Class
 
-The `CreateShareLinkService` class is a Spring service responsible for creating shareable short links for resources. It ensures that each link is unique and associated with an authenticated user. The service handles the generation of short codes, checks for existing links, and manages potential code collisions.
+The `CreateShareLinkService` class is a Spring service responsible for creating shareable short links for resources. It handles the generation of unique short codes, ensures the authenticated user is valid, and builds response objects containing the shareable URLs. The service is designed to be transactional and auditable, ensuring that each operation is logged and can be rolled back in case of failure.
 
 ## Public Methods
 
 ### `execute`
 
-Executes the process of creating a share link for a given request. It checks if a link already exists for the specified resource and user, and if not, it generates a new link with a unique short code.
+Executes the process of creating a shareable link for a given resource. It checks for existing links, generates a unique short code if necessary, and returns a response with the shareable URLs.
 
 | Parameter | Type                          | Description                                   |
 |-----------|-------------------------------|-----------------------------------------------|
-| request   | `CreateShareLinkRequest`      | The request containing resource details.      |
+| request   | `CreateShareLinkRequest`      | The request object containing resource details.|
 
-| Return Type          | Description                                       |
-|----------------------|---------------------------------------------------|
-| `ShareLinkResponse`  | The response containing the created share link.   |
+| Return Type          | Description                                      |
+|----------------------|--------------------------------------------------|
+| `ShareLinkResponse`  | A response object containing the shareable URLs. |
 
 ## Method Details
 
-- **`execute(CreateShareLinkRequest request)`**: This method is the main entry point for creating a share link. It retrieves the authenticated user's ID, checks for existing links, and either returns the existing link or creates a new one with a unique short code. The method is transactional and auditable, ensuring that operations are logged and can be rolled back in case of failure.
+### `execute(CreateShareLinkRequest request)`
 
-## Key Concepts
+- **Purpose**: Creates a shareable link for a resource, ensuring the user is authenticated and a unique short code is generated.
+- **Parameters**:
+  - `request`: An instance of `CreateShareLinkRequest` containing the resource type and ID for which the shareable link is to be created.
+- **Returns**: A `ShareLinkResponse` object containing the generated shareable URLs.
+- **Exceptions**:
+  - Throws `AuthenticationException` if the user is not authenticated.
+  - Throws `ResourceNotFoundException` if the user or resource is not found.
+  - Throws `ShortCodeCollisionException` if a unique short code cannot be generated after a specified number of attempts.
 
-- **Authentication**: The service retrieves the authenticated user's ID from the security context to associate the link with the correct user.
-- **Short Code Generation**: The service attempts to generate a unique short code for the link, retrying up to a maximum number of attempts to avoid collisions.
-- **Error Handling**: The service throws specific exceptions for authentication failures, user not found scenarios, and short code collisions, ensuring that errors are handled gracefully and informatively.
-
-## Dependencies
-
-- **Repositories**: The service relies on `ShortLinkRepository` and `UserRepository` for database operations related to short links and users.
-- **Utilities**: It uses `ShortCodeGenerator` for generating short codes and `ServiceOperationExecutor` for executing repository operations with error handling.
-- **Security**: The service uses Spring Security's `SecurityContextHolder` to access authentication details.
+This service is a critical component for enabling resource sharing within the application, ensuring that each link is unique and traceable back to the authenticated user who created it.

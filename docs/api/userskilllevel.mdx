@@ -4,19 +4,9 @@ title: UserSkillLevel Class
 sidebar_label: UserSkillLevel
 ---
 
-import com.upmatches.app.features.activity.entities.Activity;
-import com.upmatches.app.features.skilllevels.entities.SkillLevel;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.Table;
-import lombok.Getter;
+## Purpose
 
-## Purpose of the UserSkillLevel Class
-
-The `UserSkillLevel` class is an entity that represents the association between a user and their skill level in a particular activity. It is part of a system that tracks user skills and their proficiency levels in various activities. This class is mapped to the `user_skill_levels` table in the database and uses a composite key to uniquely identify each record.
+The `UserSkillLevel` class is an entity that represents the association between a user and their skill level in a particular activity. This class is part of a larger application that manages user activities and their corresponding skill levels. It uses JPA annotations to map the class to the `user_skill_levels` table in the database.
 
 ## Public Methods
 
@@ -28,15 +18,15 @@ The `UserSkillLevel` class provides the following public method:
 
 ### Method Details
 
-#### `create(User user, SkillLevel skillLevel)`
+#### `create`
 
 - **Parameters:**
 
-  | Parameter | Type     | Description                          |
-  | --------- | -------- | ------------------------------------ |
-  | `user`    | `User`   | The user to be associated with a skill level. |
+  | Name       | Type       | Description                          |
+  |------------|------------|--------------------------------------|
+  | `user`     | `User`     | The user to be associated with a skill level. |
   | `skillLevel` | `SkillLevel` | The skill level to be associated with the user. |
 
-- **Return Type:** `UserSkillLevel`
+- **Returns:** `UserSkillLevel` - A new instance of `UserSkillLevel` representing the association between the user and the skill level.
 
-- **Description:** This static method creates a new `UserSkillLevel` instance by setting the composite key, associating the user and skill level, and linking the activity from the skill level. It is used to establish the relationship between a user and their skill level in a specific activity.
+This method initializes a `UserSkillLevel` object by setting its composite key (`UserSkillLevelId`), user, skill level, and the associated activity derived from the skill level.

@@ -4,22 +4,26 @@ title: SkillLevelResponse Class
 sidebar_label: SkillLevelResponse
 ---
 
-## Purpose
+## Purpose of the SkillLevelResponse Class
 
-The `SkillLevelResponse` class is a record in the `com.upmatches.app.features.skilllevels.responses` package. It is designed to represent a response object for skill level data. This class encapsulates the details of a skill level, including its identifier, name, and sort order, and provides a static method to create an instance from a `SkillLevel` entity.
+The `SkillLevelResponse` class is a record in the `com.upmatches.app.features.skilllevels.responses` package. It serves as a Data Transfer Object (DTO) for transferring skill level data within the application. This class is designed to encapsulate the details of a skill level, making it easier to manage and transfer data related to skill levels in a structured manner.
 
 ## Public Methods
 
-### fromSkillLevel
+The `SkillLevelResponse` class provides the following public method:
 
-Converts a `SkillLevel` entity into a `SkillLevelResponse` object.
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `fromSkillLevel` | `SkillLevel skillLevel` | `SkillLevelResponse` | Converts a `SkillLevel` entity into a `SkillLevelResponse` record. |
 
-| Parameter   | Type        | Description                     |
-|-------------|-------------|---------------------------------|
-| skillLevel  | SkillLevel  | The skill level entity to convert.|
+### Method Details
 
-| Return Type          | Description                                      |
-|----------------------|--------------------------------------------------|
-| SkillLevelResponse   | A new instance of `SkillLevelResponse` with data from the provided `SkillLevel` entity. |
+#### `fromSkillLevel`
 
-The `fromSkillLevel` method is a static factory method that facilitates the transformation of a `SkillLevel` entity into a `SkillLevelResponse` record, ensuring that the response object is correctly populated with the necessary data fields.
+- **Parameters:**
+  - `skillLevel`: An instance of the `SkillLevel` entity from which the response record will be created.
+
+- **Return Type:**
+  - Returns a new instance of `SkillLevelResponse` containing the `id`, `name`, and `sortOrder` extracted from the provided `SkillLevel` entity.
+
+This method is a static factory method that facilitates the creation of `SkillLevelResponse` instances from `SkillLevel` entities, ensuring that the data is correctly mapped and encapsulated for further use in the application.

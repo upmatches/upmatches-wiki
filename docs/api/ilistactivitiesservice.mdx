@@ -6,18 +6,20 @@ sidebar_label: IListActivitiesService
 
 ## Purpose
 
-The `IListActivitiesService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for services that list activities within the application. This interface is designed to be implemented by classes that provide the functionality to retrieve a paginated list of activities, encapsulated in a `PagedResponse` object.
+The `IListActivitiesService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for services that list activities, specifically providing a method to execute a paginated query for activities. This interface is designed to be implemented by classes that handle the retrieval of activity data in a paginated format.
 
 ## Public Methods
 
-### execute
+### `execute`
 
-Retrieves a paginated list of activities.
+Executes a paginated query to retrieve a list of activities.
 
-| Parameter | Type                     | Description                      |
-|-----------|--------------------------|----------------------------------|
-| pageable  | `org.springframework.data.domain.Pageable` | Provides pagination information such as page number and size. |
+| Parameter | Type                  | Description                               |
+|-----------|-----------------------|-------------------------------------------|
+| pageable  | `Pageable`            | An object that specifies pagination information such as page number and size. |
 
-| Return Type                          | Description                                      |
-|--------------------------------------|--------------------------------------------------|
-| `PagedResponse<ActivityResponse>`    | A paginated response containing activity data.   |
+| Return Type                      | Description                                           |
+|----------------------------------|-------------------------------------------------------|
+| `PagedResponse<ActivityResponse>` | A paginated response containing a list of activity responses. |
+
+The `execute` method is the primary method of this interface, allowing implementations to provide a paginated list of activities based on the given `Pageable` parameter.

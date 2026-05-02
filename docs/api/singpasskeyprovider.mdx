@@ -1,30 +1,46 @@
 ---
 id: singpass-key-provider
-title: SingpassKeyProvider Class
+title: SingpassKeyProvider Class Documentation
 sidebar_label: SingpassKeyProvider
 ---
 
-## Purpose
+## Overview
 
-The `SingpassKeyProvider` class is a service component in a Java application that manages cryptographic keys used for signing and encryption in the context of Singpass authentication. It ensures that the keys are loaded from specified file paths, and provides methods to access the signing and encryption keys as well as their public JSON Web Key Set (JWKS) representation.
+The `SingpassKeyProvider` class is a service component in a Java application responsible for managing cryptographic keys used for signing and encryption in the Singpass authentication feature. It ensures the secure loading and provision of these keys, which are essential for maintaining the integrity and confidentiality of authentication processes.
 
 ## Public Methods
 
+The following table documents the public methods available in the `SingpassKeyProvider` class:
+
 | Method Name       | Parameters | Return Type | Description |
 |-------------------|------------|-------------|-------------|
-| `getSigningKey`   | None       | `ECKey`     | Retrieves the signing key, loading it from the configured file path if necessary. |
+| `getSigningKey`   | None       | `ECKey`     | Retrieves the signing key, loading it from the configured file path if not already loaded. |
 | `getSigningKeyId` | None       | `String`    | Returns the key ID of the signing key. |
-| `getEncryptionKey`| None       | `ECKey`     | Retrieves the encryption key, loading it from the configured file path if necessary. |
-| `getPublicJwksJson` | None     | `String`    | Provides the public JSON Web Key Set (JWKS) as a JSON string, containing both the signing and encryption keys. |
+| `getEncryptionKey`| None       | `ECKey`     | Retrieves the encryption key, loading it from the configured file path if not already loaded. |
+| `getPublicJwksJson` | None     | `String`    | Provides the public JSON Web Key Set (JWKS) representation of the signing and encryption keys. |
 
-## Detailed Description
+## Detailed Method Descriptions
 
-- **getSigningKey**: This method checks if the signing key is already loaded. If not, it synchronizes and loads the key from the file path specified in the `SingpassProperties`. The key is expected to be in JSON format and must include a private component.
+### `getSigningKey`
 
-- **getSigningKeyId**: This method returns the key ID of the signing key, which is useful for identifying the key in cryptographic operations.
+- **Description**: This method returns the signing key used for cryptographic signing operations. If the key is not already loaded, it reads the key from the file specified in the application properties.
+- **Return Type**: `ECKey`
 
-- **getEncryptionKey**: Similar to `getSigningKey`, this method ensures the encryption key is loaded from the specified file path if it hasn't been loaded already. It also requires the key to have a private component.
+### `getSigningKeyId`
 
-- **getPublicJwksJson**: This method constructs a JSON Web Key Set (JWKS) containing the public parts of both the signing and encryption keys. This is useful for sharing the public keys with external systems that need to verify signatures or encrypt data for the application.
+- **Description**: This method returns the key ID (`kid`) of the signing key, which is a unique identifier for the key.
+- **Return Type**: `String`
 
-The class uses the `ECKey` and `JWKSet` classes from the Nimbus JOSE+JWT library to handle JSON Web Keys, and relies on the `SingpassProperties` to obtain file paths for the keys. It logs key loading events and handles exceptions related to file I/O and JSON parsing.
+### `getEncryptionKey`
+
+- **Description**: This method returns the encryption key used for cryptographic encryption operations. If the key is not already loaded, it reads the key from the file specified in the application properties.
+- **Return Type**: `ECKey`
+
+### `getPublicJwksJson`
+
+- **Description**: This method returns a JSON representation of the public keys for both signing and encryption, formatted as a JSON Web Key Set (JWKS). This is typically used for public key distribution.
+- **Return Type**: `String`
+
+## Usage
+
+The `SingpassKeyProvider` class is typically used within the authentication service of an application to manage and provide cryptographic keys necessary for secure operations. It ensures that keys are loaded securely and are available for use in signing and encryption tasks.

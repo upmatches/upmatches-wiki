@@ -6,39 +6,33 @@ sidebar_label: DevAuthController
 
 ## Overview
 
-The `DevAuthController` class is a Spring Boot REST controller designed for development environments. It provides an endpoint for minting development tokens, which are used for authentication purposes during development. This controller is conditionally enabled based on application properties and is restricted to be accessed only from localhost.
+The `DevAuthController` class is a Spring Boot REST controller responsible for handling developer authentication requests in a non-production environment. It provides an endpoint to mint development tokens, ensuring that these operations are only accessible from localhost or equivalent local addresses. This controller is conditionally enabled based on application properties and profiles, ensuring it is not active in production environments.
 
 ## Public Methods
 
 ### mintToken
 
-Mint a development token for a specified user. This method is accessible via a POST request to the `/api/v1/auth/dev/tokens` endpoint.
+Mint a development token for a user. This method is accessible via a POST request to the `/api/v1/auth/dev/tokens` endpoint. It validates the request's origin to ensure it is from a local host and then processes the token minting request.
 
 | Parameter | Type                          | Description                                      |
 |-----------|-------------------------------|--------------------------------------------------|
-| `body`    | `MintDevTokenRequest`         | The request body containing the user ID.         |
-| `request` | `HttpServletRequest`          | The HTTP request object.                         |
+| `body`    | `MintDevTokenRequest`         | The request body containing the user ID for whom the token is to be minted. |
+| `request` | `HttpServletRequest`          | The HTTP request object, used to validate the host. |
 
 | Return Type               | Description                                      |
 |---------------------------|--------------------------------------------------|
-| `ResponseEntity<Object>`  | A response entity containing the token response. |
+| `ResponseEntity<Object>`  | A response entity containing the minted token and a success message. |
 
-## Method Details
+## Additional Details
 
-### mintToken
+- **Allowed Hosts**: The controller restricts access to the token minting endpoint to the following hosts:
+  - `localhost`
+  - `127.0.0.1`
+  - `[::1]`
+  - `0:0:0:0:0:0:0:1`
 
-- **Purpose**: To mint a development token for a user.
-- **HTTP Method**: POST
-- **Endpoint**: `/api/v1/auth/dev/tokens`
-- **Parameters**:
-  - `@Valid @RequestBody MintDevTokenRequest body`: The request body containing the user ID for whom the token is to be minted.
-  - `HttpServletRequest request`: The HTTP request object, used to verify the host.
-- **Return**: A `ResponseEntity` containing an `ApiResponse` with the minted token and a success message.
-- **Exceptions**: Throws `AuthenticationException` if the request is not from an allowed host.
+- **Conditional Activation**: The controller is activated only when the application is not running in a production profile and when the `app.auth.dev.mint-endpoint-enabled` property is set to `true`.
 
-### assertLocalHost
+- **Exception Handling**: If a request originates from a non-allowed host, an `AuthenticationException` is thrown with a message indicating the forbidden host.
 
-- **Purpose**: To ensure that the request is coming from a local host.
-- **Parameters**:
-  - `HttpServletRequest request`: The HTTP request object.
-- **Exceptions**: Throws `AuthenticationException` if the host is not in the allowed list (`localhost`, `127.0.0.1`, `[::1]`, `0:0:0:0:0:0:0:1`).
+This setup ensures that development tokens are securely minted and only accessible in controlled, non-production environments.

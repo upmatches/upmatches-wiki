@@ -6,32 +6,34 @@ sidebar_label: ShortLink
 
 ## Overview
 
-The `ShortLink` class is an entity representing a shortened link in the application. It is used to map a short code to a specific resource type and resource ID, allowing users to share links easily. The class is annotated with JPA annotations to facilitate ORM (Object-Relational Mapping) with a database.
+The `ShortLink` class is an entity representing a shortened link in the system. It is used to map a short code to a specific resource, track the number of clicks, and store metadata about its creation and updates. This class is part of the `com.upmatches.app.features.sharelink.entities` package and is annotated with JPA annotations to map it to a database table named `short_links`.
 
 ## Public Methods
 
-The `ShortLink` class provides the following public method:
+The `ShortLink` class provides the following public methods:
 
 ### `create`
 
-Creates a new instance of `ShortLink`.
+Creates a new instance of `ShortLink` with the specified parameters.
 
 | Parameter    | Type          | Description                                      |
 |--------------|---------------|--------------------------------------------------|
 | `code`       | `String`      | The unique code representing the short link.     |
 | `resourceType` | `ResourceType` | The type of resource the link points to.       |
-| `resourceId` | `String`      | The ID of the resource the link points to.       |
+| `resourceId` | `String`      | The identifier of the resource.                  |
 | `createdBy`  | `User`        | The user who created the short link.             |
 
-**Returns**: `ShortLink` - A new instance of the `ShortLink` class.
+**Returns:** `ShortLink` - A new instance of the `ShortLink` class.
 
 ## Annotations and Lifecycle Methods
 
 - **`@Entity`**: Specifies that the class is an entity and is mapped to a database table.
-- **`@Table(name = "short_links")`**: Specifies the table name in the database.
-- **`@Id`** and **`@GeneratedValue(strategy = GenerationType.UUID)`**: Marks the `id` field as the primary key with a generated UUID.
-- **`@Column`**: Specifies the column details for each field in the database.
-- **`@Enumerated(EnumType.STRING)`**: Specifies that the `resourceType` field should be persisted as a string.
-- **`@ManyToOne`** and **`@JoinColumn(name = "created_by")`**: Defines a many-to-one relationship with the `User` entity.
-- **`@PrePersist`**: Lifecycle method that sets `createdAt` and `updatedAt` timestamps before the entity is persisted.
-- **`@PreUpdate`**: Lifecycle method that updates the `updatedAt` timestamp before the entity is updated.
+- **`@Table(name = "short_links")`**: Specifies the name of the database table.
+- **`@Id`**: Marks the field as a primary key.
+- **`@GeneratedValue(strategy = GenerationType.UUID)`**: Specifies that the ID should be generated as a UUID.
+- **`@Column`**: Maps a field to a column in the database table.
+- **`@Enumerated(EnumType.STRING)`**: Specifies that the `resourceType` should be persisted as a string.
+- **`@ManyToOne`**: Defines a many-to-one relationship with the `User` entity.
+- **`@JoinColumn(name = "created_by")`**: Specifies the foreign key column for the `createdBy` relationship.
+- **`@PrePersist`**: Lifecycle callback method that sets `createdAt` and `updatedAt` before the entity is persisted.
+- **`@PreUpdate`**: Lifecycle callback method that updates `updatedAt` before the entity is updated.

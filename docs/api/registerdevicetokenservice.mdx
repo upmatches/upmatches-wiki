@@ -1,35 +1,42 @@
 ---
 id: register-device-token-service
 title: RegisterDeviceTokenService
-sidebar_label: RegisterDeviceTokenService
+sidebar_label: Register Device Token Service
 ---
 
 ## Purpose
 
-The `RegisterDeviceTokenService` class is a Spring service responsible for handling the registration of device tokens for users. It ensures that device tokens are associated with the correct user and updates or creates new records as necessary. This service is part of the notification feature in the application and interacts with repositories to persist data.
+The `RegisterDeviceTokenService` class is a Spring service responsible for handling the registration of device tokens for users. It ensures that a device token is associated with a user and updates or creates the token as necessary. This service is crucial for managing notifications, as it allows the application to send targeted messages to specific devices associated with a user.
 
 ## Public Methods
 
 ### `execute`
 
-The `execute` method is the primary method of the `RegisterDeviceTokenService` class. It registers a device token for the authenticated user, updating an existing token if it already exists or creating a new one if it does not.
+The `execute` method is the primary operation of the `RegisterDeviceTokenService`. It registers a device token for the authenticated user, updating an existing token if it already exists or creating a new one if it does not.
 
-| Parameter | Type                               | Description                                                                 |
-|-----------|------------------------------------|-----------------------------------------------------------------------------|
-| request   | `RegisterDeviceTokenRequest`       | The request object containing the device token and platform information.    |
+| Parameter | Type                           | Description                                                                 |
+|-----------|--------------------------------|-----------------------------------------------------------------------------|
+| `request` | `RegisterDeviceTokenRequest`   | The request object containing the device token and platform information.    |
 
 | Return Type | Description |
 |-------------|-------------|
-| `void`      | This method does not return a value. |
+| `void`      | This method does not return a value. It performs the operation of registering the device token. |
 
-### Method Details
+## Detailed Explanation
 
-- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operations within the method are executed within a transaction context. This guarantees data consistency in case of any failures during the execution.
+- **Dependencies**: The service relies on several dependencies injected via its constructor:
+  - `DeviceTokenRepository`: Used to interact with the device token data storage.
+  - `UserRepository`: Used to retrieve user information from the data storage.
+  - `IAuthenticatedUserResolver`: Used to resolve the currently authenticated user's ID.
 
-- **User Resolution**: The method uses `IAuthenticatedUserResolver` to obtain the current user's ID, ensuring that the device token is registered for the correct user.
+- **Transactional Behavior**: The `execute` method is annotated with `@Transactional`, ensuring that the operations within the method are executed within a transaction. This guarantees data consistency, especially when updating or creating device tokens.
 
-- **Device Token Handling**: 
-  - If a device token already exists for the user, it updates the existing token's timestamp using the `touch` method.
-  - If no existing token is found, it creates a new `DeviceToken` entity and saves it to the repository.
+- **Operation Logic**:
+  1. **User ID Resolution**: The method begins by resolving the authenticated user's ID using `userResolver.requireUserId()`.
+  2. **Token Existence Check**: It checks if a device token already exists for the user and the specified device token.
+  3. **Token Update or Creation**:
+     - If the token exists, it updates the token's timestamp using the `touch` method and saves it.
+     - If the token does not exist, it retrieves the user from the `UserRepository`. If the user is not found, a `ResourceNotFoundException` is thrown.
+     - A new `DeviceToken` is created and saved if the user is found.
 
-- **Error Handling**: The method throws a `ResourceNotFoundException` if the user cannot be found in the repository, ensuring that only valid users can register device tokens.
+This service is a critical component for managing user-device associations in the notification system, ensuring that notifications are sent to the correct devices.

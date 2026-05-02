@@ -6,7 +6,7 @@ sidebar_label: ActivityController
 
 ## Purpose
 
-The `ActivityController` class is a REST controller in a Spring Boot application that manages CRUD operations for activities. It provides endpoints to list, retrieve, create, update, and delete activities. The controller uses various services to perform these operations and returns appropriate HTTP responses.
+The `ActivityController` class is a REST controller in a Spring Boot application that manages activities. It provides endpoints to list, retrieve, create, update, and delete activities. This controller interacts with various services to perform these operations and returns appropriate HTTP responses.
 
 ## Public Methods
 
@@ -14,11 +14,11 @@ The `ActivityController` class is a REST controller in a Spring Boot application
 
 Retrieves a paginated list of activities.
 
-| Parameter | Type                  | Description                             |
-|-----------|-----------------------|-----------------------------------------|
-| page      | Integer               | The page number to retrieve (default: 0)|
-| size      | Integer               | The number of items per page (default: 20)|
-| request   | HttpServletRequest    | The HTTP request object                 |
+| Parameter | Type    | Description                             |
+|-----------|---------|-----------------------------------------|
+| page      | Integer | The page number to retrieve (default 0).|
+| size      | Integer | The size of the page to retrieve (default 20).|
+| request   | HttpServletRequest | The HTTP request object.     |
 
 **Returns:** `ResponseEntity<ApiResponse<PagedResponse<ActivityResponse>>>` - A response entity containing a paged response of activities.
 
@@ -26,10 +26,10 @@ Retrieves a paginated list of activities.
 
 Retrieves a specific activity by its ID.
 
-| Parameter | Type       | Description                  |
-|-----------|------------|------------------------------|
-| id        | UUID       | The unique identifier of the activity |
-| request   | HttpServletRequest | The HTTP request object |
+| Parameter | Type | Description                |
+|-----------|------|----------------------------|
+| id        | UUID | The unique identifier of the activity. |
+| request   | HttpServletRequest | The HTTP request object. |
 
 **Returns:** `ResponseEntity<ApiResponse<ActivityResponse>>` - A response entity containing the activity details.
 
@@ -37,10 +37,10 @@ Retrieves a specific activity by its ID.
 
 Creates a new activity.
 
-| Parameter | Type                  | Description                             |
-|-----------|-----------------------|-----------------------------------------|
-| body      | CreateActivityRequest | The request body containing activity details |
-| request   | HttpServletRequest    | The HTTP request object                 |
+| Parameter | Type                  | Description                |
+|-----------|-----------------------|----------------------------|
+| body      | CreateActivityRequest | The request body containing activity details. |
+| request   | HttpServletRequest    | The HTTP request object.   |
 
 **Returns:** `ResponseEntity<ApiResponse<ActivityResponse>>` - A response entity containing the created activity details.
 
@@ -48,11 +48,11 @@ Creates a new activity.
 
 Updates an existing activity.
 
-| Parameter | Type                  | Description                             |
-|-----------|-----------------------|-----------------------------------------|
-| id        | UUID                  | The unique identifier of the activity   |
-| body      | UpdateActivityRequest | The request body containing updated activity details |
-| request   | HttpServletRequest    | The HTTP request object                 |
+| Parameter | Type                  | Description                |
+|-----------|-----------------------|----------------------------|
+| id        | UUID                  | The unique identifier of the activity. |
+| body      | UpdateActivityRequest | The request body containing updated activity details. |
+| request   | HttpServletRequest    | The HTTP request object.   |
 
 **Returns:** `ResponseEntity<ApiResponse<ActivityResponse>>` - A response entity containing the updated activity details.
 
@@ -60,8 +60,8 @@ Updates an existing activity.
 
 Deletes an activity by its ID.
 
-| Parameter | Type | Description                  |
-|-----------|------|------------------------------|
-| id        | UUID | The unique identifier of the activity |
+| Parameter | Type | Description                |
+|-----------|------|----------------------------|
+| id        | UUID | The unique identifier of the activity. |
 
 **Returns:** `ResponseEntity<Void>` - A response entity with no content, indicating successful deletion.

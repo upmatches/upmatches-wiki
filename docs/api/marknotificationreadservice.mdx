@@ -6,7 +6,7 @@ sidebar_label: MarkNotificationReadService
 
 ## Purpose
 
-The `MarkNotificationReadService` class is a service component in a Java application that handles the operation of marking a notification as read for an authenticated user. It interacts with the `NotificationRepository` to fetch and update notification entities and uses `IAuthenticatedUserResolver` to ensure operations are performed for the correct user.
+The `MarkNotificationReadService` class is a Spring service responsible for marking a notification as read for an authenticated user. It interacts with the `NotificationRepository` to update the notification status and ensures that the operation is performed within a transactional context. This service is part of the notification feature in the application.
 
 ## Public Methods
 
@@ -20,10 +20,14 @@ Marks a notification as read for the authenticated user.
 
 | Return Type          | Description                                                  |
 |----------------------|--------------------------------------------------------------|
-| `NotificationResponse` | A response object representing the updated notification.   |
+| `NotificationResponse` | Returns a response object representing the updated notification. |
 
-**Method Details:**
+### Method Details
 
-- **Transactional:** The method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction context.
-- **Exception Handling:** Throws `NotificationNotFoundException` if the notification is not found for the user, ensuring that only existing notifications can be marked as read.
-- **Operation Execution:** Utilizes `ServiceOperationExecutor` to perform the save operation, handling potential `ResourceNotFoundException` scenarios.
+- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction. This guarantees that the changes to the notification's read status are committed to the database only if the entire operation completes successfully.
+
+- **User Authentication**: The method uses `IAuthenticatedUserResolver` to retrieve the current user's ID, ensuring that only the intended recipient can mark their notifications as read.
+
+- **Exception Handling**: If the notification is not found for the given user, a `NotificationNotFoundException` is thrown with a detailed message. This ensures that the user is informed if they attempt to mark a non-existent or unauthorized notification as read.
+
+- **Service Operation Execution**: The `ServiceOperationExecutor` is used to execute the save operation on the `NotificationRepository`, providing a consistent approach to handling service operations and potential exceptions.

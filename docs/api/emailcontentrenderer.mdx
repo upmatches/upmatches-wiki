@@ -4,52 +4,46 @@ title: EmailContentRenderer Class
 sidebar_label: EmailContentRenderer
 ---
 
-## Purpose
+## Purpose of the `EmailContentRenderer` Class
 
-The `EmailContentRenderer` class is a utility class designed to assist in generating HTML content for email notifications. It provides methods to wrap email content in a styled HTML template, create call-to-action buttons, and build detailed tables for email notifications based on the type of notification and context provided.
+The `EmailContentRenderer` class is a utility class designed to generate HTML content for email notifications. It provides methods to wrap content in a styled HTML template, create call-to-action buttons, and build detailed tables for notification emails. This class is particularly useful for rendering consistent and styled email content for different types of notifications within the application.
 
 ## Public Methods
 
 ### `wrap`
 
-Wraps the provided title, body, details, and call-to-action (CTA) HTML into a styled email template.
+Wraps the provided title, body, details, and call-to-action HTML into a styled email template.
 
 | Parameter   | Type   | Description                                      |
 |-------------|--------|--------------------------------------------------|
 | `title`     | String | The title of the email.                          |
 | `body`      | String | The main body content of the email.              |
-| `detailsHtml` | String | The HTML content for additional details.       |
+| `detailsHtml` | String | The HTML content for additional details.        |
 | `ctaHtml`   | String | The HTML content for the call-to-action button.  |
 
-| Return Type | Description                          |
-|-------------|--------------------------------------|
-| String      | The complete HTML content for the email. |
+**Returns:** `String` - The complete HTML content wrapped in a styled template.
 
 ### `buildCtaButton`
 
-Creates an HTML button for a call-to-action link.
+Creates an HTML call-to-action button linking to a specified game URL.
 
-| Parameter | Type   | Description                       |
-|-----------|--------|-----------------------------------|
-| `gameUrl` | String | The URL to be linked by the button.|
+| Parameter | Type   | Description                         |
+|-----------|--------|-------------------------------------|
+| `gameUrl` | String | The URL to be linked by the button. |
 
-| Return Type | Description                          |
-|-------------|--------------------------------------|
-| String      | The HTML content for the CTA button. |
+**Returns:** `String` - The HTML for the call-to-action button, or an empty string if the URL is null or blank.
 
 ### `buildDetailsTable`
 
-Builds an HTML table containing details based on the notification type and context.
+Generates an HTML table with details based on the notification type and context.
 
-| Parameter | Type             | Description                                  |
-|-----------|------------------|----------------------------------------------|
-| `type`    | NotificationType | The type of notification.                    |
-| `context` | EmailContext     | The context containing details for the email.|
+| Parameter  | Type             | Description                                      |
+|------------|------------------|--------------------------------------------------|
+| `type`     | NotificationType | The type of notification to determine table content. |
+| `context`  | EmailContext     | The context containing details for the email.    |
 
-| Return Type | Description                          |
-|-------------|--------------------------------------|
-| String      | The HTML content for the details table. |
+**Returns:** `String` - The HTML for the details table, or an empty string if the type or context is null.
 
 ## Usage
 
-The `EmailContentRenderer` class is used to format and render email content dynamically based on the notification type and context. It ensures that all HTML content is safely escaped to prevent XSS attacks and provides a consistent styling for all emails sent by the application.
+The `EmailContentRenderer` class is used to create consistent and styled email content for notifications. It ensures that all emails have a uniform look and feel, and it simplifies the process of generating complex HTML structures for email content.

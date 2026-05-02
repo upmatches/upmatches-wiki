@@ -10,18 +10,20 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 ## Purpose of the Class
 
-The `StationLineRepository` interface is a part of the data access layer in a Java application that uses Spring Data JPA. It extends the `JpaRepository` interface, which provides CRUD (Create, Read, Update, Delete) operations for the `StationLine` entity. This repository is responsible for interacting with the database to perform operations on `StationLine` entities identified by `StationLineId`.
+The `StationLineRepository` interface is a part of the data access layer in a Java application using Spring Data JPA. It extends the `JpaRepository` interface, which provides CRUD (Create, Read, Update, Delete) operations for the `StationLine` entity. This repository is responsible for interacting with the database to perform operations on `StationLine` entities, identified by their `StationLineId`.
+
+By extending `JpaRepository`, `StationLineRepository` inherits several methods for working with `StationLine` persistence, including methods for saving, deleting, and finding `StationLine` entities.
 
 ## Public Methods
 
-The `StationLineRepository` inherits several public methods from the `JpaRepository` interface. These methods facilitate various database operations. Below is a table documenting the primary methods available through this repository:
+The `StationLineRepository` interface inherits several methods from the `JpaRepository`. Below is a table documenting these methods, their parameters, and return types:
 
-| Method Name | Parameters | Return Type | Description |
-|-------------|------------|-------------|-------------|
-| save        | `StationLine entity` | `StationLine` | Saves a given `StationLine` entity. Returns the saved entity. |
-| findById    | `StationLineId id`   | `Optional<StationLine>` | Retrieves an entity by its id. Returns an `Optional` containing the found entity or empty if not found. |
-| findAll     | None       | `List<StationLine>` | Returns all instances of the `StationLine` entity. |
-| deleteById  | `StationLineId id`   | `void`       | Deletes the entity with the given id. |
-| deleteAll   | None       | `void`       | Deletes all entities managed by the repository. |
+| Method Signature | Parameters | Return Type | Description |
+|------------------|------------|-------------|-------------|
+| `save(S entity)` | `entity`: The `StationLine` entity to be saved or updated. | `S` | Saves a given `StationLine` entity. |
+| `findById(ID id)` | `id`: The `StationLineId` of the entity to be retrieved. | `Optional<StationLine>` | Retrieves an entity by its id. |
+| `findAll()` | None | `List<StationLine>` | Returns all instances of the `StationLine` type. |
+| `deleteById(ID id)` | `id`: The `StationLineId` of the entity to be deleted. | `void` | Deletes the entity with the given id. |
+| `delete(S entity)` | `entity`: The `StationLine` entity to be deleted. | `void` | Deletes a given `StationLine` entity. |
 
-These methods are automatically implemented by Spring Data JPA, allowing developers to perform database operations without writing boilerplate code.
+These methods are part of the standard operations provided by Spring Data JPA, allowing for efficient database interactions without requiring boilerplate code.

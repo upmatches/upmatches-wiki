@@ -6,28 +6,24 @@ sidebar_label: UpdateActivityService
 
 ## Overview
 
-The `UpdateActivityService` class is a Spring service responsible for handling the update operations for `Activity` entities. It ensures that activities are updated correctly in the database, while also managing potential conflicts such as duplicate activity names. This service is part of the `com.upmatches.app.features.activity.services` package and implements the `IUpdateActivityService` interface.
+The `UpdateActivityService` class is a Spring service responsible for handling the update operations for `Activity` entities. It ensures that an activity can be updated if it exists and that the new name does not conflict with existing activities. This service is part of the application's activity management feature and uses transactional operations to maintain data integrity.
 
 ## Public Methods
 
 ### `execute`
 
-The `execute` method is the primary method of the `UpdateActivityService` class. It updates an existing activity in the database based on the provided `UUID` and `UpdateActivityRequest`.
+The `execute` method updates an existing activity based on the provided ID and request data. It checks for the existence of the activity and ensures that the new name is unique before proceeding with the update.
 
 | Parameter | Type                      | Description                                                                 |
 |-----------|---------------------------|-----------------------------------------------------------------------------|
 | `id`      | `UUID`                    | The unique identifier of the activity to be updated.                        |
-| `request` | `UpdateActivityRequest`   | The request object containing the new data for the activity.                |
+| `request` | `UpdateActivityRequest`   | Contains the new data for the activity, including the potential new name.   |
 
-#### Return Type
+| Return Type         | Description                                                                 |
+|---------------------|-----------------------------------------------------------------------------|
+| `ActivityResponse`  | Returns a response object containing the updated activity details.          |
 
-- **`ActivityResponse`**: Returns an `ActivityResponse` object that represents the updated activity.
+## Exceptions
 
-#### Exceptions
-
-- **`ResourceNotFoundException`**: Thrown if the activity with the specified `UUID` does not exist.
-- **`ActivityAlreadyExistsException`**: Thrown if an activity with the requested name already exists and is different from the current activity's name.
-
-## Usage
-
-The `UpdateActivityService` class is typically used in scenarios where an existing activity needs to be updated with new information. It ensures that the update operation is auditable and transactional, providing a robust mechanism for managing activity data.
+- `ResourceNotFoundException`: Thrown if the activity with the specified ID does not exist.
+- `ActivityAlreadyExistsException`: Thrown if an activity with the new name already exists and is different from the current activity's name.

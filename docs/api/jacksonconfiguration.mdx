@@ -6,29 +6,29 @@ sidebar_label: JacksonConfiguration
 
 ## Overview
 
-The `JacksonConfiguration` class is a Spring configuration class that provides a customized `ObjectMapper` bean. This configuration is essential for handling JSON serialization and deserialization in a Spring application, particularly when dealing with Java 8 date and time types.
+The `JacksonConfiguration` class is a Spring configuration class that customizes the behavior of the Jackson `ObjectMapper`. Jackson is a popular library for processing JSON in Java, and this configuration class is designed to tailor its serialization and deserialization features to meet specific application needs.
 
 ## Purpose
 
-The primary purpose of the `JacksonConfiguration` class is to configure the Jackson `ObjectMapper` to handle specific serialization and deserialization features. This includes support for Java 8 date and time types and specific behaviors for handling unknown properties and empty strings during deserialization.
+The primary purpose of the `JacksonConfiguration` class is to provide a customized `ObjectMapper` bean that is used throughout the application for JSON processing. This configuration ensures that the application can handle Java 8 date and time types, manage unknown properties gracefully, and control how dates are serialized.
 
 ## Public Methods
 
 The class provides the following public method:
 
-### `objectMapper`
+### objectMapper
 
-This method creates and configures an `ObjectMapper` bean with specific serialization and deserialization features.
+This method defines a Spring bean for the `ObjectMapper` with specific configurations.
 
-| Method Name   | Parameters | Return Type | Description                                                                 |
-|---------------|------------|-------------|-----------------------------------------------------------------------------|
-| `objectMapper` | None       | `ObjectMapper` | Configures and returns an `ObjectMapper` with custom serialization and deserialization settings. |
+| Method Name | Parameters | Return Type | Description |
+|-------------|------------|-------------|-------------|
+| `objectMapper` | None | `ObjectMapper` | Configures and returns a customized `ObjectMapper` instance. |
 
 #### Configuration Details
 
-- **JavaTimeModule**: The `JavaTimeModule` is registered to handle Java 8 date and time types.
-- **SerializationFeature.WRITE_DATES_AS_TIMESTAMPS**: This feature is disabled to prevent dates from being serialized as timestamps.
-- **DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES**: This feature is disabled to ignore unknown properties during deserialization.
-- **DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT**: This feature is enabled to treat empty strings as `null` during deserialization.
+- **JavaTimeModule**: Registers the `JavaTimeModule` to handle Java 8 date and time API types.
+- **SerializationFeature.WRITE_DATES_AS_TIMESTAMPS**: Disabled to ensure dates are not written as timestamps.
+- **DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES**: Disabled to prevent exceptions when encountering unknown properties in JSON.
+- **DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT**: Enabled to allow empty strings to be treated as `null` during deserialization.
 
-By providing this configuration, the `JacksonConfiguration` class ensures that JSON processing in the application is consistent with these specified behaviors, improving the robustness and flexibility of JSON data handling.
+By providing this configuration, the `JacksonConfiguration` class enhances the application's ability to process JSON data efficiently and flexibly.

@@ -6,13 +6,25 @@ sidebar_label: ISingpassKeyProvider
 
 ## Overview
 
-The `ISingpassKeyProvider` interface is part of the `com.upmatches.app.features.auth.services` package. It defines a contract for classes that provide signing keys specifically for Singpass authentication. This interface is sealed, meaning it restricts which classes can implement it, and in this case, it is only permitted to be implemented by the `SingpassKeyProvider` class.
+The `ISingpassKeyProvider` interface is part of the `com.upmatches.app.features.auth.services` package. It is a sealed interface that extends the `SigningKeyProvider` interface and is permitted to be implemented by the `SingpassKeyProvider` class. This interface is designed to provide methods for obtaining encryption keys and public JSON Web Key Sets (JWKS) related to Singpass authentication.
 
 ## Public Methods
 
-The `ISingpassKeyProvider` interface declares the following public methods:
+The `ISingpassKeyProvider` interface defines the following public methods:
 
-| Method Name          | Parameters | Return Type | Description                                                                 |
-|----------------------|------------|-------------|-----------------------------------------------------------------------------|
-| `getEncryptionKey`   | None       | `ECKey`     | Retrieves the encryption key used for securing communications.              |
-| `getPublicJwksJson`  | None       | `String`    | Returns the public JSON Web Key Set (JWKS) as a JSON string. This is used to expose the public keys for verification purposes. |
+| Method Name          | Description                                                                 | Parameters | Return Type |
+|----------------------|-----------------------------------------------------------------------------|------------|-------------|
+| `getEncryptionKey`   | Retrieves the encryption key used for securing communications.              | None       | `ECKey`     |
+| `getPublicJwksJson`  | Provides the public JWKS in JSON format, which can be used for verification. | None       | `String`    |
+
+### Method Details
+
+#### `getEncryptionKey`
+
+- **Description**: This method returns an `ECKey` object representing the encryption key. This key is used in cryptographic operations to ensure secure communication.
+- **Return Type**: `ECKey` - The encryption key used for securing communications.
+
+#### `getPublicJwksJson`
+
+- **Description**: This method returns a `String` containing the public JWKS in JSON format. This JSON can be used by clients to verify signatures and ensure the integrity of the data.
+- **Return Type**: `String` - The public JWKS in JSON format.

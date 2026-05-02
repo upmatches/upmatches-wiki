@@ -4,22 +4,32 @@ title: AuthDevProperties Class
 sidebar_label: AuthDevProperties
 ---
 
+import { ConfigurationProperties } from 'org.springframework.boot.context.properties';
+
 ## Overview
 
-The `AuthDevProperties` class is a configuration properties holder used in a Spring Boot application. It is designed to manage development-specific authentication settings by binding properties prefixed with `app.auth.dev` from external configuration sources, such as application properties or YAML files.
+The `AuthDevProperties` class is a configuration properties holder used in a Spring Boot application. It is designed to manage development-specific authentication settings. The class is annotated with `@ConfigurationProperties`, which binds the properties defined in the application's configuration files (e.g., `application.yml` or `application.properties`) to this class. The properties are prefixed with `app.auth.dev`.
 
-This class is implemented as a Java Record, which provides a concise way to define immutable data carriers. It ensures that the properties are initialized with default values if they are not explicitly set.
+## Purpose
+
+The primary purpose of the `AuthDevProperties` class is to encapsulate configuration settings related to authentication in a development environment. This includes enabling or disabling certain authentication features and specifying allowed hosts for token pages.
 
 ## Public Methods
 
-The `AuthDevProperties` class does not define traditional methods but relies on the implicit methods provided by the Java Record for accessing its fields. Below is a table documenting the parameters and their intended use:
+The `AuthDevProperties` class is a Java Record, which means it primarily serves as a data carrier. It does not have traditional methods with logic but provides implicit accessor methods for its fields. Below is a table documenting these accessors.
 
-| Method Name               | Parameter Name          | Type          | Description                                                                 |
-|---------------------------|-------------------------|---------------|-----------------------------------------------------------------------------|
-| `AuthDevProperties`       | `tokenPageEnabled`      | `Boolean`     | Indicates if the token page is enabled. Defaults to `false` if not specified. |
-|                           | `mintEndpointEnabled`   | `Boolean`     | Indicates if the mint endpoint is enabled. Defaults to `false` if not specified. |
-|                           | `tokenPageAllowedHosts` | `List<String>`| A list of allowed hosts for the token page. Defaults to an empty list if not specified. |
+| Method Name                | Parameters | Return Type | Description                                                                 |
+|----------------------------|------------|-------------|-----------------------------------------------------------------------------|
+| `tokenPageEnabled()`       | None       | `Boolean`   | Returns whether the token page is enabled.                                  |
+| `mintEndpointEnabled()`    | None       | `Boolean`   | Returns whether the mint endpoint is enabled.                               |
+| `tokenPageAllowedHosts()`  | None       | `List<String>` | Returns a list of allowed hosts for the token page.                          |
 
-## Usage
+## Constructor
 
-The `AuthDevProperties` class is typically used in a Spring Boot application to configure authentication-related properties for development environments. By using the `@ConfigurationProperties` annotation, it allows for easy externalization and management of configuration values, promoting flexibility and maintainability.
+The constructor of the `AuthDevProperties` class ensures that:
+
+- `tokenPageEnabled` is set to `false` if it is `null`.
+- `mintEndpointEnabled` is set to `false` if it is `null`.
+- `tokenPageAllowedHosts` is initialized as an empty list if it is `null`, otherwise, it is a copy of the provided list to ensure immutability.
+
+This design helps maintain default values and prevents `NullPointerException` during runtime.

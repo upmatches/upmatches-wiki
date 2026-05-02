@@ -6,22 +6,24 @@ sidebar_label: ILeaveGameService
 
 ## Overview
 
-The `ILeaveGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that handle the action of a user leaving a game. This interface is designed to be implemented by classes that provide specific logic for the "leave game" functionality.
+The `ILeaveGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that handle the action of a player leaving a game. This interface is designed to be implemented by classes that provide the specific logic for this operation.
 
 ## Public Methods
 
+The `ILeaveGameService` interface declares the following method:
+
 | Method Signature | Description |
 |------------------|-------------|
-| `void execute(UUID id)` | Executes the action of leaving a game for a user identified by the provided UUID. |
+| `void execute(UUID id)` | Executes the operation for a player to leave a game identified by the given UUID. |
 
 ### Method Details
 
-#### `void execute(UUID id)`
+#### `execute`
 
 - **Parameters:**
-  - `UUID id`: The unique identifier of the user or session that is leaving the game.
+  - `UUID id`: The unique identifier of the game from which the player is leaving.
   
-- **Return Type:** 
+- **Return Type:**
   - `void`: This method does not return any value.
 
-The `execute` method is the core operation of the `ILeaveGameService` interface, allowing implementations to define how a user exits a game session.
+This interface is sealed, permitting only the `LeaveGameService` class to implement it, ensuring controlled and predictable extension of its functionality.

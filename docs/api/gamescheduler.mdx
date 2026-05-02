@@ -4,20 +4,23 @@ title: GameScheduler Class
 sidebar_label: GameScheduler
 ---
 
-import com.upmatches.app.features.game.schedulers.GameScheduler;
+import com.upmatches.app.features.game.services.IMarkExpiredGamesService;
+import com.upmatches.app.features.game.services.IMarkStartedGamesService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 ## Purpose
 
-The `GameScheduler` class is a Spring component responsible for scheduling tasks related to updating the status of games. It utilizes the Spring Scheduling framework to periodically mark games as either "started" or "expired" based on predefined conditions. This class ensures that the game statuses are updated every five minutes by invoking the appropriate services.
+The `GameScheduler` class is a Spring component responsible for scheduling and executing tasks related to updating the status of games. It uses cron expressions to periodically mark games as either started or expired. This class leverages two services, `IMarkStartedGamesService` and `IMarkExpiredGamesService`, to perform the necessary updates and logs the results.
 
 ## Public Methods
 
-The `GameScheduler` class exposes the following public methods:
-
-| Method Name       | Description                                                                 | Parameters | Return Type |
-|-------------------|-----------------------------------------------------------------------------|------------|-------------|
-| `markStartedGames`| Marks games as "started" by invoking the `IMarkStartedGamesService`.        | None       | void        |
-| `markExpiredGames`| Marks games as "expired" by invoking the `IMarkExpiredGamesService`.        | None       | void        |
+| Method Name         | Description                                                                 | Parameters | Return Type |
+|---------------------|-----------------------------------------------------------------------------|------------|-------------|
+| `markStartedGames`  | Marks games as started by invoking the `IMarkStartedGamesService`.          | None       | void        |
+| `markExpiredGames`  | Marks games as expired by invoking the `IMarkExpiredGamesService`.          | None       | void        |
 
 ### Method Details
 
@@ -29,10 +32,10 @@ The `GameScheduler` class exposes the following public methods:
 
 #### `markExpiredGames`
 
-- **Description**: This method is scheduled to run every five minutes. It calls the `execute` method of the `IMarkExpiredGamesService` to update the status of games to "expired". The number of games updated is logged using SLF4J.
+- **Description**: This method is also scheduled to run every five minutes. It calls the `execute` method of the `IMarkExpiredGamesService` to update the status of games to "expired". The number of games updated is logged using SLF4J.
 - **Parameters**: None
 - **Return Type**: `void`
 
 ## Scheduling Details
 
-Both `markStartedGames` and `markExpiredGames` methods are annotated with `@Scheduled(cron = "0 */5 * * * *")`, which means they are executed every five minutes. This scheduling is crucial for maintaining the timely update of game statuses within the application.
+Both `markStartedGames` and `markExpiredGames` methods are annotated with `@Scheduled(cron = CRON_EVERY_FIVE_MINUTES)`, which means they are executed every five minutes based on the cron expression `"0 */5 * * * *"`. This ensures that the game statuses are regularly updated without manual intervention.

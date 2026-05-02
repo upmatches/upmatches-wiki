@@ -6,30 +6,30 @@ sidebar_label: VenueResponse
 
 ## Purpose of the VenueResponse Class
 
-The `VenueResponse` class is a Java record used to encapsulate the response data for a venue entity within the application. It is part of the `com.upmatches.app.features.venue.responses` package and is designed to provide a structured way to transfer venue-related data, including its associated activity and stations, in a read-only format. This class is particularly useful for creating a consistent and immutable data transfer object (DTO) that can be easily serialized and deserialized in API communications.
+The `VenueResponse` class is a Java record that represents a response object for venue-related data in the application. It encapsulates various details about a venue, such as its identifier, location, associated activity, and related stations. This class is designed to facilitate the transfer of venue data between different layers of the application, particularly from the backend to the frontend.
 
 ## Public Methods
 
-The `VenueResponse` class includes the following public method:
+The `VenueResponse` class provides the following public method:
 
 ### `fromVenue`
 
-This static method is used to create an instance of `VenueResponse` from a `Venue` entity. It converts the data from the `Venue` object into a `VenueResponse` object, including transforming associated entities like activities and stations into their respective response types.
+Converts a `Venue` entity into a `VenueResponse` object.
 
 | Method Signature | Description |
-| ---------------- | ----------- |
-| `public static VenueResponse fromVenue(Venue venue)` | Converts a `Venue` entity into a `VenueResponse` object. |
+|------------------|-------------|
+| `public static VenueResponse fromVenue(Venue venue)` | Creates a `VenueResponse` instance from a given `Venue` object. |
 
 #### Parameters
 
 | Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `venue`   | `Venue` | The venue entity to be converted into a `VenueResponse`. |
+|-----------|------|-------------|
+| `venue`   | `Venue` | The `Venue` entity to be converted into a `VenueResponse`. |
 
 #### Return Type
 
 | Type | Description |
-| ---- | ----------- |
-| `VenueResponse` | Returns a new instance of `VenueResponse` containing data from the provided `Venue` entity. |
+|------|-------------|
+| `VenueResponse` | A new instance of `VenueResponse` containing data from the provided `Venue` entity. |
 
-This method is essential for transforming domain entities into a format suitable for API responses, ensuring that only the necessary data is exposed and that it is presented in a consistent manner.
+This method extracts data from a `Venue` object, including its ID, source ID, associated activity, name, address, postal code, geographical coordinates, list of stations, and timestamps for creation and last update. It then constructs a `VenueResponse` object with this data, ensuring a structured and consistent format for venue information.

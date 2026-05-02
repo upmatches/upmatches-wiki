@@ -4,31 +4,29 @@ title: CreateNotificationService
 sidebar_label: Create Notification Service
 ---
 
-## Overview
+## Purpose
 
-The `CreateNotificationService` class is a part of the notification feature in the application. It is responsible for creating and saving notifications for users. This service interacts with the `NotificationRepository` to persist notifications and the `UserRepository` to validate the existence of the recipient user. It ensures that notifications are only created for existing users and handles exceptions when a user is not found.
+The `CreateNotificationService` class is a part of the notification feature in the application. It is responsible for creating notifications for users. This service interacts with the `NotificationRepository` to persist notifications and with the `UserRepository` to validate the existence of the recipient user. It ensures that notifications are created and saved in a transactional context, providing a robust mechanism for handling notification creation.
 
 ## Public Methods
 
 ### `execute`
 
-This method is responsible for creating a new notification for a user and saving it to the database. It performs a transactional operation to ensure data consistency.
+This method is responsible for creating and saving a notification for a specified user. It ensures that the recipient user exists and then creates a notification with the provided details.
 
-| Parameter     | Type                       | Description                                                                 |
-|---------------|----------------------------|-----------------------------------------------------------------------------|
-| `recipientId` | `UUID`                     | The unique identifier of the user who will receive the notification.        |
-| `type`        | `NotificationType`         | The type of notification to be created.                                     |
-| `title`       | `String`                   | The title of the notification.                                              |
-| `message`     | `String`                   | The message content of the notification.                                    |
-| `resourceType`| `String`                   | The type of resource associated with the notification.                      |
-| `resourceId`  | `UUID`                     | The unique identifier of the resource associated with the notification.     |
+| Parameter      | Type                      | Description                                                                 |
+|----------------|---------------------------|-----------------------------------------------------------------------------|
+| `recipientId`  | `UUID`                    | The unique identifier of the user who will receive the notification.        |
+| `type`         | `NotificationType`        | The type of the notification to be created.                                 |
+| `title`        | `String`                  | The title of the notification.                                              |
+| `message`      | `String`                  | The message content of the notification.                                    |
+| `resourceType` | `String`                  | The type of resource associated with the notification.                      |
+| `resourceId`   | `UUID`                    | The unique identifier of the resource associated with the notification.     |
 
 #### Return Type
 
-- `Notification`: Returns the created `Notification` object after it has been successfully saved to the repository.
+- **`Notification`**: Returns the created `Notification` object after it has been successfully saved in the repository.
 
 #### Exceptions
 
-- `ResourceNotFoundException`: Thrown when the specified user (recipient) is not found in the database.
-
-This service ensures that notifications are only created for valid users and handles the persistence of these notifications in a reliable manner.
+- **`ResourceNotFoundException`**: Thrown if the recipient user is not found in the `UserRepository`.

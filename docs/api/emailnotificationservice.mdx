@@ -6,26 +6,26 @@ sidebar_label: EmailNotificationService
 
 ## Purpose
 
-The `EmailNotificationService` class is a part of the notification services in the application. It is responsible for sending email notifications using the Resend service. This service ensures that notifications are sent to the correct recipients with the appropriate content, handling cases where the email service might be unavailable or the recipient's email is missing.
+The `EmailNotificationService` class is a part of the notification feature in the application. It is responsible for sending email notifications using the Resend service. The class ensures that emails are only sent if the recipient's email is available and the Resend service is accessible. It constructs the email content using the provided notification details and context, and handles any exceptions that occur during the email sending process.
 
 ## Public Methods
 
-### `send`
+### send
 
-This method is responsible for sending an email notification based on the provided `Notification` and `EmailContext`.
+This method sends an email notification based on the provided `Notification` and `EmailContext`.
 
-| Parameter   | Type                      | Description                                                                 |
-|-------------|---------------------------|-----------------------------------------------------------------------------|
-| notification| `Notification`            | The notification object containing details about the recipient and message. |
-| context     | `EmailContext`            | The context for the email, including additional details and game URL.       |
+| Parameter    | Type            | Description                                                                 |
+|--------------|-----------------|-----------------------------------------------------------------------------|
+| notification | `Notification`  | The notification object containing details such as recipient and message.   |
+| context      | `EmailContext`  | The context for the email, which may include additional details or actions. |
 
 #### Return Type
 
-- `void`: This method does not return any value.
+- `void`: This method does not return any value. It performs the action of sending an email notification.
 
 #### Method Details
 
 - **Email Check**: The method first checks if the recipient's email is available. If not, it logs a debug message and exits.
-- **Service Availability**: It checks if the Resend service is available. If not, it logs a debug message and exits.
-- **Email Content**: Constructs the email content using the `EmailContentRenderer` utility, which includes building a details table and a call-to-action button.
-- **Email Sending**: Attempts to send the email using the Resend service. If sending fails, it logs a warning with the error message.
+- **Resend Availability**: It then checks if the Resend service is available. If not, it logs a debug message and exits.
+- **Email Content Construction**: Constructs the email content using the `EmailContentRenderer` utility.
+- **Email Sending**: Attempts to send the email using the Resend service. If an exception occurs, it logs a warning message with the notification ID and exception details.

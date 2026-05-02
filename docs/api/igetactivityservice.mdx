@@ -4,23 +4,36 @@ title: IGetActivityService Interface
 sidebar_label: IGetActivityService
 ---
 
+## Overview
+
+The `IGetActivityService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for retrieving activity details based on a unique identifier. This interface is designed to be implemented by classes that provide the actual logic for fetching activity data.
+
 ## Purpose
 
-The `IGetActivityService` interface is a part of the `com.upmatches.app.features.activity.services` package. It defines a contract for retrieving activity details based on a unique identifier. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting only the `GetActivityService` class.
+The primary purpose of the `IGetActivityService` interface is to abstract the operation of retrieving an activity by its unique identifier (`UUID`). This allows for different implementations of the service, promoting flexibility and scalability within the application.
 
 ## Public Methods
 
-| Method Signature                  | Description                                           |
-|-----------------------------------|-------------------------------------------------------|
-| `ActivityResponse execute(UUID id)` | Retrieves an activity based on the provided UUID.     |
+The interface defines the following public method:
+
+| Method Signature | Description |
+| ---------------- | ----------- |
+| `ActivityResponse execute(UUID id)` | Retrieves the activity details associated with the specified `UUID`. |
 
 ### Method Details
 
 #### `execute`
 
-- **Description**: This method is responsible for fetching the details of an activity using its unique identifier.
-- **Parameters**:
+- **Parameters:**
+
   | Name | Type | Description |
-  |------|------|-------------|
+  | ---- | ---- | ----------- |
   | `id` | `UUID` | The unique identifier of the activity to be retrieved. |
-- **Returns**: An `ActivityResponse` object containing the details of the requested activity.
+
+- **Returns:** 
+
+  | Type | Description |
+  | ---- | ----------- |
+  | `ActivityResponse` | An object containing the details of the activity. |
+
+The `execute` method is the core operation of the `IGetActivityService` interface, providing a standardized way to fetch activity information using a unique identifier.

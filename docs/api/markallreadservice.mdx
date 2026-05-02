@@ -4,28 +4,26 @@ title: MarkAllReadService
 sidebar_label: MarkAllReadService
 ---
 
-## Purpose of the Class
+## Overview
 
-The `MarkAllReadService` class is a service component in a Java application that handles the operation of marking all notifications as read for a specific user. This service interacts with the `NotificationRepository` to update the read status of notifications in the database. It utilizes the `IAuthenticatedUserResolver` to determine the current authenticated user and ensures that the operation is executed within a transactional context to maintain data integrity.
+The `MarkAllReadService` class is a part of the notification services in the application. It is responsible for marking all notifications as read for the authenticated user. This service interacts with the `NotificationRepository` to update the read status of notifications in the database. It ensures that the operation is executed within a transactional context to maintain data integrity.
 
 ## Public Methods
 
 ### `execute`
 
-This method is responsible for marking all notifications as read for the authenticated user. It retrieves the user ID from the `IAuthenticatedUserResolver` and uses the `NotificationRepository` to update the notifications' status.
+Marks all notifications as read for the currently authenticated user.
 
-| Method   | Description |
-|----------|-------------|
-| `execute` | Marks all notifications as read for the authenticated user. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      |      |             |
 
-#### Parameters
+| Return Type | Description |
+|-------------|-------------|
+| `Integer`   | The number of notifications that were marked as read. |
 
-The `execute` method does not take any parameters.
+#### Method Details
 
-#### Return Type
-
-| Type    | Description |
-|---------|-------------|
-| `Integer` | Returns the number of notifications that were marked as read. |
-
-The `execute` method uses the `ServiceOperationExecutor` to perform the operation and handle any exceptions, such as `ResourceNotFoundException`, that may occur if the user or notifications are not found.
+- **Transactional**: This method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction. This guarantees that all database operations within the method are completed successfully or none are applied in case of an error.
+- **Operation Execution**: Utilizes `ServiceOperationExecutor` to perform the update operation. This executor handles the execution logic and manages exceptions, specifically throwing a `ResourceNotFoundException` if the operation fails due to missing resources.
+- **User Resolution**: The method retrieves the authenticated user's ID using the `IAuthenticatedUserResolver` service, ensuring that the notifications are marked read for the correct user.

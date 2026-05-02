@@ -4,20 +4,25 @@ title: ISkillLevelService Interface
 sidebar_label: ISkillLevelService
 ---
 
+import com.upmatches.app.features.skilllevels.responses.SkillLevelResponse;
+
+import java.util.List;
+import java.util.UUID;
+
 ## Purpose
 
-The `ISkillLevelService` interface defines the contract for services that manage skill levels associated with specific activities. It is a part of the `com.upmatches.app.features.skilllevels.services` package and is designed to be implemented by classes that provide concrete functionality for handling skill level data. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `SkillLevelService` class.
+The `ISkillLevelService` interface is part of the `com.upmatches.app.features.skilllevels.services` package. It defines the contract for services that handle operations related to skill levels within the application. This interface is designed to be implemented by classes that provide specific functionalities for managing skill levels associated with different activities.
 
 ## Public Methods
 
 ### `getSkillLevelsByActivity`
 
-Retrieves a list of skill levels associated with a given activity.
+Retrieves a list of skill levels associated with a specific activity.
 
-| Parameter   | Type   | Description                          |
-|-------------|--------|--------------------------------------|
-| `activityId`| `UUID` | The unique identifier of the activity|
+| Parameter   | Type   | Description                              |
+|-------------|--------|------------------------------------------|
+| `activityId`| `UUID` | The unique identifier of the activity.   |
 
-| Return Type                          | Description                                   |
-|--------------------------------------|-----------------------------------------------|
-| `List<SkillLevelResponse>`           | A list of skill level responses for the activity|
+| Return Type                      | Description                                      |
+|----------------------------------|--------------------------------------------------|
+| `List<SkillLevelResponse>`       | A list of skill level responses for the activity.|

@@ -1,37 +1,127 @@
 ---
 id: game-participant-repository
-title: GameParticipantRepository Interface
+title: GameParticipantRepository
 sidebar_label: GameParticipantRepository
 ---
 
 ## Purpose
 
-The `GameParticipantRepository` interface is a part of the `com.upmatches.app.features.game.repositories` package and extends the `JpaRepository` interface provided by Spring Data JPA. It is designed to manage `GameParticipant` entities, which represent participants in a game. This repository provides various methods to perform CRUD operations and custom queries on `GameParticipant` entities, allowing for efficient data retrieval and manipulation based on game and participant criteria.
+The `GameParticipantRepository` interface is a part of the `com.upmatches.app.features.game.repositories` package. It extends the `JpaRepository` interface, providing a set of methods to interact with `GameParticipant` entities in the database. This repository is responsible for managing game participants, including counting participants by game and status, finding participants by various criteria, and checking for overlapping game schedules.
 
 ## Public Methods
 
-The following table documents the public methods available in the `GameParticipantRepository` interface:
+### `countByGameIdAndStatus`
 
-| Method Name | Parameters | Return Type | Description |
-|-------------|------------|-------------|-------------|
-| `countByGameIdAndStatus` | `UUID gameId`, `ParticipantStatus status` | `long` | Counts the number of participants in a specific game with a given status. |
-| `countByGameIdsAndStatus` | `Collection<UUID> gameIds`, `ParticipantStatus status` | `List<GameParticipantCount>` | Returns a list of game IDs and their respective participant counts for the specified status. |
-| `findByGameIdAndUserIdAndStatus` | `UUID gameId`, `UUID userId`, `ParticipantStatus status` | `Optional<GameParticipant>` | Finds a participant by game ID, user ID, and status. |
-| `findByGameIdAndStatus` | `UUID gameId`, `ParticipantStatus status` | `List<GameParticipant>` | Retrieves a list of participants for a specific game and status. |
-| `findByGameIdAndStatusOrderByJoinedAtAsc` | `UUID gameId`, `ParticipantStatus status` | `List<GameParticipant>` | Retrieves a list of participants for a specific game and status, ordered by their joining time in ascending order. |
-| `findByUserIdAndStatusFetchGame` | `UUID userId`, `ParticipantStatus status` | `List<GameParticipant>` | Finds participants by user ID and status, fetching associated game details where the game is not deleted. |
-| `existsByGameIdAndUserIdAndStatus` | `UUID gameId`, `UUID userId`, `ParticipantStatus status` | `boolean` | Checks if a participant exists for a given game ID, user ID, and status. |
-| `hasOverlap` | `UUID userId`, `Instant start`, `Instant end` | `boolean` | Determines if there is an overlap of active participant status within scheduled games for a given user and time range. |
+Counts the number of participants for a specific game and status.
 
-## Nested Interface
+| Parameter | Type                      | Description                      |
+|-----------|---------------------------|----------------------------------|
+| `gameId`  | `UUID`                    | The ID of the game.              |
+| `status`  | `ParticipantStatus`       | The status of the participants.  |
 
-The `GameParticipantRepository` interface contains a nested interface `GameParticipantCount`:
+| Return Type |
+|-------------|
+| `long`      |
 
-### GameParticipantCount
+### `countByGameIdsAndStatus`
 
-This interface is used to project the results of the `countByGameIdsAndStatus` query. It provides the following methods:
+Counts the number of participants for multiple games and a specific status.
 
-| Method Name | Return Type | Description |
-|-------------|-------------|-------------|
-| `getGameId` | `UUID` | Returns the ID of the game. |
-| `getCount` | `Long` | Returns the count of participants for the game. |
+| Parameter  | Type                      | Description                      |
+|------------|---------------------------|----------------------------------|
+| `gameIds`  | `Collection<UUID>`        | The IDs of the games.            |
+| `status`   | `ParticipantStatus`       | The status of the participants.  |
+
+| Return Type                  |
+|------------------------------|
+| `List<GameParticipantCount>` |
+
+### `findByGameIdAndUserIdAndStatus`
+
+Finds a participant by game ID, user ID, and status.
+
+| Parameter | Type                      | Description                      |
+|-----------|---------------------------|----------------------------------|
+| `gameId`  | `UUID`                    | The ID of the game.              |
+| `userId`  | `UUID`                    | The ID of the user.              |
+| `status`  | `ParticipantStatus`       | The status of the participant.   |
+
+| Return Type                  |
+|------------------------------|
+| `Optional<GameParticipant>`  |
+
+### `findByGameIdAndStatus`
+
+Finds participants by game ID and status.
+
+| Parameter | Type                      | Description                      |
+|-----------|---------------------------|----------------------------------|
+| `gameId`  | `UUID`                    | The ID of the game.              |
+| `status`  | `ParticipantStatus`       | The status of the participants.  |
+
+| Return Type                  |
+|------------------------------|
+| `List<GameParticipant>`      |
+
+### `findByGameIdAndStatusOrderByJoinedAtAsc`
+
+Finds participants by game ID and status, ordered by the time they joined.
+
+| Parameter | Type                      | Description                      |
+|-----------|---------------------------|----------------------------------|
+| `gameId`  | `UUID`                    | The ID of the game.              |
+| `status`  | `ParticipantStatus`       | The status of the participants.  |
+
+| Return Type                  |
+|------------------------------|
+| `List<GameParticipant>`      |
+
+### `findByUserIdAndStatusFetchGame`
+
+Finds participants by user ID and status, fetching associated game details.
+
+| Parameter | Type                      | Description                      |
+|-----------|---------------------------|----------------------------------|
+| `userId`  | `UUID`                    | The ID of the user.              |
+| `status`  | `ParticipantStatus`       | The status of the participants.  |
+
+| Return Type                  |
+|------------------------------|
+| `List<GameParticipant>`      |
+
+### `existsByGameIdAndUserIdAndStatus`
+
+Checks if a participant exists by game ID, user ID, and status.
+
+| Parameter | Type                      | Description                      |
+|-----------|---------------------------|----------------------------------|
+| `gameId`  | `UUID`                    | The ID of the game.              |
+| `userId`  | `UUID`                    | The ID of the user.              |
+| `status`  | `ParticipantStatus`       | The status of the participant.   |
+
+| Return Type |
+|-------------|
+| `boolean`   |
+
+### `hasOverlap`
+
+Checks if there is an overlap in scheduled games for a user within a specified time range.
+
+| Parameter | Type                      | Description                      |
+|-----------|---------------------------|----------------------------------|
+| `userId`  | `UUID`                    | The ID of the user.              |
+| `start`   | `Instant`                 | The start of the time range.     |
+| `end`     | `Instant`                 | The end of the time range.       |
+
+| Return Type |
+|-------------|
+| `boolean`   |
+
+## Nested Interface: `GameParticipantCount`
+
+The `GameParticipantCount` interface is used to represent the count of participants for a specific game.
+
+### Methods
+
+- `UUID getGameId()`: Returns the ID of the game.
+- `Long getCount()`: Returns the count of participants.

@@ -4,47 +4,26 @@ title: SkillLevel Class
 sidebar_label: SkillLevel
 ---
 
-## Overview
+## Purpose of the SkillLevel Class
 
-The `SkillLevel` class is an entity representing a skill level within an application. It is part of the `com.upmatches.app.features.skilllevels.entities` package and is mapped to the `skill_levels` table in the database. This class is used to define different levels of skills associated with various activities.
-
-## Class Structure
-
-The `SkillLevel` class is annotated with JPA annotations to facilitate ORM (Object-Relational Mapping) with a relational database. It uses Lombok's `@Getter` to automatically generate getter methods for its fields.
-
-### Fields
-
-- **id**: A unique identifier for each skill level, automatically generated.
-- **activity**: A reference to the `Activity` entity, representing the activity associated with this skill level.
-- **name**: The name of the skill level, with a maximum length of 100 characters.
-- **sortOrder**: An integer used to define the order of skill levels.
-
-### Constructor
-
-- **SkillLevel()**: A protected no-argument constructor used by JPA.
+The `SkillLevel` class is an entity that represents the skill level associated with a specific activity within an application. It is part of the `com.upmatches.app.features.skilllevels.entities` package and is mapped to the `skill_levels` table in a database using JPA annotations. This class is designed to store and manage information about different skill levels, including their associated activity, name, and sort order.
 
 ## Public Methods
 
-The `SkillLevel` class provides a static factory method to create instances of the class.
-
-### create
-
-Creates a new instance of the `SkillLevel` class.
+The `SkillLevel` class provides the following public method:
 
 | Method Signature | Description |
 |------------------|-------------|
-| `public static SkillLevel create(Activity activity, String name, Integer sortOrder)` | Static factory method to create a new `SkillLevel` instance. |
+| `public static SkillLevel create(Activity activity, String name, Integer sortOrder)` | This static method is used to create a new instance of the `SkillLevel` class. It initializes the `activity`, `name`, and `sortOrder` fields with the provided parameters and returns the newly created `SkillLevel` object. |
 
-#### Parameters
+### Parameters for `create` Method
 
-| Parameter   | Type     | Description                                      |
-|-------------|----------|--------------------------------------------------|
-| `activity`  | `Activity` | The activity associated with this skill level.  |
-| `name`      | `String`   | The name of the skill level.                    |
-| `sortOrder` | `Integer`  | The order in which the skill level should appear. |
+| Parameter | Type     | Description |
+|-----------|----------|-------------|
+| `activity` | `Activity` | The activity associated with this skill level. This parameter is mandatory and cannot be null. |
+| `name`     | `String`   | The name of the skill level. It must be a non-null string with a maximum length of 100 characters. |
+| `sortOrder`| `Integer`  | The sort order of the skill level, which determines its position relative to other skill levels. This parameter is mandatory and cannot be null. |
 
-#### Return Type
+### Return Type
 
-| Type        | Description                         |
-|-------------|-------------------------------------|
-| `SkillLevel` | Returns a new instance of `SkillLevel`. |
+The `create` method returns an instance of the `SkillLevel` class initialized with the specified parameters.

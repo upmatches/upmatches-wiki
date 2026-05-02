@@ -4,23 +4,23 @@ title: SkillLevelController
 sidebar_label: SkillLevelController
 ---
 
-## Purpose of the `SkillLevelController` Class
+## Purpose of the SkillLevelController Class
 
 The `SkillLevelController` class is a REST controller in a Spring Boot application that handles HTTP requests related to skill levels. It provides an endpoint to retrieve skill levels associated with a specific activity. This controller is part of the `com.upmatches.app.features.skilllevels.controllers` package and interacts with the `ISkillLevelService` to fetch the necessary data.
 
 ## Public Methods
 
-### `getSkillLevels`
+### getSkillLevels
 
-Retrieves a list of skill levels for a given activity.
+The `getSkillLevels` method is a public endpoint exposed via a GET request to `/api/v1/skill-levels`. It retrieves a list of skill levels for a given activity ID.
 
-| Parameter   | Type                      | Description                                         |
-|-------------|---------------------------|-----------------------------------------------------|
-| `activityId`| `UUID`                    | The unique identifier of the activity. Must not be null. |
-| `request`   | `HttpServletRequest`      | The HTTP request object.                            |
+| Parameter   | Type   | Description                                   |
+|-------------|--------|-----------------------------------------------|
+| activityId  | UUID   | The unique identifier of the activity.        |
+| request     | HttpServletRequest | The HTTP request object.           |
 
-| Return Type                                       | Description                                                                 |
-|---------------------------------------------------|-----------------------------------------------------------------------------|
-| `ResponseEntity<ApiResponse<List<SkillLevelResponse>>>` | A response entity containing an API response with a list of skill level responses. |
+| Return Type                                  | Description                                                  |
+|----------------------------------------------|--------------------------------------------------------------|
+| ResponseEntity<ApiResponse<List<SkillLevelResponse>>> | A response entity containing an API response with a list of skill levels. |
 
-This method is mapped to the HTTP GET requests at the `/api/v1/skill-levels` endpoint. It requires a `UUID` parameter `activityId` to specify the activity for which the skill levels are to be retrieved. The method returns a `ResponseEntity` containing an `ApiResponse` with the list of `SkillLevelResponse` objects, a success message, and the request URI.
+This method utilizes the `ISkillLevelService` to fetch skill levels by activity ID and returns them wrapped in an `ApiResponse` object. The response includes a success message and the request URI.

@@ -4,54 +4,41 @@ title: DeviceToken Class
 sidebar_label: DeviceToken
 ---
 
-## Overview
+## Purpose
 
-The `DeviceToken` class is an entity representing a device token associated with a user for notification purposes. It is part of the notification feature in the application and is mapped to the `notification_device_tokens` table in the database. This class uses JPA annotations for ORM (Object-Relational Mapping) and Lombok annotations to reduce boilerplate code.
+The `DeviceToken` class is an entity representing a device token associated with a user for notification purposes. It is part of the notification feature in the application and is used to store information about the device tokens that are linked to users, including the platform type and timestamps for creation and updates.
 
 ## Public Methods
 
 The `DeviceToken` class provides the following public methods:
 
-### `create`
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `create` | `User user`, `String deviceToken`, `DevicePlatform platform` | `DeviceToken` | Static method to create a new instance of `DeviceToken` with the specified user, device token, and platform. |
+| `touch` | `DevicePlatform platform` | `void` | Updates the platform of the device token. |
 
-Creates a new instance of `DeviceToken`.
+## Fields
 
-| Parameter    | Type            | Description                       |
-|--------------|-----------------|-----------------------------------|
-| `user`       | `User`          | The user associated with the device token. |
-| `deviceToken`| `String`        | The device token string.          |
-| `platform`   | `DevicePlatform`| The platform of the device.       |
+The class contains the following fields:
 
-| Return Type  | Description                       |
-|--------------|-----------------------------------|
-| `DeviceToken`| A new instance of `DeviceToken`.  |
-
-### `touch`
-
-Updates the platform of the device token.
-
-| Parameter    | Type            | Description                       |
-|--------------|-----------------|-----------------------------------|
-| `platform`   | `DevicePlatform`| The new platform of the device.   |
-
-| Return Type  | Description                       |
-|--------------|-----------------------------------|
-| `void`       | This method does not return a value. |
+- `UUID id`: Unique identifier for the device token.
+- `User user`: The user associated with the device token.
+- `String deviceToken`: The device token string.
+- `DevicePlatform platform`: Enum representing the platform of the device (e.g., iOS, Android).
+- `Instant createdAt`: Timestamp indicating when the device token was created.
+- `Instant updatedAt`: Timestamp indicating when the device token was last updated.
 
 ## Annotations
 
-- **Entity**: Specifies that the class is an entity and is mapped to a database table.
-- **Table**: Specifies the primary table for the annotated entity.
-- **Id**: Specifies the primary key of an entity.
-- **GeneratedValue**: Provides for the specification of generation strategies for the values of primary keys.
-- **ManyToOne**: Defines a single-valued association to another entity class that has many-to-one multiplicity.
-- **JoinColumn**: Specifies a column for joining an entity association or element collection.
-- **Column**: Used to specify the mapped column for a persistent property or field.
-- **Enumerated**: Specifies that a persistent property or field should be persisted as an enumerated type.
-- **PrePersist**: Specifies a callback method for the corresponding lifecycle event.
-- **PreUpdate**: Specifies a callback method for the corresponding lifecycle event.
-
-## Lombok Annotations
-
-- **Getter**: Generates getters for all fields.
-- **NoArgsConstructor**: Generates a no-arguments constructor. The `access` parameter is set to `PROTECTED` to restrict instantiation.
+- `@Entity`: Specifies that the class is an entity and is mapped to a database table.
+- `@Table`: Provides table-level metadata, including unique constraints.
+- `@Id`: Marks the primary key of the entity.
+- `@GeneratedValue`: Specifies the generation strategy for the primary key.
+- `@ManyToOne`: Defines a many-to-one relationship with the `User` entity.
+- `@JoinColumn`: Specifies the foreign key column.
+- `@Column`: Maps a field to a database column.
+- `@Enumerated`: Specifies that the field should be persisted as an enumerated type.
+- `@PrePersist`: Lifecycle callback method invoked before the entity is persisted.
+- `@PreUpdate`: Lifecycle callback method invoked before the entity is updated.
+- `@Getter`: Lombok annotation to generate getter methods.
+- `@NoArgsConstructor`: Lombok annotation to generate a no-argument constructor with protected access level.

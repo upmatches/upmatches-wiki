@@ -1,27 +1,27 @@
 ---
 id: skill-level-service
-title: SkillLevelService
+title: SkillLevelService Class
 sidebar_label: SkillLevelService
 ---
 
-## Purpose of the Class
+## Purpose
 
-The `SkillLevelService` class is a Spring Service component responsible for handling operations related to skill levels within activities. It interacts with the `ActivityRepository` and `SkillLevelRepository` to retrieve skill level data associated with a specific activity. The service ensures that the activity exists before attempting to fetch the skill levels, throwing a `ResourceNotFoundException` if the activity is not found.
+The `SkillLevelService` class is a Spring service component responsible for handling operations related to skill levels within the application. It interacts with the `ActivityRepository` and `SkillLevelRepository` to retrieve skill levels associated with a specific activity. The service ensures that the requested activity exists and retrieves the skill levels in a sorted order.
 
 ## Public Methods
 
-### `getSkillLevelsByActivity`
+### getSkillLevelsByActivity
 
-Retrieves a list of skill levels associated with a specific activity, ordered by their sort order.
+Retrieves a list of skill levels associated with a specific activity, identified by its unique ID. This method ensures that the activity exists before attempting to retrieve the skill levels.
 
-| Parameter   | Type   | Description                                      |
-|-------------|--------|--------------------------------------------------|
-| `activityId`| `UUID` | The unique identifier of the activity.           |
+| Parameter   | Type   | Description                              |
+|-------------|--------|------------------------------------------|
+| `activityId`| `UUID` | The unique identifier of the activity.   |
 
-| Return Type                      | Description                                      |
-|----------------------------------|--------------------------------------------------|
-| `List<SkillLevelResponse>`       | A list of skill level responses for the activity.|
+| Return Type                     | Description                                                  |
+|---------------------------------|--------------------------------------------------------------|
+| `List<SkillLevelResponse>`      | A list of skill level responses sorted by their sort order.  |
 
 ### Exceptions
 
-- **`ResourceNotFoundException`**: Thrown if the activity with the specified ID does not exist.
+- `ResourceNotFoundException`: Thrown if the activity with the specified ID does not exist.

@@ -4,40 +4,28 @@ title: NotificationType Enum
 sidebar_label: NotificationType
 ---
 
-## Overview
+import { useBaseUrl } from '@docusaurus/core';
 
-The `NotificationType` enum is part of the `com.upmatches.app.features.notification.enums` package. It defines a set of constants representing different types of notifications that can be used within the application. Enums in Java are a special type of class that represent a group of constants (unchangeable variables, like final variables).
+## Purpose
+
+The `NotificationType` enum is part of the `com.upmatches.app.features.notification.enums` package. It defines a set of constants representing different types of notifications that can be used within the application. These notifications are likely related to player activities and game events, providing a standardized way to handle various notification scenarios.
 
 ## Enum Constants
 
 The `NotificationType` enum includes the following constants:
 
-- **PLAYER_JOINED**: Indicates that a player has joined.
-- **PLAYER_LEFT**: Indicates that a player has left.
-- **PLAYER_WARNING_MISMATCH**: Indicates a warning due to a mismatch involving a player.
-- **GAME_FULL**: Indicates that a game is full.
-- **GAME_REMINDER_3_DAYS**: A reminder notification for a game scheduled in 3 days.
-- **GAME_REMINDER_1_DAY**: A reminder notification for a game scheduled in 1 day.
-- **GAME_UPDATED**: Indicates that a game has been updated.
-- **GAME_REMOVED**: Indicates that a game has been removed.
-- **PLAYER_REMOVED_FROM_GAME**: Indicates that a player has been removed from a game.
+| Constant                  | Description                                                                 |
+|---------------------------|-----------------------------------------------------------------------------|
+| `PLAYER_JOINED`           | Indicates that a player has joined a game or event.                         |
+| `PLAYER_LEFT`             | Indicates that a player has left a game or event.                           |
+| `PLAYER_WARNING_MISMATCH` | Indicates a warning related to a mismatch involving a player.               |
+| `GAME_FULL`               | Indicates that a game has reached its maximum capacity of players.          |
+| `GAME_REMINDER_3_DAYS`    | A reminder notification sent 3 days before a game is scheduled to occur.    |
+| `GAME_REMINDER_1_DAY`     | A reminder notification sent 1 day before a game is scheduled to occur.     |
+| `GAME_UPDATED`            | Indicates that the details of a game have been updated.                     |
+| `GAME_REMOVED`            | Indicates that a game has been removed from the schedule.                   |
+| `PLAYER_REMOVED_FROM_GAME`| Indicates that a player has been removed from a game.                       |
 
-## Public Methods
+## Usage
 
-Enums in Java inherently provide some public methods, but since this enum does not define any additional methods beyond the default ones provided by Java, we will focus on the constants themselves.
-
-### Enum Constants
-
-| Constant                  | Description                                         |
-|---------------------------|-----------------------------------------------------|
-| `PLAYER_JOINED`           | Notification for when a player joins.               |
-| `PLAYER_LEFT`             | Notification for when a player leaves.              |
-| `PLAYER_WARNING_MISMATCH` | Notification for a player mismatch warning.         |
-| `GAME_FULL`               | Notification for when a game is full.               |
-| `GAME_REMINDER_3_DAYS`    | Reminder for a game scheduled in 3 days.            |
-| `GAME_REMINDER_1_DAY`     | Reminder for a game scheduled in 1 day.             |
-| `GAME_UPDATED`            | Notification for when a game is updated.            |
-| `GAME_REMOVED`            | Notification for when a game is removed.            |
-| `PLAYER_REMOVED_FROM_GAME`| Notification for when a player is removed from a game.|
-
-This enum can be used throughout the application to handle different notification scenarios consistently and efficiently.
+This enum can be used in the application to trigger specific actions or notifications based on the type of event that occurs. By using these predefined constants, developers can ensure consistency and clarity when handling notification-related logic.

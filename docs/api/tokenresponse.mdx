@@ -4,31 +4,34 @@ title: TokenResponse Class
 sidebar_label: TokenResponse
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+## Purpose of the TokenResponse Class
 
-## Overview
-
-The `TokenResponse` class is a Java record that encapsulates the response details for authentication tokens. It is part of the `com.upmatches.app.features.auth.responses` package. This class is designed to hold information about an access token, a refresh token, and the expiration time of the access token. It provides a static factory method to create instances of `TokenResponse`.
+The `TokenResponse` class is a part of the `com.upmatches.app.features.auth.responses` package. It is designed to encapsulate the response data related to authentication tokens. This class uses Java's `record` feature to define a simple data carrier for holding an access token, a refresh token, and an expiration timestamp.
 
 ## Public Methods
 
-<Tabs>
-<TabItem value="java" label="Java" default>
+The `TokenResponse` class provides the following public method:
 
-### `of`
+| Method Signature | Description |
+|------------------|-------------|
+| `static TokenResponse of(String accessToken, String refreshToken, Long expiresAt)` | A static factory method that creates a new instance of `TokenResponse` with the specified access token, refresh token, and expiration time. |
 
-The `of` method is a static factory method that creates a new instance of the `TokenResponse` record.
+### Method Details
 
-| Parameter    | Type   | Description                           |
-|--------------|--------|---------------------------------------|
-| accessToken  | String | The access token for authentication.  |
-| refreshToken | String | The refresh token for obtaining a new access token. |
-| expiresAt    | Long   | The expiration time of the access token in milliseconds since epoch. |
+#### `of`
 
-| Return Type  | Description                                      |
-|--------------|--------------------------------------------------|
-| TokenResponse| A new instance of the `TokenResponse` record.    |
+- **Parameters:**
 
-</TabItem>
-</Tabs>
+  | Name          | Type   | Description                      |
+  |---------------|--------|----------------------------------|
+  | accessToken   | String | The access token string.         |
+  | refreshToken  | String | The refresh token string.        |
+  | expiresAt     | Long   | The expiration timestamp in milliseconds. |
+
+- **Returns:** 
+
+  | Type          | Description                                      |
+  |---------------|--------------------------------------------------|
+  | TokenResponse | A new instance of `TokenResponse` containing the specified tokens and expiration time. |
+
+This method provides a convenient way to create a `TokenResponse` object without directly invoking the constructor, enhancing code readability and maintainability.

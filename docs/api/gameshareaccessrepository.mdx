@@ -1,14 +1,17 @@
 ---
-id: game-share-access-repository
+id: gameshare-access-repository
 title: GameShareAccessRepository
 sidebar_label: GameShareAccessRepository
 ---
 
-import com.upmatches.app.features.game.repositories.GameShareAccessRepository;
+import com.upmatches.app.features.game.entities.GameShareAccess;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-## Purpose of the Class
+import java.util.UUID;
 
-The `GameShareAccessRepository` interface is a part of the data access layer in a Spring application. It extends the `JpaRepository` interface, which provides CRUD (Create, Read, Update, Delete) operations for the `GameShareAccess` entity. This repository is specifically designed to handle operations related to game sharing access, allowing the application to interact with the underlying database in a seamless manner.
+## Overview
+
+The `GameShareAccessRepository` interface is a part of the repository layer in a Spring application. It extends the `JpaRepository` interface, providing CRUD operations for the `GameShareAccess` entity. This repository is responsible for handling data access related to game share access records, which are identified by a unique `UUID`.
 
 ## Public Methods
 
@@ -16,7 +19,7 @@ The `GameShareAccessRepository` interface includes the following public method:
 
 | Method Signature | Description |
 |------------------|-------------|
-| `boolean existsByGameIdAndUserId(UUID gameId, UUID userId)` | Checks if a `GameShareAccess` entity exists for a given `gameId` and `userId`. |
+| `boolean existsByGameIdAndUserId(UUID gameId, UUID userId)` | Checks if a `GameShareAccess` record exists for a given `gameId` and `userId`. |
 
 ### Method Details
 
@@ -24,11 +27,11 @@ The `GameShareAccessRepository` interface includes the following public method:
 
 - **Parameters:**
 
-  | Name   | Type   | Description                          |
-  |--------|--------|--------------------------------------|
-  | gameId | UUID   | The unique identifier of the game.   |
-  | userId | UUID   | The unique identifier of the user.   |
+  | Name    | Type   | Description                              |
+  |---------|--------|------------------------------------------|
+  | gameId  | UUID   | The unique identifier of the game.       |
+  | userId  | UUID   | The unique identifier of the user.       |
 
 - **Return Type:** `boolean`
 
-  Returns `true` if a `GameShareAccess` entity exists for the specified `gameId` and `userId`, otherwise returns `false`. This method is useful for verifying whether a user has access to share a particular game.
+  Returns `true` if a `GameShareAccess` record exists for the specified `gameId` and `userId`, otherwise returns `false`.

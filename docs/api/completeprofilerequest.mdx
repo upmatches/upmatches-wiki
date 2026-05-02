@@ -6,31 +6,36 @@ sidebar_label: CompleteProfileRequest
 
 ## Purpose of the CompleteProfileRequest Class
 
-The `CompleteProfileRequest` class is a Java record used to encapsulate the data required to complete a user's profile in the application. It ensures that the profile data adheres to specific validation constraints, such as non-blank names, a limited number of contact methods, and skill levels. This class is part of the `com.upmatches.app.features.user.requests` package and is designed to be used in scenarios where a user's profile needs to be completed or updated with validated data.
+The `CompleteProfileRequest` class is a Java record used to encapsulate data required for completing a user profile in the application. It ensures that the necessary fields are provided and validated according to specified constraints. This class is part of the `com.upmatches.app.features.user.requests` package and leverages Java's record feature to provide an immutable data structure with built-in validation.
 
 ## Public Methods
 
-The `CompleteProfileRequest` class is a record, which means it automatically provides a constructor, accessors, `equals()`, `hashCode()`, and `toString()` methods. Below are the details of the parameters used in this record:
+The `CompleteProfileRequest` class does not explicitly define public methods beyond those automatically provided by the Java record construct, such as the constructor, `equals()`, `hashCode()`, and `toString()`. However, the fields within the record are accessible as methods that return their respective values.
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `CompleteProfileRequest` | `String name`, `List<ContactMethod> contactMethods`, `List<SkillLevelSelection> skillLevels` | `CompleteProfileRequest` | Constructs a new `CompleteProfileRequest` record with the specified name, contact methods, and skill levels. |
+### Fields
 
-### Parameters
+The fields in the `CompleteProfileRequest` record are documented below, including their constraints and types:
 
-- **name**: 
-  - **Type**: `String`
-  - **Constraints**: Must not be blank and cannot exceed 200 characters.
-  - **Description**: Represents the name of the user. It is a required field and must be a non-empty string.
+| Field Name      | Type                                | Constraints                                                                 | Description                                                                 |
+|-----------------|-------------------------------------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `name`          | `String`                            | Must not be blank; Maximum length of 200 characters                         | Represents the name of the user completing the profile.                     |
+| `contactMethods`| `List<ContactMethod>`               | Must contain at least one contact method; Maximum of 10 contact methods     | A list of contact methods for the user, ensuring at least one is provided.  |
+| `skillLevels`   | `List<SkillLevelSelection>`         | Must not be null; Validated; Maximum of 50 skill levels                     | A list of skill levels selected by the user, with validation for each entry.|
 
-- **contactMethods**: 
-  - **Type**: `List<ContactMethod>`
-  - **Constraints**: Must contain at least one contact method and cannot exceed 10 methods.
-  - **Description**: A list of contact methods for the user. At least one contact method must be provided.
+### Validation Annotations
 
-- **skillLevels**: 
-  - **Type**: `List<SkillLevelSelection>`
-  - **Constraints**: Must not be null and cannot exceed 50 skill levels.
-  - **Description**: A list of skill levels selected by the user. This field is required and must be validated.
+- `@NotBlank`: Ensures that the `name` field is not null or empty.
+- `@Size`: Restricts the size of the `name`, `contactMethods`, and `skillLevels` fields to their respective maximum lengths.
+- `@AtLeastOneContactMethod`: Custom validation to ensure at least one contact method is provided.
+- `@NotNull`: Ensures that the `skillLevels` field is not null.
+- `@Valid`: Ensures that each entry in the `skillLevels` list is valid according to its own constraints.
 
-This class leverages annotations from the `jakarta.validation` package to enforce constraints on its fields, ensuring that the data provided is valid and meets the application's requirements.
+### Constants
+
+The class defines the following constants to specify maximum limits:
+
+- `MAX_NAME_LENGTH`: 200
+- `MAX_CONTACT_METHODS`: 10
+- `MAX_SKILL_LEVELS`: 50
+
+These constants are used in the validation annotations to enforce constraints on the respective fields.

@@ -4,35 +4,32 @@ title: DeleteGameBookmarkService
 sidebar_label: DeleteGameBookmarkService
 ---
 
-## Purpose
+## Overview
 
-The `DeleteGameBookmarkService` class is a service component in a Java application designed to handle the deletion of game bookmarks for authenticated users. It interacts with the `GameBookmarkRepository` to remove bookmarks from the database and ensures that only bookmarks associated with the current authenticated user are deleted. The service is transactional, ensuring that the deletion operation is completed successfully or rolled back in case of an error.
+The `DeleteGameBookmarkService` class is a part of the `com.upmatches.app.features.game.services` package. It is responsible for handling the deletion of game bookmarks for authenticated users. This service ensures that only the bookmarks associated with the current authenticated user can be deleted, maintaining data integrity and security.
+
+## Class Purpose
+
+The primary purpose of the `DeleteGameBookmarkService` is to provide a transactional operation that deletes a game bookmark based on the game ID and the authenticated user's ID. If the bookmark does not exist, it throws a `ResourceNotFoundException`.
 
 ## Public Methods
 
 ### `execute`
 
-The `execute` method is responsible for deleting a game bookmark associated with a specific game and the currently authenticated user.
+Deletes a game bookmark for the authenticated user.
 
-| Parameter | Type   | Description                                      |
-|-----------|--------|--------------------------------------------------|
-| `gameId`  | `UUID` | The unique identifier of the game whose bookmark is to be deleted. |
+| Parameter | Type   | Description                           |
+|-----------|--------|---------------------------------------|
+| `gameId`  | `UUID` | The unique identifier of the game.    |
 
 | Return Type | Description |
 |-------------|-------------|
-| `void`      | This method does not return any value. It performs the deletion operation. |
+| `void`      | This method does not return a value. |
 
-### Method Details
+#### Exceptions
 
-- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the deletion operation is atomic. If any part of the operation fails, the transaction is rolled back.
-- **Exception Handling**: If the bookmark is not found, a `ResourceNotFoundException` is thrown with a message indicating the game and user IDs involved.
-- **Service Operation Execution**: The actual deletion is performed using `ServiceOperationExecutor.executeVoid`, which abstracts the operation execution and error handling logic.
+- `ResourceNotFoundException`: Thrown if no bookmark is found for the specified game ID and user ID.
 
-## Dependencies
+## Usage
 
-- **`GameBookmarkRepository`**: This repository interface is used to interact with the database for bookmark retrieval and deletion.
-- **`IAuthenticatedUserResolver`**: This interface is used to resolve the currently authenticated user's ID, ensuring that operations are performed in the context of the correct user.
-
-## Exception Handling
-
-- **`ResourceNotFoundException`**: This exception is thrown if no bookmark is found for the specified game and user, indicating that the operation cannot proceed.
+To use the `DeleteGameBookmarkService`, you need to have an instance of `GameBookmarkRepository` and `IAuthenticatedUserResolver` injected into the service. The `execute` method should be called with the game ID for which the bookmark needs to be deleted. The service will handle the rest, ensuring that the operation is performed within a transactional context.

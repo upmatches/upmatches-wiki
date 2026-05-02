@@ -6,44 +6,28 @@ sidebar_label: IShareLinkUrlBuilder
 
 ## Overview
 
-The `IShareLinkUrlBuilder` interface is part of the `com.upmatches.app.features.sharelink.services` package. It defines a contract for building different types of shareable URLs within the application. This interface is designed to be implemented by classes that generate URLs for sharing resources in various formats, such as web and mobile URLs.
+The `IShareLinkUrlBuilder` interface is part of the `com.upmatches.app.features.sharelink.services` package. It defines a contract for building various types of URLs related to sharing links within the application. This interface is designed to be implemented by classes that generate URLs for different platforms, such as web and mobile, based on resource types and identifiers.
 
 ## Public Methods
 
-### buildShareUrl
+The `IShareLinkUrlBuilder` interface declares the following public methods:
 
-Builds a shareable URL using a provided code.
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `buildShareUrl` | `String code` | `String` | Constructs a shareable URL using the provided code. |
+| `buildWebUrl` | `ResourceType resourceType`, `String resourceId` | `String` | Generates a web URL for the specified resource type and resource identifier. |
+| `buildMobileUrl` | `ResourceType resourceType`, `String resourceId` | `String` | Creates a mobile-specific URL for the given resource type and resource identifier. |
 
-| Parameter | Type   | Description                  |
-|-----------|--------|------------------------------|
-| `code`    | String | The code used to generate the shareable URL. |
+### Method Details
 
-| Return Type | Description                        |
-|-------------|------------------------------------|
-| `String`    | Returns the constructed shareable URL as a string. |
+- **`buildShareUrl(String code)`**: This method takes a single parameter, `code`, which is a `String` representing a unique identifier or code for the shareable link. It returns a `String` that is the constructed URL intended for sharing.
 
-### buildWebUrl
+- **`buildWebUrl(ResourceType resourceType, String resourceId)`**: This method requires two parameters:
+  - `resourceType`: An instance of `ResourceType` enum, indicating the type of resource for which the URL is being generated.
+  - `resourceId`: A `String` representing the unique identifier of the resource.
+  
+  It returns a `String` that is the URL formatted for web access.
 
-Constructs a web URL for a given resource type and resource ID.
+- **`buildMobileUrl(ResourceType resourceType, String resourceId)`**: Similar to `buildWebUrl`, this method also takes `resourceType` and `resourceId` as parameters. It returns a `String` that is the URL formatted specifically for mobile access.
 
-| Parameter      | Type                      | Description                                      |
-|----------------|---------------------------|--------------------------------------------------|
-| `resourceType` | `ResourceType`            | The type of resource for which the URL is built. |
-| `resourceId`   | String                    | The unique identifier of the resource.           |
-
-| Return Type | Description                        |
-|-------------|------------------------------------|
-| `String`    | Returns the constructed web URL as a string. |
-
-### buildMobileUrl
-
-Generates a mobile-specific URL for a given resource type and resource ID.
-
-| Parameter      | Type                      | Description                                      |
-|----------------|---------------------------|--------------------------------------------------|
-| `resourceType` | `ResourceType`            | The type of resource for which the URL is built. |
-| `resourceId`   | String                    | The unique identifier of the resource.           |
-
-| Return Type | Description                        |
-|-------------|------------------------------------|
-| `String`    | Returns the constructed mobile URL as a string. |
+The `IShareLinkUrlBuilder` interface is a sealed interface, which means it restricts which classes can implement it. In this case, only the `ShareLinkUrlBuilder` class is permitted to implement this interface.

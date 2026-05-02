@@ -4,44 +4,26 @@ title: GameParticipant Class
 sidebar_label: GameParticipant
 ---
 
-## Overview
+## Purpose
 
-The `GameParticipant` class is an entity representing a participant in a game within the application. It is part of the `com.upmatches.app.features.game.entities` package and is mapped to the `game_participants` table in the database. This class manages the relationship between a user and a game, tracking the user's status and timestamps for when they join or leave the game.
+The `GameParticipant` class represents an entity that links a user to a game, capturing the user's participation status and timestamps for when they joined and left the game. It is a part of the `com.upmatches.app.features.game.entities` package and is mapped to the `game_participants` table in the database.
 
 ## Public Methods
 
 The `GameParticipant` class provides the following public methods:
 
-### `create`
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `create` | `Game game`, `User user` | `GameParticipant` | Static factory method to create a new `GameParticipant` instance with the given game and user, setting the status to `ACTIVE`. |
+| `leave` | None | `void` | Updates the participant's status to `LEFT` and sets the `leftAt` timestamp to the current time. |
 
-Creates a new instance of `GameParticipant` with the specified game and user, setting the initial status to `ACTIVE`.
+## Fields
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `game`    | `Game` | The game the participant is joining. |
-| `user`    | `User` | The user who is participating in the game. |
+The class contains several fields, most of which are private and accessed via Lombok-generated getters:
 
-| Return Type | Description |
-|-------------|-------------|
-| `GameParticipant` | A new instance of `GameParticipant` with the specified game and user. |
-
-### `leave`
-
-Updates the participant's status to `LEFT` and records the current timestamp as the time they left the game.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| *(none)*  |      |             |
-
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | This method does not return a value. |
-
-## Annotations and Persistence
-
-- **Entity and Table Mapping**: Annotated with `@Entity` and `@Table(name = "game_participants")` to map the class to a database table.
-- **ID Generation**: The `id` field is annotated with `@Id` and `@GeneratedValue(strategy = GenerationType.UUID)` to automatically generate a unique identifier for each participant.
-- **Relationships**: 
-  - `@ManyToOne` relationships with `Game` and `User` entities, indicating that each participant is associated with one game and one user.
-- **Enumerated Type**: The `status` field uses `@Enumerated(EnumType.STRING)` to store the participant's status as a string in the database.
-- **Lifecycle Callback**: The `@PrePersist` annotation on the `onCreate` method sets the `joinedAt` timestamp when the entity is first persisted.
+- `UUID id`: Unique identifier for the participant.
+- `Game game`: The game associated with the participant.
+- `User user`: The user participating in the game.
+- `ParticipantStatus status`: The current status of the participant (e.g., ACTIVE, LEFT).
+- `Instant joinedAt`: Timestamp indicating when the participant joined the game.
+- `Instant leftAt`: Timestamp indicating when the participant left the game.

@@ -4,24 +4,24 @@ title: ListActivitiesService
 sidebar_label: ListActivitiesService
 ---
 
-import com.upmatches.app.features.activity.services.ListActivitiesService;
+## Overview
 
-## Purpose
-
-The `ListActivitiesService` class is a Spring service responsible for retrieving a paginated list of activities from the database. It leverages the `ActivityRepository` to fetch data and returns a `PagedResponse` containing `ActivityResponse` objects. This service is designed to be used in scenarios where activities need to be listed with pagination support.
+The `ListActivitiesService` class is a part of the `com.upmatches.app.features.activity.services` package. It is a Spring service designed to handle the retrieval of activity data from the database. This class implements the `IListActivitiesService` interface and provides a method to fetch paginated activity responses. It uses the `ActivityRepository` to interact with the data layer and leverages the `ServiceOperationExecutor` utility to execute the retrieval operation.
 
 ## Public Methods
 
 ### `execute`
 
-Retrieves a paginated list of activities.
+The `execute` method is responsible for retrieving a paginated list of activities. It utilizes the `ActivityRepository` to fetch data and returns a `PagedResponse` containing `ActivityResponse` objects. This method is transactional and read-only, ensuring that it does not modify the database state.
 
-| Parameter | Type           | Description                          |
-|-----------|----------------|--------------------------------------|
-| pageable  | `Pageable`     | The pagination information.          |
+| Parameter | Type       | Description                          |
+|-----------|------------|--------------------------------------|
+| pageable  | `Pageable` | Provides pagination information.     |
 
 | Return Type                          | Description                                      |
 |--------------------------------------|--------------------------------------------------|
 | `PagedResponse<ActivityResponse>`    | A paginated response containing activity data.   |
 
-This method is transactional and read-only, ensuring that it does not modify the database state. It uses the `ServiceOperationExecutor` to handle the execution and potential exceptions, specifically wrapping any `ResourceNotFoundException` that might occur if no activities are found.
+## Exception Handling
+
+- Throws `ResourceNotFoundException` if the retrieval operation fails to find any activities.

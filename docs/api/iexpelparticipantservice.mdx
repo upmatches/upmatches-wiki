@@ -4,31 +4,30 @@ title: IExpelParticipantService Interface
 sidebar_label: IExpelParticipantService
 ---
 
-import com.upmatches.app.features.game.requests.ExpelParticipantRequest;
-
-import java.util.UUID;
+import { useBaseUrl } from '@docusaurus/core';
 
 ## Purpose
 
-The `IExpelParticipantService` interface defines a contract for expelling a participant from a game. It is a part of the `com.upmatches.app.features.game.services` package and is designed to be implemented by classes that handle the logic for removing participants from a game session. This interface ensures that any implementing class provides a specific method to execute the expulsion process.
+The `IExpelParticipantService` interface defines a contract for expelling a participant from a game. It is part of the `com.upmatches.app.features.game.services` package and is designed to be implemented by classes that handle the logic for removing participants from a game session. This interface ensures that any implementing class provides a consistent method to execute the expulsion process.
 
 ## Public Methods
 
-| Method Signature                                                                 | Description                                                                                       |
-|----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| `void execute(UUID gameId, UUID participantId, ExpelParticipantRequest request)` | Executes the process of expelling a participant from a game.                                      |
+### `execute`
 
-### Method Details
+This method is responsible for executing the expulsion of a participant from a game. It requires the game ID, participant ID, and a request object containing additional details necessary for the expulsion process.
 
-#### `execute`
+| Method Signature                                                                 |
+|----------------------------------------------------------------------------------|
+| `void execute(UUID gameId, UUID participantId, ExpelParticipantRequest request);` |
 
-- **Description**: This method is responsible for executing the expulsion of a participant from a game. It requires the game identifier, the participant identifier, and a request object containing additional details about the expulsion.
-  
-- **Parameters**:
-  | Name             | Type                          | Description                                     |
-  |------------------|-------------------------------|-------------------------------------------------|
-  | `gameId`         | `UUID`                        | The unique identifier of the game.              |
-  | `participantId`  | `UUID`                        | The unique identifier of the participant.       |
-  | `request`        | `ExpelParticipantRequest`     | The request object containing expulsion details.|
+#### Parameters
 
-- **Return Type**: `void` - This method does not return any value.
+| Parameter       | Type                              | Description                                           |
+|-----------------|-----------------------------------|-------------------------------------------------------|
+| `gameId`        | `UUID`                            | The unique identifier of the game from which the participant is to be expelled. |
+| `participantId` | `UUID`                            | The unique identifier of the participant to be expelled. |
+| `request`       | `ExpelParticipantRequest`         | An object containing additional details required for the expulsion process. |
+
+#### Return Type
+
+This method does not return any value (`void`). It performs the action of expelling a participant based on the provided parameters.

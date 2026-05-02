@@ -4,39 +4,34 @@ title: RegisterDeviceTokenRequest
 sidebar_label: RegisterDeviceTokenRequest
 ---
 
-import com.upmatches.app.features.notification.enums.DevicePlatform;
+import com.upmatches.app.features.notification.requests.RegisterDeviceTokenRequest;
 
 ## Purpose
 
-The `RegisterDeviceTokenRequest` class is a record in the `com.upmatches.app.features.notification.requests` package. It is used to encapsulate the data required to register a device token for push notifications. This record ensures that the device token and platform information are provided and validated before being processed.
+The `RegisterDeviceTokenRequest` class is a Java record used to encapsulate the data required for registering a device token in the notification system. This record is part of the `com.upmatches.app.features.notification.requests` package and is designed to ensure that the necessary information about a device token and its platform is captured and validated before processing.
 
 ## Public Methods
 
-Since `RegisterDeviceTokenRequest` is a Java record, it automatically provides the following public methods:
+The `RegisterDeviceTokenRequest` record provides an immutable data structure with the following components:
 
 ### Constructor
 
-| Method Signature | Description |
-|------------------|-------------|
-| `RegisterDeviceTokenRequest(String deviceToken, DevicePlatform platform)` | Constructs a new `RegisterDeviceTokenRequest` with the specified device token and platform. |
+The constructor for `RegisterDeviceTokenRequest` is automatically provided by the Java record and is used to create instances of the record with the specified fields.
 
-### Accessors
+### Parameters
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `deviceToken()` | `String` | Returns the device token. |
-| `platform()` | `DevicePlatform` | Returns the platform of the device. |
+| Parameter    | Type                        | Description                                                                 |
+|--------------|-----------------------------|-----------------------------------------------------------------------------|
+| deviceToken  | `String`                    | The token representing the device, used for sending notifications. Must not be blank and can have a maximum length of 512 characters. |
+| platform     | `DevicePlatform`            | The platform of the device (e.g., iOS, Android). Must not be null.          |
 
-## Parameters
+### Return Types
 
-The `RegisterDeviceTokenRequest` record has the following parameters:
+The `RegisterDeviceTokenRequest` record does not have explicit methods with return types beyond the default accessors provided by the record structure. Each field in the record has an implicit getter method:
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `deviceToken` | `String` | The token representing the device, used for push notifications. It must not be blank and can have a maximum length of 512 characters. |
-| `platform` | `DevicePlatform` | The platform of the device (e.g., iOS, Android). It must not be null. |
+- `String deviceToken()`: Returns the device token.
+- `DevicePlatform platform()`: Returns the platform of the device.
 
-## Validation
+## Usage
 
-- `deviceToken`: Must not be blank and must not exceed 512 characters in length.
-- `platform`: Must not be null.
+The `RegisterDeviceTokenRequest` is typically used in scenarios where a device needs to be registered for receiving notifications. The validation annotations ensure that the data provided is both complete and within expected constraints, facilitating robust notification handling in the application.

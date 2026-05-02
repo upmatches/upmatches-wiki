@@ -4,27 +4,34 @@ title: AuthorizationUrlResponse
 sidebar_label: AuthorizationUrlResponse
 ---
 
+import { useBaseUrl } from '@docusaurus/core';
+
 ## Overview
 
-The `AuthorizationUrlResponse` class is a simple Java record used to encapsulate an authorization URL. It is part of the `com.upmatches.app.features.auth.responses` package. This class provides a convenient way to handle authorization URLs by storing them in an immutable data structure.
+The `AuthorizationUrlResponse` class is a simple Java record used to encapsulate an authorization URL. This class is part of the `com.upmatches.app.features.auth.responses` package and provides a static factory method for creating instances of the record.
+
+## Purpose
+
+The primary purpose of the `AuthorizationUrlResponse` class is to store and provide access to an authorization URL. This is typically used in authentication workflows where a client needs to redirect a user to an authorization server.
 
 ## Public Methods
 
-The `AuthorizationUrlResponse` class includes the following public method:
+The class provides the following public method:
 
 | Method Signature | Description |
 |------------------|-------------|
-| `static AuthorizationUrlResponse of(String authorizationUrl)` | A static factory method that creates a new instance of `AuthorizationUrlResponse` with the provided authorization URL. |
+| `public static AuthorizationUrlResponse of(String authorizationUrl)` | A static factory method that creates a new instance of `AuthorizationUrlResponse` with the specified authorization URL. |
 
 ### Method Details
 
 #### `of`
 
-- **Description**: This static method is a factory method that returns a new instance of the `AuthorizationUrlResponse` record. It simplifies the creation of `AuthorizationUrlResponse` objects.
-- **Parameters**:
+- **Parameters:**
 
-  | Name              | Type   | Description                        |
-  |-------------------|--------|------------------------------------|
-  | `authorizationUrl`| String | The authorization URL to be stored in the response. |
+  | Name              | Type   | Description                          |
+  |-------------------|--------|--------------------------------------|
+  | `authorizationUrl`| String | The authorization URL to be encapsulated in the response. |
 
-- **Returns**: An instance of `AuthorizationUrlResponse` containing the specified authorization URL.
+- **Returns:** `AuthorizationUrlResponse` - A new instance of `AuthorizationUrlResponse` containing the provided authorization URL.
+
+This method is a convenient way to create instances of `AuthorizationUrlResponse` without directly invoking the constructor, adhering to the factory method design pattern.

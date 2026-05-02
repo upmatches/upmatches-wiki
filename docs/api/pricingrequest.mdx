@@ -1,0 +1,37 @@
+---
+id: pricing-request
+title: PricingRequest Class
+sidebar_label: PricingRequest
+---
+
+## Purpose
+
+The `PricingRequest` class is a Java record used to encapsulate pricing information for a game feature. It includes various pricing parameters and provides validation constraints to ensure data integrity. The class also includes a method to convert the request data into a `Pricing` object.
+
+## Public Methods
+
+### `toPricing`
+
+Converts the `PricingRequest` instance into a `Pricing` object.
+
+| Parameter | Type      | Description |
+|-----------|-----------|-------------|
+| None      |           |             |
+
+| Returns   | Type      | Description |
+|-----------|-----------|-------------|
+| `Pricing` | `Pricing` | A new `Pricing` object initialized with the values from the `PricingRequest`. |
+
+## Parameters
+
+The `PricingRequest` record includes the following parameters:
+
+| Parameter      | Type        | Description                                                                                     |
+|----------------|-------------|-------------------------------------------------------------------------------------------------|
+| `mode`         | `PricingMode` | The pricing mode. Must not be null.                                                            |
+| `currency`     | `String`    | The currency code in ISO-4217 format. Must be a 3-letter uppercase string.                      |
+| `flatPrice`    | `BigDecimal` | The flat price. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |
+| `malePrice`    | `BigDecimal` | The male-specific price. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |
+| `femalePrice`  | `BigDecimal` | The female-specific price. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |
+| `basePrice`    | `BigDecimal` | The base price. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |
+| `pricePerShuttle` | `BigDecimal` | The price per shuttle. Must be greater than or equal to 0 and have at most 8 digits and 2 decimal places. |

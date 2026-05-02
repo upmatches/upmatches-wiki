@@ -6,20 +6,20 @@ sidebar_label: JoinabilityReason
 
 ## Overview
 
-The `JoinabilityReason` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to represent various reasons why a user might not be able to join a game. This enum provides a set of predefined constants that can be used to handle different joinability scenarios in a game application.
+The `JoinabilityReason` enum is part of the `com.upmatches.app.features.game.enums` package. It defines a set of constants that represent the various reasons why a user might not be able to join a game. This enum can be used to provide meaningful feedback to users attempting to join a game session, helping them understand why their join request was unsuccessful.
 
 ## Enum Constants
 
-The `JoinabilityReason` enum defines the following constants:
+The `JoinabilityReason` enum includes the following constants:
 
 | Constant              | Description                                                                 |
 |-----------------------|-----------------------------------------------------------------------------|
 | `ALREADY_JOINED`      | Indicates that the user has already joined the game.                        |
-| `NOT_JOINABLE`        | Indicates that the game is not currently joinable.                          |
+| `NOT_JOINABLE`        | Indicates that the game is currently not joinable.                          |
 | `PRIVATE_ACCESS_DENIED` | Indicates that the user does not have the necessary permissions to join a private game. |
-| `GAME_FULL`           | Indicates that the game has reached its maximum number of participants.     |
-| `OVERLAPPING`         | Indicates that the user's schedule overlaps with the game timing, preventing them from joining. |
+| `GAME_FULL`           | Indicates that the game cannot be joined because it has reached its maximum capacity. |
+| `OVERLAPPING`         | Indicates that joining the game would cause a scheduling conflict or overlap with another game. |
 
 ## Usage
 
-This enum can be used in game-related logic to determine and communicate why a user cannot join a game. By using these predefined constants, developers can ensure consistent handling and messaging for different joinability scenarios.
+This enum can be used in game management logic to determine and communicate the reason a join attempt fails. By using these predefined constants, developers can ensure consistency in how joinability issues are handled and reported across the application.

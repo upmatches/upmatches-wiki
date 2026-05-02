@@ -4,42 +4,30 @@ title: AuditEvent Class
 sidebar_label: AuditEvent
 ---
 
-## Purpose of the AuditEvent Class
+## Purpose
 
-The `AuditEvent` class is an entity representation used to log and store audit events in the system. It captures detailed information about actions performed by actors within the application, including metadata such as the time of occurrence, actor details, action specifics, and any associated outcomes or errors. This class is annotated with JPA and Hibernate annotations to map it to a database table named `audit_events`.
+The `AuditEvent` class is an entity that represents an audit log entry in the system. It is used to capture and store information about actions performed by actors within the application. This class is mapped to the `audit_events` table in the database and includes various fields to capture details such as the actor's identity, the action performed, the outcome, and additional metadata.
 
 ## Public Methods
-
-The `AuditEvent` class provides the following public methods:
 
 ### `create`
 
 Creates a new instance of `AuditEvent` with the specified parameters.
 
-| Parameter      | Type               | Description                                                                 |
-|----------------|--------------------|-----------------------------------------------------------------------------|
-| `actorId`      | `UUID`             | The unique identifier of the actor performing the action.                   |
-| `actorType`    | `AuditActorType`   | The type of actor (e.g., user, system) performing the action.               |
-| `action`       | `String`           | The action performed by the actor.                                          |
-| `category`     | `AuditCategory`    | The category of the audit event.                                            |
-| `outcome`      | `AuditOutcome`     | The outcome of the action (e.g., success, failure).                         |
-| `resourceType` | `String`           | The type of resource involved in the action.                                |
-| `resourceId`   | `String`           | The identifier of the resource involved in the action.                      |
-| `ipAddress`    | `String`           | The IP address from which the action was performed.                         |
-| `userAgent`    | `String`           | The user agent string of the client performing the action.                  |
-| `correlationId`| `String`           | An identifier to correlate this event with other events or logs.            |
-| `requestPayload`| `String`          | The JSON payload of the request associated with the action.                 |
-| `errorCode`    | `String`           | The error code if the action resulted in an error.                          |
-| `errorMessage` | `String`           | The error message if the action resulted in an error.                       |
+| Parameter      | Type                | Description                                                                 |
+|----------------|---------------------|-----------------------------------------------------------------------------|
+| `actorId`      | `UUID`              | The unique identifier of the actor performing the action.                   |
+| `actorType`    | `AuditActorType`    | The type of actor performing the action (e.g., USER, SYSTEM).               |
+| `action`       | `String`            | A description of the action performed.                                      |
+| `category`     | `AuditCategory`     | The category of the audit event (e.g., AUTHENTICATION, DATA_ACCESS).        |
+| `outcome`      | `AuditOutcome`      | The outcome of the action (e.g., SUCCESS, FAILURE).                         |
+| `resourceType` | `String`            | The type of resource involved in the action.                                |
+| `resourceId`   | `String`            | The identifier of the resource involved in the action.                      |
+| `ipAddress`    | `String`            | The IP address from which the action was performed.                         |
+| `userAgent`    | `String`            | The user agent string of the client performing the action.                  |
+| `correlationId`| `String`            | An identifier used to correlate related audit events.                       |
+| `requestPayload`| `String`           | The JSON payload of the request associated with the action.                 |
+| `errorCode`    | `String`            | The error code if the action resulted in an error.                          |
+| `errorMessage` | `String`            | The error message if the action resulted in an error.                       |
 
-**Returns:** `AuditEvent` - A new instance of `AuditEvent` populated with the provided parameters.
-
-### `onCreate`
-
-A lifecycle callback method that initializes the `uuid` and `occurredAt` fields before the entity is persisted.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| None      | N/A  | This method does not take any parameters. |
-
-**Returns:** `void` - This method does not return a value. It is automatically called by the persistence framework.
+**Returns:** `AuditEvent` - A new instance of the `AuditEvent` class populated with the provided parameters.

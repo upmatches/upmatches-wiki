@@ -6,39 +6,37 @@ sidebar_label: List My Hosted Games Cursor Service
 
 ## Overview
 
-The `ListMyHostedGamesCursorService` class is a service component in a Java application that manages the retrieval of games hosted by a user. It leverages cursor-based pagination to efficiently fetch a subset of games, allowing users to navigate through large datasets seamlessly. This service is particularly useful in scenarios where users need to view their hosted games in a paginated manner, ensuring optimal performance and user experience.
+The `ListMyHostedGamesCursorService` class is a Spring service designed to retrieve a paginated list of games hosted by the authenticated user. It uses a cursor-based pagination mechanism to efficiently navigate through large datasets. This service is part of the `com.upmatches.app.features.game.services` package and implements the `IListMyHostedGamesCursorService` interface.
+
+## Purpose
+
+The primary purpose of this class is to provide a method to fetch games hosted by the current user, utilizing cursor-based pagination. This allows for efficient data retrieval and navigation through potentially large lists of games without the performance drawbacks of traditional offset-based pagination.
 
 ## Public Methods
 
 ### `execute`
 
-The `execute` method is the primary operation of the `ListMyHostedGamesCursorService` class. It retrieves a paginated list of games hosted by the authenticated user, based on the provided cursor and size parameters.
+The `execute` method retrieves a paginated list of games hosted by the authenticated user, starting from a specified cursor position and returning a specified number of results.
 
 | Parameter | Type   | Description                                                                 |
 |-----------|--------|-----------------------------------------------------------------------------|
-| `cursor`  | String | A string representing the current position in the pagination sequence.      |
-| `size`    | int    | The number of games to retrieve in the current page.                        |
+| `cursor`  | String | The cursor indicating the starting point for the pagination.                |
+| `size`    | int    | The maximum number of games to retrieve in this request.                    |
 
 #### Returns
 
 - `CursorPagedResponse<GameResponse>`: A response object containing the list of games and the next cursor for pagination.
 
-## Detailed Description
+## Method Details
 
-- **Purpose**: The `ListMyHostedGamesCursorService` class is designed to facilitate the retrieval of games hosted by a specific user. It uses cursor-based pagination to handle large datasets efficiently, ensuring that users can navigate through their hosted games without performance degradation.
+### `execute(String cursor, int size)`
 
-- **Dependencies**: This service depends on several components:
-  - `GameRepository`: To access game data.
-  - `GameParticipantRepository`: To count active participants in each game.
-  - `IAuthenticatedUserResolver`: To resolve the current authenticated user.
-  - `GameCursor`: To handle encoding and decoding of pagination cursors.
+- **Description**: This method is responsible for executing the retrieval of hosted games for the authenticated user. It decodes the provided cursor to determine the starting point and fetches the specified number of games. It also calculates the number of active participants for each game and encodes the next cursor for further pagination.
+- **Transactional Behavior**: The method is annotated with `@Transactional(readOnly = true)`, indicating that it operates in a read-only transaction context, which optimizes performance by avoiding unnecessary locking.
 
-- **Transactional Behavior**: The `execute` method is annotated with `@Transactional(readOnly = true)`, indicating that it performs read-only operations within a transactional context, ensuring data consistency and integrity.
+### Private Helper Method
 
-- **Exception Handling**: The method utilizes `ServiceOperationExecutor` to handle operations and exceptions, specifically throwing a `ResourceNotFoundException` if the retrieval operation fails.
+#### `countParticipants(List<Game> games)`
 
-- **Cursor Management**: The service uses the `GameCursor` utility to decode the incoming cursor and encode the next cursor, allowing for seamless navigation through paginated results.
-
-- **Participant Counting**: The `countParticipants` private method aggregates the number of active participants for each game, enhancing the game response with participant data.
-
-This service is a crucial component for applications that require efficient and scalable retrieval of user-specific game data, providing a robust solution for managing hosted games with pagination support.
+- **Description**: This private method counts the number of active participants for each game in the provided list. It returns a map where the keys are game IDs and the values are the counts of active participants.
+- **Returns**: `Map<UUID, Long>`: A map of game IDs to their respective active participant counts.

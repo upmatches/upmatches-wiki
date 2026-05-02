@@ -4,31 +4,34 @@ title: DeviceTokenController
 sidebar_label: DeviceTokenController
 ---
 
-## Overview
+import { HttpStatus, ResponseEntity } from 'org.springframework.http';
+import { ApiResponse } from 'com.upmatches.app.shared.responses';
+import { RegisterDeviceTokenRequest } from 'com.upmatches.app.features.notification.requests';
+import { IRegisterDeviceTokenService, IUnregisterDeviceTokenService } from 'com.upmatches.app.features.notification.services';
 
-The `DeviceTokenController` class is a REST controller in a Spring Boot application that manages device token registration and unregistration. It provides endpoints to register a new device token and to unregister an existing device token. This functionality is essential for managing notifications in applications where devices need to be registered to receive updates.
+## DeviceTokenController
 
-## Public Methods
+The `DeviceTokenController` class is a REST controller responsible for handling HTTP requests related to device token registration and unregistration. It provides endpoints to register a new device token and to unregister an existing device token. This controller is part of the notification feature of the application.
 
-### `registerToken`
+### Public Methods
+
+#### `registerToken`
 
 Registers a new device token.
 
-| Parameter | Type                              | Description                                                                 |
-|-----------|-----------------------------------|-----------------------------------------------------------------------------|
-| `body`    | `RegisterDeviceTokenRequest`      | The request body containing the device token details to be registered.      |
-| `request` | `HttpServletRequest`              | The HTTP request object, used to retrieve the request URI.                  |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `body` | `RegisterDeviceTokenRequest` | The request body containing the device token details to be registered. |
+| `request` | `HttpServletRequest` | The HTTP request object. |
 
-**Returns:**  
-`ResponseEntity<ApiResponse<Void>>` - A response entity with a success message and HTTP status 201 (Created).
+**Returns:** `ResponseEntity<ApiResponse<Void>>` - A response entity with a success message and HTTP status 201 (Created).
 
-### `unregisterToken`
+#### `unregisterToken`
 
 Unregisters an existing device token.
 
-| Parameter     | Type   | Description                                                                 |
-|---------------|--------|-----------------------------------------------------------------------------|
-| `deviceToken` | String | The device token to be unregistered. It must not be blank and has a maximum size of 512 characters. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `deviceToken` | `String` | The device token to be unregistered. Must not be blank and have a maximum size of 512 characters. |
 
-**Returns:**  
-`ResponseEntity<Void>` - A response entity with HTTP status 204 (No Content) indicating successful unregistration.
+**Returns:** `ResponseEntity<Void>` - A response entity with HTTP status 204 (No Content) indicating successful unregistration.

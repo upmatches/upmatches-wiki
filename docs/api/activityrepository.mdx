@@ -4,31 +4,23 @@ title: ActivityRepository Interface
 sidebar_label: ActivityRepository
 ---
 
-## Overview
+import com.upmatches.app.features.activity.entities.Activity;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-The `ActivityRepository` interface is a part of the `com.upmatches.app.features.activity.repositories` package. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers CRUD operations and additional JPA-related methods for the `Activity` entity. This repository interface is designed to manage `Activity` entities, which are identified by a `UUID`.
+import java.util.Optional;
+import java.util.UUID;
+
+## Purpose
+
+The `ActivityRepository` interface is a part of the repository layer in a Spring application. It extends the `JpaRepository` interface, providing CRUD operations for the `Activity` entity. This interface is used to interact with the database layer, allowing for operations on `Activity` entities identified by a `UUID`.
 
 ## Public Methods
 
 The `ActivityRepository` interface provides the following public methods:
 
-| Method Signature | Description |
-|------------------|-------------|
-| `Optional<Activity> findByReferenceId(Integer referenceId)` | Retrieves an `Activity` entity based on the provided `referenceId`. Returns an `Optional` containing the `Activity` if found, or an empty `Optional` if not. |
-| `boolean existsByName(String name)` | Checks if an `Activity` entity with the specified `name` exists in the repository. Returns `true` if such an entity exists, otherwise returns `false`. |
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `findByReferenceId` | `Integer referenceId` | `Optional<Activity>` | Retrieves an `Activity` entity based on its `referenceId`. Returns an `Optional` containing the `Activity` if found, or an empty `Optional` if not. |
+| `existsByName` | `String name` | `boolean` | Checks if an `Activity` entity with the specified `name` exists in the database. Returns `true` if such an entity exists, otherwise `false`. |
 
-### Method Details
-
-#### `findByReferenceId`
-
-- **Parameters**: 
-  - `referenceId` (Integer): The reference ID of the `Activity` to be retrieved.
-- **Return Type**: 
-  - `Optional<Activity>`: An `Optional` containing the `Activity` if found, or empty if not.
-
-#### `existsByName`
-
-- **Parameters**: 
-  - `name` (String): The name of the `Activity` to check for existence.
-- **Return Type**: 
-  - `boolean`: Returns `true` if an `Activity` with the specified name exists, otherwise `false`.
+The `ActivityRepository` leverages Spring Data JPA's capabilities to simplify database interactions, reducing the need for boilerplate code.

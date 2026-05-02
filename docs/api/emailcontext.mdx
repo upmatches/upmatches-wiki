@@ -4,32 +4,56 @@ title: EmailContext Class
 sidebar_label: EmailContext
 ---
 
-## Purpose
+## Purpose of the EmailContext Class
 
-The `EmailContext` class is a Java record designed to encapsulate the context required for sending email notifications related to games. It includes details such as the game title, venue, date, start and end times, skill level, court count, and a URL to the game. This class provides utility methods to create instances from game data or for aggregate reminders.
+The `EmailContext` class is a Java record designed to encapsulate the context required for sending email notifications related to games. It includes details such as the game title, venue, date, start and end times, skill level, court count, and a URL for the game. This class provides utility methods to create instances of `EmailContext` from game entities or for aggregate reminders.
 
 ## Public Methods
 
+The `EmailContext` class provides the following public static methods:
+
 ### `empty`
 
-Returns an empty `EmailContext` instance with all fields set to `null`.
+Creates an empty `EmailContext` instance with all fields set to `null`.
 
-| Method Signature | Return Type   |
-|------------------|---------------|
-| `public static EmailContext empty()` | `EmailContext` |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None      |      |             |
+
+| Return Type | Description |
+|-------------|-------------|
+| `EmailContext` | An instance of `EmailContext` with all fields set to `null`. |
 
 ### `fromGame`
 
-Creates an `EmailContext` instance from a `Game` object, a game title, and a game URL. It extracts relevant information from the `Game` object and formats it according to the Singapore timezone.
+Creates an `EmailContext` instance from a `Game` entity, a game title, and a game URL.
 
-| Method Signature | Parameters                                                                 | Return Type   |
-|------------------|----------------------------------------------------------------------------|---------------|
-| `public static EmailContext fromGame(Game game, String gameTitle, String gameUrl)` | `game`: The `Game` object to extract information from. <br> `gameTitle`: The title of the game. <br> `gameUrl`: The URL to the game. | `EmailContext` |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `game`    | `Game` | The game entity from which to extract context information. |
+| `gameTitle` | `String` | The title of the game. |
+| `gameUrl` | `String` | The URL associated with the game. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `EmailContext` | An instance of `EmailContext` populated with data extracted from the `Game` entity. |
 
 ### `aggregateReminder`
 
-Creates an `EmailContext` instance for aggregate reminders, setting only the date and court count.
+Creates an `EmailContext` instance for an aggregate reminder, including the date and court count.
 
-| Method Signature | Parameters                                                                 | Return Type   |
-|------------------|----------------------------------------------------------------------------|---------------|
-| `public static EmailContext aggregateReminder(LocalDate date, Integer courtCount)` | `date`: The date for the reminder. <br> `courtCount`: The number of courts. | `EmailContext` |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `date`    | `LocalDate` | The date for the reminder. |
+| `courtCount` | `Integer` | The number of courts involved in the reminder. |
+
+| Return Type | Description |
+|-------------|-------------|
+| `EmailContext` | An instance of `EmailContext` with the specified date and court count. |
+
+## Private Methods
+
+The `EmailContext` class also includes private utility methods to assist in constructing the context:
+
+- `venueName(Venue venue)`: Returns the name of the venue or `null` if the venue is `null`.
+- `skillLevelLabel(SkillLevel from, SkillLevel to)`: Constructs a skill level label based on the provided skill levels, handling cases where the levels are the same or one is `null`.

@@ -4,32 +4,28 @@ title: MarkStartedGamesService
 sidebar_label: MarkStartedGamesService
 ---
 
-import { useBaseUrl } from '@docusaurus/core';
+## Purpose
 
-# MarkStartedGamesService
-
-The `MarkStartedGamesService` class is a service component in a Java application that is responsible for marking games as started based on a specific time condition. It interacts with a `GameRepository` to perform database operations and uses a transactional approach to ensure data integrity. This service is part of the application's game feature module.
+The `MarkStartedGamesService` class is a service component in a Java application that interacts with the `GameRepository` to mark games as started. It is part of the `com.upmatches.app.features.game.services` package and is designed to update the status of games that have started before the current time. This service is transactional, ensuring that the operations it performs are completed successfully or rolled back in case of an error.
 
 ## Public Methods
 
 ### `execute`
 
-The `execute` method is the primary operation of the `MarkStartedGamesService`. It marks games as started if they meet certain criteria, specifically if they started before the current time. This method uses the `ServiceOperationExecutor` to handle the operation and manage exceptions.
+The `execute` method is the primary public method of the `MarkStartedGamesService` class. It is responsible for marking games as started by invoking the `markStartedBefore` method on the `GameRepository`. This method is transactional and utilizes the `ServiceOperationExecutor` to handle the execution and potential exceptions.
 
-| Method   | Description                                                                 |
-|----------|-----------------------------------------------------------------------------|
-| `execute` | Marks games as started if they began before the current time.               |
+| Method   | Parameters | Return Type | Description |
+|----------|------------|-------------|-------------|
+| `execute` | None       | `int`       | Marks games as started that have a start time before the current instant. Returns the number of games updated. |
 
 #### Parameters
 
-This method does not take any parameters.
+- **None**: The `execute` method does not take any parameters.
 
 #### Return Type
 
-| Type | Description |
-|------|-------------|
-| `int` | Returns the number of games that were marked as started. |
+- **`int`**: The method returns an integer representing the number of games that were marked as started.
 
 ## Usage
 
-The `MarkStartedGamesService` is typically used in scenarios where games need to be updated to reflect their started status based on the current time. It ensures that the operation is executed within a transactional context, providing consistency and reliability in the application's data layer.
+To use the `MarkStartedGamesService`, you need to have an instance of `GameRepository` available. The service can be instantiated and the `execute` method called to update the status of games. The operation is wrapped in a transaction to ensure data integrity.

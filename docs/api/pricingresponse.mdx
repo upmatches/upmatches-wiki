@@ -1,0 +1,27 @@
+---
+id: pricing-response
+title: PricingResponse Class
+sidebar_label: PricingResponse
+---
+
+## Purpose of the PricingResponse Class
+
+The `PricingResponse` class is a Java record that encapsulates pricing details for a game feature within the application. It is designed to provide a structured response containing various pricing components such as mode, currency, and different price types. This class is part of the `com.upmatches.app.features.game.responses` package and is used to facilitate the transfer of pricing data in a consistent and type-safe manner.
+
+## Public Methods
+
+The `PricingResponse` class provides the following public method:
+
+### `fromPricing`
+
+Converts a `Pricing` object into a `PricingResponse` object.
+
+| Parameter | Type     | Description                        |
+|-----------|----------|------------------------------------|
+| pricing   | Pricing  | The `Pricing` object to convert.   |
+
+| Return Type    | Description                                      |
+|----------------|--------------------------------------------------|
+| PricingResponse | A new `PricingResponse` object with values extracted from the provided `Pricing` object. Returns `null` if the input `Pricing` object is `null`. |
+
+The `fromPricing` method is a static factory method that takes a `Pricing` object as input and returns a `PricingResponse` object. It extracts various pricing details from the `Pricing` object, such as mode, currency, flat price, male price, female price, base price, and price per shuttle, and uses them to construct a new `PricingResponse` instance. If the input `Pricing` object is `null`, the method returns `null`.

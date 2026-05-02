@@ -6,13 +6,14 @@ sidebar_label: ResourceType
 
 ## Overview
 
-The `ResourceType` enum is part of the `com.upmatches.app.features.sharelink.enums` package. It is designed to represent different types of resources within the application, specifically focusing on the concept of a "game" in this context. Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like `final` variables).
+The `ResourceType` enum is part of the `com.upmatches.app.features.sharelink.enums` package. It is designed to represent different types of resources within the application, specifically focusing on resources related to games. This enum provides a structured way to handle resource types and their associated paths.
 
 ## Enum Constants
 
-The `ResourceType` enum currently defines a single constant:
+### GAME
 
-- `GAME`: Represents a resource type associated with games, with a corresponding path value of `"games"`.
+- **Description**: Represents the resource type for games.
+- **Associated Path**: `"games"`
 
 ## Public Methods
 
@@ -24,9 +25,10 @@ The `ResourceType` enum provides the following public method:
 
 ### Method Details
 
-#### `String path()`
+#### `path`
 
-- **Description**: This method returns the path string associated with the specific resource type. In the current implementation, it returns `"games"` for the `GAME` constant.
+- **Description**: This method returns the path string associated with the specific resource type. It is useful for retrieving the path that corresponds to a particular resource type constant.
+- **Parameters**: None
 - **Returns**: `String` - The path associated with the resource type.
 
-This enum can be expanded in the future to include additional resource types as needed by the application.
+This enum is useful in scenarios where you need to manage and retrieve paths for different resource types in a consistent manner.

@@ -6,13 +6,13 @@ sidebar_label: SoftDeleteGameService
 
 ## Overview
 
-The `SoftDeleteGameService` class is a Spring service responsible for handling the soft deletion of game entities within the application. This service ensures that a game is marked as deleted without permanently removing it from the database. It also handles authorization checks and publishes a notification event upon successful deletion.
+The `SoftDeleteGameService` class is a Spring service responsible for handling the soft deletion of game entities. This service ensures that a game is marked as deleted without permanently removing it from the database. It also handles authorization checks, event publishing, and auditing of the soft delete operation.
 
 ## Public Methods
 
 ### `execute`
 
-The `execute` method is the primary public method of the `SoftDeleteGameService` class. It performs the soft deletion of a game by marking it as deleted and publishing a notification event.
+The `execute` method performs the soft deletion of a game. It verifies the user's authorization, marks the game as deleted, and publishes a notification event.
 
 | Parameter | Type   | Description                          |
 |-----------|--------|--------------------------------------|
@@ -22,21 +22,12 @@ The `execute` method is the primary public method of the `SoftDeleteGameService`
 |-------------|-------------|
 | `void`      | This method does not return any value. |
 
-### Method Details
+## Detailed Description
 
-- **Transactional**: The method is annotated with `@Transactional`, ensuring that the operations within the method are executed within a transaction context.
-- **Auditable**: The method is annotated with `@Auditable`, which logs the action of soft deleting a game, associating it with the resource type "GAME" and the specific game ID.
-- **Authorization**: The method checks if the current user is authorized to perform the deletion by asserting that the user is the organizer of the game.
-- **Notification**: After marking the game as deleted, a `GameNotificationEvent` is published to notify other parts of the application about the deletion.
+- **Authorization**: The method checks if the current user is authorized to delete the game by asserting that the user is the organizer of the game.
+- **Game Lookup**: It retrieves the game entity using the provided game ID. If the game is not found, a `ResourceNotFoundException` is thrown.
+- **Soft Deletion**: The game is marked as canceled and deleted, but not removed from the database.
+- **Event Publishing**: After marking the game as deleted, a `GameNotificationEvent` is published to notify other parts of the system about the deletion.
+- **Auditing**: The operation is auditable, with the action "GAME_SOFT_DELETED" being recorded along with the game ID.
 
-## Dependencies
-
-The `SoftDeleteGameService` relies on several dependencies to perform its operations:
-
-- `GameRepository`: Used to interact with the game data in the database.
-- `IAuthenticatedUserResolver`: Resolves the currently authenticated user's ID.
-- `IGameLookupService`: Provides functionality to find and retrieve game entities.
-- `IGameAuthorizationService`: Ensures that the user has the necessary permissions to delete the game.
-- `ApplicationEventPublisher`: Publishes events to notify other components of the application about the game deletion.
-
-This service is a crucial part of the application's game management feature, ensuring that games can be safely and effectively marked as deleted while maintaining data integrity and user notifications.
+This service is crucial for maintaining data integrity and ensuring that game deletions are handled gracefully within the application.

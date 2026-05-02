@@ -6,37 +6,43 @@ sidebar_label: AuthSessionStore
 
 ## Overview
 
-The `AuthSessionStore` class is a service component in a Java application that manages authentication sessions using Redis as a storage mechanism. It implements the `IAuthSessionStore` interface and provides methods to store, retrieve, and manage authentication sessions. The class leverages the `StringRedisTemplate` for Redis operations and `ObjectMapper` for JSON serialization and deserialization.
+The `AuthSessionStore` class is a service component in a Java application that manages authentication sessions using Redis as a storage backend. It implements the `IAuthSessionStore` interface and provides methods to store, retrieve, and manage authentication sessions. The class utilizes JSON serialization and deserialization to handle session data, leveraging the Jackson library for these operations.
 
 ## Public Methods
 
-### store
+### `store`
 
-Stores an authentication session in Redis with a specified state key and a predefined expiration time.
+Stores an authentication session in Redis with a specified state as the key.
 
-| Parameter | Type           | Description                          |
-|-----------|----------------|--------------------------------------|
-| state     | `String`       | The unique key for the session.      |
-| session   | `AuthSession`  | The authentication session to store. |
+| Parameter | Type           | Description                           |
+|-----------|----------------|---------------------------------------|
+| `state`   | `String`       | The unique identifier for the session.|
+| `session` | `AuthSession`  | The authentication session to store.  |
 
-- **Return Type:** `void`
+| Return Type |
+|-------------|
+| `void`      |
 
-### retrieveAndRemove
+### `retrieveAndRemove`
 
-Retrieves an authentication session from Redis by its state key and removes it from the store.
+Retrieves and removes an authentication session from Redis using the specified state.
 
-| Parameter | Type     | Description                          |
-|-----------|----------|--------------------------------------|
-| state     | `String` | The unique key for the session.      |
+| Parameter | Type     | Description                           |
+|-----------|----------|---------------------------------------|
+| `state`   | `String` | The unique identifier for the session.|
 
-- **Return Type:** `AuthSession` - Returns the `AuthSession` object if found, otherwise `null`.
+| Return Type    | Description                                      |
+|----------------|--------------------------------------------------|
+| `AuthSession`  | The retrieved authentication session, or `null` if not found or deserialization fails. |
 
-### getPlatform
+### `getPlatform`
 
-Retrieves the platform information from an authentication session stored in Redis by its state key.
+Retrieves the platform information from an authentication session stored in Redis.
 
-| Parameter | Type     | Description                          |
-|-----------|----------|--------------------------------------|
-| state     | `String` | The unique key for the session.      |
+| Parameter | Type     | Description                           |
+|-----------|----------|---------------------------------------|
+| `state`   | `String` | The unique identifier for the session.|
 
-- **Return Type:** `String` - Returns the platform information if the session is found, otherwise `null`.
+| Return Type | Description                                      |
+|-------------|--------------------------------------------------|
+| `String`    | The platform information, or `null` if not found or deserialization fails. |

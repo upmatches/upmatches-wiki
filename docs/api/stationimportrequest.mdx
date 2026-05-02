@@ -1,31 +1,33 @@
 ---
 id: station-import-request
-title: StationImportRequest
+title: StationImportRequest Class
 sidebar_label: StationImportRequest
 ---
 
-import { useColorMode } from '@docusaurus/theme-common';
+## Overview
 
-## Purpose of the Class
+The `StationImportRequest` class is a Java record used to encapsulate data related to a station import request. This class is part of the `com.upmatches.app.features.venue.requests` package and is designed to validate and store information about a station, including its code, name, color, latitude, and longitude. The use of Java records provides an immutable and concise way to model data.
 
-The `StationImportRequest` class is a Java record used to encapsulate data for importing station information. It is part of the `com.upmatches.app.features.venue.requests` package. This record is designed to hold essential details about a station, including its code, name, color, latitude, and longitude. The class utilizes Jakarta Bean Validation annotations to enforce constraints on the fields, ensuring data integrity and validity.
+## Class Purpose
+
+The primary purpose of the `StationImportRequest` class is to serve as a data transfer object (DTO) that ensures the integrity and validity of station data through the use of validation annotations. This class is particularly useful in scenarios where station data needs to be imported or processed, ensuring that all necessary fields are present and correctly formatted.
 
 ## Public Methods
 
-Since `StationImportRequest` is a record, it implicitly provides a constructor, accessor methods, and implementations of `equals()`, `hashCode()`, and `toString()`. Below is a table documenting the parameters of the record's constructor:
+Since `StationImportRequest` is a record, it automatically provides public methods to access its fields. Below is a table documenting these methods, their parameters, and return types:
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `StationImportRequest` | `String code`, `String name`, `String color`, `BigDecimal latitude`, `BigDecimal longitude` | `StationImportRequest` | Constructs a new `StationImportRequest` record with the specified code, name, color, latitude, and longitude. |
+| Method       | Parameters | Return Type | Description                                                                 |
+|--------------|------------|-------------|-----------------------------------------------------------------------------|
+| `code()`     | None       | `String`    | Returns the station's code, which must be a non-blank string with a maximum length of 50 characters. |
+| `name()`     | None       | `String`    | Returns the station's name, which must be a non-blank string with a maximum length of 150 characters. |
+| `color()`    | None       | `String`    | Returns the station's color, which must be a non-blank string with a maximum length of 7 characters. |
+| `latitude()` | None       | `BigDecimal`| Returns the station's latitude, which must not be null.                     |
+| `longitude()`| None       | `BigDecimal`| Returns the station's longitude, which must not be null.                    |
 
-### Parameters
+## Validation Annotations
 
-- **code**: A `String` representing the station code. It must not be blank and can have a maximum length of 50 characters.
-- **name**: A `String` representing the station name. It must not be blank and can have a maximum length of 150 characters.
-- **color**: A `String` representing the station color. It must not be blank and can have a maximum length of 7 characters.
-- **latitude**: A `BigDecimal` representing the latitude of the station. It must not be null.
-- **longitude**: A `BigDecimal` representing the longitude of the station. It must not be null.
+The class uses several Jakarta Bean Validation annotations to enforce constraints on its fields:
 
-### Return Type
-
-The constructor returns an instance of `StationImportRequest` initialized with the provided parameters.
+- `@NotBlank`: Ensures that the string fields `code`, `name`, and `color` are not null or empty.
+- `@Size`: Limits the length of the string fields `code`, `name`, and `color` to a specified maximum.
+- `@NotNull`: Ensures that the `latitude` and `longitude` fields are not null, which is critical for geographical data integrity.

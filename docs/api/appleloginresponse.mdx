@@ -1,28 +1,38 @@
 ---
 id: apple-login-response
-title: AppleLoginResponse Class
+title: AppleLoginResponse
 sidebar_label: AppleLoginResponse
 ---
 
-## Purpose
+import { useBaseUrl } from '@docusaurus/core';
 
-The `AppleLoginResponse` class is a Java record that encapsulates the response details from an Apple login operation. It is designed to hold essential information such as access tokens, refresh tokens, expiration time, and user status. This class provides a convenient and immutable way to manage authentication responses in applications that integrate with Apple's authentication services.
+# AppleLoginResponse
+
+The `AppleLoginResponse` class is a Java record that encapsulates the response received after a successful login using Apple authentication. This class is designed to store essential information such as access tokens, refresh tokens, expiration time, and user status. It provides a convenient and immutable way to handle login responses in applications that integrate with Apple's authentication services.
 
 ## Public Methods
 
 The `AppleLoginResponse` class provides the following public method:
 
-### `of`
+### of
 
-This static method is a factory method used to create a new instance of `AppleLoginResponse`.
+This static method is a factory method used to create instances of the `AppleLoginResponse` record. It takes the necessary parameters to construct a new instance and returns it.
 
-| Parameter     | Type    | Description                                      |
-|---------------|---------|--------------------------------------------------|
-| accessToken   | String  | The access token received from Apple.            |
-| refreshToken  | String  | The refresh token received from Apple.           |
-| expiresAt     | Long    | The timestamp (in milliseconds) when the token expires. |
-| isNewUser     | Boolean | Indicates whether the user is new to the application. |
+| Method Signature | Description |
+|------------------|-------------|
+| `public static AppleLoginResponse of(final String accessToken, final String refreshToken, final Long expiresAt, final Boolean isNewUser)` | Creates a new instance of `AppleLoginResponse` with the specified parameters. |
+
+#### Parameters
+
+| Parameter Name | Type    | Description |
+|----------------|---------|-------------|
+| `accessToken`  | String  | The access token received from Apple after a successful login. |
+| `refreshToken` | String  | The refresh token that can be used to obtain a new access token. |
+| `expiresAt`    | Long    | The timestamp (in milliseconds) when the access token expires. |
+| `isNewUser`    | Boolean | Indicates whether the user is a new user. |
 
 #### Return Type
 
-- **AppleLoginResponse**: Returns a new instance of `AppleLoginResponse` initialized with the provided parameters.
+| Return Type            | Description |
+|------------------------|-------------|
+| `AppleLoginResponse`   | Returns a new instance of `AppleLoginResponse` initialized with the provided parameters. |

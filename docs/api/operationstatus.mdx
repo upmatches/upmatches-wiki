@@ -4,22 +4,22 @@ title: OperationStatus Enum
 sidebar_label: OperationStatus
 ---
 
-## Purpose
+## Overview
 
-The `OperationStatus` enum is part of the `com.upmatches.app.shared.enums` package. It is designed to represent the status of various operations that can be performed within an application. This enum provides a standardized way to handle and communicate the state of operations such as retrieving, saving, updating, deleting, or any other custom operation.
+The `OperationStatus` enum is part of the `com.upmatches.app.shared.enums` package. It is designed to represent the various states or actions that can be performed in an application, specifically related to operations such as data retrieval, saving, updating, and deletion. This enum provides a standardized way to handle these operation statuses throughout the application, ensuring consistency and clarity in the codebase.
 
 ## Enum Constants
 
 The `OperationStatus` enum defines the following constants:
 
-| Constant | Description |
-|----------|-------------|
-| `RETRIEVE` | Represents the operation of retrieving data. |
-| `SAVE`    | Represents the operation of saving data. |
-| `UPDATE`  | Represents the operation of updating existing data. |
-| `DELETE`  | Represents the operation of deleting data. |
-| `OTHER`   | Represents any other operation not covered by the predefined constants. |
+| Constant | Description                                                                 |
+|----------|-----------------------------------------------------------------------------|
+| RETRIEVE | Represents the action of retrieving data from a source.                     |
+| SAVE     | Represents the action of saving data to a storage medium.                   |
+| UPDATE   | Represents the action of updating existing data.                            |
+| DELETE   | Represents the action of deleting data from a storage medium.               |
+| OTHER    | Represents any other operation status that does not fall into the above categories. |
 
 ## Usage
 
-The `OperationStatus` enum can be used in various parts of an application to indicate the current status of an operation. This can be particularly useful in logging, debugging, or controlling the flow of the application based on the operation's status.
+This enum can be used in various parts of the application where operation statuses need to be tracked or specified. By using an enum, the code becomes more readable and less error-prone compared to using raw strings or integers to represent these statuses.

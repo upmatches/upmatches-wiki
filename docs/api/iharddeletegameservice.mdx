@@ -4,26 +4,16 @@ title: IHardDeleteGameService Interface
 sidebar_label: IHardDeleteGameService
 ---
 
-## Overview
+## Purpose
 
-The `IHardDeleteGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that perform hard deletion of game entities identified by a unique identifier. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting only the `HardDeleteGameService` class.
+The `IHardDeleteGameService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that perform a hard delete operation on a game entity identified by a unique identifier. This interface ensures that any implementing class provides the necessary functionality to permanently remove a game from the system.
 
 ## Public Methods
 
-### `execute`
+| Method Signature     | Parameters | Return Type | Description |
+|----------------------|------------|-------------|-------------|
+| `void execute(UUID id)` | `UUID id`: The unique identifier of the game to be deleted. | `void` | Executes the hard delete operation for the game with the specified ID. |
 
-This method is responsible for executing the hard delete operation on a game entity.
+## Implementation
 
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `void execute(UUID id)` | Executes the hard deletion of a game entity identified by the provided UUID. |
-
-#### Parameters
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `id`      | `UUID` | The unique identifier of the game entity to be deleted. |
-
-#### Return Type
-
-This method does not return any value (`void`).
+The `IHardDeleteGameService` interface is a sealed interface, which means it restricts which classes can implement it. In this case, only the `HardDeleteGameService` class is permitted to implement this interface. This design choice helps maintain control over the implementation details and ensures that the hard delete functionality is consistently applied across the application.

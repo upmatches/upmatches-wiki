@@ -12,19 +12,21 @@ The `IListGameBookmarksService` interface is part of the `com.upmatches.app.feat
 
 ### `execute`
 
-This method is responsible for retrieving a paginated list of game bookmarks. It uses a cursor-based pagination approach, which is useful for efficiently navigating through large sets of data.
+This method is responsible for retrieving a paginated list of game bookmarks. It uses a cursor-based pagination approach, which is useful for efficiently handling large datasets.
 
-| Method Signature                                                                 | Description                                                                 |
-|----------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| `CursorPagedResponse<GameBookmarkResponse> execute(String cursor, int size)`     | Retrieves a paginated list of game bookmarks starting from the given cursor. |
+| Method Signature | Description |
+|------------------|-------------|
+| `CursorPagedResponse<GameBookmarkResponse> execute(String cursor, int size)` | Retrieves a paginated list of game bookmarks starting from the given cursor. |
 
 #### Parameters
 
-| Parameter | Type   | Description                                                                 |
-|-----------|--------|-----------------------------------------------------------------------------|
-| `cursor`  | String | The cursor indicating the starting point for the pagination.                |
-| `size`    | int    | The number of game bookmarks to retrieve in this page.                      |
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| `cursor`  | String | A string representing the starting point for the pagination. It allows the method to know where to begin fetching the next set of results. |
+| `size`    | int    | The number of game bookmarks to retrieve in this execution. It defines the page size for the pagination. |
 
 #### Return Type
 
-- **`CursorPagedResponse<GameBookmarkResponse>`**: This return type encapsulates the paginated response, including the list of `GameBookmarkResponse` objects and any additional pagination metadata.
+| Return Type | Description |
+|-------------|-------------|
+| `CursorPagedResponse<GameBookmarkResponse>` | A response object containing the list of game bookmarks and pagination information. This allows the caller to handle the results and navigate through pages efficiently. |

@@ -1,30 +1,30 @@
 ---
 id: unread-count-response
-title: UnreadCountResponse Class
+title: UnreadCountResponse
 sidebar_label: UnreadCountResponse
 ---
 
-## Purpose
+## Overview
 
-The `UnreadCountResponse` class is a simple Java record used to encapsulate the count of unread notifications. It provides a convenient way to handle the unread count as a single immutable data object. This class is part of the `com.upmatches.app.features.notification.responses` package.
+The `UnreadCountResponse` class is a simple Java record used to encapsulate the count of unread notifications. It is part of the `com.upmatches.app.features.notification.responses` package. This class provides a structured way to handle the unread count response, ensuring that the data is immutable and easily accessible.
 
 ## Public Methods
 
-The `UnreadCountResponse` class includes the following public method:
+The `UnreadCountResponse` class provides the following public method:
 
-| Method Signature                      | Description                                                                 |
-|---------------------------------------|-----------------------------------------------------------------------------|
-| `public static UnreadCountResponse of(Long count)` | Creates a new instance of `UnreadCountResponse` with the specified count.   |
+| Method Signature | Description |
+|------------------|-------------|
+| `static UnreadCountResponse of(Long count)` | A static factory method that creates a new instance of `UnreadCountResponse` with the specified count. |
 
 ### Method Details
 
-#### `of`
+#### `of(Long count)`
 
-- **Description**: This static method is a factory method that creates a new instance of the `UnreadCountResponse` record with the provided count.
+- **Description**: This static method is a factory method that returns a new instance of `UnreadCountResponse` initialized with the given count.
 - **Parameters**:
 
-  | Name  | Type  | Description              |
-  |-------|-------|--------------------------|
-  | count | Long  | The count of unread notifications. |
+  | Name  | Type  | Description                          |
+  |-------|-------|--------------------------------------|
+  | count | Long  | The count of unread notifications.   |
 
-- **Returns**: An instance of `UnreadCountResponse` containing the specified count.
+- **Returns**: An instance of `UnreadCountResponse` containing the specified unread count.

@@ -4,19 +4,32 @@ title: AtLeastOneContactMethodValidator
 sidebar_label: AtLeastOneContactMethodValidator
 ---
 
+## Overview
+
+The `AtLeastOneContactMethodValidator` class is a custom validator used in the context of Java Bean Validation (JSR 380). It ensures that a list of contact methods contains at least one valid and non-empty contact method. The valid contact methods are defined as "whatsapp", "telegram", or "messenger".
+
 ## Purpose
 
-The `AtLeastOneContactMethodValidator` class is a custom validator used in the context of Java Bean Validation (JSR 380). It ensures that a list of `ContactMethod` objects contains at least one valid contact method. The valid contact methods are defined as "whatsapp", "telegram", or "messenger". Each contact method must have a non-empty value associated with it. This validator is typically used to enforce constraints on user input data where at least one method of contact is required.
+The primary purpose of this validator is to enforce the rule that at least one contact method must be provided and must not be empty. This is particularly useful in scenarios where user contact information is required, and at least one method of communication must be specified.
 
 ## Public Methods
 
 ### `isValid`
 
-This method checks if the provided list of `ContactMethod` objects contains at least one valid and non-empty contact method.
+This method is the core of the validator. It checks whether the provided list of contact methods contains at least one valid and non-empty contact method.
 
-| Parameter          | Type                           | Description                                                                 |
-|--------------------|--------------------------------|-----------------------------------------------------------------------------|
-| `contactMethods`   | `List<ContactMethod>`          | A list of `ContactMethod` objects to be validated.                          |
-| `context`          | `ConstraintValidatorContext`   | Context in which the constraint is evaluated.                               |
+| Parameter            | Type                        | Description                                                                 |
+|----------------------|-----------------------------|-----------------------------------------------------------------------------|
+| `contactMethods`     | `List<ContactMethod>`       | A list of `ContactMethod` objects to be validated.                          |
+| `context`            | `ConstraintValidatorContext`| Context in which the constraint is evaluated.                               |
 
-**Returns:** `boolean` - Returns `true` if at least one valid contact method is present and non-empty; otherwise, returns `false`.
+#### Return Type
+
+- **`boolean`**: Returns `true` if at least one valid contact method is present and non-empty; otherwise, returns `false`.
+
+## Validation Logic
+
+- The method first checks if the `contactMethods` list is `null` or empty. If so, it returns `false`.
+- It then streams through the list, filtering out `null` entries and entries with `null` names.
+- It checks if any of the contact methods have a name that matches one of the valid names ("whatsapp", "telegram", "messenger") and ensures that the value associated with the contact method is not `null` or blank.
+- If such a contact method is found, the method returns `true`; otherwise, it returns `false`.

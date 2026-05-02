@@ -4,38 +4,38 @@ title: IGetGameFilterOptionsService Interface
 sidebar_label: IGetGameFilterOptionsService
 ---
 
+import com.upmatches.app.features.game.requests.GameFilterOptionsRequest;
+import com.upmatches.app.features.game.responses.GameFilterOptionsResponse;
+
 ## Overview
 
-The `IGetGameFilterOptionsService` is a sealed interface in the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide game filter options. This interface is designed to be implemented by classes that need to process game filter requests and return appropriate responses.
+The `IGetGameFilterOptionsService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide game filter options. This interface is designed to be implemented by classes that need to offer functionality for retrieving game filter options based on specific criteria.
 
 ## Purpose
 
-The primary purpose of the `IGetGameFilterOptionsService` interface is to define a method for executing game filter operations. It ensures that any implementing class will provide a concrete implementation of the `execute` method, which processes a game filter request and returns a response containing the filter options.
+The primary purpose of the `IGetGameFilterOptionsService` interface is to define a method for executing a request to obtain game filter options. This is useful in scenarios where games need to be filtered based on various parameters, and the options for such filters need to be dynamically retrieved.
 
 ## Public Methods
 
-The interface defines the following public method:
+The interface declares the following public method:
 
-| Method Signature                                                                 | Description                                                                 |
-|----------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| `GameFilterOptionsResponse execute(GameFilterOptionsRequest filter)`             | Processes the given `GameFilterOptionsRequest` and returns a `GameFilterOptionsResponse`. |
+| Method Signature | Description |
+|------------------|-------------|
+| `GameFilterOptionsResponse execute(GameFilterOptionsRequest filter)` | Executes the service to retrieve game filter options based on the provided `GameFilterOptionsRequest`. |
 
 ### Method Details
 
 #### `execute`
 
-- **Description**: This method takes a `GameFilterOptionsRequest` object as a parameter and returns a `GameFilterOptionsResponse` object. It is responsible for executing the logic to retrieve game filter options based on the provided request.
-  
+- **Description**: Executes the service to retrieve game filter options based on the provided filter criteria.
 - **Parameters**:
-
-  | Parameter | Type                              | Description                                      |
-  |-----------|-----------------------------------|--------------------------------------------------|
-  | `filter`  | `GameFilterOptionsRequest`        | The request object containing filter criteria.   |
+  | Name   | Type                              | Description                                      |
+  |--------|-----------------------------------|--------------------------------------------------|
+  | filter | `GameFilterOptionsRequest`        | The request object containing filter criteria.   |
 
 - **Returns**: 
-
-  | Return Type                   | Description                                      |
+  | Type                          | Description                                      |
   |-------------------------------|--------------------------------------------------|
   | `GameFilterOptionsResponse`   | The response object containing filter options.   |
 
-This interface is sealed, meaning it restricts which classes can implement it. In this case, only the `GetGameFilterOptionsService` class is permitted to implement this interface.
+This interface is sealed, meaning it restricts which classes can implement it. In this case, the `GetGameFilterOptionsService` is permitted to implement this interface.

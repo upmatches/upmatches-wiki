@@ -1,37 +1,39 @@
 ---
 id: create-game-service
-title: CreateGameService
+title: CreateGameService Class
 sidebar_label: CreateGameService
 ---
 
 ## Purpose
 
-The `CreateGameService` class is responsible for handling the creation of a new game within the application. It ensures that all necessary validations are performed, such as checking user authentication, onboarding completion, and potential scheduling conflicts. The service also manages the creation of share links for the newly created game.
+The `CreateGameService` class is a service component in a Java application that handles the creation of game entities. It is responsible for validating user permissions, checking for overlapping games, and saving new game instances to the repository. Additionally, it manages the creation of share links for the newly created games.
 
 ## Public Methods
 
 ### `execute`
 
-Executes the process of creating a new game based on the provided request.
+Executes the process of creating a game based on the provided request. This method is transactional and auditable, ensuring that the creation process is logged and can be rolled back if necessary.
 
-| Parameter | Type                  | Description                                                                 |
-|-----------|-----------------------|-----------------------------------------------------------------------------|
-| `request` | `CreateGameRequest`   | The request object containing all necessary information to create a new game.|
+| Parameter | Type                      | Description                                      |
+|-----------|---------------------------|--------------------------------------------------|
+| request   | `CreateGameRequest`       | The request object containing game details.      |
 
-| Return Type  | Description                                                                                   |
-|--------------|-----------------------------------------------------------------------------------------------|
-| `GameResponse` | Returns a `GameResponse` object containing details of the newly created game and share link. |
+| Return Type    | Description                                      |
+|----------------|--------------------------------------------------|
+| `GameResponse` | The response object containing the game details. |
 
 ## Method Details
 
-### `execute(CreateGameRequest request)`
+- **`execute(CreateGameRequest request)`**: This method performs several key operations:
+  - Retrieves the user ID of the organizer and checks if they are authorized to create a game.
+  - Validates that the user has completed onboarding and is authenticated via Singpass.
+  - Checks for overlapping games if the user intends to join as an organizer.
+  - Constructs a `Game` object with the provided details and saves it to the repository.
+  - Creates a share link for the game and returns a `GameResponse` object containing the game details and participant count.
 
-- **Purpose**: This method orchestrates the creation of a new game. It performs various checks to ensure the user is eligible to create a game, such as verifying Singpass authentication and onboarding completion. It also checks for overlapping game schedules if the user wishes to join as an organizer. Upon successful validation, it creates a new game, saves it to the repository, and generates a share link.
+## Exceptions
 
-- **Exceptions**:
-  - `SingpassRequiredException`: Thrown if the user is not authenticated via Singpass.
-  - `OnboardingRequiredException`: Thrown if the user has not completed onboarding.
-  - `OverlappingGameException`: Thrown if there is a scheduling conflict with another game.
-  - `ResourceNotFoundException`: Thrown if any required resource is not found during the operation.
-
-This service is a critical component in the game management feature, ensuring that games are created with proper validation and that users have the necessary permissions and availability.
+- **`SingpassRequiredException`**: Thrown if the user is not authenticated via Singpass.
+- **`OnboardingRequiredException`**: Thrown if the user has not completed onboarding.
+- **`OverlappingGameException`**: Thrown if the user is already participating in an overlapping game.
+- **`ResourceNotFoundException`**: Thrown if a resource required for game creation is not found.

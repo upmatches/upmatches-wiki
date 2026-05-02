@@ -6,39 +6,39 @@ sidebar_label: SendFcmTestNotificationRequest
 
 ## Overview
 
-The `SendFcmTestNotificationRequest` class is a Java record used to encapsulate the data required to send a Firebase Cloud Messaging (FCM) test notification. This class is part of the `com.upmatches.app.features.notification.requests` package and is designed to validate the input data for sending notifications, ensuring that either a device token or an email address is provided.
+The `SendFcmTestNotificationRequest` class is a Java record that represents a request to send a Firebase Cloud Messaging (FCM) test notification. This class is part of the `com.upmatches.app.features.notification.requests` package and is used to encapsulate the necessary data for sending a test notification, including device information, notification type, and game details.
 
 ## Class Details
 
-The class uses several annotations from the `jakarta.validation.constraints` package to enforce constraints on the fields, ensuring data integrity and validity. It also includes a custom validation method to check that at least one of the `deviceToken` or `email` fields is provided.
+The `SendFcmTestNotificationRequest` record includes several fields with validation constraints to ensure that the data provided is valid and within expected limits. It also contains a method to verify that at least one target (either a device token or an email) is provided for the notification.
 
 ## Public Methods
 
 ### `isTargetProvided`
 
-This method checks whether a target for the notification is provided by ensuring that either the `deviceToken` or `email` is not null or blank.
+This method checks if either the `deviceToken` or `email` is provided, ensuring that there is a valid target for the notification.
 
-| Method Name       | Description                                                                 | Return Type |
-|-------------------|-----------------------------------------------------------------------------|-------------|
-| `isTargetProvided` | Validates that either `deviceToken` or `email` is provided. Returns `true` if at least one is present. | `boolean`   |
+| Method Name       | Parameters | Return Type | Description                                                                 |
+|-------------------|------------|-------------|-----------------------------------------------------------------------------|
+| `isTargetProvided` | None       | `boolean`   | Returns `true` if either `deviceToken` or `email` is provided, `false` otherwise. |
 
-## Parameters
+## Fields
 
-The `SendFcmTestNotificationRequest` record includes the following fields:
+The following table describes the fields of the `SendFcmTestNotificationRequest` record:
 
-| Parameter     | Type              | Constraints                                                                 | Description                                                                 |
+| Field Name    | Type              | Constraints                                                                 | Description                                                                 |
 |---------------|-------------------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| `deviceToken` | `String`          | `@Size(max = 512)`                                                          | The device token for FCM.                                                   |
+| `deviceToken` | `String`          | `@Size(max = 512)`                                                          | The device token for FCM, used to target a specific device.                 |
 | `email`       | `String`          | `@Email`, `@Size(max = 254)`                                                | The email address to send the notification to.                              |
-| `type`        | `NotificationType`| `@NotNull`                                                                  | The type of notification.                                                   |
-| `gameTitle`   | `String`          | `@NotBlank`, `@Size(max = 120)`                                             | The title of the game.                                                      |
-| `venue`       | `String`          | `@Size(max = 120)`                                                          | The venue of the game.                                                      |
-| `courtCount`  | `Integer`         | `@Min(1)`, `@Max(20)`                                                       | The number of courts available.                                             |
-| `date`        | `LocalDate`       |                                                                             | The date of the game.                                                       |
-| `startTime`   | `LocalTime`       |                                                                             | The start time of the game.                                                 |
-| `endTime`     | `LocalTime`       |                                                                             | The end time of the game.                                                   |
+| `type`        | `NotificationType`| `@NotNull`                                                                  | The type of notification to be sent.                                        |
+| `gameTitle`   | `String`          | `@NotBlank`, `@Size(max = 120)`                                             | The title of the game related to the notification.                          |
+| `venue`       | `String`          | `@Size(max = 120)`                                                          | The venue where the game is taking place.                                   |
+| `courtCount`  | `Integer`         | `@Min(1)`, `@Max(20)`                                                       | The number of courts available for the game.                                |
+| `date`        | `LocalDate`       | None                                                                        | The date of the game.                                                       |
+| `startTime`   | `LocalTime`       | None                                                                        | The start time of the game.                                                 |
+| `endTime`     | `LocalTime`       | None                                                                        | The end time of the game.                                                   |
 | `skillLevel`  | `String`          | `@Size(max = 60)`                                                           | The skill level required for the game.                                      |
-| `gameUrl`     | `String`          | `@Size(max = 2048)`                                                         | The URL for more information about the game.                                |
-| `badge`       | `Integer`         | `@Min(0)`, `@Max(999)`                                                      | The badge number associated with the notification.                          |
+| `gameUrl`     | `String`          | `@Size(max = 2048)`                                                         | The URL with more information about the game.                               |
+| `badge`       | `Integer`         | `@Min(0)`, `@Max(999)`                                                      | The badge number to display with the notification.                          |
 
-This record is designed to ensure that all necessary information is provided and validated before a test notification is sent via FCM.
+This class ensures that all necessary information is provided and validated before a test notification is sent, making it a crucial part of the notification feature in the application.

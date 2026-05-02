@@ -4,36 +4,27 @@ title: JwtProperties Class
 sidebar_label: JwtProperties
 ---
 
-## Overview
+## Purpose
 
-The `JwtProperties` class is a configuration properties holder for JWT (JSON Web Token) settings within an application. It is designed to be used with Spring Boot's `@ConfigurationProperties` to map properties prefixed with `app.jwt` from configuration files. This class encapsulates various JWT-related settings such as issuer, audience, token expiry durations, and callback URLs.
+The `JwtProperties` class is a configuration properties holder for JWT (JSON Web Token) settings in a Spring Boot application. It is designed to manage and validate JWT-related properties such as issuer, audience, token expiry times, and callback URLs. This class uses the `@ConfigurationProperties` annotation to bind external configuration properties to the fields of the class, allowing for easy configuration management.
 
 ## Public Methods
 
-The `JwtProperties` class is a record, which means it primarily serves as a data carrier. It does not have traditional public methods but provides an implicit constructor and accessor methods for its fields. Below is a description of the fields and their purposes:
+The `JwtProperties` class is a Java record, which means it primarily serves as a data carrier with automatically generated methods for its fields. However, it includes a custom constructor for validation and default value assignment. Below is a table documenting the parameters of the constructor:
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `JwtProperties` | `String issuer`, `String audience`, `Integer accessTokenExpiryMinutes`, `Integer refreshTokenExpiryDays`, `String frontendCallbackUrl`, `String mobileCallbackScheme` | `JwtProperties` | Constructs a new `JwtProperties` instance with the specified parameters. It applies default values and validation as necessary. |
+| Parameter                | Type    | Description                                                                 |
+|--------------------------|---------|-----------------------------------------------------------------------------|
+| `issuer`                 | String  | The issuer of the JWT. Defaults to "upmatches" if blank.                    |
+| `audience`               | String  | The audience for the JWT. Defaults to "upmatches" if blank.                 |
+| `accessTokenExpiryMinutes` | Integer | The expiry time in minutes for the access token. Defaults to 15 if not positive. |
+| `refreshTokenExpiryDays` | Integer | The expiry time in days for the refresh token. Defaults to 7 if not positive. |
+| `frontendCallbackUrl`    | String  | The callback URL for the frontend. Must be a valid URI and not blank.       |
+| `mobileCallbackScheme`   | String  | The callback scheme for mobile applications. Defaults to "upmatches" if blank. |
 
-## Fields
+## Validation and Defaulting Logic
 
-The following table describes the fields available in the `JwtProperties` record:
+- **Default Value Assignment**: The constructor assigns default values to `issuer`, `audience`, and `mobileCallbackScheme` if they are blank, using the `defaultIfBlank` method.
+- **Expiry Time Validation**: The `accessTokenExpiryMinutes` and `refreshTokenExpiryDays` are validated to ensure they are positive. If not, they are assigned default values using the `defaultIfNotPositive` method.
+- **Callback URL Validation**: The `frontendCallbackUrl` is validated to ensure it is a non-blank, valid URI. If the URL is invalid, an `IllegalArgumentException` is thrown.
 
-| Field Name | Type | Description |
-|------------|------|-------------|
-| `issuer` | `String` | The issuer of the JWT. Defaults to "upmatches" if not provided or blank. |
-| `audience` | `String` | The audience for the JWT. Defaults to "upmatches" if not provided or blank. |
-| `accessTokenExpiryMinutes` | `Integer` | The expiry time in minutes for the access token. Defaults to 15 minutes if not provided or non-positive. |
-| `refreshTokenExpiryDays` | `Integer` | The expiry time in days for the refresh token. Defaults to 7 days if not provided or non-positive. |
-| `frontendCallbackUrl` | `String` | The callback URL for the frontend application. Must be a valid URI and not blank. |
-| `mobileCallbackScheme` | `String` | The callback scheme for mobile applications. Defaults to "upmatches" if not provided or blank. |
-
-## Validation and Defaults
-
-- **Default Values**: If certain fields are not provided or are invalid (e.g., blank or non-positive), default values are applied:
-  - `issuer`, `audience`, and `mobileCallbackScheme` default to "upmatches".
-  - `accessTokenExpiryMinutes` defaults to 15 minutes.
-  - `refreshTokenExpiryDays` defaults to 7 days.
-
-- **Validation**: The `frontendCallbackUrl` must be a valid URI and cannot be blank. If it is invalid, an `IllegalArgumentException` is thrown.
+This class ensures that JWT configuration properties are correctly initialized and validated, providing a robust setup for managing JWTs in a Spring Boot application.

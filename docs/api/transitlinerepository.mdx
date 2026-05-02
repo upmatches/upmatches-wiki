@@ -4,20 +4,21 @@ title: TransitLineRepository
 sidebar_label: TransitLineRepository
 ---
 
-## Overview
+## Purpose
 
-The `TransitLineRepository` interface is part of the `com.upmatches.app.features.venue.repositories` package. It serves as a Data Access Object (DAO) for the `TransitLine` entity, leveraging Spring Data JPA to provide CRUD (Create, Read, Update, Delete) operations without the need for boilerplate code. By extending `JpaRepository`, it inherits several methods for working with `TransitLine` persistence, allowing for efficient database interactions.
+The `TransitLineRepository` interface is a part of the repository layer in a Spring application. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers a set of methods for performing CRUD (Create, Read, Update, Delete) operations on `TransitLine` entities. This interface allows for easy interaction with the database without the need for boilerplate code.
 
 ## Public Methods
 
-The `TransitLineRepository` interface inherits several methods from the `JpaRepository` interface. Below is a summary of the key methods available for use:
+The `TransitLineRepository` inherits several methods from the `JpaRepository` interface. Below is a table documenting the key methods available for use:
 
-| Method Signature | Description | Parameters | Return Type |
-|------------------|-------------|------------|-------------|
-| `save(S entity)` | Saves a given entity. | `entity` - the entity to be saved. | `<S extends TransitLine> S` |
-| `findById(String id)` | Retrieves an entity by its id. | `id` - the ID of the entity to retrieve. | `Optional<TransitLine>` |
-| `findAll()` | Returns all instances of the type. | None | `List<TransitLine>` |
-| `deleteById(String id)` | Deletes the entity with the given id. | `id` - the ID of the entity to delete. | `void` |
-| `existsById(String id)` | Checks if an entity with the given id exists. | `id` - the ID to check for existence. | `boolean` |
+| Method Name       | Parameters                                                                 | Return Type                  | Description                                                                 |
+|-------------------|----------------------------------------------------------------------------|------------------------------|-----------------------------------------------------------------------------|
+| save              | `TransitLine entity`                                                       | `TransitLine`                | Saves a given entity.                                                       |
+| findById          | `String id`                                                                | `Optional<TransitLine>`      | Retrieves an entity by its id.                                              |
+| findAll           | None                                                                       | `List<TransitLine>`          | Returns all instances of the type.                                          |
+| deleteById        | `String id`                                                                | `void`                       | Deletes the entity with the given id.                                       |
+| delete            | `TransitLine entity`                                                       | `void`                       | Deletes a given entity.                                                     |
+| count             | None                                                                       | `long`                       | Returns the number of entities available.                                   |
 
-These methods provide a robust set of operations for managing `TransitLine` entities within the application, facilitating seamless integration with the underlying database.
+These methods provide a robust set of operations for managing `TransitLine` entities in the database, leveraging the power of Spring Data JPA to simplify data access.

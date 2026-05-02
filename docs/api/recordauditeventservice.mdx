@@ -1,45 +1,40 @@
 ---
 id: record-audit-event-service
 title: RecordAuditEventService
-sidebar_label: Record Audit Event Service
+sidebar_label: RecordAuditEventService
 ---
 
 ## Purpose
 
-The `RecordAuditEventService` class is a service component in a Java application designed to handle the recording of audit events. It is responsible for creating and saving audit event records based on incoming requests, and logging these events for auditing purposes. The class is part of the `com.upmatches.app.features.audit.services` package and implements the `IRecordAuditEventService` interface.
+The `RecordAuditEventService` class is a service component in a Java application responsible for recording audit events. It interacts with the `AuditEventRepository` to persist audit events and logs the events for auditing purposes. This service ensures that each audit event is recorded in a new transaction, providing a reliable mechanism for tracking actions performed by users or systems.
 
 ## Public Methods
 
-The `RecordAuditEventService` class provides the following public method:
+### `record`
 
-| Method | Description |
-|--------|-------------|
-| `record(AuditEventRequest request)` | Records an audit event based on the provided request. |
+Records an audit event based on the provided `AuditEventRequest`.
+
+| Parameter          | Type                  | Description                                      |
+|--------------------|-----------------------|--------------------------------------------------|
+| `request`          | `AuditEventRequest`   | The request object containing audit event details.|
+
+| Return Type        | Description           |
+|--------------------|-----------------------|
+| `void`             | This method does not return a value.|
 
 ### Method Details
 
-#### `record`
+- **Transactional Behavior**: The `record` method is annotated with `@Transactional(propagation = Propagation.REQUIRES_NEW)`, ensuring that each audit event is recorded in a separate transaction. This isolation helps maintain data integrity and consistency.
+  
+- **Error Handling**: If an error occurs during the recording process, the method logs an error message using SLF4J logging framework, detailing the action, actor ID, and the exception message.
 
-Records an audit event by building an `AuditEvent` object from the provided `AuditEventRequest`, saving it to the repository, and logging the event details.
+- **Logging**: The `emitLog` method constructs a log entry with various fields from the `AuditEventRequest` and logs it using a dedicated audit logger. If JSON processing fails, it falls back to logging the raw fields map.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `request` | `AuditEventRequest` | The request object containing details of the audit event to be recorded. |
+## Dependencies
 
-| Return Type | Description |
-|-------------|-------------|
-| `void` | This method does not return a value. |
+- **`AuditEventRepository`**: Used to persist `AuditEvent` entities.
+- **`ObjectMapper`**: Utilized for converting log fields into a JSON string format.
+- **`ServiceOperationExecutor`**: Executes the save operation and handles exceptions.
+- **SLF4J Logger**: Provides logging capabilities for audit and error logs.
 
-### Exception Handling
-
-- The `record` method handles `RuntimeException` during the execution of the audit event recording process. If an exception occurs, it logs an error message with details about the failure.
-
-## Logging
-
-The class uses two loggers:
-- `AUDIT_LOG`: Logs audit-specific information.
-- `LOGGER`: Logs general error messages related to the audit event recording process.
-
-## Transaction Management
-
-The `record` method is annotated with `@Transactional(propagation = Propagation.REQUIRES_NEW)`, indicating that it should be executed in a new transaction. This ensures that each audit event recording operation is isolated from others.
+This service is a critical component for maintaining an audit trail within the application, ensuring that all significant actions are recorded and can be reviewed for compliance and security purposes.

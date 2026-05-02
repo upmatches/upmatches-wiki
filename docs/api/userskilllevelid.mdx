@@ -4,56 +4,60 @@ title: UserSkillLevelId Class
 sidebar_label: UserSkillLevelId
 ---
 
-## Purpose of the Class
+## Purpose of the UserSkillLevelId Class
 
-The `UserSkillLevelId` class is a Java entity used to represent a composite key for a user's skill level in a database. It is marked with the `@Embeddable` annotation, indicating that it can be embedded in other entities. This class implements the `Serializable` interface, which is necessary for any class that is intended to be persisted by JPA (Java Persistence API). The composite key consists of a `UUID` for the user and a `Long` for the skill level.
+The `UserSkillLevelId` class is an embeddable entity used to represent a composite key in a database. This class is part of the `com.upmatches.app.features.user.entities` package and is designed to be used with JPA (Java Persistence API) to uniquely identify a user's skill level by combining a `UUID` for the user and a `Long` for the skill level. The class implements `Serializable` to ensure that instances can be serialized, which is a requirement for entities used in JPA.
 
 ## Public Methods
 
 The `UserSkillLevelId` class provides the following public methods:
 
-| Method Signature | Description |
-|------------------|-------------|
-| `UserSkillLevelId()` | Default constructor for creating an instance of `UserSkillLevelId` without setting any fields. |
+| Method Signature               | Description                                                                 |
+|--------------------------------|-----------------------------------------------------------------------------|
+| `UserSkillLevelId()`           | Default constructor for creating an instance of `UserSkillLevelId`.         |
 | `UserSkillLevelId(UUID userId, Long skillLevelId)` | Constructor that initializes the `userId` and `skillLevelId` fields. |
-| `UUID getUserId()` | Returns the `UUID` of the user. |
-| `Long getSkillLevelId()` | Returns the `Long` representing the skill level ID. |
-| `boolean equals(Object o)` | Compares this object to the specified object. Returns `true` if the objects are equal, otherwise `false`. |
-| `int hashCode()` | Returns a hash code value for the object, which is used in hashing based collections like `HashMap`. |
+| `UUID getUserId()`             | Returns the `UUID` associated with the user.                                |
+| `Long getSkillLevelId()`       | Returns the `Long` representing the skill level ID.                         |
+| `boolean equals(Object o)`     | Compares this object to the specified object for equality.                  |
+| `int hashCode()`               | Returns a hash code value for the object.                                   |
 
-## Parameters and Return Types
+## Method Details
 
-### Constructor: `UserSkillLevelId(UUID userId, Long skillLevelId)`
+### `UserSkillLevelId()`
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `userId` | `UUID` | The unique identifier for the user. |
-| `skillLevelId` | `Long` | The identifier for the skill level. |
+- **Description**: Default constructor for creating an instance of `UserSkillLevelId`.
+- **Parameters**: None
+- **Return Type**: None
 
-### Method: `UUID getUserId()`
+### `UserSkillLevelId(UUID userId, Long skillLevelId)`
 
-| Return Type | Description |
-|-------------|-------------|
-| `UUID` | The unique identifier for the user. |
+- **Description**: Constructor that initializes the `userId` and `skillLevelId` fields.
+- **Parameters**:
+  - `UUID userId`: The unique identifier for the user.
+  - `Long skillLevelId`: The identifier for the skill level.
+- **Return Type**: None
 
-### Method: `Long getSkillLevelId()`
+### `UUID getUserId()`
 
-| Return Type | Description |
-|-------------|-------------|
-| `Long` | The identifier for the skill level. |
+- **Description**: Returns the `UUID` associated with the user.
+- **Parameters**: None
+- **Return Type**: `UUID`
 
-### Method: `boolean equals(Object o)`
+### `Long getSkillLevelId()`
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `o` | `Object` | The object to be compared for equality with this instance. |
+- **Description**: Returns the `Long` representing the skill level ID.
+- **Parameters**: None
+- **Return Type**: `Long`
 
-| Return Type | Description |
-|-------------|-------------|
-| `boolean` | `true` if the specified object is equal to this instance; `false` otherwise. |
+### `boolean equals(Object o)`
 
-### Method: `int hashCode()`
+- **Description**: Compares this object to the specified object for equality. It checks if both `userId` and `skillLevelId` are equal.
+- **Parameters**:
+  - `Object o`: The object to compare with.
+- **Return Type**: `boolean`
 
-| Return Type | Description |
-|-------------|-------------|
-| `int` | A hash code value for this object. |
+### `int hashCode()`
+
+- **Description**: Returns a hash code value for the object, which is computed based on `userId` and `skillLevelId`.
+- **Parameters**: None
+- **Return Type**: `int`

@@ -4,22 +4,24 @@ title: ValidationHelper Class
 sidebar_label: ValidationHelper
 ---
 
-## Overview
+## Purpose
 
-The `ValidationHelper` class is a utility class designed to provide validation methods for pagination and sorting parameters. It ensures that the parameters used in pagination and sorting operations meet the expected criteria, preventing common errors such as invalid page numbers or unsupported sorting fields.
+The `ValidationHelper` class is a utility class designed to provide validation methods for pagination and sorting parameters. It ensures that the input parameters for pagination and sorting are within acceptable ranges and formats, preventing potential errors in data retrieval operations.
 
 ## Public Methods
 
 ### `validatePaginationParameters`
 
-Validates the pagination parameters to ensure they are within acceptable limits.
+Validates pagination parameters to ensure they are within acceptable ranges.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `page`    | `int` | The page number to validate. Must be greater than or equal to 0. |
 | `size`    | `int` | The size of the page to validate. Must be greater than 0 and less than or equal to 1000. |
 
-**Throws**: `IllegalArgumentException` if the parameters are out of bounds.
+**Return Type:** `void`
+
+**Exceptions:** Throws `IllegalArgumentException` if the parameters do not meet the criteria.
 
 ### `validateCursorPaginationParameters`
 
@@ -29,15 +31,19 @@ Validates the size parameter for cursor-based pagination.
 |-----------|------|-------------|
 | `size`    | `int` | The size of the page to validate. Must be greater than 0 and less than or equal to 1000. |
 
-**Throws**: `IllegalArgumentException` if the size is out of bounds.
+**Return Type:** `void`
+
+**Exceptions:** Throws `IllegalArgumentException` if the size does not meet the criteria.
 
 ### `validateSortBy`
 
 Validates the `sortBy` parameter to ensure it is not null or empty and is among the allowed fields.
 
-| Parameter     | Type     | Description |
-|---------------|----------|-------------|
-| `sortBy`      | `String` | The field to sort by. Cannot be null or empty. |
-| `allowedFields` | `String...` | A varargs list of allowed fields for sorting. |
+| Parameter    | Type     | Description |
+|--------------|----------|-------------|
+| `sortBy`     | `String` | The field to sort by. Cannot be null or empty. |
+| `allowedFields` | `String...` | A varargs parameter representing the fields that are allowed for sorting. |
 
-**Throws**: `IllegalArgumentException` if `sortBy` is null, empty, or not in the list of allowed fields.
+**Return Type:** `void`
+
+**Exceptions:** Throws `IllegalArgumentException` if `sortBy` is null, empty, or not among the allowed fields.

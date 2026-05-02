@@ -4,21 +4,23 @@ title: DevFcmTestNotificationController
 sidebar_label: Dev FCM Test Notification Controller
 ---
 
-## Purpose
+import { useBaseUrl } from '@docusaurus/router';
 
-The `DevFcmTestNotificationController` class is a Spring Boot REST controller designed for development environments. It handles HTTP POST requests to send test Firebase Cloud Messaging (FCM) notifications. This controller is part of the internal API and is only active when the application is running with the "dev" profile.
+## Overview
+
+The `DevFcmTestNotificationController` class is a Spring Boot REST controller designed for development environments. It handles HTTP requests to send Firebase Cloud Messaging (FCM) test notifications. This controller is part of the internal API, specifically for testing purposes in a development profile.
 
 ## Public Methods
 
-### `sendTestNotification`
+### sendTestNotification
 
-Handles the sending of test FCM notifications.
+Handles POST requests to send a test FCM notification. It validates the incoming request body and uses the `ISendFcmTestNotificationService` to process the notification sending.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `body`    | `SendFcmTestNotificationRequest` | The request body containing the necessary data to send a test FCM notification. |
-| `request` | `HttpServletRequest` | The HTTP request object, used to retrieve request metadata such as the URI. |
+| `body`    | `@Valid @RequestBody SendFcmTestNotificationRequest` | The request body containing the details of the FCM notification to be sent. |
+| `request` | `HttpServletRequest` | The HTTP request object, used to retrieve the request URI. |
 
 #### Returns
 
-- `ResponseEntity<ApiResponse<FcmTestNotificationResponse>>`: A response entity containing an API response with the result of the FCM test notification operation. The response includes a success message and the request URI.
+`ResponseEntity<ApiResponse<FcmTestNotificationResponse>>`: A response entity containing the API response with the FCM test notification result, a success message, and the request URI.

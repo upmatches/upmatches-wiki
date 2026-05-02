@@ -6,22 +6,22 @@ sidebar_label: GameJoinabilityService
 
 ## Purpose
 
-The `GameJoinabilityService` class is part of the `com.upmatches.app.features.game.services` package and is responsible for determining the joinability of users to games. It evaluates various conditions such as skill level compatibility, game visibility, and participant status to provide a response indicating whether a user can join a game or not.
+The `GameJoinabilityService` class is a service component in a Java application that determines the joinability of a user to a game. It evaluates various conditions such as skill level compatibility, game visibility, and schedule overlaps to decide if a user can join a game or not.
 
 ## Public Methods
 
 ### `hasSkillMismatch`
 
-Determines if there is a skill mismatch between the game requirements and the user's skill levels.
+Determines if there is a skill mismatch between the user and the game.
 
-| Parameter | Type   | Description                      |
-|-----------|--------|----------------------------------|
-| `game`    | `Game` | The game to check against.       |
-| `user`    | `User` | The user whose skills are checked.|
+| Parameter | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| `game`    | `Game` | The game to check against.           |
+| `user`    | `User` | The user whose skills are evaluated. |
 
 | Return Type | Description                                      |
 |-------------|--------------------------------------------------|
-| `boolean`   | `true` if there is a skill mismatch, `false` otherwise.|
+| `boolean`   | `true` if there is a skill mismatch, `false` otherwise. |
 
 ### `compute`
 
@@ -35,24 +35,25 @@ Computes the joinability of a user for a specific game.
 
 | Return Type                  | Description                                      |
 |------------------------------|--------------------------------------------------|
-| `ViewerJoinabilityResponse`  | The response indicating joinability status.      |
+| `ViewerJoinabilityResponse`  | The response indicating if the user can join the game. |
 
 ### `computeBatch`
 
-Evaluates the joinability of a user for multiple games.
+Computes the joinability of a user for a batch of games.
 
-| Parameter                  | Type                       | Description                                      |
-|----------------------------|----------------------------|--------------------------------------------------|
-| `games`                    | `List<Game>`               | The list of games to evaluate.                   |
-| `participantCountsByGameId`| `Map<UUID, Long>`          | A map of game IDs to their participant counts.   |
-| `userId`                   | `UUID`                     | The ID of the user to evaluate.                  |
+| Parameter                  | Type                          | Description                                      |
+|----------------------------|-------------------------------|--------------------------------------------------|
+| `games`                    | `List<Game>`                  | The list of games to evaluate.                   |
+| `participantCountsByGameId`| `Map<UUID, Long>`             | A map of game IDs to their participant counts.   |
+| `userId`                   | `UUID`                        | The ID of the user to evaluate.                  |
 
-| Return Type                           | Description                                      |
-|---------------------------------------|--------------------------------------------------|
-| `Map<UUID, ViewerJoinabilityResponse>`| A map of game IDs to their joinability responses.|
+| Return Type                          | Description                                      |
+|--------------------------------------|--------------------------------------------------|
+| `Map<UUID, ViewerJoinabilityResponse>` | A map of game IDs to their joinability responses. |
 
-## Additional Information
+## Additional Details
 
-- The class uses repositories such as `GameParticipantRepository` and `GameShareAccessRepository` to fetch necessary data for evaluations.
-- It checks various conditions like skill mismatch, private access, and overlapping game times to determine joinability.
-- The class implements the `IGameJoinabilityService` interface, ensuring it adheres to a contract for joinability services.
+- The service uses repositories such as `GameParticipantRepository` and `GameShareAccessRepository` to fetch necessary data.
+- It checks for conditions like skill mismatch, private access denial, and schedule overlap to determine joinability.
+- The `build` method constructs the `ViewerJoinabilityResponse` based on the evaluated conditions.
+- The `resolveReason` method determines the specific reason why a user cannot join a game, if applicable.

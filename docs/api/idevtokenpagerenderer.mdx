@@ -6,36 +6,32 @@ sidebar_label: IDevTokenPageRenderer
 
 ## Overview
 
-The `IDevTokenPageRenderer` interface is part of the `com.upmatches.app.features.auth.services` package. It defines the contract for rendering a token page in a development environment. This interface is designed to be implemented by classes that need to provide a mechanism for rendering a page with authentication tokens, typically for development or testing purposes.
+The `IDevTokenPageRenderer` is a sealed interface within the `com.upmatches.app.features.auth.services` package. It defines the contract for rendering a token page in a development environment. This interface is designed to be implemented by classes that need to provide a specific rendering of a token page based on the given parameters.
 
 ## Public Methods
 
-The interface declares the following public methods:
+The `IDevTokenPageRenderer` interface declares the following public methods:
 
 ### `isEnabledFor`
 
 Determines if the token page rendering is enabled for a given HTTP request.
 
-| Parameter | Type                      | Description                              |
-|-----------|---------------------------|------------------------------------------|
-| request   | `HttpServletRequest`      | The HTTP request to check.               |
+| Parameter       | Type                      | Description                             |
+|-----------------|---------------------------|-----------------------------------------|
+| `request`       | `HttpServletRequest`      | The HTTP request to check.              |
 
-| Return Type | Description                              |
-|-------------|------------------------------------------|
-| `boolean`   | `true` if rendering is enabled; otherwise, `false`. |
+**Returns:** `boolean` - `true` if rendering is enabled for the request, otherwise `false`.
 
 ### `render`
 
-Renders the token page with the provided authentication tokens and additional information.
+Renders the token page with the provided access and refresh tokens, expiration time, user status, and mobile redirect URL.
 
-| Parameter         | Type                | Description                                      |
-|-------------------|---------------------|--------------------------------------------------|
-| accessToken       | `String`            | The access token to be included in the page.     |
-| refreshToken      | `String`            | The refresh token to be included in the page.    |
-| expiresAtUtc      | `Long`              | The expiration time of the access token in UTC.  |
-| isNewUser         | `Boolean`           | Indicates if the user is new.                    |
-| mobileRedirectUrl | `String`            | URL to redirect mobile users after rendering.    |
+| Parameter            | Type              | Description                                                  |
+|----------------------|-------------------|--------------------------------------------------------------|
+| `accessToken`        | `String`          | The access token to be used for rendering.                   |
+| `refreshToken`       | `String`          | The refresh token to be used for rendering.                  |
+| `expiresAtUtc`       | `Long`            | The UTC expiration time of the access token.                 |
+| `isNewUser`          | `Boolean`         | Indicates if the user is new.                                |
+| `mobileRedirectUrl`  | `String`          | The URL to redirect to on mobile devices.                    |
 
-| Return Type          | Description                                      |
-|----------------------|--------------------------------------------------|
-| `ResponseEntity<String>` | The HTTP response containing the rendered page. |
+**Returns:** `ResponseEntity<String>` - A response entity containing the rendered token page as a string.

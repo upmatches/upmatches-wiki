@@ -1,25 +1,25 @@
 ---
 id: auth0-auth-service
-title: Auth0AuthService Class Documentation
+title: Auth0AuthService
 sidebar_label: Auth0AuthService
 ---
 
-## Overview
+## Purpose
 
-The `Auth0AuthService` class is a service component in a Java application that integrates with Auth0 for authentication purposes. It provides methods to generate an authorization URL and exchange an authorization code for verified claims. This class is designed to handle the OAuth2 authorization code flow with PKCE (Proof Key for Code Exchange) and verify ID tokens using JSON Web Keys (JWKs).
+The `Auth0AuthService` class is a Spring service designed to handle authentication operations with Auth0. It provides methods to generate authorization URLs and exchange authorization codes for verified claims. This class interacts with Auth0's OAuth2 endpoints and verifies ID tokens using JSON Web Keys (JWKS).
 
 ## Public Methods
 
 ### `getAuthorizationUrl`
 
-Generates an authorization URL for Auth0's authorization endpoint.
+Generates an authorization URL for Auth0's OAuth2 flow.
 
-| Parameter      | Type   | Description                                      |
-|----------------|--------|--------------------------------------------------|
-| `state`        | String | A unique string to maintain state between the request and callback. |
-| `nonce`        | String | A unique string to associate a client session with an ID token. |
-| `codeVerifier` | String | A cryptographically random string used to correlate the authorization request to the token request. |
-| `connection`   | String | Optional. Specifies a specific connection to use for authentication. |
+| Parameter     | Type   | Description                                      |
+|---------------|--------|--------------------------------------------------|
+| `state`       | String | A unique state value to maintain request state.  |
+| `nonce`       | String | A nonce value to associate with the ID token.    |
+| `codeVerifier`| String | A code verifier for PKCE.                        |
+| `connection`  | String | Optional connection parameter for Auth0.         |
 
 **Returns**: `String` - The constructed authorization URL.
 
@@ -30,26 +30,14 @@ Exchanges an authorization code for verified claims from Auth0.
 | Parameter          | Type   | Description                                      |
 |--------------------|--------|--------------------------------------------------|
 | `authorizationCode`| String | The authorization code received from Auth0.      |
-| `codeVerifier`     | String | The original code verifier used in the authorization request. |
-| `nonce`            | String | The nonce value used in the authorization request. |
+| `codeVerifier`     | String | The code verifier used in the authorization URL. |
+| `nonce`            | String | The nonce value to verify against the ID token.  |
 
 **Returns**: `Auth0VerifiedClaims` - An object containing verified claims such as subject, picture, and email.
 
-## Private Methods
+## Additional Information
 
-### `verifyIdToken`
-
-Verifies the ID token received from Auth0.
-
-| Parameter | Type   | Description                                      |
-|-----------|--------|--------------------------------------------------|
-| `idToken` | String | The ID token to be verified.                     |
-| `nonce`   | String | The nonce value to verify against the token's nonce claim. |
-
-**Returns**: `Auth0VerifiedClaims` - An object containing verified claims.
-
-### `getAuth0Jwks`
-
-Fetches and caches the JSON Web Key Set (JWKS) from Auth0.
-
-**Returns**: `JWKSet` - The set of JSON Web Keys used to verify ID tokens.
+- The class uses a `RestClient` to interact with Auth0's endpoints.
+- It caches the JWKS for a specified duration to optimize performance.
+- The class handles various exceptions and logs relevant information for debugging purposes.
+- The `verifyIdToken` method ensures the integrity and authenticity of the ID token by checking the issuer, audience, and nonce claims.

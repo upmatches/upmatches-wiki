@@ -4,32 +4,26 @@ title: RefreshRequest Class
 sidebar_label: RefreshRequest
 ---
 
-import jakarta.validation.constraints.NotBlank;
+## Purpose
 
-## Purpose of the `RefreshRequest` Class
-
-The `RefreshRequest` class is a simple Java record used within the authentication feature of an application. It is designed to encapsulate a refresh token, which is typically used in token-based authentication systems to obtain a new access token. The class ensures that the refresh token is not blank by using the `@NotBlank` annotation from the Jakarta Validation API. This helps in maintaining data integrity and preventing errors related to empty tokens.
+The `RefreshRequest` class is a part of the `com.upmatches.app.features.auth.requests` package. It is designed to encapsulate a request for refreshing authentication tokens. This class uses Java's `record` feature to define an immutable data structure with a single field, `refreshToken`, which is validated to ensure it is not blank.
 
 ## Public Methods
 
 The `RefreshRequest` class provides the following public methods:
 
 | Method Signature | Description |
-|------------------|-------------|
-| `String toString()` | Overrides the default `toString` method to return a masked string representation of the `RefreshRequest` object, ensuring that the refresh token is not exposed in logs or other outputs. |
+| ---------------- | ----------- |
+| `String toString()` | Overrides the default `toString` method to return a masked representation of the `RefreshRequest` object, ensuring that the sensitive `refreshToken` is not exposed in logs or other outputs. |
 
 ## Parameters
 
-The `RefreshRequest` class contains the following parameter:
+The `RefreshRequest` class has the following parameter:
 
-| Parameter Name | Type   | Description |
-|----------------|--------|-------------|
-| `refreshToken` | String | A non-blank string representing the refresh token required for authentication processes. It is validated to ensure it is not empty. |
+| Parameter Name | Type   | Description                           |
+| -------------- | ------ | ------------------------------------- |
+| `refreshToken` | String | A non-blank string representing the refresh token required for authentication. |
 
 ## Return Types
 
-The `RefreshRequest` class has the following return type for its methods:
-
-| Method Name | Return Type | Description |
-|-------------|-------------|-------------|
-| `toString`  | String      | Returns a masked string representation of the `RefreshRequest` object. |
+The `toString` method returns a `String` type, providing a masked representation of the `RefreshRequest` instance.

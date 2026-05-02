@@ -4,23 +4,22 @@ title: ShareLinkProperties Class
 sidebar_label: ShareLinkProperties
 ---
 
-## Purpose of the ShareLinkProperties Class
+## Overview
 
-The `ShareLinkProperties` class is a configuration properties holder used in a Spring Boot application. It is designed to manage and provide default values for URLs related to sharing links within the application. This class utilizes the `@ConfigurationProperties` annotation to bind properties from external configuration files (such as `application.properties` or `application.yml`) with a specified prefix (`app.share-link`) to the fields within the class.
-
-The class is implemented as a Java record, which is a special kind of class in Java that is immutable and provides a concise syntax for declaring data-carrying classes.
+The `ShareLinkProperties` class is a configuration properties holder used in a Spring Boot application. It is designed to manage and provide default values for various URLs related to sharing links, such as base URLs for web and app stores. This class utilizes the `@ConfigurationProperties` annotation to map properties from external configuration files, allowing for easy customization and management of these URLs.
 
 ## Public Methods
 
-The `ShareLinkProperties` class does not explicitly declare public methods beyond those automatically provided by the Java record, such as the constructor and accessor methods for each field. Below is a table documenting these methods:
+The `ShareLinkProperties` class is a Java record, which means it primarily serves as a data carrier. It does not have traditional methods like a typical class but provides implicit getter methods for each of its components. Below is a table documenting these components:
 
-| Method Name      | Parameters | Return Type | Description                                                                 |
-|------------------|------------|-------------|-----------------------------------------------------------------------------|
-| `baseUrl()`      | None       | `String`    | Returns the base URL for sharing links. Defaults to `https://api.upmatches.dev/s` if not provided. |
-| `webBaseUrl()`   | None       | `String`    | Returns the web base URL. Defaults to `https://api.upmatches.dev` if not provided. |
-| `appStoreUrl()`  | None       | `String`    | Returns the App Store URL. Defaults to `https://apps.apple.com/app/idXXXXXXXXXX` if not provided. |
-| `playStoreUrl()` | None       | `String`    | Returns the Play Store URL. Defaults to `https://play.google.com/store/apps/details?id=com.upmatches.android` if not provided. |
+| Method Name   | Parameter Type | Return Type | Description                                                                 |
+|---------------|----------------|-------------|-----------------------------------------------------------------------------|
+| baseUrl       | -              | `String`    | Returns the base URL for sharing links. Defaults to `https://api.upmatches.dev/s` if not provided. |
+| webBaseUrl    | -              | `String`    | Returns the web base URL. Defaults to `https://api.upmatches.dev` if not provided. |
+| appStoreUrl   | -              | `String`    | Returns the URL for the App Store. Defaults to `https://apps.apple.com/app/idXXXXXXXXXX` if not provided. |
+| playStoreUrl  | -              | `String`    | Returns the URL for the Play Store. Defaults to `https://play.google.com/store/apps/details?id=com.upmatches.android` if not provided. |
+| appStoreAppId | -              | `String`    | Returns the App Store App ID. Defaults to an empty string if not provided. |
 
-## Constructor
+## Default Values
 
-The constructor of the `ShareLinkProperties` class is automatically provided by the Java record and is used to initialize the fields. It ensures that if any of the URL fields are not provided or are blank, they are set to their respective default values.
+The class provides default values for each of its components to ensure that the application can function correctly even if some configuration properties are missing. These defaults are hardcoded within the class and are used when the corresponding property is either `null` or blank.

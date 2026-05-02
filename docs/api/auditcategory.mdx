@@ -4,13 +4,15 @@ title: AuditCategory Enum
 sidebar_label: AuditCategory
 ---
 
+import { useBaseUrl } from '@docusaurus/core';
+
 ## Purpose
 
-The `AuditCategory` enum is part of the `com.upmatches.app.features.audit.enums` package. It defines a set of constants that represent different categories of audit actions within an application. These categories can be used to classify and manage audit logs, helping developers and system administrators to track and analyze various types of operations performed in the system.
+The `AuditCategory` enum is part of the `com.upmatches.app.features.audit.enums` package. It is used to categorize different types of audit actions within an application. This categorization helps in identifying and managing audit logs based on their nature, such as write operations, authentication, authorization, and sensitive read operations.
 
 ## Enum Constants
 
-The `AuditCategory` enum includes the following constants:
+The `AuditCategory` enum defines the following constants:
 
 | Constant        | Description                                                                 |
 |-----------------|-----------------------------------------------------------------------------|
@@ -21,4 +23,4 @@ The `AuditCategory` enum includes the following constants:
 
 ## Usage
 
-Enums in Java are a special type of class that represents a group of constants (unchangeable variables, like final variables). The `AuditCategory` enum can be used to specify the category of an audit log entry, which can then be used for filtering, reporting, or triggering specific actions based on the type of operation being audited.
+The `AuditCategory` enum can be used to specify the category of an audit log entry. This allows for better filtering and handling of logs based on their type. For instance, you might want to apply different retention policies or alerting mechanisms depending on the category of the audit action.

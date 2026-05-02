@@ -6,32 +6,30 @@ sidebar_label: CursorPagedResponse
 
 ## Overview
 
-The `CursorPagedResponse` class is a generic record in the `com.upmatches.app.features.game.responses` package. It is designed to encapsulate a paginated response using a cursor-based pagination strategy. This class is particularly useful for handling large datasets by allowing clients to request data in chunks and navigate through the dataset using cursors.
-
-## Purpose
-
-The primary purpose of the `CursorPagedResponse` class is to provide a structured way to return a subset of data along with a cursor pointing to the next set of data. This approach is beneficial in scenarios where you need to efficiently manage and navigate through large collections of data without loading the entire dataset into memory.
+The `CursorPagedResponse` class is a generic record in the `com.upmatches.app.features.game.responses` package. It is designed to encapsulate a paginated response using a cursor-based pagination mechanism. This is particularly useful in scenarios where you need to efficiently handle large datasets by loading data in chunks, and where traditional offset-based pagination might not be optimal.
 
 ## Public Methods
 
-The `CursorPagedResponse` class is a record, which means it automatically provides implementations for several methods, including a constructor, `equals()`, `hashCode()`, and `toString()`. Below is a documentation of the public methods available in this class:
+The `CursorPagedResponse` record automatically provides the following methods due to its nature as a Java record:
 
 ### Constructor
 
-The constructor for `CursorPagedResponse` is automatically generated and takes two parameters:
+The constructor for `CursorPagedResponse` is automatically provided and initializes the record with the specified content and next cursor.
 
-| Parameter   | Type      | Description                                      |
-|-------------|-----------|--------------------------------------------------|
-| `content`   | `List<T>` | A list of items of type `T` representing the current page of data. |
-| `nextCursor`| `String`  | A string representing the cursor for the next page of data. |
+| Parameter   | Type     | Description                                      |
+|-------------|----------|--------------------------------------------------|
+| `content`   | `List<T>`| The list of items of type `T` representing the current page of data. |
+| `nextCursor`| `String` | A string representing the cursor for the next page of data. |
 
-### Methods
+### Accessor Methods
 
-Since `CursorPagedResponse` is a record, it provides the following methods:
+Records in Java automatically generate accessor methods for their components. For `CursorPagedResponse`, the following accessor methods are available:
 
 | Method          | Return Type | Description                                      |
 |-----------------|-------------|--------------------------------------------------|
-| `content()`     | `List<T>`   | Returns the list of items representing the current page of data. |
+| `content()`     | `List<T>`   | Returns the list of items in the current page.   |
 | `nextCursor()`  | `String`    | Returns the cursor for the next page of data.    |
 
-These methods allow you to access the paginated content and the cursor for the subsequent page, facilitating easy navigation through the dataset.
+## Usage
+
+The `CursorPagedResponse` class is typically used in APIs where data needs to be fetched in a paginated manner. By using a cursor, it allows for efficient data retrieval without the pitfalls of offset-based pagination, such as skipping or duplicating records when data changes between requests.

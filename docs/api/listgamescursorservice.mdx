@@ -6,36 +6,45 @@ sidebar_label: ListGamesCursorService
 
 ## Purpose
 
-The `ListGamesCursorService` class is a Spring service designed to handle the retrieval of game data with cursor-based pagination. It provides a mechanism to filter games based on various criteria such as location, date, time, skill levels, and venues. This service is part of a larger application that manages game-related data and interactions.
+The `ListGamesCursorService` class is a service in a Java application that provides functionality to list games with cursor-based pagination. It is designed to handle complex filtering and querying of game data, including location-based filtering, date and time constraints, and user-specific visibility. The service ensures efficient retrieval of game data while maintaining transactional integrity and handling user-specific joinability logic.
 
 ## Public Methods
 
 ### `execute`
 
-Executes the service operation to retrieve a paginated list of games based on the provided filter and cursor.
+Executes the service operation to retrieve a paginated list of games based on the provided filter, cursor, and size.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `filter`  | `ListGamesCursorFilterRequest` | The filter criteria for querying games. |
-| `cursor`  | `String` | The pagination cursor to determine the starting point of the query. |
-| `size`    | `int` | The maximum number of games to retrieve. |
+| Parameter | Type                               | Description                                                                 |
+|-----------|------------------------------------|-----------------------------------------------------------------------------|
+| `filter`  | `ListGamesCursorFilterRequest`     | The filter criteria for querying games.                                     |
+| `cursor`  | `String`                           | The cursor for pagination, indicating the starting point for the next page. |
+| `size`    | `int`                              | The maximum number of games to retrieve.                                    |
 
-| Return Type | Description |
-|-------------|-------------|
-| `CursorPagedResponse<GameResponse>` | A paginated response containing the list of games and the next cursor. |
+| Return Type                          | Description                                                                 |
+|--------------------------------------|-----------------------------------------------------------------------------|
+| `CursorPagedResponse<GameResponse>`  | A paginated response containing a list of game responses and the next cursor. |
 
-## Key Concepts
+## Detailed Description
 
-- **Cursor-Based Pagination**: This service uses a cursor-based approach to paginate through game data, which is efficient for large datasets.
-- **Filtering**: The service supports filtering games by location, date, time, skill levels, and venues.
-- **Bounding Box Calculation**: For location-based filtering, a bounding box is computed to determine the geographical area of interest.
-- **Transactional Read-Only**: The `execute` method is annotated with `@Transactional(readOnly = true)`, ensuring that the database operations are read-only and do not modify data.
+The `ListGamesCursorService` class is annotated with `@Service` and `@Transactional` to indicate its role as a Spring service component and to manage transaction boundaries. It implements the `IListGamesCursorService` interface, ensuring adherence to a defined contract for listing games.
 
-## Internal Logic
+### Key Components
 
-- **Bounding Box Calculation**: The `computeBoundingBox` method calculates the geographical bounding box based on the provided latitude, longitude, and radius.
-- **Cross-Field Validation**: The `validateCrossFields` method ensures that related fields are provided together and checks for logical consistency, such as date ranges.
-- **Query Execution**: The `runQuery` method performs the actual database query to retrieve games based on the filter criteria and cursor.
-- **Participant Counting**: The `countParticipants` method counts active participants for each game, aiding in determining joinability and other metrics.
+- **Dependencies**: The class relies on several repositories and services, such as `GameRepository`, `GameParticipantRepository`, `IAuthenticatedUserResolver`, and `IGameJoinabilityService`, to perform its operations.
+- **Constants**: It defines several constants for geographical calculations and time conversions, such as `KM_PER_DEGREE_LAT` for latitude conversion and `MINUTES_PER_HOUR` for time calculations.
+- **Private Methods**: The class includes private methods for computing bounding boxes, validating filter fields, and converting time to minutes, which support the main execution logic.
+- **BoundingBox**: A private static record `BoundingBox` is used to represent geographical boundaries for location-based filtering.
 
-This service is a critical component for efficiently retrieving and displaying game data to users, supporting both authenticated and anonymous access patterns.
+### Execution Logic
+
+The `execute` method is the primary entry point for retrieving games. It performs the following steps:
+
+1. **User Resolution**: Determines the optional user ID for personalized queries.
+2. **Cursor Decoding**: Decodes the cursor to determine the starting point for the query.
+3. **Filter Validation**: Validates the provided filter for consistency and completeness.
+4. **Query Execution**: Executes the query to retrieve games, applying filters and pagination.
+5. **Participant Counting**: Counts active participants for each game.
+6. **Joinability Computation**: Computes joinability information for the viewer if a user is present.
+7. **Response Construction**: Constructs a `CursorPagedResponse` with the retrieved game data and next cursor.
+
+This service is crucial for applications that require efficient and scalable game listing capabilities, especially in scenarios involving complex filtering and user-specific data access.

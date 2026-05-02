@@ -1,46 +1,47 @@
 ---
 id: auth0-callback-controller
 title: Auth0CallbackController
-sidebar_label: Auth0 Callback Controller
+sidebar_label: Auth0CallbackController
 ---
 
 ## Purpose
 
-The `Auth0CallbackController` class is a Spring Boot REST controller designed to handle the callback from Auth0 during the OAuth authentication process. It processes the authorization code returned by Auth0, exchanges it for user claims, and manages user sessions and tokens. The controller also logs authentication events for auditing purposes.
+The `Auth0CallbackController` class is a Spring Boot REST controller designed to handle the callback from Auth0 authentication. It processes the authentication response, exchanges authorization codes for tokens, manages user sessions, and handles user creation or retrieval in the system. The controller also records audit events for successful and failed authentication attempts.
 
 ## Public Methods
 
 ### `callbackAuth0`
 
-Handles the Auth0 callback request, processes the authorization code, and manages user authentication.
+Handles the Auth0 callback request, processes the authentication response, and returns an appropriate HTTP response.
 
-| Parameter | Type                  | Description                                               |
-|-----------|-----------------------|-----------------------------------------------------------|
-| `code`    | `String`              | The authorization code returned by Auth0.                 |
-| `state`   | `String`              | The state parameter to prevent CSRF attacks.              |
-| `request` | `HttpServletRequest`  | The HTTP request object.                                  |
-| `response`| `HttpServletResponse` | The HTTP response object.                                 |
+| Parameter | Type                  | Description                                                                 |
+|-----------|-----------------------|-----------------------------------------------------------------------------|
+| `code`    | `String`              | The authorization code returned by Auth0.                                   |
+| `state`   | `String`              | The state parameter to validate the request.                                |
+| `request` | `HttpServletRequest`  | The HTTP request object.                                                    |
+| `response`| `HttpServletResponse` | The HTTP response object.                                                   |
 
-| Return Type                 | Description                                                                 |
-|-----------------------------|-----------------------------------------------------------------------------|
-| `ResponseEntity<Object>`    | A response entity indicating the result of the authentication process.      |
+| Return Type              | Description                                                                 |
+|--------------------------|-----------------------------------------------------------------------------|
+| `ResponseEntity<Object>` | A response entity indicating the result of the authentication process.      |
 
-## Detailed Description
+### Key Functionalities
 
-The `Auth0CallbackController` class is responsible for handling the callback from Auth0 after a user attempts to authenticate. It performs the following key operations:
+- **Error Handling**: The method checks for provider errors and missing parameters, throwing exceptions if necessary.
+- **Session Management**: Retrieves and removes the authentication session using the state parameter.
+- **Token Exchange**: Exchanges the authorization code for verified claims using the `IAuth0AuthService`.
+- **User Management**: Finds or creates a user based on the Auth0 UUID and updates user information.
+- **Audit Logging**: Records audit events for both successful and failed authentication attempts.
+- **Response Building**: Constructs the appropriate HTTP response based on the platform (web or mobile) and user status (new or existing).
 
-1. **Error Handling**: Checks for any errors returned by Auth0 and throws an `AuthenticationException` if any are found.
+### Private Methods
 
-2. **Parameter Validation**: Ensures that the `code` and `state` parameters are present and valid.
-
-3. **Session Management**: Retrieves and removes the authentication session associated with the `state` parameter.
-
-4. **Token Exchange**: Exchanges the authorization code for verified claims using the `IAuth0AuthService`.
-
-5. **User Management**: Finds or creates a user in the system based on the Auth0 user ID, and updates user information as needed.
-
-6. **Audit Logging**: Records successful and failed authentication attempts for auditing purposes using the `IRecordAuditEventService`.
-
-7. **Response Building**: Constructs the appropriate HTTP response, setting cookies or redirecting to the appropriate URL based on the platform (web or mobile).
-
-This class is a critical component in the authentication flow, ensuring secure and efficient user login and session management.
+- `recordAuthSuccess`: Records a successful authentication event.
+- `recordAuthFailure`: Records a failed authentication event.
+- `rejectIfProviderError`: Checks for and handles provider errors.
+- `exchangeCode`: Exchanges the authorization code for verified claims.
+- `parseAuth0Uuid`: Parses the Auth0 UUID from the subject claim.
+- `findOrCreateUser`: Finds an existing user or creates a new one based on Auth0 information.
+- `refreshAvatar`: Updates the user's avatar URL if a new picture URL is provided.
+- `buildResponse`: Builds the HTTP response for web platforms.
+- `buildMobileRedirect`: Builds the HTTP response for mobile platforms.

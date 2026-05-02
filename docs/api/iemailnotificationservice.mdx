@@ -4,25 +4,27 @@ title: IEmailNotificationService Interface
 sidebar_label: IEmailNotificationService
 ---
 
-## Overview
+## Purpose
 
-The `IEmailNotificationService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines the contract for sending email notifications within the application. This interface is a sealed interface, which means it restricts the classes that can implement it. Currently, it permits the `EmailNotificationService` class to implement its methods.
+The `IEmailNotificationService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines the contract for sending email notifications within the application. This interface is designed to be implemented by classes that handle the specifics of email notification delivery, ensuring a consistent method signature for sending notifications.
 
 ## Public Methods
 
-The `IEmailNotificationService` interface declares the following public method:
-
 ### `send`
 
-This method is responsible for sending an email notification based on the provided `Notification` and `EmailContext`.
+The `send` method is responsible for dispatching an email notification based on the provided `Notification` and `EmailContext` objects.
 
-| Parameter   | Type                                  | Description                                           |
-|-------------|---------------------------------------|-------------------------------------------------------|
-| notification| `Notification`                        | The notification entity containing notification details. |
-| context     | `EmailContext`                        | The context for the email, including template and variables. |
+| Method Signature | Description |
+|------------------|-------------|
+| `void send(Notification notification, EmailContext context)` | Sends an email notification using the specified `Notification` and `EmailContext`. |
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | This method does not return any value. |
+#### Parameters
 
-The `send` method is crucial for the functionality of sending email notifications, ensuring that the appropriate notification details and context are utilized to deliver the message effectively.
+| Parameter   | Type                          | Description |
+|-------------|-------------------------------|-------------|
+| `notification` | `Notification`              | The notification entity containing the details of the message to be sent. |
+| `context`      | `EmailContext`              | The context for the email, including any additional information required for sending the email. |
+
+#### Return Type
+
+This method does not return any value (`void`).

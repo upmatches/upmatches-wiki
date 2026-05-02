@@ -4,26 +4,26 @@ title: IRegisterDeviceTokenService Interface
 sidebar_label: IRegisterDeviceTokenService
 ---
 
-## Purpose
+## Overview
 
-The `IRegisterDeviceTokenService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that handle the registration of device tokens, which are typically used for sending push notifications to devices. This interface ensures that any implementing class provides the necessary functionality to process a device token registration request.
+The `IRegisterDeviceTokenService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that handle the registration of device tokens, which are typically used for sending notifications to devices. This interface ensures that any implementing class provides the necessary functionality to execute the registration process.
 
 ## Public Methods
 
-| Method Signature | Description |
-| ---------------- | ----------- |
-| `void execute(RegisterDeviceTokenRequest request)` | This method processes the registration of a device token. |
+The interface declares the following public method:
 
-### Method Details
+### `execute`
 
-#### `execute`
+Executes the registration of a device token using the provided request.
 
-- **Parameters:**
+| Parameter | Type                                      | Description                                      |
+|-----------|-------------------------------------------|--------------------------------------------------|
+| request   | `RegisterDeviceTokenRequest`              | The request object containing the device token information needed for registration. |
 
-  | Name    | Type                                      | Description                                    |
-  | ------- | ----------------------------------------- | ---------------------------------------------- |
-  | request | `RegisterDeviceTokenRequest`              | An object containing the details required to register a device token. |
+| Return Type | Description |
+|-------------|-------------|
+| `void`      | This method does not return any value. |
 
-- **Return Type:** `void`
+## Implementing Classes
 
-  This method does not return any value. It performs the operation of registering a device token based on the provided request.
+The interface is a sealed interface, which means it restricts which classes can implement it. In this case, the `RegisterDeviceTokenService` class is permitted to implement `IRegisterDeviceTokenService`.

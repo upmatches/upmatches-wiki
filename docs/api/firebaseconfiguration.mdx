@@ -6,50 +6,49 @@ sidebar_label: FirebaseConfiguration
 
 ## Purpose
 
-The `FirebaseConfiguration` class is a Spring configuration class responsible for setting up Firebase Messaging within an application. It utilizes the `FirebaseProperties` to configure Firebase using either a service account JSON string or a file path. This configuration enables the application to send push notifications via Firebase Cloud Messaging (FCM).
+The `FirebaseConfiguration` class is a Spring configuration class responsible for setting up Firebase Messaging within a Java application. It leverages the `FirebaseProperties` to configure Firebase using either a JSON string or a file path for the service account credentials. This setup enables the application to send push notifications via Firebase Cloud Messaging (FCM).
 
 ## Public Methods
 
 ### `firebaseMessaging`
 
-This method initializes and provides a `FirebaseMessaging` bean, which is used to send messages to devices through Firebase Cloud Messaging.
+This method initializes and provides a `FirebaseMessaging` bean, which is used to interact with Firebase Cloud Messaging services.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| None      |      |             |
+| None      | N/A  | This method does not take any parameters. |
 
-| Return Type        | Description                                                                 |
-|--------------------|-----------------------------------------------------------------------------|
-| `FirebaseMessaging`| Returns an instance of `FirebaseMessaging` if initialization is successful. Returns `null` if the Firebase service account is not configured or if initialization fails. |
+| Return Type          | Description                                                                 |
+|----------------------|-----------------------------------------------------------------------------|
+| `FirebaseMessaging`  | Returns an instance of `FirebaseMessaging` if initialization is successful. |
+| `null`               | Returns `null` if Firebase service account is not configured or initialization fails. |
 
 ## Method Details
 
-- **`firebaseMessaging`**: 
-  - **Purpose**: Initializes the Firebase Messaging service using credentials provided in the `FirebaseProperties`.
-  - **Behavior**: 
-    - Checks if the service account credentials are provided either as a JSON string or a file path.
-    - Initializes the `FirebaseApp` and retrieves the `FirebaseMessaging` instance.
-    - Logs the initialization status.
-    - Returns `null` if the credentials are not provided or if an exception occurs during initialization.
+- **Initialization Check**: The method first checks if the service account credentials are available either as a JSON string or a file path. If neither is available, it logs a message and returns `null`, indicating that push notifications are disabled.
+  
+- **Credential Stream**: It uses the `openCredentialStream` private method to obtain an `InputStream` for the service account credentials. This stream is then used to create `GoogleCredentials`.
+
+- **Firebase Options**: The method builds `FirebaseOptions` using the credentials and initializes a `FirebaseApp`. If an app is already initialized, it retrieves the existing instance.
+
+- **Logging**: It logs the source of the credentials (JSON or file) upon successful initialization or logs an error message if initialization fails.
 
 ## Private Methods
 
 ### `openCredentialStream`
 
-This private method opens an input stream to the service account credentials, either from a JSON string or a file path.
+This private method opens an `InputStream` for the service account credentials based on the configuration provided in `FirebaseProperties`.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| None      |      |             |
+| None      | N/A  | This method does not take any parameters. |
 
 | Return Type | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
-| `InputStream`| Returns an `InputStream` to the service account credentials. Throws `IOException` if an error occurs while opening the stream. |
+| `InputStream` | Returns an `InputStream` for the service account credentials. |
 
-## Logging
+- **JSON Credentials**: If the credentials are provided as a JSON string, it converts the string into a byte array and returns a `ByteArrayInputStream`.
 
-The class uses SLF4J for logging various states of the Firebase initialization process:
+- **File Credentials**: If the credentials are provided as a file path, it opens a `FileInputStream` for the specified path.
 
-- **`LOG_DISABLED`**: Logs when the Firebase service account is not configured.
-- **`LOG_INIT_FAILED`**: Logs when initialization fails due to an exception.
-- **`LOG_INITIALIZED`**: Logs successful initialization of Firebase, indicating the source of the credentials (JSON or file).
+- **Exception Handling**: Throws `IOException` if there is an issue accessing the credentials.

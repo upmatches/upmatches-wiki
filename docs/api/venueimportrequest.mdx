@@ -4,38 +4,23 @@ title: VenueImportRequest Class
 sidebar_label: VenueImportRequest
 ---
 
-import { useDocusaurusContext } from '@docusaurus/core';
+## Purpose of the VenueImportRequest Class
 
-## VenueImportRequest Class
+The `VenueImportRequest` class is a Java record used to encapsulate data for importing venue information into the system. It ensures that all necessary venue details are provided and validated according to specified constraints. This class is part of the `com.upmatches.app.features.venue.requests` package and leverages Jakarta Bean Validation annotations to enforce data integrity.
 
-The `VenueImportRequest` class is a Java record used to encapsulate the data required for importing venue information into the system. It ensures that all necessary fields are validated and provided in a structured manner. This class is part of the `com.upmatches.app.features.venue.requests` package and utilizes Jakarta Bean Validation annotations to enforce constraints on the data fields.
+## Public Methods
 
-### Class Fields
+Since `VenueImportRequest` is a record, it automatically provides a constructor, accessor methods, `equals()`, `hashCode()`, and `toString()` methods. Below is a table documenting the parameters of the primary constructor, which are also the fields of the record.
 
-The `VenueImportRequest` record consists of the following fields:
+| Parameter Name | Type                          | Description                                                                 | Constraints                   |
+|----------------|-------------------------------|-----------------------------------------------------------------------------|-------------------------------|
+| sourceId       | `String`                      | A unique identifier for the source of the venue data.                       | Not blank, max size 50        |
+| activityId     | `Integer`                     | The ID representing the activity associated with the venue.                 | Not null                      |
+| name           | `String`                      | The name of the venue.                                                      | Not blank, max size 200       |
+| address        | `String`                      | The physical address of the venue.                                          | Not blank, max size 500       |
+| latitude       | `BigDecimal`                  | The latitude coordinate of the venue's location.                            | Not null                      |
+| longitude      | `BigDecimal`                  | The longitude coordinate of the venue's location.                           | Not null                      |
+| postalCode     | `Integer`                     | The postal code of the venue's location.                                    | Not null                      |
+| stations       | `List<StationImportRequest>`  | A list of station import requests associated with the venue.                | Not null, max size 50, valid  |
 
-- **sourceId**: A unique identifier for the source of the venue data. It must be a non-blank string with a maximum length of 50 characters.
-- **activityId**: An integer representing the activity associated with the venue. It cannot be null.
-- **name**: The name of the venue. This is a non-blank string with a maximum length of 200 characters.
-- **address**: The address of the venue. It must be a non-blank string with a maximum length of 500 characters.
-- **latitude**: The geographical latitude of the venue. It is a non-null `BigDecimal`.
-- **longitude**: The geographical longitude of the venue. It is a non-null `BigDecimal`.
-- **postalCode**: An integer representing the postal code of the venue. It cannot be null.
-- **stations**: A list of `StationImportRequest` objects. This list must be non-null, valid, and each entry must not exceed 50 characters.
-
-### Public Methods
-
-The `VenueImportRequest` record does not explicitly define methods beyond those automatically provided by the Java record feature. However, it implicitly provides the following methods:
-
-| Method Signature | Description |
-|------------------|-------------|
-| `String sourceId()` | Returns the source ID of the venue. |
-| `Integer activityId()` | Returns the activity ID associated with the venue. |
-| `String name()` | Returns the name of the venue. |
-| `String address()` | Returns the address of the venue. |
-| `BigDecimal latitude()` | Returns the latitude of the venue. |
-| `BigDecimal longitude()` | Returns the longitude of the venue. |
-| `Integer postalCode()` | Returns the postal code of the venue. |
-| `List<StationImportRequest> stations()` | Returns the list of stations associated with the venue. |
-
-These methods provide access to the individual fields of the `VenueImportRequest` record, allowing for retrieval of the encapsulated data.
+The `VenueImportRequest` class ensures that all fields are validated according to the constraints specified by Jakarta Bean Validation annotations. This includes checks for non-null values, maximum string lengths, and nested validation for the list of `StationImportRequest` objects.

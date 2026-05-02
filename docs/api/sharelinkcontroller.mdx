@@ -4,34 +4,41 @@ title: ShareLinkController
 sidebar_label: ShareLinkController
 ---
 
-## Purpose of the ShareLinkController Class
+## Overview
 
-The `ShareLinkController` class is a Spring Boot REST controller responsible for handling HTTP requests related to share links. It provides endpoints to create new share links and resolve existing ones. The controller leverages services to perform the business logic and returns structured API responses.
+The `ShareLinkController` class is a REST controller in a Spring Boot application responsible for managing share links. It provides endpoints to create and resolve share links, leveraging services for business logic execution. This controller ensures that share links are created and resolved following specific patterns and validations.
 
 ## Public Methods
 
-### createShareLink
+### `createShareLink`
 
-Handles the creation of a new share link.
+Creates a new share link based on the provided request data.
 
-| Parameter | Type                              | Description                                      |
-|-----------|-----------------------------------|--------------------------------------------------|
-| body      | `CreateShareLinkRequest`          | The request body containing share link details.  |
-| request   | `HttpServletRequest`              | The HTTP request object.                         |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `body` | `CreateShareLinkRequest` | The request body containing data required to create a share link. |
+| `request` | `HttpServletRequest` | The HTTP request object. |
 
-| Return Type                                | Description                                      |
-|--------------------------------------------|--------------------------------------------------|
-| `ResponseEntity<ApiResponse<ShareLinkResponse>>` | A response entity containing the created share link and a success message. |
+| Return Type | Description |
+|-------------|-------------|
+| `ResponseEntity<ApiResponse<ShareLinkResponse>>` | A response entity containing the API response with the created share link details. |
 
-### resolveShareLink
+### `resolveShareLink`
 
-Handles the resolution of an existing share link using a unique code.
+Resolves an existing share link using a provided code.
 
-| Parameter | Type     | Description                                                   |
-|-----------|----------|---------------------------------------------------------------|
-| code      | `String` | The unique code of the share link, must be 8 alphanumeric characters. |
-| request   | `HttpServletRequest` | The HTTP request object.                         |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `code` | `String` | The code of the share link to be resolved. Must be 8 alphanumeric characters. |
+| `request` | `HttpServletRequest` | The HTTP request object. |
 
-| Return Type                                        | Description                                      |
-|----------------------------------------------------|--------------------------------------------------|
-| `ResponseEntity<ApiResponse<PublicShareLinkResponse>>` | A response entity containing the resolved share link and a success message. |
+| Return Type | Description |
+|-------------|-------------|
+| `ResponseEntity<ApiResponse<PublicShareLinkResponse>>` | A response entity containing the API response with the resolved share link details. |
+
+## Annotations and Validations
+
+- The class is annotated with `@RestController` and `@RequestMapping("/api/v1/share-links")`, indicating it handles HTTP requests for the `/api/v1/share-links` path.
+- The `@Validated` annotation is used to enable validation on method parameters.
+- The `createShareLink` method uses `@Valid` to validate the request body.
+- The `resolveShareLink` method uses `@Pattern` to ensure the `code` parameter matches the specified pattern (`^[0-9A-Za-z]{8}$`), enforcing that it must be exactly 8 alphanumeric characters.

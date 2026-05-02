@@ -6,7 +6,7 @@ sidebar_label: UserService
 
 ## Overview
 
-The `UserService` class is a part of the `com.upmatches.app.features.user.services` package and is responsible for managing user profiles within the application. It provides functionalities to retrieve, complete, update, and delete user profiles. The class interacts with various repositories to perform operations on user data and ensures that the operations are executed within transactional boundaries.
+The `UserService` class is a part of the `com.upmatches.app.features.user.services` package and implements the `IUserService` interface. It is a Spring `@Service` component designed to manage user profiles, including retrieving, completing, updating, and deleting user profiles. The class leverages repositories for user, skill level, and game data management, and it includes transactional operations and auditing capabilities.
 
 ## Public Methods
 
@@ -18,33 +18,33 @@ Retrieves the profile of the authenticated user.
 |-----------|------|-------------|
 | None      |      |             |
 
-| Return Type          | Description                           |
-|----------------------|---------------------------------------|
-| `UserProfileResponse`| The profile data of the authenticated user. |
+| Return Type          | Description                        |
+|----------------------|------------------------------------|
+| `UserProfileResponse`| The profile of the authenticated user.|
 
 ### `completeProfile`
 
-Completes the profile of the authenticated user using the provided request data.
+Completes the profile of the authenticated user based on the provided request.
 
-| Parameter | Type                      | Description                    |
-|-----------|---------------------------|--------------------------------|
-| `request` | `CompleteProfileRequest`  | The request containing profile completion data. |
+| Parameter | Type                     | Description                      |
+|-----------|--------------------------|----------------------------------|
+| `request` | `CompleteProfileRequest` | The request containing profile completion data.|
 
-| Return Type          | Description                           |
-|----------------------|---------------------------------------|
-| `UserProfileResponse`| The updated profile data after completion. |
+| Return Type          | Description                        |
+|----------------------|------------------------------------|
+| `UserProfileResponse`| The updated profile of the user.   |
 
 ### `updateProfile`
 
-Updates the profile of the authenticated user with the provided request data.
+Updates the profile of the authenticated user based on the provided request.
 
-| Parameter | Type                    | Description                    |
-|-----------|-------------------------|--------------------------------|
-| `request` | `UpdateProfileRequest`  | The request containing profile update data. |
+| Parameter | Type                   | Description                      |
+|-----------|------------------------|----------------------------------|
+| `request` | `UpdateProfileRequest` | The request containing profile update data.|
 
-| Return Type          | Description                           |
-|----------------------|---------------------------------------|
-| `UserProfileResponse`| The updated profile data after the update. |
+| Return Type          | Description                        |
+|----------------------|------------------------------------|
+| `UserProfileResponse`| The updated profile of the user.   |
 
 ### `deleteUser`
 
@@ -60,9 +60,9 @@ Deletes the profile of the authenticated user.
 
 ## Key Concepts
 
-- **Transactional Operations**: The class uses Spring's `@Transactional` annotation to ensure that database operations are executed within a transaction, providing consistency and rollback capabilities in case of errors.
-- **Auditing**: The class is annotated with `@Auditable` to log actions performed on user profiles, such as completion, update, and deletion.
-- **Exception Handling**: Custom exceptions like `ProfileAlreadyCompletedException`, `ResourceNotFoundException`, and `UnauthorizedException` are used to handle specific error scenarios.
-- **Security**: The class retrieves the authenticated user's ID from the security context to ensure that operations are performed on the correct user profile.
+- **Transactional Operations**: The class uses Spring's `@Transactional` annotation to manage transactions, ensuring data consistency during profile operations.
+- **Auditing**: Methods are annotated with `@Auditable` to log actions like profile completion, update, and deletion.
+- **Security**: The class retrieves the authenticated user's ID from the security context, ensuring that operations are performed on the correct user profile.
+- **Exception Handling**: Custom exceptions like `ProfileAlreadyCompletedException`, `DuplicateSkillLevelActivityException`, and `ResourceNotFoundException` are used to handle specific error scenarios.
 
-This documentation provides a concise overview of the `UserService` class, detailing its purpose, public methods, and key concepts.
+This documentation provides a concise overview of the `UserService` class, detailing its purpose, public methods, and key concepts for effective usage and understanding.

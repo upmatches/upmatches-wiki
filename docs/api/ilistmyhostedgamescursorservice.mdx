@@ -4,25 +4,28 @@ title: IListMyHostedGamesCursorService Interface
 sidebar_label: IListMyHostedGamesCursorService
 ---
 
-## Overview
+## Purpose
 
-The `IListMyHostedGamesCursorService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide paginated access to a list of games hosted by the user. This interface ensures that any implementing class will provide a mechanism to retrieve game data in a paginated manner using a cursor-based approach.
+The `IListMyHostedGamesCursorService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that provide paginated access to a list of games hosted by a user. This interface is designed to be implemented by classes that need to fetch game data in a cursor-based pagination format, which is useful for efficiently handling large datasets.
 
 ## Public Methods
 
-The interface declares the following method:
+The interface declares the following public method:
 
-### `execute`
+| Method Signature | Description |
+|------------------|-------------|
+| `CursorPagedResponse<GameResponse> execute(String cursor, int size)` | Fetches a paginated list of games hosted by the user. |
 
-Retrieves a paginated list of games hosted by the user, starting from a specified cursor position.
+### Method Details
 
-| Parameter | Type   | Description                                      |
-|-----------|--------|--------------------------------------------------|
-| `cursor`  | String | The cursor indicating the starting point of the page. |
-| `size`    | int    | The number of game records to retrieve.          |
+#### `execute`
 
-| Return Type                              | Description                                      |
-|------------------------------------------|--------------------------------------------------|
-| `CursorPagedResponse<GameResponse>`      | A paginated response containing game data.       |
-
-This method is designed to facilitate efficient data retrieval by allowing clients to specify the starting point and the number of records they wish to retrieve, thus supporting scalable and performant data access patterns.
+- **Description**: This method retrieves a paginated list of games hosted by the user, starting from a specified cursor position and limited to a specified number of entries.
+- **Parameters**:
+  | Name   | Type   | Description |
+  |--------|--------|-------------|
+  | `cursor` | `String` | The cursor indicating the starting point for pagination. |
+  | `size`   | `int`    | The number of game entries to retrieve. |
+- **Returns**: 
+  - **Type**: `CursorPagedResponse<GameResponse>`
+  - **Description**: A response object containing the paginated list of `GameResponse` objects and pagination metadata.

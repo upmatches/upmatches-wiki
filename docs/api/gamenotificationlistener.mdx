@@ -1,73 +1,49 @@
 ---
 id: game-notification-listener
 title: GameNotificationListener
-sidebar_label: Game Notification Listener
+sidebar_label: GameNotificationListener
 ---
 
 ## Purpose
 
-The `GameNotificationListener` class is a component in the notification system of the application. It listens for `GameNotificationEvent` events and processes them to send notifications to users. Notifications can be delivered via in-app messages, push notifications, or emails, depending on the user's settings and the type of event.
+The `GameNotificationListener` class is a component in a Java application that listens for game-related notification events. It processes these events to generate and deliver notifications to users, either through push notifications or email, based on the type of event and the recipients involved. The class ensures that notifications are not duplicated and handles delivery failures gracefully.
 
 ## Public Methods
 
 ### onGameNotification
 
-This method is triggered asynchronously after a transaction is committed. It processes a `GameNotificationEvent` to send notifications to relevant recipients.
+Listens for `GameNotificationEvent` and processes it to send notifications to the appropriate recipients.
 
-| Parameter | Type                      | Description                                      |
-|-----------|---------------------------|--------------------------------------------------|
-| event     | `GameNotificationEvent`   | The event containing details about the game and the type of notification to be sent. |
+| Parameter | Type                  | Description                                      |
+|-----------|-----------------------|--------------------------------------------------|
+| event     | `GameNotificationEvent` | The event containing details about the game notification. |
 
-| Return Type | Description |
-|-------------|-------------|
-| `void`      | This method does not return a value. |
+| Return Type |
+|-------------|
+| `void`      |
 
 ## Method Details
 
 ### onGameNotification
 
-- **Purpose**: Listens for game-related events and sends notifications to users based on the event type.
-- **Process**:
-  1. Retrieves the game associated with the event.
-  2. Resolves the recipients of the notification based on the event type.
-  3. Constructs the notification title and message.
-  4. Sends the notification to each recipient, checking for duplicates.
-  5. Attempts external delivery via push notifications or email if applicable.
-
-### deliverExternally
-
-- **Purpose**: Attempts to deliver a notification via push notifications or email.
+- **Purpose**: This method is triggered asynchronously after a transaction commit. It retrieves the game associated with the event, determines the recipients, constructs the notification title and message, and attempts to deliver the notification both in-app and externally.
 - **Parameters**:
-  - `notification`: The notification to be delivered.
-  - `emailContext`: Contextual information for email delivery.
+  - `event`: An instance of `GameNotificationEvent` that contains information about the game and the type of notification to be sent.
 - **Return Type**: `void`
 
-### isDedupable
+The method handles the following:
+- Retrieves the game using the game ID from the event.
+- Logs a warning if the game is not found.
+- Resolves the recipients based on the event type and game details.
+- Constructs the notification title and message.
+- Checks for duplicate notifications to avoid sending the same notification multiple times.
+- Attempts to deliver the notification using the `ICreateNotificationService`, `IPushNotificationService`, and `IEmailNotificationService`.
+- Logs any delivery failures.
 
-- **Purpose**: Determines if a notification type is subject to deduplication.
-- **Parameters**:
-  - `type`: The type of notification.
-- **Return Type**: `boolean`
+### Private Helper Methods
 
-### resolveRecipients
-
-- **Purpose**: Identifies the recipients of a notification based on the event type and game details.
-- **Parameters**:
-  - `event`: The event triggering the notification.
-  - `game`: The game associated with the event.
-- **Return Type**: `Set<UUID>`
-
-### buildTitle
-
-- **Purpose**: Constructs the title of the notification based on its type.
-- **Parameters**:
-  - `type`: The type of notification.
-- **Return Type**: `String`
-
-### buildMessage
-
-- **Purpose**: Constructs the message of the notification based on its type and the game title.
-- **Parameters**:
-  - `type`: The type of notification.
-  - `gameTitle`: The title of the game.
-- **Return Type**: `String`
+- **deliverExternally**: Attempts to send the notification via push service first, and falls back to email if push delivery fails and the recipient has a valid email address.
+- **isDedupable**: Determines if a notification type should be checked for duplicates.
+- **resolveRecipients**: Identifies the recipients of the notification based on the event type and game details.
+- **buildTitle**: Constructs the notification title based on the event type.
+- **buildMessage**: Constructs the notification message based on the event type and game title.

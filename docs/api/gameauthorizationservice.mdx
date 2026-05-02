@@ -6,23 +6,53 @@ sidebar_label: Game Authorization Service
 
 ## Overview
 
-The `GameAuthorizationService` class is part of the `com.upmatches.app.features.game.services` package and provides various authorization checks for game-related operations. It ensures that users have the necessary permissions to view, join, or modify games, and enforces rules regarding game visibility and participant status.
+The `GameAuthorizationService` class is part of the `com.upmatches.app.features.game.services` package and provides various authorization checks related to game management. It ensures that users have the appropriate permissions to view, join, or modify games. This service is crucial for maintaining the integrity and security of game-related operations by enforcing rules and restrictions based on game visibility, user roles, and game status.
 
 ## Public Methods
 
-The following table documents the public methods available in the `GameAuthorizationService` class:
+The following table documents the public methods available in the `GameAuthorizationService` class, including their parameters and return types.
 
-| Method Name                | Parameters                                                                                                                                      | Return Type | Description                                                                                                               |
-|----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|-------------|---------------------------------------------------------------------------------------------------------------------------|
-| `assertCanViewGame`        | `Game game`, `UUID userId`                                                                                                                      | `void`      | Checks if a user can view a game based on its visibility and the user's relationship to the game.                         |
-| `assertIsOrganizer`        | `Game game`, `UUID userId`                                                                                                                      | `void`      | Ensures that the specified user is the organizer of the game.                                                             |
-| `assertGameJoinable`       | `UUID id`, `Game game`                                                                                                                          | `void`      | Verifies that a game is joinable, i.e., it is not past or inactive.                                                       |
-| `assertPrivateAccess`      | `UUID id`, `UUID userId`, `Game game`                                                                                                           | `void`      | Checks if a user has access to a private game, either as the organizer or through a share link.                           |
-| `assertNotAlreadyJoined`   | `UUID id`, `UUID userId`                                                                                                                        | `void`      | Ensures that a user has not already joined the game.                                                                      |
-| `assertVisibilityUnchanged`| `UUID id`, `Game game`, `UpdateGameRequest request`                                                                                             | `void`      | Validates that the game's visibility has not been changed in an update request.                                           |
-| `assertSlotsAboveActive`   | `UUID id`, `Integer newSlots`, `long activeCount`                                                                                               | `void`      | Ensures that the number of slots in a game is not reduced below the current number of active participants.                |
-| `assertImmutableFields`    | `UUID id`, `Game game`, `UpdateGameRequest request`, `long activeCount`                                                                         | `void`      | Checks that certain fields (start time, end time, price, currency) are not changed if there are active participants.      |
+| Method Name                | Parameters                                                                                                                                       | Return Type | Description                                                                                              |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|-------------|----------------------------------------------------------------------------------------------------------|
+| `assertCanViewGame`        | `Game game`, `UUID userId`                                                                                                                       | `void`      | Ensures the user can view the game based on its visibility and their participation status.               |
+| `assertIsOrganizer`        | `Game game`, `UUID userId`                                                                                                                       | `void`      | Verifies that the user is the organizer of the specified game.                                           |
+| `assertGameJoinable`       | `UUID id`, `Game game`                                                                                                                           | `void`      | Checks if the game is joinable, considering its status and whether it has ended.                         |
+| `assertPrivateAccess`      | `UUID id`, `UUID userId`, `Game game`                                                                                                            | `void`      | Confirms that a user has access to a private game, either as an organizer or through a share link.       |
+| `assertNotAlreadyJoined`   | `UUID id`, `UUID userId`                                                                                                                         | `void`      | Ensures the user has not already joined the game.                                                        |
+| `assertVisibilityUnchanged`| `UUID id`, `Game game`, `UpdateGameRequest request`                                                                                              | `void`      | Validates that the game's visibility has not been altered in an update request.                          |
+| `assertSlotsAboveActive`   | `UUID id`, `Integer newSlots`, `long activeCount`                                                                                                | `void`      | Checks that the new slot count is not less than the current number of active participants.               |
+| `assertImmutableFields`    | `UUID id`, `Game game`, `UpdateGameRequest request`, `long activeCount`                                                                          | `void`      | Ensures that certain fields (start time, end time, price, currency) remain unchanged if there are active participants. |
 
-## Usage
+## Detailed Method Descriptions
 
-The `GameAuthorizationService` is typically used within the context of a game management system to enforce business rules and ensure that users interact with games in a manner consistent with their permissions and the game's current state. It relies on repositories to check participant status and access rights, and throws exceptions when authorization checks fail.
+### `assertCanViewGame`
+
+This method checks whether a user can view a game based on its visibility and the user's relationship to the game. It throws a `GameNotFoundException` if the user does not have the necessary permissions.
+
+### `assertIsOrganizer`
+
+This method verifies that the specified user is the organizer of the game. If not, it throws a `NotGameOrganizerException`.
+
+### `assertGameJoinable`
+
+This method determines if a game is joinable by checking its status and whether it has ended. It throws a `GameNotJoinableException` if the game cannot be joined.
+
+### `assertPrivateAccess`
+
+This method ensures that a user has access to a private game. It throws a `PrivateGameAccessDeniedException` if the user is neither the organizer nor has a share link.
+
+### `assertNotAlreadyJoined`
+
+This method checks if a user has already joined a game. If the user is already a participant, it throws an `AlreadyJoinedException`.
+
+### `assertVisibilityUnchanged`
+
+This method ensures that the visibility of a game has not been changed in an update request. If the visibility is altered, it throws a `GameVisibilityImmutableException`.
+
+### `assertSlotsAboveActive`
+
+This method checks that the new slot count for a game is not less than the current number of active participants. It throws a `GameSlotsBelowParticipantsException` if the condition is violated.
+
+### `assertImmutableFields`
+
+This method ensures that certain fields (start time, end time, price, currency) remain unchanged if there are active participants in the game. It throws a `GameImmutableFieldException` if any of these fields are modified.

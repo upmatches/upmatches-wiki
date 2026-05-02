@@ -1,0 +1,55 @@
+---
+id: pricing
+title: Pricing Class Documentation
+sidebar_label: Pricing
+---
+
+## Purpose
+
+The `Pricing` class is a value object representing different pricing strategies for a game. It supports three modes of pricing: flat, gendered, and shuttlecock. Each mode has specific requirements and constraints on the pricing fields. The class ensures that the pricing data is valid according to the selected mode and provides methods to create instances for each pricing strategy.
+
+## Public Methods
+
+### `flat`
+
+Creates a `Pricing` instance with a flat pricing mode.
+
+| Parameter | Type          | Description                      |
+|-----------|---------------|----------------------------------|
+| `amount`  | `BigDecimal`  | The flat price amount.           |
+| `currency`| `Currency`    | The currency for the pricing.    |
+
+**Returns:** `Pricing` - A new `Pricing` instance with flat pricing mode.
+
+### `gendered`
+
+Creates a `Pricing` instance with a gendered pricing mode.
+
+| Parameter | Type          | Description                      |
+|-----------|---------------|----------------------------------|
+| `male`    | `BigDecimal`  | The price for male participants. |
+| `female`  | `BigDecimal`  | The price for female participants.|
+| `currency`| `Currency`    | The currency for the pricing.    |
+
+**Returns:** `Pricing` - A new `Pricing` instance with gendered pricing mode.
+
+### `shuttlecock`
+
+Creates a `Pricing` instance with a shuttlecock pricing mode.
+
+| Parameter     | Type          | Description                      |
+|---------------|---------------|----------------------------------|
+| `base`        | `BigDecimal`  | The base price amount.           |
+| `perShuttle`  | `BigDecimal`  | The price per shuttle.           |
+| `currency`    | `Currency`    | The currency for the pricing.    |
+
+**Returns:** `Pricing` - A new `Pricing` instance with shuttlecock pricing mode.
+
+### `representativeAmount`
+
+Calculates the representative amount for the pricing, used for backward compatibility with legacy systems.
+
+**Returns:** `BigDecimal` - The representative amount based on the pricing mode:
+- **FLAT**: Returns the flat price.
+- **GENDERED**: Returns the lower of the male or female price.
+- **SHUTTLECOCK**: Returns the base price.

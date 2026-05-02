@@ -4,36 +4,38 @@ title: Auth0Connection Enum
 sidebar_label: Auth0Connection
 ---
 
-## Purpose
+## Overview
 
-The `Auth0Connection` enum is part of the `com.upmatches.app.features.auth.enums` package and is designed to represent different authentication providers and their corresponding connection identifiers. It provides a structured way to handle authentication connections, specifically for Google and Facebook, within an application.
+The `Auth0Connection` enum is part of the `com.upmatches.app.features.auth.enums` package. It represents different authentication providers and their corresponding connection identifiers used in an application that integrates with Auth0 for authentication purposes. This enum provides a structured way to manage and retrieve authentication connection details based on provider names.
 
 ## Public Methods
 
+The `Auth0Connection` enum provides the following public methods:
+
 ### `fromProvider`
 
-This static method attempts to retrieve an `Auth0Connection` instance based on a given provider name.
+Retrieves an `Auth0Connection` instance based on the given provider name.
 
-| Parameter | Type   | Description                          |
-|-----------|--------|--------------------------------------|
-| provider  | String | The name of the provider to look up. |
+| Parameter | Type   | Description                       |
+|-----------|--------|-----------------------------------|
+| provider  | String | The name of the authentication provider. |
 
 | Return Type                  | Description                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
-| `Optional<Auth0Connection>`  | An `Optional` containing the `Auth0Connection` if found, otherwise empty.   |
+| `Optional<Auth0Connection>`  | An `Optional` containing the `Auth0Connection` if a match is found, otherwise an empty `Optional`. |
 
 ### `provider`
 
-This method returns the provider name associated with the `Auth0Connection` instance.
+Returns the provider name associated with the `Auth0Connection`.
 
-| Return Type | Description                     |
-|-------------|---------------------------------|
-| String      | The provider name.              |
+| Return Type | Description                            |
+|-------------|----------------------------------------|
+| `String`    | The name of the authentication provider. |
 
 ### `connectionId`
 
-This method returns the connection identifier associated with the `Auth0Connection` instance.
+Returns the connection identifier associated with the `Auth0Connection`.
 
-| Return Type | Description                          |
-|-------------|--------------------------------------|
-| String      | The connection identifier.           |
+| Return Type | Description                                |
+|-------------|--------------------------------------------|
+| `String`    | The connection identifier for the provider. |

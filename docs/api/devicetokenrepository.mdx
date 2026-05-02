@@ -1,25 +1,36 @@
 ---
 id: device-token-repository
-title: DeviceTokenRepository Interface
+title: DeviceTokenRepository
 sidebar_label: DeviceTokenRepository
 ---
 
 import com.upmatches.app.features.notification.entities.DeviceToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-## Purpose
+## Overview
 
-The `DeviceTokenRepository` interface is a part of the notification feature in the application. It extends the `JpaRepository` interface, providing CRUD operations for `DeviceToken` entities. This repository is responsible for managing device tokens associated with users, which are crucial for sending notifications to specific devices.
+The `DeviceTokenRepository` interface is a part of the notification feature in the application. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers CRUD operations and additional query methods for the `DeviceToken` entity. This repository is responsible for managing device tokens associated with users, which are crucial for sending notifications to specific devices.
 
 ## Public Methods
 
 The following table documents the public methods available in the `DeviceTokenRepository` interface:
 
-| Method Signature | Description | Parameters | Return Type |
-| ---------------- | ----------- | ---------- | ----------- |
-| `List<DeviceToken> findByUserId(UUID userId)` | Retrieves a list of device tokens associated with a specific user. | `userId` (UUID): The unique identifier of the user. | `List<DeviceToken>` |
-| `Optional<DeviceToken> findByUserIdAndDeviceToken(UUID userId, String deviceToken)` | Finds a specific device token for a user. | `userId` (UUID): The unique identifier of the user. `deviceToken` (String): The device token string. | `Optional<DeviceToken>` |
-| `void deleteByUserIdAndDeviceToken(UUID userId, String deviceToken)` | Deletes a specific device token associated with a user. | `userId` (UUID): The unique identifier of the user. `deviceToken` (String): The device token string. | `void` |
-| `void deleteByDeviceToken(String deviceToken)` | Deletes a device token regardless of the user. | `deviceToken` (String): The device token string. | `void` |
+| Method Signature | Description |
+|------------------|-------------|
+| `List<DeviceToken> findByUserId(UUID userId)` | Retrieves a list of `DeviceToken` objects associated with a specific user identified by `userId`. |
+| `Optional<DeviceToken> findByUserIdAndDeviceToken(UUID userId, String deviceToken)` | Finds a specific `DeviceToken` for a user based on the `userId` and `deviceToken`. Returns an `Optional` containing the `DeviceToken` if found. |
+| `void deleteByUserIdAndDeviceToken(UUID userId, String deviceToken)` | Deletes a `DeviceToken` associated with a specific `userId` and `deviceToken`. |
+| `void deleteByDeviceToken(String deviceToken)` | Deletes a `DeviceToken` based solely on the `deviceToken`. |
 
-This interface leverages Spring Data JPA's capabilities to simplify database interactions for device token management, ensuring efficient and effective notification delivery.
+## Parameters and Return Types
+
+The following table provides details on the parameters and return types for each method:
+
+| Method | Parameters | Return Type |
+|--------|------------|-------------|
+| `findByUserId` | `UUID userId` | `List<DeviceToken>` |
+| `findByUserIdAndDeviceToken` | `UUID userId`, `String deviceToken` | `Optional<DeviceToken>` |
+| `deleteByUserIdAndDeviceToken` | `UUID userId`, `String deviceToken` | `void` |
+| `deleteByDeviceToken` | `String deviceToken` | `void` |
+
+This documentation provides a concise overview of the `DeviceTokenRepository` interface, detailing its purpose and the methods available for managing device tokens within the application.

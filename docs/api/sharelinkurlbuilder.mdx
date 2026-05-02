@@ -6,39 +6,43 @@ sidebar_label: ShareLinkUrlBuilder
 
 ## Overview
 
-The `ShareLinkUrlBuilder` class is a service component in a Java application designed to construct URLs for sharing resources. It implements the `IShareLinkUrlBuilder` interface and utilizes properties from `JwtProperties` and `ShareLinkProperties` to build URLs for different platforms, such as web and mobile. This class is part of the `com.upmatches.app.features.sharelink.services` package and is marked with the `@Service` annotation, indicating that it is a Spring service component.
+The `ShareLinkUrlBuilder` class is a service component in a Java application designed to construct URLs for sharing resources. It implements the `IShareLinkUrlBuilder` interface and leverages properties from `JwtProperties` and `ShareLinkProperties` to build URLs for different platforms such as web and mobile.
+
+## Purpose
+
+The primary purpose of the `ShareLinkUrlBuilder` class is to generate URLs that can be used to share resources across different platforms. It provides methods to build URLs for web and mobile applications, ensuring that the correct format and paths are used based on the resource type and identifiers.
 
 ## Public Methods
 
 The `ShareLinkUrlBuilder` class provides the following public methods:
 
-| Method Name       | Parameters                                                                 | Return Type | Description                                                                                     |
-|-------------------|-----------------------------------------------------------------------------|-------------|-------------------------------------------------------------------------------------------------|
-| `buildShareUrl`   | `String code`                                                               | `String`    | Constructs a share URL using the base URL from `ShareLinkProperties` and the provided code.     |
-| `buildWebUrl`     | `ResourceType resourceType`, `String resourceId`                            | `String`    | Constructs a web URL using the web base URL from `ShareLinkProperties`, resource type, and ID.  |
-| `buildMobileUrl`  | `ResourceType resourceType`, `String resourceId`                            | `String`    | Constructs a mobile URL using the mobile callback scheme from `JwtProperties`, resource type, and ID. |
+| Method Name       | Description                                                                 | Parameters                                                                                       | Return Type |
+|-------------------|-----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|-------------|
+| `buildShareUrl`   | Constructs a share URL using a provided code.                               | `code` (String): The unique code used to generate the share URL.                                 | `String`    |
+| `buildWebUrl`     | Constructs a web URL for a specific resource type and ID.                   | `resourceType` (ResourceType): The type of resource. <br> `resourceId` (String): The resource ID.| `String`    |
+| `buildMobileUrl`  | Constructs a mobile URL for a specific resource type and ID using a scheme. | `resourceType` (ResourceType): The type of resource. <br> `resourceId` (String): The resource ID.| `String`    |
 
-### Method Details
+## Method Details
 
-#### `buildShareUrl`
+### `buildShareUrl`
 
-- **Parameters:**
-  - `code`: A `String` representing the unique code for the share link.
-- **Returns:** A `String` representing the complete share URL.
-- **Description:** This method concatenates the base URL from `ShareLinkProperties` with a path separator and the provided code to form a complete share URL.
+- **Description**: This method constructs a URL intended for sharing purposes by appending a given code to the base URL defined in `ShareLinkProperties`.
+- **Parameters**:
+  - `code` (String): A unique identifier or code that is appended to the base URL.
+- **Returns**: A `String` representing the complete share URL.
 
-#### `buildWebUrl`
+### `buildWebUrl`
 
-- **Parameters:**
-  - `resourceType`: A `ResourceType` enum indicating the type of resource being shared.
-  - `resourceId`: A `String` representing the unique identifier of the resource.
-- **Returns:** A `String` representing the complete web URL.
-- **Description:** This method constructs a web URL by combining the web base URL from `ShareLinkProperties`, the path of the resource type, and the resource ID.
+- **Description**: This method constructs a URL for accessing a resource via a web application. It uses the base web URL from `ShareLinkProperties` and appends the resource type path and resource ID.
+- **Parameters**:
+  - `resourceType` (ResourceType): An enumeration value representing the type of resource.
+  - `resourceId` (String): A unique identifier for the resource.
+- **Returns**: A `String` representing the complete web URL.
 
-#### `buildMobileUrl`
+### `buildMobileUrl`
 
-- **Parameters:**
-  - `resourceType`: A `ResourceType` enum indicating the type of resource being shared.
-  - `resourceId`: A `String` representing the unique identifier of the resource.
-- **Returns:** A `String` representing the complete mobile URL.
-- **Description:** This method constructs a mobile URL using the mobile callback scheme from `JwtProperties`, the path of the resource type, and the resource ID.
+- **Description**: This method constructs a URL for accessing a resource via a mobile application. It uses the mobile callback scheme from `JwtProperties` and appends the resource type path and resource ID.
+- **Parameters**:
+  - `resourceType` (ResourceType): An enumeration value representing the type of resource.
+  - `resourceId` (String): A unique identifier for the resource.
+- **Returns**: A `String` representing the complete mobile URL.

@@ -1,6 +1,6 @@
 ---
 id: uuid-repository
-title: UuidRepository Interface
+title: UuidRepository
 sidebar_label: UuidRepository
 ---
 
@@ -8,15 +8,15 @@ import { useBaseUrl } from '@docusaurus/core';
 
 ## Purpose
 
-The `UuidRepository` interface is a specialized extension of the Spring Data `JpaRepository` designed to provide a repository interface for entities identified by a UUID. This interface is marked with `@NoRepositoryBean`, indicating that Spring should not create an instance of it directly. Instead, it serves as a base interface for other repository interfaces that require UUID-based entity retrieval.
+The `UuidRepository` interface is a specialized repository interface in Java that extends the `JpaRepository` from the Spring Data JPA framework. It is designed to provide a mechanism for accessing entities by their universally unique identifier (UUID). This interface is marked with the `@NoRepositoryBean` annotation, indicating that Spring should not create an instance of this repository directly. Instead, it serves as a base interface for other repository interfaces that require UUID-based entity retrieval.
 
 ## Public Methods
 
 The `UuidRepository` interface defines the following public method:
 
-| Method Signature | Description |
-|------------------|-------------|
-| `Optional<T> findByUuid(UUID uuid)` | Retrieves an entity by its UUID. |
+| Method Signature               | Description                                                                 |
+|--------------------------------|-----------------------------------------------------------------------------|
+| `Optional<T> findByUuid(UUID uuid)` | Retrieves an entity by its UUID. Returns an `Optional` containing the entity if found, or an empty `Optional` if not. |
 
 ### Method Details
 
@@ -26,12 +26,12 @@ The `UuidRepository` interface defines the following public method:
 
   | Name | Type | Description |
   |------|------|-------------|
-  | `uuid` | `UUID` | The UUID of the entity to be retrieved. |
+  | `uuid` | `UUID` | The universally unique identifier of the entity to be retrieved. |
 
-- **Returns:** 
+- **Return Type:**
 
   | Type | Description |
   |------|-------------|
-  | `Optional<T>` | An `Optional` containing the entity if found, or empty if no entity with the given UUID exists. |
+  | `Optional<T>` | An `Optional` containing the entity if found, or an empty `Optional` if the entity does not exist. |
 
-This method allows for efficient retrieval of entities using their UUID, which is particularly useful in systems where UUIDs are used as primary identifiers for entities.
+This method is useful for applications that require retrieval of entities using UUIDs, which are often used as unique identifiers in distributed systems.

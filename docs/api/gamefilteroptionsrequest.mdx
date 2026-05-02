@@ -4,56 +4,38 @@ title: GameFilterOptionsRequest
 sidebar_label: GameFilterOptionsRequest
 ---
 
-import com.upmatches.app.features.game.enums.GameType;
-import jakarta.validation.constraints.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
 ## Purpose
 
-The `GameFilterOptionsRequest` class is a record used to encapsulate various filtering options for querying game data. It includes fields for date ranges, venue and skill level identifiers, time ranges, game type, and geographical location parameters. This class is designed to facilitate the creation of structured requests for filtering game-related data based on specific criteria.
+The `GameFilterOptionsRequest` class is a Java record used to encapsulate filtering options for game-related queries. It is designed to specify various criteria such as date range, venue, skill level, time, game type, and geographical location to filter games effectively. This record is particularly useful in applications where users need to search for games based on specific parameters.
 
 ## Public Methods
 
-### hasLocation
+The `GameFilterOptionsRequest` record provides several public methods to check the presence of certain fields. These methods enhance the usability of the record by allowing quick checks on the availability of location or other filtering criteria.
 
-Checks if all location-related fields (`latitude`, `longitude`, and `radiusKm`) are non-null.
+### Method Details
 
-| Parameter | Type    | Description |
-|-----------|---------|-------------|
-| None      |         |             |
+| Method Name         | Description                                                                 | Return Type |
+|---------------------|-----------------------------------------------------------------------------|-------------|
+| `hasLocation()`     | Checks if all location-related fields (`latitude`, `longitude`, `radiusKm`) are present. | `boolean`   |
+| `hasAnyLocationField()` | Checks if any of the location-related fields (`latitude`, `longitude`, `radiusKm`) are present. | `boolean`   |
+| `hasSkillLevels()`  | Checks if the `skillLevelIds` list is not null and not empty.               | `boolean`   |
+| `hasVenues()`       | Checks if the `venueIds` list is not null and not empty.                    | `boolean`   |
 
-**Returns:** `boolean` - `true` if all location fields are non-null, otherwise `false`.
+## Parameters
 
-### hasAnyLocationField
+The `GameFilterOptionsRequest` record includes the following parameters:
 
-Checks if any of the location-related fields (`latitude`, `longitude`, or `radiusKm`) are non-null.
+| Parameter Name | Type        | Description                                                                 |
+|----------------|-------------|-----------------------------------------------------------------------------|
+| `fromDate`     | `LocalDate` | The start date for the game filter. Must not be null.                       |
+| `toDate`       | `LocalDate` | The end date for the game filter. Must not be null.                         |
+| `venueIds`     | `List<Long>`| A list of venue IDs to filter games. Maximum size is 20.                    |
+| `skillLevelIds`| `List<Long>`| A list of skill level IDs to filter games. Maximum size is 20.              |
+| `fromTime`     | `LocalTime` | The start time for the game filter.                                         |
+| `toTime`       | `LocalTime` | The end time for the game filter.                                           |
+| `gameType`     | `GameType`  | The type of game to filter.                                                 |
+| `latitude`     | `BigDecimal`| The latitude for location-based filtering. Must be between -90 and 90.      |
+| `longitude`    | `BigDecimal`| The longitude for location-based filtering. Must be between -180 and 180.   |
+| `radiusKm`     | `Integer`   | The radius in kilometers for location-based filtering. Must be between 1 and 5. |
 
-| Parameter | Type    | Description |
-|-----------|---------|-------------|
-| None      |         |             |
-
-**Returns:** `boolean` - `true` if any location field is non-null, otherwise `false`.
-
-### hasSkillLevels
-
-Checks if the `skillLevelIds` list is non-null and not empty.
-
-| Parameter | Type    | Description |
-|-----------|---------|-------------|
-| None      |         |             |
-
-**Returns:** `boolean` - `true` if `skillLevelIds` is non-null and not empty, otherwise `false`.
-
-### hasVenues
-
-Checks if the `venueIds` list is non-null and not empty.
-
-| Parameter | Type    | Description |
-|-----------|---------|-------------|
-| None      |         |             |
-
-**Returns:** `boolean` - `true` if `venueIds` is non-null and not empty, otherwise `false`.
+This record is validated using Jakarta Bean Validation annotations to ensure that the input data adheres to specified constraints, providing robust error handling and data integrity.

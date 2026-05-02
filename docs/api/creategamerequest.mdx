@@ -4,33 +4,29 @@ title: CreateGameRequest Class
 sidebar_label: CreateGameRequest
 ---
 
-## Overview
+## Purpose
 
-The `CreateGameRequest` class is a Java record used to encapsulate the data required to create a new game request in the application. This class ensures that all necessary information is provided and validated before a game is created. It uses various validation annotations to enforce constraints on the data fields.
+The `CreateGameRequest` class is a Java record used to encapsulate the data required to create a new game request within the application. It ensures that all necessary fields are provided and validated according to specified constraints. This class is part of the `com.upmatches.app.features.game.requests` package and utilizes various validation annotations to enforce data integrity.
 
 ## Public Methods
 
-Since `CreateGameRequest` is a record, it automatically provides the following methods:
+Since `CreateGameRequest` is a record, it automatically provides a constructor, accessor methods, `equals()`, `hashCode()`, and `toString()` methods. Below is a table documenting the parameters of the record:
 
-- **Constructor**: Initializes a new instance of the `CreateGameRequest` record with the specified parameters.
-- **Accessors**: For each field, a corresponding accessor method is provided to retrieve the field's value.
+| Parameter         | Type           | Description                                                                                     |
+|-------------------|----------------|-------------------------------------------------------------------------------------------------|
+| `activityId`      | `UUID`         | Unique identifier for the activity. Must not be null.                                           |
+| `venueId`         | `Long`         | Unique identifier for the venue. Must not be null.                                              |
+| `skillLevelFromId`| `Long`         | Identifier for the starting skill level. Must not be null.                                      |
+| `skillLevelToId`  | `Long`         | Identifier for the ending skill level. Must not be null.                                        |
+| `currency`        | `String`       | Currency code in 3-letter ISO-4217 format. Must not be null and must match the pattern.         |
+| `price`           | `BigDecimal`   | Price of the game. Must not be null, must be >= 0, and have at most 8 digits and 2 decimals.    |
+| `pricing`         | `PricingRequest`| Pricing details. Must be valid if provided.                                                    |
+| `slots`           | `Integer`      | Number of slots available. Must not be null, must be between 1 and 100 inclusive.               |
+| `startTime`       | `Instant`      | Start time of the game. Must not be null.                                                       |
+| `endTime`         | `Instant`      | End time of the game. Must not be null.                                                         |
+| `visibility`      | `GameVisibility`| Visibility setting for the game. Must not be null.                                             |
+| `gameType`        | `GameType`     | Type of the game. Must not be null.                                                             |
+| `joinAsOrganizer` | `Boolean`      | Indicates if the requester wants to join as an organizer.                                       |
+| `remark`          | `String`       | Additional remarks about the game. Must be at most 500 characters.                              |
 
-Below is a detailed description of the fields, their types, and validation constraints:
-
-| Field Name        | Type          | Description                                                                 | Validation Constraints                                                                 |
-|-------------------|---------------|-----------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
-| `activityId`      | `UUID`        | The unique identifier for the activity.                                     | Must not be null.                                                                      |
-| `venueId`         | `Long`        | The unique identifier for the venue.                                        | Must not be null.                                                                      |
-| `skillLevelFromId`| `Long`        | The starting skill level identifier.                                        | Must not be null.                                                                      |
-| `skillLevelToId`  | `Long`        | The ending skill level identifier.                                          | Must not be null.                                                                      |
-| `currency`        | `String`      | The currency code in ISO-4217 format.                                       | Must not be null. Must be a 3-letter ISO-4217 code.                                    |
-| `price`           | `BigDecimal`  | The price for the game.                                                     | Must not be null. Must be >= 0.00. Max 8 integer digits and 2 decimal places.          |
-| `slots`           | `Integer`     | The number of slots available for the game.                                 | Must not be null. Must be between 1 and 100 inclusive.                                 |
-| `startTime`       | `Instant`     | The start time of the game.                                                 | Must not be null.                                                                      |
-| `endTime`         | `Instant`     | The end time of the game.                                                   | Must not be null.                                                                      |
-| `visibility`      | `GameVisibility` | The visibility status of the game.                                       | Must not be null.                                                                      |
-| `gameType`        | `GameType`    | The type of game being created.                                             | Must not be null.                                                                      |
-| `joinAsOrganizer` | `Boolean`     | Indicates if the user joins as an organizer.                                | Optional.                                                                              |
-| `remark`          | `String`      | Additional remarks or comments about the game.                              | Optional. Must be at most 500 characters.                                              |
-
-This class is part of the `com.upmatches.app.features.game.requests` package and relies on validation annotations from the `jakarta.validation.constraints` package to ensure data integrity.
+This class leverages Java's record feature to provide a concise and immutable data structure, ensuring that all fields are initialized and validated upon creation.

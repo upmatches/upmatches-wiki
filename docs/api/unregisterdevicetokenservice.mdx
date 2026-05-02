@@ -6,37 +6,42 @@ sidebar_label: UnregisterDeviceTokenService
 
 ## Overview
 
-The `UnregisterDeviceTokenService` class is a service component in a Java application that handles the unregistration of device tokens associated with a user. This service is part of the notification feature and is responsible for removing a device token from the repository, ensuring that notifications are no longer sent to that device.
+The `UnregisterDeviceTokenService` class is a part of the notification services in the application. It is responsible for unregistering a device token associated with a user. This service ensures that the device token is removed from the repository, effectively stopping notifications from being sent to the device.
 
 ## Class Details
 
-The class is annotated with `@Service`, indicating that it is a Spring service component. It implements the `IUnregisterDeviceTokenService` interface, which likely defines the contract for unregistering device tokens.
+The class is annotated with `@Service`, indicating that it is a Spring service component. It implements the `IUnregisterDeviceTokenService` interface and is marked as `non-sealed`, allowing other classes to extend it if necessary.
 
-### Dependencies
+## Constructor
 
-- `DeviceTokenRepository`: A repository interface for managing device tokens in the data store.
-- `IAuthenticatedUserResolver`: A service used to resolve the authenticated user's ID.
-- `ServiceOperationExecutor`: A utility class used to execute service operations with a specified operation status.
-- `ResourceNotFoundException`: An exception thrown when a resource is not found during the operation.
+The constructor of `UnregisterDeviceTokenService` requires two dependencies:
+
+- `DeviceTokenRepository`: Used to interact with the data store for device tokens.
+- `IAuthenticatedUserResolver`: Used to resolve the authenticated user's ID.
 
 ## Public Methods
 
 ### `execute`
 
-The `execute` method is the primary public method of the `UnregisterDeviceTokenService` class. It is responsible for unregistering a device token for the authenticated user.
+The `execute` method is the primary method of this service, responsible for unregistering a device token for the authenticated user.
+
+| Method Signature | Description |
+|------------------|-------------|
+| `public void execute(String deviceToken)` | Unregisters the specified device token for the authenticated user. |
+
+#### Parameters
 
 | Parameter   | Type   | Description                                      |
 |-------------|--------|--------------------------------------------------|
-| deviceToken | String | The device token to be unregistered.             |
+| `deviceToken` | `String` | The device token to be unregistered.           |
 
-| Return Type | Description |
-|-------------|-------------|
-| void        | This method does not return a value. |
+#### Return Type
 
-#### Method Details
+This method does not return any value (`void`).
 
-- **Transactional**: The method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction. This guarantees that the changes are committed only if the entire operation is successful.
-- **Operation Execution**: The method uses `ServiceOperationExecutor.executeVoid` to perform the deletion operation. This utility handles the execution and throws a `ResourceNotFoundException` if the device token is not found for the user.
-- **User Resolution**: The method retrieves the user ID of the authenticated user using `userResolver.requireUserId()`, ensuring that the operation is performed for the correct user.
+## Method Details
 
-This service is crucial for maintaining the integrity of the notification system by allowing users to manage their registered devices effectively.
+- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operation is executed within a transaction context.
+- **Operation Execution**: The method uses `ServiceOperationExecutor.executeVoid` to perform the deletion operation. This utility handles the operation status and throws a `ResourceNotFoundException` if the device token is not found for the user.
+
+By using this service, applications can effectively manage the lifecycle of device tokens, ensuring that notifications are only sent to active and registered devices.

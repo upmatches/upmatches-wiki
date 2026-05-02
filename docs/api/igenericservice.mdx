@@ -6,7 +6,7 @@ sidebar_label: IGenericService
 
 ## Overview
 
-The `IGenericService` interface defines a generic service contract for managing entities in an application. It provides methods for common operations such as retrieving, saving, updating, and deleting entities. This interface is designed to be implemented by service classes that handle specific types of entities, allowing for consistent and reusable service logic across different parts of an application.
+The `IGenericService` interface defines a generic service contract for managing entities in an application. It provides methods for common operations such as retrieving, saving, updating, and deleting entities. This interface is designed to be implemented by service classes that handle specific types of entities.
 
 ## Public Methods
 
@@ -14,12 +14,12 @@ The `IGenericService` interface defines a generic service contract for managing 
 
 Retrieves a paginated list of entities.
 
-| Parameter     | Type   | Description                          |
-|---------------|--------|--------------------------------------|
-| `page`        | `int`  | The page number to retrieve.         |
-| `size`        | `int`  | The number of items per page.        |
-| `sortBy`      | `String` | The field to sort by.               |
-| `sortDirection` | `String` | The direction of sorting (e.g., ASC, DESC). |
+| Parameter     | Type   | Description                        |
+|---------------|--------|------------------------------------|
+| `page`        | `int`  | The page number to retrieve.       |
+| `size`        | `int`  | The number of items per page.      |
+| `sortBy`      | `String` | The field to sort by.             |
+| `sortDirection` | `String` | The direction of sorting (e.g., "asc" or "desc"). |
 
 **Returns:** `PagedResponse<K>` - A paginated response containing the entities.
 
@@ -27,9 +27,9 @@ Retrieves a paginated list of entities.
 
 Retrieves an entity by its ID.
 
-| Parameter | Type   | Description           |
-|-----------|--------|-----------------------|
-| `id`      | `Long` | The ID of the entity. |
+| Parameter | Type   | Description         |
+|-----------|--------|---------------------|
+| `id`      | `Long` | The ID of the entity.|
 
 **Returns:** `K` - The entity corresponding to the given ID.
 
@@ -37,9 +37,9 @@ Retrieves an entity by its ID.
 
 Retrieves an entity by its UUID.
 
-| Parameter | Type   | Description             |
-|-----------|--------|-------------------------|
-| `uuid`    | `UUID` | The UUID of the entity. |
+| Parameter | Type   | Description          |
+|-----------|--------|----------------------|
+| `uuid`    | `UUID` | The UUID of the entity.|
 
 **Returns:** `K` - The entity corresponding to the given UUID.
 
@@ -47,9 +47,9 @@ Retrieves an entity by its UUID.
 
 Saves a new entity.
 
-| Parameter | Type | Description          |
-|-----------|------|----------------------|
-| `entity`  | `T`  | The entity to save.  |
+| Parameter | Type | Description         |
+|-----------|------|---------------------|
+| `entity`  | `T`  | The entity to save. |
 
 **Returns:** `K` - The saved entity.
 
@@ -57,10 +57,10 @@ Saves a new entity.
 
 Updates an existing entity by its ID.
 
-| Parameter | Type   | Description           |
-|-----------|--------|-----------------------|
-| `id`      | `Long` | The ID of the entity. |
-| `entity`  | `T`    | The entity to update. |
+| Parameter | Type   | Description         |
+|-----------|--------|---------------------|
+| `id`      | `Long` | The ID of the entity to update. |
+| `entity`  | `T`    | The updated entity data.        |
 
 **Returns:** `K` - The updated entity.
 
@@ -68,49 +68,41 @@ Updates an existing entity by its ID.
 
 Updates an existing entity by its UUID.
 
-| Parameter | Type   | Description             |
-|-----------|--------|-------------------------|
-| `uuid`    | `UUID` | The UUID of the entity. |
-| `entity`  | `T`    | The entity to update.   |
+| Parameter | Type   | Description          |
+|-----------|--------|----------------------|
+| `uuid`    | `UUID` | The UUID of the entity to update. |
+| `entity`  | `T`    | The updated entity data.          |
 
 **Returns:** `K` - The updated entity.
 
 ### `softDelete`
 
-Soft deletes an entity by its ID.
+Marks an entity as deleted by its ID without removing it from the database.
 
-| Parameter | Type   | Description           |
-|-----------|--------|-----------------------|
-| `id`      | `Long` | The ID of the entity. |
-
-**Returns:** `void`
+| Parameter | Type   | Description         |
+|-----------|--------|---------------------|
+| `id`      | `Long` | The ID of the entity to soft delete. |
 
 ### `softDeleteByUuid`
 
-Soft deletes an entity by its UUID.
+Marks an entity as deleted by its UUID without removing it from the database.
 
-| Parameter | Type   | Description             |
-|-----------|--------|-------------------------|
-| `uuid`    | `UUID` | The UUID of the entity. |
-
-**Returns:** `void`
+| Parameter | Type   | Description          |
+|-----------|--------|----------------------|
+| `uuid`    | `UUID` | The UUID of the entity to soft delete. |
 
 ### `delete`
 
-Permanently deletes an entity by its ID.
+Permanently removes an entity by its ID from the database.
 
-| Parameter | Type   | Description           |
-|-----------|--------|-----------------------|
-| `id`      | `Long` | The ID of the entity. |
-
-**Returns:** `void`
+| Parameter | Type   | Description         |
+|-----------|--------|---------------------|
+| `id`      | `Long` | The ID of the entity to delete. |
 
 ### `deleteByUuid`
 
-Permanently deletes an entity by its UUID.
+Permanently removes an entity by its UUID from the database.
 
-| Parameter | Type   | Description             |
-|-----------|--------|-------------------------|
-| `uuid`    | `UUID` | The UUID of the entity. |
-
-**Returns:** `void`
+| Parameter | Type   | Description          |
+|-----------|--------|----------------------|
+| `uuid`    | `UUID` | The UUID of the entity to delete. |

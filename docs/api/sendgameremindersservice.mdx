@@ -4,9 +4,9 @@ title: SendGameRemindersService
 sidebar_label: SendGameRemindersService
 ---
 
-## Overview
+## Purpose
 
-The `SendGameRemindersService` class is a service component in a Java application that handles the sending of game reminder notifications to participants. This service is responsible for notifying users about upcoming games, either individually or in an aggregated manner, depending on the notification type. It interacts with various repositories and services to fetch game data, create notifications, and deliver them via push and email notifications.
+The `SendGameRemindersService` class is responsible for sending notifications to users about upcoming games. It handles both individual game reminders and aggregated reminders for games occurring in the next three days. The service interacts with various repositories and services to fetch game data, create notifications, and deliver them via push notifications or email.
 
 ## Public Methods
 
@@ -14,34 +14,44 @@ The `SendGameRemindersService` class is a service component in a Java applicatio
 
 Executes the process of sending game reminders based on the specified notification type and time range.
 
-| Parameter      | Type            | Description                                                                 |
-|----------------|-----------------|-----------------------------------------------------------------------------|
-| `type`         | `NotificationType` | The type of notification to send (e.g., 3-day reminder, 1-day reminder).    |
-| `minHoursAhead`| `long`          | The minimum number of hours ahead from the current time to consider games.  |
-| `maxHoursAhead`| `long`          | The maximum number of hours ahead from the current time to consider games.  |
+| Parameter     | Type            | Description                                                                 |
+|---------------|-----------------|-----------------------------------------------------------------------------|
+| `type`        | `NotificationType` | The type of notification to send (e.g., GAME_REMINDER_3_DAYS).              |
+| `minHoursAhead` | `long`          | The minimum number of hours ahead to consider for sending reminders.       |
+| `maxHoursAhead` | `long`          | The maximum number of hours ahead to consider for sending reminders.       |
 
 **Returns:** `int` - The number of notifications sent.
 
-## Key Functionalities
+## Detailed Description
 
-- **Game Retrieval:** Fetches games scheduled to start within a specified time range.
-- **Notification Sending:** Sends notifications either as individual game reminders or aggregated reminders for multiple games.
-- **Recipient Identification:** Determines the recipients of the notifications, including game organizers and active participants.
-- **External Delivery:** Delivers notifications via push notifications and emails, ensuring that users are informed even if push notifications fail.
-
-## Dependencies
+### Class Dependencies
 
 - **Repositories:**
-  - `GameRepository`: For retrieving game data.
-  - `GameParticipantRepository`: For retrieving game participants.
-  - `NotificationRepository`: For checking existing notifications.
+  - `GameRepository`: Used to fetch scheduled games within a specified time range.
+  - `GameParticipantRepository`: Used to find active participants of a game.
+  - `NotificationRepository`: Used to check for existing notifications and store new ones.
 
 - **Services:**
-  - `ICreateNotificationService`: For creating notification entities.
-  - `IPushNotificationService`: For sending push notifications.
-  - `IEmailNotificationService`: For sending email notifications.
+  - `ICreateNotificationService`: Used to create new notification entities.
+  - `IPushNotificationService`: Used to send push notifications.
+  - `IEmailNotificationService`: Used to send email notifications.
 
 - **Properties:**
-  - `ShareLinkProperties`: For generating game URLs.
+  - `ShareLinkProperties`: Provides configuration for generating game URLs.
 
-This service is a critical component for ensuring that users are reminded of their upcoming games, enhancing user engagement and participation.
+### Notification Process
+
+1. **Fetch Games:** The service retrieves games scheduled to start within a specified time window.
+2. **Determine Notification Type:** Depending on the `NotificationType`, it either sends individual game reminders or aggregated reminders for games occurring in the next three days.
+3. **Create and Send Notifications:** For each game or group of games, the service creates a notification and attempts to deliver it via push notification. If push delivery fails, it falls back to email delivery.
+
+### Helper Methods
+
+- **`sendPerGameReminders`:** Sends individual reminders for each game.
+- **`sendAggregatedThreeDayReminders`:** Sends aggregated reminders for games occurring in the next three days.
+- **`deliverExternally`:** Handles the external delivery of notifications via push or email.
+- **`recipientIdsFor`:** Retrieves the set of recipient IDs for a given game.
+- **`localDateFor`:** Converts a game's start time to a local date in the Singapore timezone.
+- **`dateResourceId`:** Generates a UUID for a notification resource based on its type and date.
+- **`courtLabel`:** Returns the appropriate label ("court" or "courts") based on the count.
+- **`formatDate`:** Formats a date using a predefined pattern.

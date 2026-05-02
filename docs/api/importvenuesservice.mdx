@@ -1,37 +1,42 @@
 ---
 id: import-venues-service
 title: ImportVenuesService
-sidebar_label: ImportVenuesService
+sidebar_label: Import Venues Service
 ---
 
 ## Overview
 
-The `ImportVenuesService` class is a part of the `com.upmatches.app.features.venue.services` package. It is responsible for importing venue data from a JSON file and saving it into the database. This service handles the parsing of the JSON file, validation of data, and the creation of `Venue`, `Activity`, `Station`, and `TransitLine` entities. It uses repositories to interact with the database and ensures that the import process is auditable and transactional.
+The `ImportVenuesService` class is responsible for importing venue data from a JSON file. It processes the data, validates it, and saves it to the database. This service is designed to handle complex relationships between venues, activities, stations, and transit lines, ensuring that all related entities are correctly linked and stored.
 
 ## Public Methods
 
 ### `execute`
 
-This method is the main entry point for importing venues. It takes a JSON file as input, parses it, and processes the import of venue data.
+This method is the entry point for importing venues from a JSON file. It parses the file, processes the data, and returns a response indicating the number of venues imported.
 
-| Parameter | Type            | Description                  |
-|-----------|-----------------|------------------------------|
-| `file`    | `MultipartFile` | The JSON file containing venue data to be imported. |
+| Parameter | Type           | Description                      |
+|-----------|----------------|----------------------------------|
+| `file`    | `MultipartFile`| The JSON file containing venue data to be imported. |
 
 | Return Type          | Description                                      |
 |----------------------|--------------------------------------------------|
-| `VenueImportResponse` | A response object containing the count of successfully imported venues. |
+| `VenueImportResponse`| A response object containing the count of imported venues. |
 
 ## Detailed Description
 
-- **Purpose**: The `ImportVenuesService` class is designed to handle the import of venue data from a JSON file. It ensures that the data is correctly parsed, validated, and stored in the database. The service is transactional, meaning that it will roll back any changes if an error occurs during the import process.
+The `ImportVenuesService` class is a Spring `@Service` that implements the `IImportVenuesService` interface. It uses various repositories to interact with the database and an `ObjectMapper` to parse JSON data. The service is marked as `@Transactional` to ensure that all database operations are atomic.
 
-- **Dependencies**: The service relies on several repositories (`VenueRepository`, `ActivityRepository`, `StationRepository`, `TransitLineRepository`) to interact with the database. It also uses `ObjectMapper` for JSON parsing.
+### Key Functionalities
 
-- **Error Handling**: The service throws an `InvalidFileException` if the JSON file cannot be parsed or if the station code format is invalid. It throws a `ResourceNotFoundException` if an activity referenced in the JSON file does not exist in the database.
+- **JSON Parsing**: The service uses Jackson's `ObjectMapper` to parse the JSON file into a list of `VenueImportRequest` objects.
+- **Data Processing**: It processes each venue request, checking for existing records to prevent duplicates, and creates new entities as needed.
+- **Entity Relationships**: The service manages complex relationships between venues, activities, stations, and transit lines, ensuring data integrity.
+- **Error Handling**: It throws custom exceptions like `InvalidFileException` and `ResourceNotFoundException` to handle errors gracefully.
 
-- **Auditing**: The `execute` method is annotated with `@Auditable`, indicating that the import operation is logged for auditing purposes.
+### Private Methods
 
-- **Transactional**: The `@Transactional` annotation ensures that the entire import process is atomic. If any part of the process fails, all changes are rolled back to maintain data integrity.
+- **`parseJsonFile`**: Parses the JSON file and converts it into a list of `VenueImportRequest` objects.
+- **`processImport`**: Processes the list of venue requests, creating and saving entities to the database.
+- **`resolveStation`**: Resolves station details, ensuring that each station is linked to the correct transit lines.
 
-This service is a critical component for managing venue data within the application, ensuring that new venues can be efficiently and accurately imported from external sources.
+This service is a critical component for importing and managing venue data, ensuring that all related entities are accurately represented in the system.

@@ -4,104 +4,23 @@ title: GameLookupService
 sidebar_label: GameLookupService
 ---
 
-## Purpose
+## Purpose of the `GameLookupService` Class
 
-The `GameLookupService` class is a service component in a Java application that provides methods to retrieve various entities such as `Game`, `Activity`, `Venue`, `User`, and `SkillLevel` from their respective repositories. It ensures that if an entity is not found, a specific exception is thrown, providing a clear error message. This service is part of the application's backend logic, typically used to manage and access game-related data.
+The `GameLookupService` class is a service component in a Java application that provides methods to retrieve various entities such as `Game`, `Activity`, `Venue`, `User`, and `SkillLevel` from their respective repositories. It ensures that the entities are fetched correctly and throws specific exceptions if they are not found. This class is part of a larger application that likely involves managing games, activities, and user interactions.
 
 ## Public Methods
 
-### `findGameOrThrow`
+The following table documents the public methods available in the `GameLookupService` class, including their parameters and return types.
 
-Retrieves a `Game` entity by its ID, ensuring it is not marked as deleted.
+| Method Name                  | Parameters                                                                 | Return Type | Description                                                                                          |
+|------------------------------|----------------------------------------------------------------------------|-------------|------------------------------------------------------------------------------------------------------|
+| `findGameOrThrow`            | `UUID id`                                                                  | `Game`      | Finds a game by its ID, ignoring deleted games, and throws `GameNotFoundException` if not found.     |
+| `findGameForUpdateOrThrow`   | `UUID id`                                                                  | `Game`      | Finds a game by its ID for update purposes and throws `GameNotFoundException` if not found.          |
+| `findGameIgnoringDeletedOrThrow` | `UUID id`                                                             | `Game`      | Finds a game by its ID, including deleted games, and throws `GameNotFoundException` if not found.    |
+| `findActivityOrThrow`        | `UUID id`                                                                  | `Activity`  | Finds an activity by its ID and throws `ResourceNotFoundException` if not found.                     |
+| `findVenueOrThrow`           | `Long id`                                                                  | `Venue`     | Finds a venue by its ID and throws `ResourceNotFoundException` if not found.                         |
+| `findUserOrThrow`            | `UUID id`                                                                  | `User`      | Finds a user by their ID and throws `ResourceNotFoundException` if not found.                        |
+| `findUserForUpdateOrThrow`   | `UUID id`                                                                  | `User`      | Finds a user by their ID for update purposes and throws `ResourceNotFoundException` if not found.    |
+| `findSkillLevelOrThrow`      | `Long id`                                                                  | `SkillLevel`| Finds a skill level by its ID and throws `ResourceNotFoundException` if not found.                   |
 
-| Parameter | Type   | Description          |
-|-----------|--------|----------------------|
-| `id`      | `UUID` | The ID of the game.  |
-
-| Return Type |
-|-------------|
-| `Game`      |
-
-### `findGameForUpdateOrThrow`
-
-Retrieves a `Game` entity by its ID for update purposes.
-
-| Parameter | Type   | Description          |
-|-----------|--------|----------------------|
-| `id`      | `UUID` | The ID of the game.  |
-
-| Return Type |
-|-------------|
-| `Game`      |
-
-### `findGameIgnoringDeletedOrThrow`
-
-Retrieves a `Game` entity by its ID, ignoring its deletion status.
-
-| Parameter | Type   | Description          |
-|-----------|--------|----------------------|
-| `id`      | `UUID` | The ID of the game.  |
-
-| Return Type |
-|-------------|
-| `Game`      |
-
-### `findActivityOrThrow`
-
-Retrieves an `Activity` entity by its ID.
-
-| Parameter | Type   | Description             |
-|-----------|--------|-------------------------|
-| `id`      | `UUID` | The ID of the activity. |
-
-| Return Type |
-|-------------|
-| `Activity`  |
-
-### `findVenueOrThrow`
-
-Retrieves a `Venue` entity by its ID.
-
-| Parameter | Type   | Description          |
-|-----------|--------|----------------------|
-| `id`      | `Long` | The ID of the venue. |
-
-| Return Type |
-|-------------|
-| `Venue`     |
-
-### `findUserOrThrow`
-
-Retrieves a `User` entity by its ID.
-
-| Parameter | Type   | Description         |
-|-----------|--------|---------------------|
-| `id`      | `UUID` | The ID of the user. |
-
-| Return Type |
-|-------------|
-| `User`      |
-
-### `findUserForUpdateOrThrow`
-
-Retrieves a `User` entity by its ID for update purposes.
-
-| Parameter | Type   | Description         |
-|-----------|--------|---------------------|
-| `id`      | `UUID` | The ID of the user. |
-
-| Return Type |
-|-------------|
-| `User`      |
-
-### `findSkillLevelOrThrow`
-
-Retrieves a `SkillLevel` entity by its ID.
-
-| Parameter | Type   | Description               |
-|-----------|--------|---------------------------|
-| `id`      | `Long` | The ID of the skill level.|
-
-| Return Type |
-|-------------|
-| `SkillLevel`|
+Each method in the `GameLookupService` class is designed to interact with a specific repository to retrieve an entity. If the entity is not found, a custom exception is thrown to indicate the absence of the requested resource. This ensures that the application can handle missing data gracefully and provide meaningful error messages to the user or calling service.

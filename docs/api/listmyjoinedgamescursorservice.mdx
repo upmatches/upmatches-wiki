@@ -6,38 +6,35 @@ sidebar_label: List My Joined Games Cursor Service
 
 ## Overview
 
-The `ListMyJoinedGamesCursorService` class is a service component in a Java application that manages the retrieval of games a user has joined. It leverages cursor-based pagination to efficiently handle large datasets. This service is part of the application's game feature and interacts with repositories to fetch game data and participant counts.
+The `ListMyJoinedGamesCursorService` class is a Spring service responsible for retrieving a paginated list of games that a user has joined. It utilizes cursor-based pagination to efficiently navigate through large datasets. This service interacts with repositories to fetch game data and participant counts, ensuring that only active participants are considered.
 
 ## Public Methods
 
 ### `execute`
 
-Executes the service operation to retrieve a paginated list of games that the authenticated user has joined.
+Retrieves a paginated list of games joined by the authenticated user, starting from a specified cursor position.
 
-| Parameter | Type   | Description                                      |
-|-----------|--------|--------------------------------------------------|
-| `cursor`  | String | The cursor string for pagination.                |
-| `size`    | int    | The number of records to retrieve per page.      |
+| Parameter | Type   | Description                                         |
+|-----------|--------|-----------------------------------------------------|
+| `cursor`  | String | The cursor indicating the starting point of the page. |
+| `size`    | int    | The number of games to retrieve.                    |
 
-| Return Type                          | Description                                                  |
-|--------------------------------------|--------------------------------------------------------------|
-| `CursorPagedResponse<GameResponse>`  | A paginated response containing game data and the next cursor. |
+| Return Type                          | Description                                           |
+|--------------------------------------|-------------------------------------------------------|
+| `CursorPagedResponse<GameResponse>`  | A response containing the list of games and the next cursor. |
 
 ## Method Details
 
-### `execute`
+### `execute(String cursor, int size)`
 
-- **Purpose**: Retrieves a list of games joined by the authenticated user, using cursor-based pagination.
-- **Parameters**:
-  - `cursor`: A string representing the current position in the dataset for pagination.
-  - `size`: An integer specifying the number of games to retrieve.
-- **Returns**: A `CursorPagedResponse` object containing a list of `GameResponse` objects and a cursor for the next page of results.
-- **Operation**:
-  - Resolves the authenticated user's ID.
-  - Decodes the cursor to determine the starting point for retrieval.
-  - Fetches the list of games the user has joined from the `GameRepository`.
-  - Counts active participants for each game using the `GameParticipantRepository`.
-  - Constructs a list of `GameResponse` objects for the retrieved games.
-  - Encodes a new cursor if there are more games to fetch.
+- **Purpose**: This method retrieves a list of games that the authenticated user has joined, using cursor-based pagination. It decodes the cursor to determine the starting point and fetches the specified number of games. It also calculates the number of active participants for each game and encodes the next cursor for subsequent requests.
+- **Transactional**: This method is marked as `@Transactional(readOnly = true)`, indicating that it performs read-only operations within a transaction context.
 
-The `ListMyJoinedGamesCursorService` class is designed to be used within a Spring application, marked with the `@Service` annotation, and supports transactional operations with read-only settings to ensure data consistency during retrieval.
+### Private Methods
+
+#### `countParticipants(List<Game> games)`
+
+- **Purpose**: Counts the number of active participants for each game in the provided list.
+- **Return Type**: `Map<UUID, Long>` - A map where the key is the game ID and the value is the count of active participants.
+
+This service is crucial for applications where users need to efficiently browse through their joined games, providing a seamless and performant user experience.

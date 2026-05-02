@@ -4,18 +4,26 @@ title: IMarkAllReadService Interface
 sidebar_label: IMarkAllReadService
 ---
 
+## Overview
+
+The `IMarkAllReadService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for marking all notifications as read within an application. This interface is designed to be implemented by classes that provide the actual functionality for marking notifications as read.
+
 ## Purpose
 
-The `IMarkAllReadService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for marking all notifications as read within an application. This interface is designed to be implemented by classes that provide the actual logic for marking notifications as read.
+The primary purpose of the `IMarkAllReadService` interface is to ensure that any class implementing it provides a method to mark all notifications as read. This is useful in scenarios where a user wants to clear all unread notifications with a single action.
 
 ## Public Methods
 
 The `IMarkAllReadService` interface declares the following public method:
 
-| Method Signature | Description | Parameters | Return Type |
-|------------------|-------------|------------|-------------|
-| `Integer execute()` | Marks all notifications as read. | None | `Integer` |
+| Method Signature | Description |
+|------------------|-------------|
+| `Integer execute()` | Marks all notifications as read and returns the number of notifications that were marked as read. |
 
 ### Method Details
 
-- **`execute()`**: This method is responsible for marking all notifications as read. It returns an `Integer` which could represent the number of notifications that were marked as read or a status code indicating the result of the operation.
+#### `execute`
+
+- **Description**: This method is responsible for marking all notifications as read.
+- **Parameters**: None
+- **Return Type**: `Integer` - The method returns an `Integer` representing the number of notifications that were successfully marked as read.

@@ -6,13 +6,13 @@ sidebar_label: AuthenticatedUserResolver
 
 ## Purpose
 
-The `AuthenticatedUserResolver` class is a service component in a Spring application that provides methods to resolve the authenticated user's ID from the security context. It implements the `IAuthenticatedUserResolver` interface and is responsible for extracting the user ID from a JWT token present in the authentication context. This class is crucial for applications that need to identify users based on their authentication tokens.
+The `AuthenticatedUserResolver` class is a service component in a Spring application that provides methods to resolve the authenticated user's ID from the security context. It implements the `IAuthenticatedUserResolver` interface and is designed to handle authentication scenarios using JWT (JSON Web Tokens). The class offers methods to either require or optionally retrieve the user ID from the authentication token.
 
 ## Public Methods
 
 ### `requireUserId`
 
-This method retrieves the user ID from the current authentication context. It throws an `AuthenticationException` if no valid authentication is found or if the user ID in the token subject is invalid.
+This method retrieves the user ID from the current authentication token. It throws an `AuthenticationException` if no valid authentication is found or if the token's subject is invalid.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -20,16 +20,20 @@ This method retrieves the user ID from the current authentication context. It th
 
 | Return Type | Description |
 |-------------|-------------|
-| `UUID`      | The user ID extracted from the JWT token subject. |
+| `UUID`      | The user ID extracted from the JWT subject. |
+
+**Exceptions:**
+
+- `AuthenticationException`: Thrown if no valid authentication is found or if the token's subject is invalid.
 
 ### `optionalUserId`
 
-This method attempts to retrieve the user ID from the current authentication context. It returns an `Optional<UUID>` which is empty if no valid authentication is found or if the user ID in the token subject is invalid.
+This method attempts to retrieve the user ID from the current authentication token. It returns an `Optional<UUID>`, which will be empty if no valid authentication is found or if the token's subject is invalid.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | None      |      |             |
 
-| Return Type     | Description |
-|-----------------|-------------|
-| `Optional<UUID>`| An optional containing the user ID if available, otherwise empty. |
+| Return Type      | Description |
+|------------------|-------------|
+| `Optional<UUID>` | An optional containing the user ID if present and valid, otherwise an empty optional. |

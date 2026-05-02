@@ -6,7 +6,7 @@ sidebar_label: IMarkExpiredGamesService
 
 ## Overview
 
-The `IMarkExpiredGamesService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for marking expired games within the application. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting only the `MarkExpiredGamesService` class.
+The `IMarkExpiredGamesService` interface is part of the `com.upmatches.app.features.game.services` package. It defines a contract for services that are responsible for marking expired games. This interface is designed to be implemented by classes that provide the specific logic for identifying and marking games that are no longer valid or have passed their expiration date.
 
 ## Public Methods
 
@@ -14,12 +14,12 @@ The `IMarkExpiredGamesService` interface declares the following public method:
 
 | Method Signature | Description |
 |------------------|-------------|
-| `int execute()`  | Executes the process of marking expired games. Returns the number of games that were marked as expired. |
+| `int execute()`  | Executes the process of marking expired games. |
 
 ### Method Details
 
 #### `execute`
 
-- **Description**: This method is responsible for executing the logic to mark games as expired. It returns an integer indicating how many games were successfully marked.
-- **Parameters**: None
-- **Return Type**: `int` - The number of games that were marked as expired.
+- **Description**: This method is responsible for executing the logic to mark games that have expired. It is expected to be implemented by any class that extends this interface.
+- **Parameters**: This method does not take any parameters.
+- **Return Type**: `int` - The method returns an integer value, which typically represents the number of games that were successfully marked as expired.

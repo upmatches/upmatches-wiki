@@ -4,9 +4,12 @@ title: SkillLevelRepository
 sidebar_label: SkillLevelRepository
 ---
 
+import com.upmatches.app.features.skilllevels.entities.SkillLevel;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 ## Purpose of the Class
 
-The `SkillLevelRepository` interface is a part of the repository layer in a Spring application, specifically designed to manage `SkillLevel` entities. It extends the `JpaRepository` interface, which provides standard CRUD (Create, Read, Update, Delete) operations for the `SkillLevel` entity. This repository interface is crucial for interacting with the database in a Spring Data JPA context, allowing for seamless data access and manipulation.
+The `SkillLevelRepository` interface is a part of the repository layer in a Spring application. It extends the `JpaRepository` interface, which provides JPA-related methods for standard data access operations. This repository is specifically designed to manage `SkillLevel` entities, allowing for CRUD operations and custom query methods. The primary purpose of this repository is to facilitate interaction with the database for operations related to skill levels, particularly in the context of activities.
 
 ## Public Methods
 
@@ -14,7 +17,7 @@ The `SkillLevelRepository` interface includes the following public method:
 
 | Method Signature | Description |
 |------------------|-------------|
-| `List<SkillLevel> findByActivityIdOrderBySortOrder(UUID activityId)` | Retrieves a list of `SkillLevel` entities associated with a specific `activityId`, ordered by their `sortOrder`. |
+| `List<SkillLevel> findByActivityIdOrderBySortOrder(UUID activityId)` | Retrieves a list of `SkillLevel` entities associated with a specific activity, identified by `activityId`. The results are ordered by the `sortOrder` attribute. |
 
 ### Method Details
 
@@ -22,10 +25,14 @@ The `SkillLevelRepository` interface includes the following public method:
 
 - **Parameters:**
 
-  | Name        | Type   | Description                                      |
-  |-------------|--------|--------------------------------------------------|
-  | `activityId`| `UUID` | The unique identifier of the activity to filter the skill levels. |
+  | Name       | Type  | Description |
+  |------------|-------|-------------|
+  | `activityId` | `UUID` | The unique identifier of the activity for which skill levels are being queried. |
 
-- **Return Type:** `List<SkillLevel>`
+- **Return Type:**
 
-  Returns a list of `SkillLevel` entities that are associated with the given `activityId`, sorted by the `sortOrder` attribute. This method is useful for obtaining skill levels in a specific order related to a particular activity.
+  | Type            | Description |
+  |-----------------|-------------|
+  | `List<SkillLevel>` | A list of `SkillLevel` entities ordered by their `sortOrder`. |
+
+This method is useful for retrieving skill levels associated with a particular activity, ensuring they are returned in a specified order, which can be critical for applications that need to display skill levels in a user-friendly manner.

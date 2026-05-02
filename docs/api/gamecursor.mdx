@@ -6,53 +6,38 @@ sidebar_label: GameCursor
 
 import { useBaseUrl } from '@docusaurus/core';
 
-## Purpose
+## Overview
 
-The `GameCursor` class is a Spring component designed to handle the encoding and decoding of game-related data into a Base64 URL-safe string format. This functionality is useful for creating cursors that can be used to paginate through game data or to maintain state across requests.
+The `GameCursor` class is a component designed to encode and decode game-related data into a Base64 URL-safe string. This is useful for creating cursors that can be used for pagination or state management in a game application. The class leverages Jackson for JSON processing and Spring's `@Component` annotation for dependency injection.
 
 ## Public Methods
 
 ### `encode`
 
-Encodes the provided `Instant` and `UUID` into a Base64 URL-safe string.
+Encodes the provided `startTime` and `id` into a Base64 URL-safe string.
 
-| Parameter   | Type    | Description                      |
-|-------------|---------|----------------------------------|
-| `startTime` | `Instant` | The start time of the game session. |
-| `id`        | `UUID`  | The unique identifier for the game session. |
+| Parameter | Type   | Description                      |
+|-----------|--------|----------------------------------|
+| startTime | Instant| The start time of the game event.|
+| id        | UUID   | The unique identifier of the game.|
 
-**Returns**: `String` - A Base64 URL-safe encoded string representing the game session data.
+**Returns**: `String` - A Base64 URL-safe encoded string representing the game cursor.
 
 ### `decode`
 
-Decodes a Base64 URL-safe string back into a `Value` object containing the `Instant` and `UUID`.
+Decodes the provided Base64 URL-safe string back into a `Value` object containing the `startTime` and `id`.
 
-| Parameter | Type     | Description                      |
-|-----------|----------|----------------------------------|
-| `cursor`  | `String` | The Base64 URL-safe encoded string to decode. |
+| Parameter | Type  | Description                          |
+|-----------|-------|--------------------------------------|
+| cursor    | String| The Base64 URL-safe encoded cursor.  |
 
-**Returns**: `Optional<Value>` - An `Optional` containing the decoded `Value` object if successful, or an empty `Optional` if the input is invalid.
+**Returns**: `Optional<Value>` - An `Optional` containing the decoded `Value` object if successful, or an empty `Optional` if the cursor is invalid or blank.
 
 ## Value Record
 
-The `Value` record is a simple data structure that holds the decoded game session data.
+The `Value` record is a simple data structure that holds the decoded `startTime` and `id`.
 
-| Field      | Type    | Description                      |
-|------------|---------|----------------------------------|
-| `startTime`| `Instant` | The start time of the game session. |
-| `id`       | `UUID`  | The unique identifier for the game session. |
-
-## Usage Example
-
-```java
-GameCursor gameCursor = new GameCursor(new ObjectMapper());
-String encodedCursor = gameCursor.encode(Instant.now(), UUID.randomUUID());
-Optional<GameCursor.Value> decodedValue = gameCursor.decode(encodedCursor);
-
-decodedValue.ifPresent(value -> {
-    System.out.println("Start Time: " + value.startTime());
-    System.out.println("ID: " + value.id());
-});
-```
-
-This example demonstrates how to create an instance of `GameCursor`, encode a game session's start time and ID, and then decode the cursor back into its original components.
+| Field     | Type   | Description                      |
+|-----------|--------|----------------------------------|
+| startTime | Instant| The start time of the game event.|
+| id        | UUID   | The unique identifier of the game.|

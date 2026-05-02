@@ -1,39 +1,28 @@
 ---
-id: icreateactivityservice
+id: icreate-activity-service
 title: ICreateActivityService Interface
 sidebar_label: ICreateActivityService
 ---
 
 ## Overview
 
-The `ICreateActivityService` interface is a part of the `com.upmatches.app.features.activity.services` package. It defines a contract for creating activities within the application. This interface is designed to be implemented by classes that handle the logic for processing activity creation requests and returning appropriate responses.
-
-## Purpose
-
-The primary purpose of the `ICreateActivityService` interface is to provide a standardized method for executing activity creation operations. It ensures that any implementing class will provide the necessary functionality to handle a `CreateActivityRequest` and produce an `ActivityResponse`.
+The `ICreateActivityService` interface is part of the `com.upmatches.app.features.activity.services` package. It defines a contract for creating activities within the application. This interface is designed to be implemented by classes that handle the creation of activities, ensuring a consistent method signature for executing the creation process.
 
 ## Public Methods
 
-The interface defines the following public method:
+The `ICreateActivityService` interface declares the following public method:
 
 | Method Signature | Description |
 |------------------|-------------|
-| `ActivityResponse execute(CreateActivityRequest request)` | Executes the activity creation process using the provided request and returns an `ActivityResponse`. |
+| `ActivityResponse execute(CreateActivityRequest request)` | Executes the creation of an activity based on the provided request object and returns an `ActivityResponse`. |
 
 ### Method Details
 
 #### `execute`
 
-- **Parameters:**
-
-  | Name    | Type                          | Description                                      |
-  |---------|-------------------------------|--------------------------------------------------|
-  | request | `CreateActivityRequest`       | The request object containing details for the activity to be created. |
-
-- **Returns:** 
-
-  | Type               | Description                                      |
-  |--------------------|--------------------------------------------------|
-  | `ActivityResponse` | The response object containing the result of the activity creation process. |
-
-This method is responsible for processing the activity creation logic and returning a response that indicates the success or failure of the operation.
+- **Description**: This method is responsible for processing the creation of an activity. It takes a `CreateActivityRequest` object as input and returns an `ActivityResponse` object.
+- **Parameters**:
+  | Name    | Type                          | Description                                  |
+  |---------|-------------------------------|----------------------------------------------|
+  | request | `CreateActivityRequest`       | The request object containing activity details needed for creation. |
+- **Returns**: `ActivityResponse` - An object containing the details of the created activity, including any relevant status or identifiers.

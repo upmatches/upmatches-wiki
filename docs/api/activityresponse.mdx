@@ -4,36 +4,32 @@ title: ActivityResponse Class
 sidebar_label: ActivityResponse
 ---
 
-import com.upmatches.app.features.activity.entities.Activity;
+import { useBaseUrl } from '@docusaurus/core';
 
-import java.util.UUID;
+# ActivityResponse Class
+
+The `ActivityResponse` class is a record in the `com.upmatches.app.features.activity.responses` package. It is designed to provide a simplified and immutable representation of an `Activity` entity, which can be used for transferring data across different layers of an application, such as from the backend to the frontend.
 
 ## Purpose
 
-The `ActivityResponse` class is a record in the `com.upmatches.app.features.activity.responses` package. It is designed to encapsulate the response data for an activity, providing a structured way to transfer activity information such as its unique identifier, reference ID, and name. This class is particularly useful for converting `Activity` entities into a format suitable for API responses or other external communications.
+The primary purpose of the `ActivityResponse` class is to encapsulate the essential details of an `Activity` object in a form that is easy to handle and transmit. This class leverages Java's record feature to automatically generate boilerplate code such as constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods.
 
 ## Public Methods
 
 The `ActivityResponse` class provides the following public method:
 
-### fromActivity
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `fromActivity` | `Activity activity` | `ActivityResponse` | Converts an `Activity` object into an `ActivityResponse` object. |
 
-Converts an `Activity` entity into an `ActivityResponse` record.
+### Method Details
 
-| Method Signature | Description |
-|------------------|-------------|
-| `public static ActivityResponse fromActivity(Activity activity)` | Creates an `ActivityResponse` instance from the given `Activity` object. |
+#### `fromActivity`
 
-#### Parameters
+- **Parameters:**
+  - `activity`: An instance of the `Activity` class from which the `ActivityResponse` is created.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `activity` | `Activity` | The `Activity` entity to be converted into an `ActivityResponse`. |
+- **Return Type:** 
+  - Returns an instance of `ActivityResponse` containing the `id`, `referenceId`, and `name` extracted from the given `Activity` object.
 
-#### Return Type
-
-| Type | Description |
-|------|-------------|
-| `ActivityResponse` | Returns a new instance of `ActivityResponse` containing the ID, reference ID, and name extracted from the provided `Activity` entity. |
-
-This method simplifies the transformation of an `Activity` entity into a response-friendly format, ensuring that only the necessary data is exposed.
+This method is static and can be called without creating an instance of `ActivityResponse`. It serves as a factory method to facilitate the conversion from an `Activity` entity to an `ActivityResponse` record.

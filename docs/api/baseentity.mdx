@@ -4,46 +4,43 @@ title: BaseEntity Class
 sidebar_label: BaseEntity
 ---
 
-import { useBaseUrl } from '@docusaurus/core';
+## Overview
 
-## Purpose
+The `BaseEntity` class is an abstract base class designed to be extended by other entity classes in a Java application. It provides common fields and functionality for entity classes, such as unique identifiers, audit information, and soft deletion capabilities. This class is annotated with JPA and Spring Data annotations to facilitate database operations and auditing.
 
-The `BaseEntity` class is an abstract superclass designed to be extended by other entity classes within a Java application. It provides common fields and functionality for entity auditing and lifecycle management, such as automatic generation of unique identifiers, timestamps for creation and modification, and tracking of who created or last modified the entity. This class is annotated with JPA and Spring Data annotations to facilitate integration with a database and support for auditing.
+## Class Details
 
-## Public Methods
+### Purpose
 
-### onCreate
+The `BaseEntity` class serves as a foundational class for other entities, providing essential fields and methods that are commonly required across different entities. It includes fields for unique identification, creation and modification timestamps, and user information for auditing purposes. Additionally, it supports soft deletion by maintaining a `deletedAt` timestamp.
 
-This method is automatically invoked before the entity is persisted. It ensures that a unique UUID is assigned to the entity if it has not already been set.
+### Public Methods
 
-| Method Name | Parameters | Return Type | Description |
-|-------------|------------|-------------|-------------|
-| `onCreate`  | None       | `void`      | Ensures a UUID is generated before the entity is persisted. |
+| Method Name | Description | Parameters | Return Type |
+|-------------|-------------|------------|-------------|
+| `isDeleted` | Checks if the entity is marked as deleted. | None | `boolean` |
+| `markDeleted` | Marks the entity as deleted by setting the `deletedAt` timestamp to the current time. | None | `void` |
 
-### isDeleted
-
-Determines whether the entity has been marked as deleted.
-
-| Method Name | Parameters | Return Type | Description |
-|-------------|------------|-------------|-------------|
-| `isDeleted` | None       | `boolean`   | Returns `true` if the entity is marked as deleted, otherwise `false`. |
-
-### markDeleted
-
-Marks the entity as deleted by setting the `deletedAt` timestamp to the current time.
-
-| Method Name  | Parameters | Return Type | Description |
-|--------------|------------|-------------|-------------|
-| `markDeleted`| None       | `void`      | Sets the `deletedAt` timestamp to the current time, marking the entity as deleted. |
-
-## Fields
-
-The `BaseEntity` class includes several fields that are automatically managed:
+### Fields
 
 - **id**: A unique identifier for the entity, automatically generated.
-- **uuid**: A universally unique identifier for the entity, generated if not set before persistence.
-- **createdAt**: The timestamp when the entity was created, set automatically.
-- **updatedAt**: The timestamp when the entity was last modified, updated automatically.
-- **createdBy**: The identifier of the user who created the entity, set automatically.
-- **updatedBy**: The identifier of the user who last modified the entity, updated automatically.
-- **deletedAt**: The timestamp indicating when the entity was marked as deleted.
+- **uuid**: A universally unique identifier (UUID) for the entity, generated if not already set.
+- **createdAt**: The timestamp when the entity was created, automatically set and immutable.
+- **updatedAt**: The timestamp when the entity was last updated, automatically managed.
+- **createdBy**: The user who created the entity, set during creation.
+- **updatedBy**: The user who last modified the entity, updated automatically.
+- **deletedAt**: The timestamp when the entity was marked as deleted, used for soft deletion.
+
+### Annotations
+
+- `@MappedSuperclass`: Indicates that this class is a base class for JPA entities.
+- `@EntityListeners(AuditingEntityListener.class)`: Enables auditing of entity changes.
+- `@Id`, `@GeneratedValue`: Specifies the primary key and its generation strategy.
+- `@Column`: Configures the properties of the database column.
+- `@CreatedDate`, `@LastModifiedDate`: Automatically manage date fields for auditing.
+- `@CreatedBy`, `@LastModifiedBy`: Automatically manage user fields for auditing.
+- `@PrePersist`: Lifecycle callback to initialize the UUID before persisting.
+
+### Usage
+
+The `BaseEntity` class is intended to be extended by other entity classes. By inheriting from `BaseEntity`, derived classes automatically gain the fields and methods defined in this base class, promoting code reuse and consistency across entity classes.

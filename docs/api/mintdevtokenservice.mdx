@@ -4,29 +4,37 @@ title: MintDevTokenService
 sidebar_label: MintDevTokenService
 ---
 
-## Overview
+## Purpose
 
-The `MintDevTokenService` class is a part of the authentication feature in the application. It is designed to generate development tokens for users in non-production environments. This service is conditionally enabled based on the application's configuration properties and is not available in production profiles. It implements the `IMintDevTokenService` interface and provides functionality to mint JWT access tokens and refresh tokens for a specified user.
+The `MintDevTokenService` class is a part of the authentication feature in the application. It is responsible for generating development tokens for users in non-production environments. This service is conditionally enabled based on application properties and is designed to facilitate testing and development by providing JWT access tokens and refresh tokens for a specified user.
 
 ## Public Methods
 
 ### `execute`
 
-Generates a JWT access token and a refresh token for a given user.
+Generates a JWT access token and a refresh token for a specified user.
 
-| Parameter | Type   | Description                       |
-|-----------|--------|-----------------------------------|
-| `userId`  | `UUID` | The unique identifier of the user |
+| Parameter | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| `userId`  | `UUID` | The unique identifier of the user.   |
 
-| Return Type     | Description                                                                 |
-|-----------------|-----------------------------------------------------------------------------|
-| `TokenResponse` | Contains the generated access token, refresh token, and the token expiry time |
+| Return Type   | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `TokenResponse` | Returns a `TokenResponse` object containing the access token, refresh token, and the expiration time of the access token. |
 
-#### Method Details
+## Detailed Description
 
-- **Transactional**: This method is annotated with `@Transactional`, ensuring that the operations within are executed within a transaction context.
-- **Exception Handling**: If the user is not found in the repository, an `AuthenticationException` is thrown with a message indicating the user ID that was not found.
-- **Token Generation**: 
-  - The method uses `jwtTokenService` to generate an access token for the user based on their unique identifiers.
-  - A refresh token is generated and stored using `refreshTokenStore`.
-- **Return**: A `TokenResponse` object is returned, encapsulating the access token, refresh token, and the expiration time of the access token.
+- **Class Annotations**:
+  - `@Service`: Indicates that this class is a service component in the Spring framework.
+  - `@Profile("!prod")`: Specifies that this service should only be active in non-production profiles.
+  - `@ConditionalOnProperty`: Ensures that the service is only enabled when the `app.auth.dev.mint-endpoint-enabled` property is set to `true`.
+
+- **Dependencies**:
+  - `UserRepository`: Used to retrieve user information from the database.
+  - `IJwtTokenService`: Provides methods to generate JWT access and refresh tokens.
+  - `IRefreshTokenStore`: Handles the storage of refresh tokens.
+
+- **Exception Handling**:
+  - Throws `AuthenticationException` if the user is not found in the repository.
+
+This class is crucial for development environments where generating tokens for testing purposes is necessary without affecting the production environment.

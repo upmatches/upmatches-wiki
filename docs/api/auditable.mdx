@@ -4,22 +4,22 @@ title: Auditable Annotation
 sidebar_label: Auditable
 ---
 
-import com.upmatches.app.features.audit.enums.AuditCategory;
+## Overview
 
-## Purpose
-
-The `Auditable` annotation is designed to be used on methods to indicate that they should be audited. This annotation provides metadata about the action being performed, the category of the audit, and additional details about the resource involved. It is particularly useful in applications where tracking and logging of method executions are required for security, compliance, or monitoring purposes.
+The `Auditable` annotation is part of the `com.upmatches.app.features.audit.annotations` package. It is designed to be used on methods to specify that they should be audited. This annotation provides metadata about the action being performed, the category of the audit, and additional details about the resource involved. It is retained at runtime, allowing for dynamic processing during the execution of the application.
 
 ## Public Methods
 
-The `Auditable` annotation includes several elements that can be configured to specify the details of the audit. Below is a table documenting these elements:
+The `Auditable` annotation defines several elements that can be used to configure the auditing behavior. Below is a table documenting each element, its purpose, and its return type.
 
-| Method                  | Parameters | Return Type | Description                                                                 |
-|-------------------------|------------|-------------|-----------------------------------------------------------------------------|
-| `action()`              | None       | `String`    | Specifies the action being audited. This is a required element.             |
-| `category()`            | None       | `AuditCategory` | Defines the category of the audit. Defaults to `AuditCategory.WRITE`.       |
-| `resourceType()`        | None       | `String`    | Indicates the type of resource being acted upon. Defaults to an empty string.|
-| `resourceIdExpression()`| None       | `String`    | Provides an expression to determine the resource ID. Defaults to an empty string.|
-| `sensitive()`           | None       | `boolean`   | Flags whether the action involves sensitive information. Defaults to `false`.|
+| Element Name         | Description                                                                 | Return Type                  |
+|----------------------|-----------------------------------------------------------------------------|------------------------------|
+| `action`             | Specifies the action being audited. This is a required element.             | `String`                     |
+| `category`           | Defines the category of the audit. Defaults to `AuditCategory.WRITE`.       | `AuditCategory`              |
+| `resourceType`       | Describes the type of resource being audited. Defaults to an empty string.  | `String`                     |
+| `resourceIdExpression` | Provides an expression to determine the resource ID. Defaults to an empty string. | `String`                     |
+| `sensitive`          | Indicates whether the audited action involves sensitive information. Defaults to `false`. | `boolean`                    |
 
-This annotation is retained at runtime, allowing for dynamic processing by the application or auditing framework. It targets method-level declarations, making it flexible for use across various application components.
+## Usage
+
+To use the `Auditable` annotation, apply it to a method within your application where auditing is required. Configure the elements as needed to provide the necessary audit metadata.

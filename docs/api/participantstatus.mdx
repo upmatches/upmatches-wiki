@@ -6,39 +6,17 @@ sidebar_label: ParticipantStatus
 
 # ParticipantStatus Enum
 
-The `ParticipantStatus` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to represent the status of a participant in a game. This enum provides a clear and concise way to manage participant states, ensuring that the code remains readable and maintainable.
+The `ParticipantStatus` enum is part of the `com.upmatches.app.features.game.enums` package. It is used to represent the status of a participant in a game. This enum provides a simple way to track whether a participant is currently active in the game or has left.
 
 ## Enum Constants
 
 The `ParticipantStatus` enum defines the following constants:
 
-- **ACTIVE**: Indicates that the participant is currently active in the game.
-- **LEFT**: Indicates that the participant has left the game.
-
-## Public Methods
-
-The `ParticipantStatus` enum does not define any public methods beyond those inherited from the `java.lang.Enum` class. However, it can be used in switch statements and other control structures to handle participant states effectively.
-
-| Method Signature | Description |
-|------------------|-------------|
-| `values()`       | Returns an array containing all of the values of the enum in the order they are declared. |
-| `valueOf(String name)` | Returns the enum constant of this type with the specified name. |
+| Constant | Description |
+|----------|-------------|
+| `ACTIVE` | Indicates that the participant is currently active in the game. |
+| `LEFT`   | Indicates that the participant has left the game. |
 
 ## Usage
 
-The `ParticipantStatus` enum can be used to manage and check the status of participants in a game. Here is an example of how it might be used in code:
-
-```java
-ParticipantStatus status = ParticipantStatus.ACTIVE;
-
-switch (status) {
-    case ACTIVE:
-        System.out.println("Participant is active.");
-        break;
-    case LEFT:
-        System.out.println("Participant has left.");
-        break;
-}
-```
-
-This enum provides a simple yet effective way to handle participant statuses, making the code more intuitive and easier to maintain.
+The `ParticipantStatus` enum can be used in game-related logic to check or update the status of a participant. By using an enum, the code becomes more readable and less error-prone compared to using arbitrary string or integer values.

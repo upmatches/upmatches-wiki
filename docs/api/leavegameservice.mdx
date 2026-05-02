@@ -4,15 +4,15 @@ title: LeaveGameService
 sidebar_label: LeaveGameService
 ---
 
-## Overview
+## Purpose
 
-The `LeaveGameService` class is a Spring service that handles the logic for a user to leave a game. It ensures that the user is an active participant in the game before allowing them to leave, updates the participant's status, and publishes a notification event to inform other components of the change.
+The `LeaveGameService` class is a Spring service responsible for handling the logic when a user decides to leave a game. It ensures that the user is an active participant of the game before allowing them to leave, updates the participant's status, and publishes a notification event to inform other components of the change.
 
 ## Public Methods
 
 ### `execute`
 
-This method allows a user to leave a game by updating their participant status and notifying other components of the change.
+Executes the process of a user leaving a game.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -20,14 +20,16 @@ This method allows a user to leave a game by updating their participant status a
 
 | Return Type | Description |
 |-------------|-------------|
-| `void`      | This method does not return a value. |
+| `void`      | This method does not return any value. It performs the operation of updating the participant's status and publishing an event. |
 
-## Method Details
+## Detailed Description
 
-- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operations within the method are executed within a transaction. This guarantees that all changes are committed to the database only if all operations succeed.
-  
-- **Auditable**: The method is also annotated with `@Auditable`, which logs the action of leaving a game for auditing purposes. The `resourceIdExpression` is used to dynamically capture the game ID involved in the operation.
+- **Transactional**: The `execute` method is annotated with `@Transactional`, ensuring that the operations within the method are executed within a transaction. This guarantees that either all operations succeed or none are applied, maintaining data consistency.
 
-- **Exception Handling**: If the user is not an active participant in the specified game, a `ResourceNotFoundException` is thrown with a message indicating the user and game IDs.
+- **Auditable**: The method is also annotated with `@Auditable`, which logs the action of leaving a game. The `resourceIdExpression` is used to dynamically capture the game ID for auditing purposes.
 
-- **Event Publishing**: After successfully updating the participant's status, a `GameNotificationEvent` is published to notify other components that a player has left the game. The event includes details such as the game ID, user ID, notification type, and game title (if available).
+- **Exception Handling**: If the user is not an active participant in the game, a `ResourceNotFoundException` is thrown, indicating that the user cannot leave a game they are not part of.
+
+- **Event Publishing**: After successfully updating the participant's status, a `GameNotificationEvent` is published to notify other components or services that a player has left the game. This event includes details such as the game ID, user ID, notification type, and game title.
+
+This service is crucial for maintaining the integrity of game participation data and ensuring that all relevant parties are informed of changes in participant status.

@@ -14,7 +14,7 @@ The interface declares the following public method:
 
 | Method Signature | Description |
 |------------------|-------------|
-| `List<GameParticipantResponse> execute(UUID id)` | Retrieves a list of game participants for the specified game identified by the `UUID`. |
+| `List<GameParticipantResponse> execute(UUID id)` | Retrieves a list of participants for a game identified by the given UUID. |
 
 ### Method Details
 
@@ -32,4 +32,4 @@ The interface declares the following public method:
   |------|-------------|
   | `List<GameParticipantResponse>` | A list of `GameParticipantResponse` objects representing the participants of the specified game. |
 
-This interface is sealed, meaning it restricts which classes can implement it. The permitted implementation is `ListGameParticipantsService`.
+This interface is a sealed interface, meaning it restricts which classes can implement it. In this case, only the `ListGameParticipantsService` class is permitted to implement `IListGameParticipantsService`.

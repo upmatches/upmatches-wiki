@@ -6,40 +6,29 @@ sidebar_label: InfisicalProperties
 
 ## Overview
 
-The `InfisicalProperties` class is a configuration properties holder for the Infisical application within the `com.upmatches.app.features.auth.properties` package. It is designed to manage and provide access to various configuration parameters needed for authentication and integration with the Infisical service. This class utilizes Spring Boot's `@ConfigurationProperties` to map properties from external configuration files to its fields, allowing for easy configuration management.
+The `InfisicalProperties` class is a configuration properties holder for the Infisical application. It is designed to be used with Spring Boot's `@ConfigurationProperties` annotation, allowing the application to bind external configuration properties to this class. The properties are prefixed with `app.infisical` in the configuration files.
 
-## Class Details
-
-The `InfisicalProperties` class is defined as a Java record, which is a special kind of class in Java that is immutable and primarily used to store data. It includes the following fields:
-
-- `clientId`: The client ID for authentication.
-- `clientSecret`: The client secret for authentication.
-- `projectId`: The project ID associated with the Infisical service.
-- `hostUri`: The URI of the Infisical host. Defaults to `https://app.infisical.com` if not provided.
-- `environment`: The environment in which the application is running. Defaults to `dev` if not provided.
-- `secretPath`: The path to the secret. Defaults to `/` if not provided.
+This class is implemented as a Java record, which provides a concise way to model immutable data. It includes several properties related to Infisical's client configuration, such as `clientId`, `clientSecret`, `projectId`, `hostUri`, `environment`, and `secretPath`. Default values are provided for `hostUri`, `environment`, and `secretPath` if they are not specified or are blank.
 
 ## Public Methods
 
-The `InfisicalProperties` class does not explicitly define public methods beyond those automatically provided by the Java record, such as accessors for each field. However, the constructor includes logic to set default values for certain fields if they are not provided or are blank.
+The `InfisicalProperties` class does not explicitly define public methods beyond those automatically provided by the Java record, such as accessors for each field. Below is a table documenting these accessors:
 
-### Constructor
+| Method Name       | Parameters | Return Type | Description                                                  |
+|-------------------|------------|-------------|--------------------------------------------------------------|
+| `clientId()`      | None       | `String`    | Returns the client ID for Infisical.                         |
+| `clientSecret()`  | None       | `String`    | Returns the client secret for Infisical.                     |
+| `projectId()`     | None       | `String`    | Returns the project ID associated with Infisical.            |
+| `hostUri()`       | None       | `String`    | Returns the host URI for Infisical. Defaults to `https://app.infisical.com` if not set. |
+| `environment()`   | None       | `String`    | Returns the environment setting for Infisical. Defaults to `dev` if not set. |
+| `secretPath()`    | None       | `String`    | Returns the secret path for Infisical. Defaults to `/` if not set. |
 
-The constructor for `InfisicalProperties` is used to initialize the record and ensure that default values are set for `hostUri`, `environment`, and `secretPath` if they are not specified.
+## Default Values
 
-| Parameter   | Type   | Description                                   |
-|-------------|--------|-----------------------------------------------|
-| clientId    | String | The client ID for authentication.             |
-| clientSecret| String | The client secret for authentication.         |
-| projectId   | String | The project ID associated with Infisical.     |
-| hostUri     | String | The URI of the Infisical host. Defaults to `https://app.infisical.com`. |
-| environment | String | The environment in which the application is running. Defaults to `dev`. |
-| secretPath  | String | The path to the secret. Defaults to `/`.      |
+The class provides default values for certain properties to ensure that the application can function with minimal configuration:
 
-### Default Values
+- **`hostUri`**: Defaults to `https://app.infisical.com` if not provided or blank.
+- **`environment`**: Defaults to `dev` if not provided or blank.
+- **`secretPath`**: Defaults to `/` if not provided or blank.
 
-- **hostUri**: Defaults to `https://app.infisical.com` if not provided or blank.
-- **environment**: Defaults to `dev` if not provided or blank.
-- **secretPath**: Defaults to `/` if not provided or blank.
-
-This class is essential for managing configuration properties in a structured and type-safe manner, leveraging the capabilities of Spring Boot's configuration properties support.
+These defaults are set within the compact constructor of the record, ensuring that any instance of `InfisicalProperties` will have valid values for these fields.

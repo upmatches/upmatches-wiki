@@ -1,59 +1,58 @@
 ---
 id: security-configuration
-title: Security Configuration
+title: SecurityConfiguration Class
 sidebar_label: Security Configuration
 ---
 
 ## Purpose
 
-The `SecurityConfiguration` class is a Spring Security configuration class that sets up security settings for a web application. It configures HTTP security, JWT decoding, CORS settings, and a custom bearer token resolver. This configuration ensures that the application is protected against unauthorized access while allowing specific endpoints to be publicly accessible.
+The `SecurityConfiguration` class is a configuration class for setting up security in a Spring Boot application. It leverages Spring Security to configure HTTP security, CORS settings, JWT decoding, and custom token resolution. This class is annotated with `@Configuration` and `@EnableWebSecurity`, indicating that it provides Spring Security configuration.
 
 ## Public Methods
 
-### `securityFilterChain`
+The following table documents the public methods available in the `SecurityConfiguration` class:
 
-Configures the security filter chain for the application.
+| Method Name                           | Parameters                                                                                                                                           | Return Type           | Description                                                                                                                           |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `securityFilterChain`                 | `HttpSecurity http`                                                                                                                                  | `SecurityFilterChain` | Configures the security filter chain, setting up CSRF, CORS, session management, request authorization, and OAuth2 resource server.   |
+| `jwtDecoder`                          | `ISingpassKeyProvider keyProvider`                                                                                                                   | `JwtDecoder`          | Configures a JWT decoder using a key provider to verify JWTs with ES256 algorithm.                                                    |
+| `cookieFallbackBearerTokenResolver`   | None                                                                                                                                                 | `BearerTokenResolver` | Provides a custom token resolver that checks the Authorization header and falls back to a cookie for the bearer token.                |
+| `corsConfigurationSource`             | `@Value("${app.cors.allowed-origins:http://localhost:3002}") String allowedOrigins`                                                                  | `CorsConfigurationSource` | Configures CORS settings, allowing specified origins and methods, and enabling credentials.                                           |
 
-| Parameter | Type          | Description                      |
-|-----------|---------------|----------------------------------|
-| `http`    | `HttpSecurity`| The HTTP security configuration. |
+### Method Details
 
-| Return Type          |
-|----------------------|
-| `SecurityFilterChain`|
+#### `securityFilterChain`
 
-### `jwtDecoder`
+- **Parameters**: 
+  - `HttpSecurity http`: The `HttpSecurity` object used to configure web-based security for specific HTTP requests.
+- **Return Type**: 
+  - `SecurityFilterChain`: The configured security filter chain.
+- **Description**: 
+  - This method sets up the security filter chain by disabling CSRF, enabling CORS with default settings, setting session management to stateless, and configuring request authorization. It permits access to specific URL patterns and requires authentication for others. It also configures the OAuth2 resource server with JWT support and a custom bearer token resolver.
 
-Creates a JWT decoder bean that uses a custom key provider for decoding JWT tokens.
+#### `jwtDecoder`
 
-| Parameter     | Type                     | Description                           |
-|---------------|--------------------------|---------------------------------------|
-| `keyProvider` | `ISingpassKeyProvider`   | Provides the signing key for JWT.     |
+- **Parameters**: 
+  - `ISingpassKeyProvider keyProvider`: A provider for obtaining the signing key used to verify JWTs.
+- **Return Type**: 
+  - `JwtDecoder`: The configured JWT decoder.
+- **Description**: 
+  - This method creates a `JwtDecoder` using a `JWKSet` from the provided key provider. It sets up a `JWSVerificationKeySelector` for the ES256 algorithm and configures a `DefaultJWTProcessor` to use this key selector.
 
-| Return Type |
-|-------------|
-| `JwtDecoder`|
+#### `cookieFallbackBearerTokenResolver`
 
-### `cookieFallbackBearerTokenResolver`
+- **Parameters**: 
+  - None
+- **Return Type**: 
+  - `BearerTokenResolver`: The custom token resolver.
+- **Description**: 
+  - This method provides a custom `BearerTokenResolver` that first checks the `Authorization` header for a bearer token. If not found, it falls back to checking cookies for a token named `accessToken`.
 
-Creates a custom bearer token resolver that checks for a bearer token in the HTTP Authorization header and falls back to a cookie if the header is not present.
+#### `corsConfigurationSource`
 
-| Parameter | Type   | Description |
-|-----------|--------|-------------|
-| None      | N/A    | N/A         |
-
-| Return Type          |
-|----------------------|
-| `BearerTokenResolver`|
-
-### `corsConfigurationSource`
-
-Configures CORS settings for the application, allowing specific origins and methods.
-
-| Parameter        | Type   | Description                                      |
-|------------------|--------|--------------------------------------------------|
-| `allowedOrigins` | `String`| A semicolon-separated list of allowed origins.  |
-
-| Return Type               |
-|---------------------------|
-| `CorsConfigurationSource`|
+- **Parameters**: 
+  - `@Value("${app.cors.allowed-origins:http://localhost:3002}") String allowedOrigins`: A string of allowed origins for CORS, defaulting to `http://localhost:3002`.
+- **Return Type**: 
+  - `CorsConfigurationSource`: The configured CORS configuration source.
+- **Description**: 
+  - This method sets up CORS configuration, allowing specified origins, methods, and headers. It also enables credentials and registers the configuration for all paths.

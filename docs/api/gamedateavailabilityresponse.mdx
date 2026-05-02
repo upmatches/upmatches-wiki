@@ -6,22 +6,28 @@ sidebar_label: GameDateAvailabilityResponse
 
 ## Overview
 
-The `GameDateAvailabilityResponse` class is a Java record that represents the availability of a game on a specific date. It is part of the `com.upmatches.app.features.game.responses` package. This class is designed to encapsulate the response data for game date availability checks, providing a simple and immutable data structure.
+The `GameDateAvailabilityResponse` class is a Java record that represents the availability of a game on a specific date. This class is part of the `com.upmatches.app.features.game.responses` package and is used to encapsulate the response data related to game scheduling.
 
-## Class Definition
+## Purpose
 
-The `GameDateAvailabilityResponse` is defined as a record, which is a special kind of class in Java that is used to model immutable data. It contains two fields:
-
-- `date`: A `LocalDate` object representing the date for which the game availability is being checked.
-- `hasGame`: A `Boolean` indicating whether a game is available on the specified date.
+The primary purpose of the `GameDateAvailabilityResponse` class is to provide a structured response indicating whether a game is scheduled on a particular date. It contains two fields: a `LocalDate` representing the date in question and a `Boolean` indicating the presence of a game on that date.
 
 ## Public Methods
 
 Since `GameDateAvailabilityResponse` is a record, it automatically provides the following public methods:
 
-| Method Name | Parameters | Return Type | Description |
-|-------------|------------|-------------|-------------|
-| `date`      | None       | `LocalDate` | Returns the date for which the game availability is being checked. |
-| `hasGame`   | None       | `Boolean`   | Returns whether a game is available on the specified date. |
+| Method Signature | Description |
+|------------------|-------------|
+| `LocalDate date()` | Returns the date associated with this response. |
+| `Boolean hasGame()` | Returns `true` if there is a game on the specified date, otherwise `false`. |
 
-These methods are implicitly provided by the Java compiler for all record components, allowing easy access to the data stored in the record.
+## Fields
+
+The `GameDateAvailabilityResponse` record contains the following fields:
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `date`     | `LocalDate` | The date for which the game availability is being checked. |
+| `hasGame`  | `Boolean`  | Indicates whether a game is scheduled on the specified date. |
+
+This structure allows for easy integration with systems that need to check game schedules and respond with clear, concise data regarding game availability.

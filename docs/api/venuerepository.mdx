@@ -1,32 +1,34 @@
 ---
 id: venue-repository
-title: VenueRepository
+title: VenueRepository Interface
 sidebar_label: VenueRepository
 ---
 
 import com.upmatches.app.features.venue.entities.Venue;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-## Purpose of the VenueRepository Class
+import java.util.Optional;
 
-The `VenueRepository` interface is a part of the data access layer in a Spring application. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers CRUD (Create, Read, Update, Delete) operations and additional JPA functionalities for the `Venue` entity. This repository is specifically designed to handle operations related to the `Venue` entity, which is identified by a `Long` type ID. By extending `JpaRepository`, `VenueRepository` inherits several methods for working with `Venue` persistence, and it also declares a custom query method to find a `Venue` by its `sourceId`.
+## Purpose of the VenueRepository
+
+The `VenueRepository` interface is a part of the repository layer in a Spring application, specifically designed to manage `Venue` entities. It extends the `JpaRepository` interface, which provides a set of standard methods for CRUD operations. The `VenueRepository` interface allows for interaction with the database to perform operations related to `Venue` entities, such as finding, saving, and deleting venues. By extending `JpaRepository`, it inherits several methods for working with `Venue` persistence, and it also defines a custom query method to find a `Venue` by its `sourceId`.
 
 ## Public Methods
 
 The `VenueRepository` interface includes the following public method:
 
-| Method Signature                       | Description                                                                 |
-|----------------------------------------|-----------------------------------------------------------------------------|
-| `Optional<Venue> findBySourceId(String sourceId)` | Finds a `Venue` entity by its `sourceId`. Returns an `Optional<Venue>` which will be empty if no venue is found with the given `sourceId`. |
+| Method Signature                        | Description                                                                 |
+|-----------------------------------------|-----------------------------------------------------------------------------|
+| `Optional<Venue> findBySourceId(String sourceId)` | Finds a `Venue` entity based on the provided `sourceId`. Returns an `Optional` containing the `Venue` if found, or an empty `Optional` if not. |
 
 ### Method Details
 
 #### `findBySourceId`
 
 - **Parameters:**
-  - `sourceId` (String): The unique identifier for the source of the `Venue`.
+  - `sourceId` (String): The unique identifier for the `Venue` entity to be retrieved.
 
 - **Return Type:**
-  - `Optional<Venue>`: An `Optional` containing the `Venue` if found, or empty if no matching `Venue` is found.
+  - `Optional<Venue>`: An `Optional` containing the `Venue` entity if it exists, otherwise an empty `Optional`.
 
-This method is useful for retrieving a `Venue` based on an external source identifier, which can be particularly helpful in scenarios where venues are integrated from different systems or APIs.
+This method is particularly useful for retrieving a `Venue` based on an external identifier, which might be used in scenarios where venues are synchronized with an external system.

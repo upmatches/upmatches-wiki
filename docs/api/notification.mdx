@@ -4,9 +4,9 @@ title: Notification Class
 sidebar_label: Notification
 ---
 
-## Overview
+## Purpose
 
-The `Notification` class is an entity representing a notification in the system. It is designed to store and manage notifications for users, including details such as the type of notification, its content, and its read status. This class is part of the `com.upmatches.app.features.notification.entities` package and is mapped to the `notifications` table in the database.
+The `Notification` class is an entity representing a notification within the application. It is designed to store and manage information about notifications sent to users. This class is mapped to a database table named `notifications` and includes various attributes such as the recipient, type, title, message, and read status of the notification.
 
 ## Public Methods
 
@@ -14,7 +14,7 @@ The `Notification` class provides the following public methods:
 
 ### `create`
 
-Creates a new instance of the `Notification` class.
+Creates a new `Notification` instance with the specified parameters.
 
 | Parameter     | Type               | Description                                      |
 |---------------|--------------------|--------------------------------------------------|
@@ -37,17 +37,17 @@ Marks the notification as read and sets the read timestamp.
 
 **Returns:** `void` - This method does not return a value.
 
-## Entity Fields
+## Attributes
 
-The `Notification` class contains the following fields:
+The `Notification` class includes the following attributes:
 
-- `id`: A unique identifier for the notification (`UUID`).
-- `recipient`: The user who receives the notification (`User`).
-- `type`: The type of the notification (`NotificationType`).
-- `title`: The title of the notification (`String`).
-- `message`: The message content of the notification (`String`).
-- `resourceType`: The type of resource associated with the notification (`String`).
-- `resourceId`: The ID of the resource associated with the notification (`UUID`).
-- `isRead`: A flag indicating whether the notification has been read (`Boolean`).
-- `readAt`: The timestamp when the notification was read (`Instant`).
-- `createdAt`: The timestamp when the notification was created (`Instant`).
+- `id`: `UUID` - The unique identifier for the notification.
+- `recipient`: `User` - The user who receives the notification.
+- `type`: `NotificationType` - The type of the notification.
+- `title`: `String` - The title of the notification.
+- `message`: `String` - The message content of the notification.
+- `resourceType`: `String` - The type of resource associated with the notification.
+- `resourceId`: `UUID` - The ID of the resource associated with the notification.
+- `isRead`: `Boolean` - Indicates whether the notification has been read.
+- `readAt`: `Instant` - The timestamp when the notification was marked as read.
+- `createdAt`: `Instant` - The timestamp when the notification was created.

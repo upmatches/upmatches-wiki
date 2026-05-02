@@ -9,15 +9,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 ## Purpose
 
-The `StationRepository` interface is a part of the repository layer in the application, responsible for data access related to `Station` entities. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers CRUD operations and additional JPA-related methods for the `Station` entity. This interface allows for interaction with the database to perform operations such as finding, saving, and deleting `Station` records.
+The `StationRepository` interface is a part of the repository layer in the application, responsible for data access related to `Station` entities. It extends the `JpaRepository` interface provided by Spring Data JPA, which offers a range of methods for CRUD operations and simplifies the implementation of data access layers. This interface allows for interaction with the database to perform operations on `Station` entities without the need for boilerplate code.
 
 ## Public Methods
 
 The `StationRepository` interface includes the following public method:
 
-| Method Signature                        | Description                                                                 |
-|-----------------------------------------|-----------------------------------------------------------------------------|
-| `Optional<Station> findByName(String name)` | Retrieves an `Optional` containing a `Station` entity that matches the given name. If no station is found, an empty `Optional` is returned. |
+| Method Signature                  | Description                                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| `Optional<Station> findByName(String name)` | Retrieves an `Optional` containing a `Station` entity that matches the specified name. If no station is found, the `Optional` will be empty. |
 
 ### Method Details
 
@@ -25,9 +25,10 @@ The `StationRepository` interface includes the following public method:
 
 - **Parameters:**
 
-  | Name  | Type   | Description                  |
-  |-------|--------|------------------------------|
-  | name  | String | The name of the station to find. |
+  | Name | Type   | Description                    |
+  |------|--------|--------------------------------|
+  | name | String | The name of the station to find.|
 
-- **Returns:**  
-  An `Optional<Station>` which contains the `Station` entity if found, otherwise an empty `Optional`.
+- **Return Type:** `Optional<Station>`
+
+  Returns an `Optional` containing the `Station` entity if found, otherwise an empty `Optional`. This method is useful for searching stations by their name attribute, providing a convenient way to handle cases where a station might not exist in the database.

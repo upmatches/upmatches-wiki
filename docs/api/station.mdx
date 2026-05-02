@@ -6,47 +6,45 @@ sidebar_label: Station
 
 ## Overview
 
-The `Station` class represents a geographical station entity within a venue management system. It is designed to be used with a relational database, leveraging JPA annotations for ORM (Object-Relational Mapping). This class is part of the `com.upmatches.app.features.venue.entities` package and is primarily responsible for storing and managing information about stations, including their geographical coordinates and associated transit lines.
+The `Station` class represents a geographical station entity within a venue management system. It is an entity class mapped to the `stations` table in a database, utilizing JPA annotations for ORM (Object-Relational Mapping). The class is designed to handle station-related data, including its name, geographical coordinates, and associated transit lines.
 
 ## Class Structure
 
-The `Station` class is annotated with `@Entity` and `@Table` to map it to a database table named `stations`. It includes fields for storing the station's ID, name, latitude, longitude, and associated station lines.
+The `Station` class is annotated with `@Entity` and `@Table` to indicate that it is a JPA entity. It includes several fields that map to columns in the `stations` table:
+
+- **id**: A unique identifier for the station, automatically generated.
+- **name**: The name of the station, with a maximum length of 150 characters.
+- **latitude**: The latitude coordinate of the station, with high precision.
+- **longitude**: The longitude coordinate of the station, also with high precision.
+- **stationLines**: A list of `StationLine` objects representing the transit lines associated with the station.
 
 ## Public Methods
 
-The `Station` class provides the following public methods:
+The `Station` class provides several public methods to interact with its data. Below is a detailed description of these methods:
 
 ### `create`
 
-Creates a new instance of the `Station` class with the specified name, latitude, and longitude.
+Creates a new instance of the `Station` class with the specified name and geographical coordinates.
 
-| Parameter   | Type        | Description                           |
-|-------------|-------------|---------------------------------------|
-| `name`      | `String`    | The name of the station.              |
-| `latitude`  | `BigDecimal`| The latitude coordinate of the station. |
-| `longitude` | `BigDecimal`| The longitude coordinate of the station. |
+| Parameter   | Type        | Description                      |
+|-------------|-------------|----------------------------------|
+| `name`      | `String`    | The name of the station.         |
+| `latitude`  | `BigDecimal`| The latitude of the station.     |
+| `longitude` | `BigDecimal`| The longitude of the station.    |
 
 **Returns**: `Station` - A new instance of the `Station` class.
 
 ### `addLine`
 
-Associates a transit line with the station by creating a `StationLine` and adding it to the list of station lines.
+Adds a new transit line to the station's list of lines.
 
-| Parameter       | Type          | Description                                  |
-|-----------------|---------------|----------------------------------------------|
-| `transitLine`   | `TransitLine` | The transit line to associate with the station. |
-| `stationNumber` | `Integer`     | The station number within the transit line.  |
+| Parameter       | Type          | Description                                    |
+|-----------------|---------------|------------------------------------------------|
+| `transitLine`   | `TransitLine` | The transit line to be associated with the station. |
+| `stationNumber` | `Integer`     | The station number on the transit line.        |
 
 **Returns**: `void` - This method does not return a value.
 
-## Fields
-
-- **id**: `Long` - The unique identifier for the station. It is automatically generated.
-- **name**: `String` - The name of the station, with a maximum length of 150 characters.
-- **latitude**: `BigDecimal` - The latitude of the station, with a precision of 13 and scale of 10.
-- **longitude**: `BigDecimal` - The longitude of the station, with a precision of 13 and scale of 10.
-- **stationLines**: `List<StationLine>` - A list of `StationLine` objects representing the transit lines associated with the station. This list is managed with cascading operations and orphan removal.
-
 ## Usage
 
-The `Station` class is used to create and manage station entities within the application. It provides methods to initialize new stations and associate them with transit lines, making it a crucial part of the venue management system's data model.
+The `Station` class is typically used in the context of a venue management application to manage and persist station data. It provides methods to create new stations and associate them with transit lines, facilitating the management of complex transit systems.

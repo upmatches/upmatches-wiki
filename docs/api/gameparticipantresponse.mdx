@@ -4,37 +4,47 @@ title: GameParticipantResponse Class
 sidebar_label: GameParticipantResponse
 ---
 
-## Overview
+## Purpose of the Class
 
-The `GameParticipantResponse` class is a Java record that represents a response object for a participant in a game. It encapsulates various details about a game participant, such as their unique identifiers, status, skill level, and timestamps for when they joined and left the game. This class is primarily used to transfer data related to game participants in a structured format.
+The `GameParticipantResponse` class is a Java record that encapsulates the response data for a participant in a game. It is part of the `com.upmatches.app.features.game.responses` package and is used to transfer participant-related data, including user information, participation status, skill level, and contact methods. This class is designed to be immutable and provides a structured way to represent participant data in a game context.
 
 ## Public Methods
 
-The `GameParticipantResponse` class provides the following public methods:
+The `GameParticipantResponse` class provides the following public static methods:
 
-### `fromGameParticipant`
+### fromGameParticipant
 
-This static method creates an instance of `GameParticipantResponse` from a `GameParticipant` object and a game activity ID.
+Converts a `GameParticipant` entity into a `GameParticipantResponse` object.
 
-| Parameter         | Type                | Description                                                                 |
-|-------------------|---------------------|-----------------------------------------------------------------------------|
-| `participant`     | `GameParticipant`   | The game participant entity from which to create the response.              |
-| `gameActivityId`  | `UUID`              | The unique identifier of the game activity, used to resolve the skill level.|
+| Parameter              | Type                | Description                                                                 |
+|------------------------|---------------------|-----------------------------------------------------------------------------|
+| `participant`          | `GameParticipant`   | The game participant entity to convert.                                     |
+| `gameActivityId`       | `UUID`              | The unique identifier for the game activity.                                |
+| `includeContactMethods`| `boolean`           | Flag indicating whether to include contact methods in the response.         |
 
-**Returns:**  
-`GameParticipantResponse` - A new instance of `GameParticipantResponse` populated with data from the provided `GameParticipant`.
+**Returns:** `GameParticipantResponse` - A new instance of `GameParticipantResponse` populated with data from the `GameParticipant` entity.
 
-## Detailed Description
+## Private Methods
 
-The `GameParticipantResponse` record includes the following fields:
+The class also contains private static methods used internally to assist in constructing the `GameParticipantResponse`:
 
-- **id** (`UUID`): The unique identifier of the game participant.
-- **gameId** (`UUID`): The unique identifier of the game.
-- **userId** (`UUID`): The unique identifier of the user.
-- **userName** (`String`): The name of the user.
-- **status** (`ParticipantStatus`): The current status of the participant in the game.
-- **skillLevel** (`SkillLevelResponse`): The skill level of the participant, resolved based on the game activity.
-- **joinedAt** (`Instant`): The timestamp when the participant joined the game.
-- **leftAt** (`Instant`): The timestamp when the participant left the game.
+### resolveSkillLevel
 
-The `resolveSkillLevel` method is a private utility that determines the skill level of a participant based on the provided game activity ID. If the activity ID matches one of the user's skill levels, it returns a corresponding `SkillLevelResponse`. Otherwise, it returns `null`.
+Determines the skill level of a participant for a specific game activity.
+
+| Parameter        | Type              | Description                                                                 |
+|------------------|-------------------|-----------------------------------------------------------------------------|
+| `participant`    | `GameParticipant` | The game participant whose skill level is to be resolved.                   |
+| `gameActivityId` | `UUID`            | The unique identifier for the game activity.                                |
+
+**Returns:** `SkillLevelResponse` - The resolved skill level response, or `null` if no matching skill level is found.
+
+### contactMethodsFor
+
+Generates a list of contact methods for a user.
+
+| Parameter | Type  | Description                          |
+|-----------|-------|--------------------------------------|
+| `user`    | `User`| The user for whom contact methods are generated. |
+
+**Returns:** `List<ContactMethod>` - A list of contact methods for the user, limited to a predefined capacity.

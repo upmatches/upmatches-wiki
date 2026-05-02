@@ -6,45 +6,41 @@ sidebar_label: ICookieHelper
 
 ## Overview
 
-The `ICookieHelper` interface is part of the `com.upmatches.app.features.auth.services` package. It defines a contract for managing authentication-related cookies within a web application. This interface is sealed, allowing only the `CookieHelper` class to implement it. The primary purpose of this interface is to provide methods for setting, clearing, and retrieving authentication cookies, specifically focusing on handling tokens.
+The `ICookieHelper` interface is part of the `com.upmatches.app.features.auth.services` package and is designed to manage authentication-related cookies in a web application. It provides methods for setting, clearing, and retrieving authentication cookies, specifically focusing on handling tokens used for user authentication.
+
+This interface is sealed, meaning it restricts which classes can implement it. In this case, only the `CookieHelper` class is permitted to implement `ICookieHelper`.
 
 ## Public Methods
 
 ### `setAuthCookies`
 
-Sets authentication cookies in the HTTP response based on the provided token data.
+Sets authentication cookies in the HTTP response, using the provided token data.
 
-| Parameter     | Type                      | Description                                      |
-|---------------|---------------------------|--------------------------------------------------|
-| `response`    | `HttpServletResponse`     | The HTTP response object where cookies are set.  |
-| `request`     | `HttpServletRequest`      | The HTTP request object for additional context.  |
-| `tokenData`   | `TokenData`               | The token data used to create authentication cookies. |
+| Parameter      | Type                      | Description                                      |
+|----------------|---------------------------|--------------------------------------------------|
+| `response`     | `HttpServletResponse`     | The HTTP response where cookies will be set.     |
+| `request`      | `HttpServletRequest`      | The HTTP request associated with the response.   |
+| `tokenData`    | `TokenData`               | The token data used to set authentication cookies.|
 
-| Return Type   | Description               |
-|---------------|---------------------------|
-| `void`        | This method does not return a value. |
+**Return Type:** `void`
 
 ### `clearAuthCookies`
 
 Clears authentication cookies from the HTTP response.
 
-| Parameter     | Type                      | Description                                      |
-|---------------|---------------------------|--------------------------------------------------|
-| `response`    | `HttpServletResponse`     | The HTTP response object where cookies are cleared. |
-| `request`     | `HttpServletRequest`      | The HTTP request object for additional context.  |
+| Parameter      | Type                      | Description                                      |
+|----------------|---------------------------|--------------------------------------------------|
+| `response`     | `HttpServletResponse`     | The HTTP response where cookies will be cleared. |
+| `request`      | `HttpServletRequest`      | The HTTP request associated with the response.   |
 
-| Return Type   | Description               |
-|---------------|---------------------------|
-| `void`        | This method does not return a value. |
+**Return Type:** `void`
 
 ### `getRefreshTokenFromCookie`
 
 Retrieves the refresh token from the cookies in the HTTP request.
 
-| Parameter     | Type                      | Description                                      |
-|---------------|---------------------------|--------------------------------------------------|
-| `request`     | `HttpServletRequest`      | The HTTP request object containing cookies.      |
+| Parameter      | Type                      | Description                                      |
+|----------------|---------------------------|--------------------------------------------------|
+| `request`      | `HttpServletRequest`      | The HTTP request from which to retrieve the token.|
 
-| Return Type   | Description               |
-|---------------|---------------------------|
-| `String`      | Returns the refresh token as a string, or `null` if not found. |
+**Return Type:** `String`

@@ -9,43 +9,25 @@ import TabItem from '@theme/TabItem';
 
 ## Overview
 
-The `ClockConfiguration` class is a Spring configuration class that provides a bean definition for a `Clock` instance. This configuration is useful for applications that require a consistent and testable source of the current time, particularly in environments where the system time may vary or need to be mocked for testing purposes.
+The `ClockConfiguration` class is a Spring configuration class that provides a bean definition for a `Clock` instance. This class is part of the `com.upmatches.app.shared.configurations` package and is used to configure and provide a `Clock` bean that can be injected into other components within the Spring application. The `Clock` bean is configured to use the UTC time zone, ensuring consistent time-related operations across the application.
 
-## Class Definition
+## Public Methods
 
 <Tabs>
-<TabItem value="java" label="Java">
+<TabItem value="Java" label="Java" default>
 
-```java
-package com.upmatches.app.shared.configurations;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.time.Clock;
-
-@Configuration
-public class ClockConfiguration {
-
-    @Bean
-    public Clock clock() {
-        return Clock.systemUTC();
-    }
-
-}
-```
+| Method Signature | Description |
+|------------------|-------------|
+| `public Clock clock()` | Provides a `Clock` bean configured to the UTC time zone. |
 
 </TabItem>
 </Tabs>
 
-## Public Methods
+### Method Details
 
-The `ClockConfiguration` class provides the following public method:
+#### `public Clock clock()`
 
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `clock` | None | `Clock` | Returns a `Clock` instance set to the UTC time zone. This method is annotated with `@Bean`, indicating that it returns a Spring-managed bean. |
+- **Description**: This method is annotated with `@Bean`, indicating that it returns a bean to be managed by the Spring container. It provides a `Clock` instance set to the UTC time zone, which can be used throughout the application for time-related operations.
+- **Return Type**: `Clock` - An instance of `Clock` set to the UTC time zone.
 
-## Usage
-
-By defining a `Clock` bean in the Spring application context, you can inject this bean into other components that require access to the current time. This approach allows for greater flexibility and testability, as the `Clock` can be easily mocked or replaced with a different implementation if needed.
+By using this configuration, developers can ensure that all time-related operations within the application are consistent and based on the UTC time zone, which is especially useful for applications that operate across multiple time zones.

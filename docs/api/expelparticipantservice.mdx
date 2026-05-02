@@ -6,32 +6,29 @@ sidebar_label: ExpelParticipantService
 
 ## Purpose
 
-The `ExpelParticipantService` class is a service component in a game management application that handles the expulsion of participants from a game. It ensures that only authorized organizers can expel participants and manages the associated business logic, including auditing and event publishing.
+The `ExpelParticipantService` class is a service component in a game application that handles the expulsion of participants from a game. It ensures that only authorized users (organizers) can expel participants and logs the expulsion event. Additionally, it publishes a notification event when a participant is expelled.
 
 ## Public Methods
 
 ### `execute`
 
-Executes the expulsion of a participant from a game.
+This method is responsible for executing the expulsion of a participant from a game. It performs several checks to ensure the operation is valid and authorized.
 
 | Parameter       | Type                          | Description                                                                 |
 |-----------------|-------------------------------|-----------------------------------------------------------------------------|
 | `gameId`        | `UUID`                        | The unique identifier of the game from which the participant is to be expelled. |
-| `participantId` | `UUID`                        | The unique identifier of the participant to be expelled.                    |
-| `request`       | `ExpelParticipantRequest`     | The request object containing additional information, such as the reason for expulsion. |
+| `participantId` | `UUID`                        | The unique identifier of the participant to be expelled.                     |
+| `request`       | `ExpelParticipantRequest`     | The request object containing details about the expulsion, such as the reason. |
 
 #### Return Type
 
-- `void`: This method does not return a value. It performs the operation of expelling a participant and may throw exceptions if certain conditions are not met.
+- `void`: This method does not return a value. It performs the expulsion operation and may throw exceptions if the operation is not valid.
 
 ## Exceptions
 
 - `ResourceNotFoundException`: Thrown if the participant is not found in the specified game.
 - `CannotExpelSelfException`: Thrown if the organizer attempts to expel themselves from the game.
 
-## Additional Details
+## Usage
 
-- **Auditing**: The method is annotated with `@Auditable`, which logs the action of expelling a participant for auditing purposes.
-- **Transactional**: The method is marked with `@Transactional`, ensuring that the operation is atomic and consistent.
-- **Logging**: Uses SLF4J for logging the expulsion event.
-- **Event Publishing**: Publishes a `GameNotificationEvent` to notify other components of the participant's removal from the game.
+The `ExpelParticipantService` is typically used in scenarios where a game organizer needs to remove a participant from an ongoing game. It ensures that the operation is logged and that the affected participant is notified of their removal.

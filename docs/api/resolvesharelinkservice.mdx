@@ -6,7 +6,7 @@ sidebar_label: ResolveShareLinkService
 
 ## Purpose
 
-The `ResolveShareLinkService` class is a service component in a Java application that handles the resolution of share links. It is responsible for retrieving and processing share links, incrementing their click count, and granting access to private games if applicable. This service ensures that share links are resolved correctly and that the appropriate actions are taken based on the link's resource type and associated data.
+The `ResolveShareLinkService` class is a Spring service responsible for resolving share links within the application. It handles the retrieval of share links, increments their click count, and grants access to private game resources if applicable. This service is crucial for managing the sharing functionality, ensuring that users can access shared resources securely and efficiently.
 
 ## Public Methods
 
@@ -14,31 +14,22 @@ The `ResolveShareLinkService` class is a service component in a Java application
 
 The `execute` method is the primary public method of the `ResolveShareLinkService` class. It resolves a share link based on the provided code, increments the link's click count, and returns a response containing the web and mobile URLs for the resource.
 
-| Parameter | Type   | Description                      |
-|-----------|--------|----------------------------------|
-| `code`    | String | The code of the share link to resolve. |
+| Parameter | Type   | Description                           |
+|-----------|--------|---------------------------------------|
+| `code`    | String | The unique code identifying the share link. |
 
-| Return Type                  | Description                                                                 |
-|------------------------------|-----------------------------------------------------------------------------|
-| `PublicShareLinkResponse`    | A response object containing the resolved share link information, including web and mobile URLs. |
+| Return Type                | Description                                                                 |
+|----------------------------|-----------------------------------------------------------------------------|
+| `PublicShareLinkResponse`  | A response object containing the resolved URLs and additional link details. |
 
-## Detailed Method Descriptions
+This method is annotated with `@Transactional` to ensure database operations are executed within a transaction. It is also marked as `@Auditable` to log the action for auditing purposes, specifically when a share link is resolved.
 
-### `execute(String code)`
+## Private Methods
 
-- **Purpose**: Resolves a share link by its code, increments its click count, and returns a response with the web and mobile URLs.
-- **Transactional**: This method is annotated with `@Transactional`, ensuring that database operations are executed within a transaction.
-- **Auditable**: The method is annotated with `@Auditable`, indicating that the action is logged for auditing purposes with the category `SENSITIVE_READ`.
-- **Exception Handling**: Throws a `ResourceNotFoundException` if the share link is not found.
+### `grantPrivateGameAccessIfApplicable`
 
-### Private Methods
+This method checks if the resolved share link pertains to a private game and, if so, grants access to the authenticated user. It ensures that only authorized users can access private game resources.
 
-#### `grantPrivateGameAccessIfApplicable(ShortLink link)`
+### `getAuthenticatedUserIdOrNull`
 
-- **Purpose**: Grants access to a private game if the share link is associated with a game resource and the game is private.
-- **Logic**: Checks if the resource type is a game, retrieves the authenticated user, and grants access if the game is private and the user does not already have access.
-
-#### `getAuthenticatedUserIdOrNull()`
-
-- **Purpose**: Retrieves the authenticated user's ID from the security context.
-- **Return Type**: `UUID` - Returns the user's ID as a UUID, or `null` if the user is not authenticated or the ID is invalid.
+Retrieves the authenticated user's ID from the security context. If the user is not authenticated or the ID cannot be parsed, it returns `null`. This method is essential for determining the user's identity when granting access to private resources.

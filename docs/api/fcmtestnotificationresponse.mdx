@@ -4,25 +4,25 @@ title: FcmTestNotificationResponse
 sidebar_label: FcmTestNotificationResponse
 ---
 
-## Overview
+## Purpose
 
-The `FcmTestNotificationResponse` class is a Java record that encapsulates the response details of a Firebase Cloud Messaging (FCM) test notification. This class is part of the `com.upmatches.app.features.notification.responses` package and is designed to store information about a notification, such as its message ID, email ID, type, title, body, and badge count.
+The `FcmTestNotificationResponse` class is a Java record that encapsulates the response details for a Firebase Cloud Messaging (FCM) test notification. It is designed to hold information such as the message ID, email ID, notification type, title, body, and badge count. This class is part of the `com.upmatches.app.features.notification.responses` package and is used to structure the data related to FCM notifications in a concise and immutable manner.
 
 ## Public Methods
 
 ### `of`
 
-The `of` method is a static factory method that creates a new instance of the `FcmTestNotificationResponse` record. This method provides a convenient way to instantiate the record with the specified parameters.
+This static method is a factory method that creates a new instance of `FcmTestNotificationResponse`.
 
-| Parameter    | Type                              | Description                                      |
-|--------------|-----------------------------------|--------------------------------------------------|
-| `messageId`  | `String`                          | The unique identifier for the message.           |
-| `emailId`    | `String`                          | The email identifier associated with the message.|
-| `type`       | `NotificationType`                | The type of notification being sent.             |
-| `title`      | `String`                          | The title of the notification.                   |
-| `body`       | `String`                          | The body content of the notification.            |
-| `badge`      | `Integer`                         | The badge count associated with the notification.|
+| Parameter   | Type                          | Description                                      |
+|-------------|-------------------------------|--------------------------------------------------|
+| `messageId` | `String`                      | The unique identifier for the message.           |
+| `emailId`   | `String`                      | The email ID associated with the notification.   |
+| `type`      | `NotificationType`            | The type of the notification.                    |
+| `title`     | `String`                      | The title of the notification.                   |
+| `body`      | `String`                      | The body content of the notification.            |
+| `badge`     | `Integer`                     | The badge count associated with the notification.|
 
-| Return Type  | Description                                      |
-|--------------|--------------------------------------------------|
-| `FcmTestNotificationResponse` | A new instance of the `FcmTestNotificationResponse` record initialized with the provided parameters. |
+#### Return Type
+
+- `FcmTestNotificationResponse`: Returns a new instance of `FcmTestNotificationResponse` initialized with the provided parameters.

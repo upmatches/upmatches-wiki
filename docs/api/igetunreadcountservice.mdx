@@ -1,27 +1,26 @@
 ---
-id: igetunreadcountservice
+id: iget-unread-count-service
 title: IGetUnreadCountService Interface
 sidebar_label: IGetUnreadCountService
 ---
 
 ## Overview
 
-The `IGetUnreadCountService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that are responsible for retrieving the count of unread notifications. This interface is designed to be implemented by classes that provide the actual logic for fetching unread notification counts.
+The `IGetUnreadCountService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that are responsible for retrieving the count of unread notifications. This interface is designed to be implemented by classes that provide specific logic for fetching unread notification counts.
 
 ## Public Methods
 
-The `IGetUnreadCountService` interface declares the following public method:
+The interface declares the following public method:
 
-| Method Signature                | Description                                                                 |
-|---------------------------------|-----------------------------------------------------------------------------|
-| `UnreadCountResponse execute()` | Executes the service to retrieve the unread notification count.             |
+| Method Signature                  | Description                                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| `UnreadCountResponse execute()`   | Executes the service to retrieve the unread notification count.             |
 
 ### Method Details
 
-#### `execute`
+#### `UnreadCountResponse execute()`
 
-- **Description**: Executes the service to retrieve the unread notification count.
-- **Parameters**: None
-- **Returns**: 
-  - **Type**: `UnreadCountResponse`
-  - **Description**: An object containing the count of unread notifications.
+- **Description**: This method is responsible for executing the service logic to fetch the unread notification count. It returns an instance of `UnreadCountResponse`, which contains the details of the unread notifications.
+- **Parameters**: This method does not take any parameters.
+- **Return Type**: 
+  - `UnreadCountResponse`: An object containing the unread notification count and related information.

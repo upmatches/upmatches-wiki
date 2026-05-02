@@ -6,26 +6,26 @@ sidebar_label: IListNotificationsService
 
 ## Purpose
 
-The `IListNotificationsService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that handle the retrieval of notifications in a paginated format. This interface is designed to be implemented by classes that provide specific logic for listing notifications, ensuring a consistent method signature across different implementations.
+The `IListNotificationsService` interface is part of the `com.upmatches.app.features.notification.services` package. It defines a contract for services that handle the retrieval of notifications in a paginated format. This interface is sealed, meaning it restricts which classes can implement it, specifically permitting the `ListNotificationsService` class.
 
 ## Public Methods
 
 ### `execute`
 
-This method is responsible for executing the logic to retrieve a paginated list of notifications.
+This method is responsible for fetching a paginated list of notifications.
 
 | Method Signature | Description |
 |------------------|-------------|
-| `PagedResponse<NotificationResponse> execute(Pageable pageable)` | Retrieves a paginated list of notifications based on the provided `Pageable` parameter. |
+| `PagedResponse<NotificationResponse> execute(Pageable pageable)` | Retrieves a paginated list of notifications based on the provided pagination information. |
 
 #### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `pageable` | `Pageable` | An object that specifies pagination information, such as page number and size. |
+| `pageable` | `Pageable` | An object that provides pagination information such as page number and size. |
 
 #### Return Type
 
 | Type | Description |
 |------|-------------|
-| `PagedResponse<NotificationResponse>` | A paginated response containing a list of `NotificationResponse` objects. |
+| `PagedResponse<NotificationResponse>` | Returns a paginated response containing a list of `NotificationResponse` objects. |

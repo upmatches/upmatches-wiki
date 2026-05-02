@@ -6,20 +6,32 @@ sidebar_label: GameWebFallbackController
 
 ## Purpose
 
-The `GameWebFallbackController` class is a Spring Boot REST controller designed to handle HTTP GET requests for game pages. It provides HTML responses based on the visibility and existence of a game. The controller uses services to look up game details and build shareable URLs. It supports both public and private games, providing different HTML content accordingly.
+The `GameWebFallbackController` class is a Spring Boot REST controller responsible for handling HTTP GET requests to display game pages. It provides a fallback mechanism for web clients to access game information, including public and private games, and handles scenarios where a game is not found.
 
 ## Public Methods
 
+The class exposes the following public method:
+
 ### `gamePage`
 
-Handles GET requests for game pages and returns an HTML response.
+Handles HTTP GET requests to retrieve the game page based on the provided game ID.
 
-| Parameter | Type   | Description                      |
-|-----------|--------|----------------------------------|
-| `id`      | String | The unique identifier of the game|
+| Parameter | Type   | Description                          |
+|-----------|--------|--------------------------------------|
+| `id`      | String | The unique identifier of the game.   |
 
-| Return Type                  | Description                           |
-|------------------------------|---------------------------------------|
-| `ResponseEntity<String>`     | An HTML response representing the game page or an error message if the game is not found or the ID is invalid. |
+| Return Type                  | Description                                      |
+|------------------------------|--------------------------------------------------|
+| `ResponseEntity<String>`     | An HTML response representing the game page.     |
 
-This method attempts to parse the provided game ID into a UUID. If successful, it retrieves the game details using the `IGameLookupService`. Depending on the game's visibility, it generates an appropriate HTML page using either `publicGamePage` or `privateGamePage`. If the game is not found or the ID is invalid, it returns a "Game not found" page.
+- **Behavior**: 
+  - Attempts to parse the game ID from the path variable.
+  - Uses the `IGameLookupService` to find the game by its ID.
+  - Constructs an HTML response based on the game's visibility:
+    - **Public Game**: Displays game details such as activity, venue, organizer, skill level, slots, and price.
+    - **Private Game**: Displays a message indicating the game is private.
+  - If the game is not found or the ID is invalid, returns a "Game not found" page.
+
+## Usage
+
+This controller is typically used in scenarios where a web client needs to access game information via a URL. It provides a user-friendly HTML page with game details and a link to open the game in the Upmatches app. The controller also handles cases where the game is private or not found, ensuring a graceful user experience.
