@@ -1,95 +1,51 @@
 ---
-id: station-line-entity
+id: station-line
 title: StationLine Entity
 sidebar_label: StationLine
 ---
 
-# StationLine Entity
+# StationLine
 
-The `StationLine` entity represents the many-to-many relationship between a `Station` and a `TransitLine`, with an additional `stationNumber` attribute that indicates the order or number of the station along the transit line.
-
-This entity is part of the `com.upmatches.app.features.venue.entities` package and is mapped to the `station_lines` database table.
+The `StationLine` entity represents the many-to-many relationship between a `Station` and a `TransitLine` in the venue system. It maps to the `station_lines` database table and stores the order (station number) of a station along a specific transit line.
 
 ## Purpose
 
-In a transit or venue system, a single station can belong to multiple transit lines (e.g., a subway station serving multiple routes), and a transit line can have multiple stations. The `StationLine` entity models this junction table, providing:
-
-- A composite primary key (`StationLineId`) consisting of the station ID and transit line code.
-- A reference to the associated `Station`.
-- A reference to the associated `TransitLine`.
-- The station's number or order along the transit line.
-
-## Class Diagram
-
-```
-┌─────────────────────┐
-│     StationLine     │
-├─────────────────────┤
-│ - id: StationLineId │
-│ - station: Station  │
-│ - transitLine: TransitLine │
-│ - stationNumber: Integer   │
-├─────────────────────┤
-│ + create(...)       │
-└─────────────────────┘
-```
-
-## Annotations
-
-| Annotation | Description |
-|---|---|
-| `@Entity` | Marks this class as a JPA entity. |
-| `@Table(name = "station_lines")` | Maps the entity to the `station_lines` table. |
-| `@Getter` (Lombok) | Generates getter methods for all fields. |
-| `@EmbeddedId` | Indicates a composite primary key. |
-| `@ManyToOne` | Defines a many-to-one relationship with `Station` and `TransitLine`. |
-| `@MapsId` | Maps the foreign key columns to the composite primary key fields. |
-| `@JoinColumn` | Specifies the foreign key column name. |
-| `@Column(name = "station_number")` | Maps the `stationNumber` field to the `station_number` column. |
+This entity is used to model the association between stations and transit lines, including the position of the station on that line. For example, on a subway line, each station has a sequential number indicating its stop order.
 
 ## Fields
 
 | Field | Type | Description |
-|---|---|---|
-| `id` | `StationLineId` | Composite primary key containing `stationId` and `transitLineCode`. |
-| `station` | `Station` | The associated station (many-to-one relationship). |
-| `transitLine` | `TransitLine` | The associated transit line (many-to-one relationship). |
-| `stationNumber` | `Integer` | The order or number of the station along the transit line. |
+|-------|------|-------------|
+| `id` | `StationLineId` | Composite primary key consisting of `stationId` and `transitLineCode` |
+| `station` | `Station` | The associated station (many-to-one relationship) |
+| `transitLine` | `TransitLine` | The associated transit line (many-to-one relationship) |
+| `stationNumber` | `Integer` | The order/position of the station on the transit line |
 
-## Constructor
+## Database Mapping
 
-The class has a **protected no-argument constructor** required by JPA. External instantiation should be done via the static factory method.
+- **Table**: `station_lines`
+- **Primary Key**: Composite key (`station_id`, `transit_line_code`) via `@EmbeddedId`
+- **Foreign Keys**:
+  - `station_id` references the `Station` entity
+  - `transit_line_code` references the `TransitLine` entity
 
-```java
-protected StationLine() {
-}
-```
+## Methods
 
-## Public Methods
+### `create(Station station, TransitLine transitLine, Integer stationNumber)`
 
-### `create`
-
-```java
-public static StationLine create(Station station, TransitLine transitLine, Integer stationNumber)
-```
-
-Creates a new `StationLine` instance with the provided station, transit line, and station number.
+Creates a new `StationLine` instance with the specified station, transit line, and station number.
 
 **Parameters:**
 
 | Parameter | Type | Description |
-|---|---|---|
-| `station` | `Station` | The station to associate. |
-| `transitLine` | `TransitLine` | The transit line to associate. |
-| `stationNumber` | `Integer` | The station's number or order along the transit line. |
+|-----------|------|-------------|
+| `station` | `Station` | The station to associate |
+| `transitLine` | `TransitLine` | The transit line to associate |
+| `stationNumber` | `Integer` | The order number of the station on the line |
 
-**Returns:**
+**Returns:** `StationLine` - A new instance with the composite key automatically generated from the station ID and transit line code.
 
-| Return Type | Description |
-|---|---|
-| `StationLine` | A new `StationLine` instance with the composite key automatically generated from the station ID and transit line code. |
-
-**Example Usage:**
+**Example usage:**
 
 ```java
 Station station = stationRepository.findById(1L).orElseThrow();
@@ -99,23 +55,8 @@ StationLine stationLine = StationLine.create(station, transitLine, 5);
 stationLineRepository.save(stationLine);
 ```
 
-## Database Mapping
+## Notes
 
-The entity maps to the `station_lines` table with the following columns:
-
-| Column Name | Type | Description |
-|---|---|---|
-| `station_id` | (FK) | Foreign key to the `station` table, part of composite primary key. |
-| `transit_line_code` | (FK) | Foreign key to the `transit_line` table, part of composite primary key. |
-| `station_number` | `INTEGER` | The station's number along the transit line. |
-
-## Relationships
-
-- **Station (Many-to-One):** Each `StationLine` belongs to one `Station`. The foreign key `station_id` is mapped to the `stationId` field of the composite key.
-- **TransitLine (Many-to-One):** Each `StationLine` belongs to one `TransitLine`. The foreign key `transit_line_code` is mapped to the `transitLineCode` field of the composite key.
-
-## Usage Notes
-
-- The composite primary key (`StationLineId`) must implement `Serializable` and override `equals()` and `hashCode()`.
-- The `create()` factory method ensures the composite key is correctly initialized from the associated entities.
-- The protected no-argument constructor is for JPA use only; do not call it directly.
+- The class uses Lombok's `@Getter` annotation to automatically generate getters for all fields.
+- The protected no-argument constructor is required by JPA for entity instantiation.
+- The `@MapsId` annotation on both `@ManyToOne` relationships ensures that the composite key fields are automatically populated from the associated entities.

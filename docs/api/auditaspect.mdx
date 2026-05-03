@@ -6,26 +6,26 @@ sidebar_label: AuditAspect
 
 # AuditAspect
 
-The `AuditAspect` class is a Spring AOP aspect that provides centralized audit logging for methods annotated with `@Auditable`. It automatically captures and records audit events including actor information, action details, outcomes, and contextual data such as IP addresses and user agents.
+The `AuditAspect` class is a Spring AOP aspect that provides declarative audit logging for methods annotated with `@Auditable`. It automatically captures and records audit events including actor information, action details, outcomes, and contextual HTTP data.
 
 ## Purpose
 
-This aspect intercepts method calls annotated with `@Auditable` and:
-- Records successful and failed execution attempts
-- Captures actor identity (authenticated user or anonymous)
-- Extracts resource identifiers using SpEL expressions
-- Sanitizes sensitive payloads before logging
-- Collects HTTP context information (IP, User-Agent)
-- Associates audit events with correlation IDs for tracing
+This aspect intercepts method executions marked with the `@Auditable` annotation and:
+- Records successful and failed audit events
+- Resolves the authenticated user or marks the actor as anonymous
+- Evaluates SpEL expressions to extract resource identifiers
+- Sanitizes sensitive payloads based on annotation configuration
+- Captures HTTP context (IP address, user agent) from the current request
+- Associates audit events with correlation IDs from MDC
 
 ## Dependencies
 
-| Dependency | Description |
-|------------|-------------|
-| `IAuthenticatedUserResolver` | Resolves the currently authenticated user |
-| `IRecordAuditEventService` | Service for persisting audit events |
-| `PayloadSanitizer` | Sanitizes method arguments for safe logging |
-| `SpelExpressionParser` | Parses SpEL expressions for dynamic resource ID extraction |
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
+| `IRecordAuditEventService` | Service | Persists audit events to the audit log |
+| `PayloadSanitizer` | Utility | Sanitizes method arguments for safe logging |
+| `SpelExpressionParser` | Spring | Parses SpEL expressions for resource ID resolution |
 
 ## Public Methods
 
@@ -35,83 +35,88 @@ The main advice method that intercepts `@Auditable`-annotated methods.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `joinPoint` | `ProceedingJoinPoint` | The join point representing the intercepted method |
+| `joinPoint` | `ProceedingJoinPoint` | The intercepted method execution point |
 
 **Returns:** `Object` - The result of the intercepted method execution
 
-**Throws:** `Throwable` - Any exception thrown by the intercepted method
-
 **Behavior:**
-1. Resolves the `@Auditable` annotation from the method
+1. Resolves the `@Auditable` annotation from the method signature
 2. Proceeds with the original method execution
-3. Builds an `AuditEventRequest` with contextual information
-4. Records the audit event asynchronously in a `finally` block
-5. Logs a warning if audit recording fails (does not propagate exceptions)
+3. In a `finally` block, builds and records an audit event
+4. If audit recording fails, logs a warning without affecting the original method's outcome
 
 ## Internal Methods
 
 ### `resolveAnnotation(ProceedingJoinPoint joinPoint)`
 
-Resolves the `@Auditable` annotation from the intercepted method.
+Extracts the `@Auditable` annotation from the intercepted method.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `joinPoint` | `ProceedingJoinPoint` | The join point to inspect |
+| `joinPoint` | `ProceedingJoinPoint` | The intercepted method execution point |
 
-**Returns:** `Auditable` - The annotation instance, or `null` if not present
+**Returns:** `Auditable` or `null` if the annotation is not present
 
 ### `buildRequest(Auditable annotation, Object[] args, Object result, Throwable failure)`
 
-Constructs an `AuditEventRequest` from the intercepted method's context.
+Constructs an `AuditEventRequest` from the available context.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `annotation` | `Auditable` | The annotation configuration |
+| `annotation` | `Auditable` | The audit configuration annotation |
 | `args` | `Object[]` | Method arguments |
-| `result` | `Object` | Method return value (null if exception occurred) |
+| `result` | `Object` | Method return value (null if failed) |
 | `failure` | `Throwable` | Exception thrown (null if successful) |
 
-**Returns:** `AuditEventRequest` - The constructed audit event request
+**Returns:** `AuditEventRequest` - The fully populated audit event request
+
+**Logic:**
+- Resolves actor ID and type (USER or ANONYMOUS)
+- Determines outcome (SUCCESS or FAILURE)
+- Evaluates resource ID from SpEL expression
+- Sanitizes payload if not marked as sensitive
+- Captures HTTP context and correlation ID
+- Extracts error code and message from exceptions
 
 ### `resolveActorId()`
 
-Resolves the authenticated user's ID.
+Attempts to resolve the authenticated user's ID.
 
-**Returns:** `UUID` - The user ID, or `null` if not authenticated
+**Returns:** `UUID` or `null` if no authenticated user is found
 
 ### `resolveResourceId(Auditable annotation, Object[] args, Object result)`
 
-Evaluates the SpEL expression defined in the annotation to extract a resource identifier.
+Evaluates a SpEL expression to extract a resource identifier.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `annotation` | `Auditable` | The annotation containing the SpEL expression |
-| `args` | `Object[]` | Method arguments (available as `#args`) |
-| `result` | `Object` | Method return value (available as `#result`) |
+| `annotation` | `Auditable` | The audit configuration containing the SpEL expression |
+| `args` | `Object[]` | Method arguments (available as `#args` in SpEL) |
+| `result` | `Object` | Method return value (available as `#result` in SpEL) |
 
-**Returns:** `String` - The evaluated resource ID, or `null` if expression is blank or evaluation fails
+**Returns:** `String` or `null` if expression is blank or evaluation fails
 
 ### `resolveHttpContext()`
 
-Extracts HTTP request context from the current request attributes.
+Captures the current HTTP request context.
 
-**Returns:** `HttpContext` - Record containing IP address and User-Agent header
+**Returns:** `HttpContext` record containing IP address and User-Agent header
 
 ### `emptyToNull(String value)`
 
-Converts blank strings to `null`.
+Utility method that converts blank strings to null.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `value` | `String` | The string to check |
 
-**Returns:** `String` - `null` if blank, otherwise the original value
+**Returns:** `String` or `null` if the input is null or blank
 
-## Internal Record
+## Inner Types
 
 ### `HttpContext`
 
-A simple record for holding HTTP request context.
+A record that encapsulates HTTP request metadata.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -121,26 +126,11 @@ A simple record for holding HTTP request context.
 ## Configuration
 
 The aspect is configured with:
-- **Order:** `20` (executes after other aspects with lower order values)
-- **Pointcut:** Methods annotated with `@Auditable`
+- **Order:** 20 (executes after other aspects with lower order values)
+- **Pointcut:** Methods annotated with `@com.upmatches.app.features.audit.annotations.Auditable`
 
 ## Error Handling
 
-- If audit recording fails, a warning is logged but the exception is not propagated
-- If SpEL expression evaluation fails, a debug message is logged and `null` is returned for the resource ID
-- If the user cannot be resolved, the actor type defaults to `ANONYMOUS`
-
-## Usage Example
-
-```java
-@Auditable(
-    action = "CREATE_USER",
-    category = AuditCategory.USER_MANAGEMENT,
-    resourceType = "User",
-    resourceIdExpression = "#result.id",
-    sensitive = true
-)
-public User createUser(CreateUserRequest request) {
-    // Method implementation
-}
-```
+- If audit recording fails, a warning is logged but the original method's execution is not affected
+- SpEL evaluation failures are logged at DEBUG level and result in a null resource ID
+- Authentication failures silently resolve to anonymous actor type

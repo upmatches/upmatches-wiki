@@ -6,48 +6,58 @@ sidebar_label: OperationStatus
 
 # OperationStatus Enum
 
-The `OperationStatus` enum is a simple enumeration defined in the `com.upmatches.app.shared.enums` package. It represents the different types of operations that can be performed within the application, typically used to indicate the nature of a database or service operation.
+The `OperationStatus` enum defines a set of standard operation types used throughout the application to indicate the nature of a data operation being performed. It is part of the `com.upmatches.app.shared.enums` package and provides a type-safe way to represent common CRUD (Create, Read, Update, Delete) operations along with a catch-all option for other operations.
 
 ## Purpose
 
-This enum provides a standardized set of operation types that can be used throughout the application to describe what kind of action is being taken. It helps in maintaining consistency when handling different CRUD (Create, Read, Update, Delete) operations and other miscellaneous actions.
+This enum is designed to standardize how different data operations are referenced across the application. By using a dedicated enum instead of string literals or integer constants, the code becomes more readable, maintainable, and less prone to errors. It is particularly useful in scenarios such as:
+
+- Logging and auditing data access patterns
+- Controlling behavior in generic data access layers
+- Implementing operation-specific logic in service classes
+- Tracking the type of operation in request/response objects
 
 ## Enum Constants
 
 | Constant | Description |
 |----------|-------------|
-| `RETRIEVE` | Represents a read or fetch operation (e.g., getting data from a database or API). |
-| `SAVE` | Represents a create or persist operation (e.g., inserting a new record). |
-| `UPDATE` | Represents a modification operation (e.g., updating an existing record). |
-| `DELETE` | Represents a removal operation (e.g., deleting a record). |
-| `OTHER` | Represents any operation that does not fit into the standard CRUD categories. |
+| `RETRIEVE` | Represents a read or fetch operation (e.g., getting data from a database or API) |
+| `SAVE` | Represents a create or insert operation (e.g., persisting new data) |
+| `UPDATE` | Represents a modification operation (e.g., updating existing data) |
+| `DELETE` | Represents a removal operation (e.g., deleting data from storage) |
+| `OTHER` | Represents any operation that does not fit into the standard CRUD categories |
 
 ## Usage Example
 
 ```java
-OperationStatus status = OperationStatus.RETRIEVE;
+import com.upmatches.app.shared.enums.OperationStatus;
 
-switch (status) {
-    case RETRIEVE:
-        // Handle retrieve logic
-        break;
-    case SAVE:
-        // Handle save logic
-        break;
-    case UPDATE:
-        // Handle update logic
-        break;
-    case DELETE:
-        // Handle delete logic
-        break;
-    case OTHER:
-        // Handle other operations
-        break;
+public class DataService {
+    
+    public void processOperation(OperationStatus status) {
+        switch (status) {
+            case RETRIEVE:
+                System.out.println("Performing retrieve operation");
+                break;
+            case SAVE:
+                System.out.println("Performing save operation");
+                break;
+            case UPDATE:
+                System.out.println("Performing update operation");
+                break;
+            case DELETE:
+                System.out.println("Performing delete operation");
+                break;
+            case OTHER:
+                System.out.println("Performing other operation");
+                break;
+        }
+    }
 }
 ```
 
 ## Notes
 
-- This enum is immutable and thread-safe by design.
-- It is commonly used in conjunction with operation logging, auditing, or routing logic.
-- The `OTHER` constant provides flexibility for future operation types that may not be covered by the standard CRUD set.
+- The enum is immutable and thread-safe by design
+- It can be serialized/deserialized automatically by most Java frameworks
+- Consider extending this enum with additional constants if your application requires more granular operation types

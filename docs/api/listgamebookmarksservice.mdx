@@ -6,78 +6,92 @@ sidebar_label: ListGameBookmarksService
 
 # ListGameBookmarksService
 
-The `ListGameBookmarksService` class is a Spring service that provides cursor-based pagination for retrieving a user's game bookmarks. It implements the `IListGameBookmarksService` interface and is marked as a `non-sealed` class, allowing further extension.
+The `ListGameBookmarksService` class provides paginated retrieval of game bookmarks for the authenticated user. It implements cursor-based pagination to efficiently fetch bookmarks in a scalable manner, including real-time participant counts for each bookmarked game.
 
-This service handles the complete lifecycle of fetching bookmarked games for an authenticated user, including:
-- Decoding the cursor for pagination
-- Retrieving bookmarks with cursor-based pagination
-- Enriching bookmark data with active participant counts
-- Encoding the next cursor for subsequent requests
+## Purpose
+
+This service handles the business logic for listing a user's game bookmarks with the following key responsibilities:
+
+- **Authentication**: Resolves the authenticated user's identity
+- **Cursor-based Pagination**: Decodes and encodes pagination cursors for efficient data retrieval
+- **Participant Counts**: Enriches bookmark data with current active participant counts
+- **Error Handling**: Wraps operations in standardized error handling with appropriate exception types
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `GameBookmarkRepository` | Repository | Data access for game bookmarks |
-| `GameParticipantRepository` | Repository | Data access for game participants |
+| `GameBookmarkRepository` | Repository | Data access for game bookmark entities |
+| `GameParticipantRepository` | Repository | Data access for game participant counts |
 | `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
-| `GameCursor` | Helper | Encodes/decodes cursor values for pagination |
-
-## Constructor
-
-### `ListGameBookmarksService(GameBookmarkRepository, GameParticipantRepository, IAuthenticatedUserResolver, GameCursor)`
-
-Initializes the service with all required dependencies via constructor injection.
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `bookmarkRepository` | `GameBookmarkRepository` | Repository for bookmark data access |
-| `participantRepository` | `GameParticipantRepository` | Repository for participant data access |
-| `userResolver` | `IAuthenticatedUserResolver` | Resolves the authenticated user's identity |
-| `gameCursor` | `GameCursor` | Helper for cursor encoding/decoding |
+| `GameCursor` | Helper | Handles cursor encoding/decoding for pagination |
+| `ServiceOperationExecutor` | Utility | Provides standardized operation execution with error handling |
 
 ## Public Methods
 
 ### `execute(String cursor, int size)`
 
-Retrieves a paginated list of game bookmarks for the authenticated user, enriched with active participant counts.
+Retrieves a paginated list of game bookmarks for the authenticated user.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `cursor` | `String` | Encoded cursor string for pagination. Pass `null` or empty for the first page. |
+| `cursor` | `String` | Pagination cursor from previous request. `null` or empty for first page |
 | `size` | `int` | Maximum number of bookmarks to return per page |
 
-**Returns:** `CursorPagedResponse<GameBookmarkResponse>` - A paginated response containing:
-- `content`: List of `GameBookmarkResponse` objects with bookmark details and participant counts
-- `nextCursor`: Encoded cursor string for the next page, or `null` if there are no more results
+**Returns:**
 
-**Exceptions:**
-
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | Thrown if the authenticated user cannot be resolved or if an error occurs during retrieval |
+| Type | Description |
+|------|-------------|
+| `CursorPagedResponse<GameBookmarkResponse>` | Paginated response containing bookmark data and next cursor |
 
 **Behavior:**
 
-1. **Authentication**: Resolves the authenticated user's UUID via `userResolver.requireUserId()`
-2. **Cursor Decoding**: Decodes the provided cursor string to extract the start time and ID for pagination
-3. **Bookmark Retrieval**: Fetches bookmarks using cursor-based pagination from `bookmarkRepository.findByUserIdCursor()`
-4. **Participant Counts**: For all retrieved game IDs, queries active participant counts in a single batch operation
-5. **Response Mapping**: Maps each bookmark to a `GameBookmarkResponse`, including the participant count
-6. **Next Cursor**: If the result set is full (equals the requested size), encodes the last bookmark's timestamp and ID as the next cursor
-
-**Transactional Behavior:** The method is marked with `@Transactional(readOnly = true)` to optimize database access and ensure consistency during reads.
+1. Resolves the authenticated user's UUID
+2. Decodes the provided cursor string (if present) to extract pagination parameters
+3. Fetches bookmarks from the repository using cursor-based pagination
+4. Collects all game IDs from the retrieved bookmarks
+5. Queries participant counts for those games with `ACTIVE` status
+6. Maps bookmarks to response objects enriched with participant counts
+7. Generates a next cursor if there are more results available
+8. Returns the paginated response wrapped in standardized error handling
 
 **Example Usage:**
 
 ```java
-// First page: 20 bookmarks
+// First page request
 CursorPagedResponse<GameBookmarkResponse> firstPage = service.execute(null, 20);
 
-// Subsequent page using cursor from previous response
+// Subsequent page request
 CursorPagedResponse<GameBookmarkResponse> nextPage = service.execute(firstPage.getNextCursor(), 20);
 ```
+
+## Implementation Details
+
+### Cursor-Based Pagination
+
+The service uses a composite cursor consisting of:
+- `startTime`: The `bookmarkedAt` timestamp of the last bookmark in the current page
+- `id`: The UUID of the last bookmark in the current page
+
+This approach ensures stable pagination even when new bookmarks are added between requests.
+
+### Participant Count Enrichment
+
+For each page of bookmarks, the service performs a batch query to count active participants for all bookmarked games. This avoids N+1 query problems by using a single database call with a list of game IDs.
+
+### Transaction Management
+
+The method is annotated with `@Transactional(readOnly = true)` to:
+- Ensure consistent reads during pagination
+- Optimize database connection usage
+- Prevent unintended data modifications
+
+## Error Handling
+
+The service uses `ServiceOperationExecutor.execute()` with:
+- **Operation Status**: `RETRIEVE`
+- **Exception Factory**: `ResourceNotFoundException::new`
+
+This ensures that any database or runtime exceptions are properly wrapped and handled according to the application's error handling conventions.

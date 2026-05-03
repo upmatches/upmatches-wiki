@@ -1,48 +1,40 @@
 ---
 id: push-delivery-result
-title: PushDeliveryResult Enum
+title: Push Delivery Result
 sidebar_label: PushDeliveryResult
 ---
 
-# PushDeliveryResult
+# Push Delivery Result
 
-The `PushDeliveryResult` enum defines the possible outcomes of a push notification delivery attempt. It is used within the notification system to report the status of each push notification sent to a user's device.
-
-## Purpose
-
-This enum provides a standardized set of return values for push notification delivery operations. By using an enum, the system ensures type safety and clear communication of delivery results across different components (e.g., notification services, logging, analytics).
+The `PushDeliveryResult` enum defines the possible outcomes of a push notification delivery attempt. It is used throughout the notification system to standardize the reporting of delivery statuses, enabling consistent error handling and logging.
 
 ## Enum Values
 
 | Value | Description |
 |-------|-------------|
-| `SENT` | The push notification was successfully delivered to the push service provider (e.g., FCM, APNs). |
-| `NO_TOKENS` | The target user has no registered device tokens, so no notification could be sent. |
-| `UNAVAILABLE` | The push notification service is temporarily unavailable or unreachable. |
-| `FAILED` | The push notification delivery failed for an unspecified reason (e.g., invalid token, service error). |
+| `SENT` | The push notification was successfully delivered to the device. |
+| `NO_TOKENS` | The target user has no registered device tokens, so the notification could not be sent. |
+| `UNAVAILABLE` | The push notification service is temporarily unavailable (e.g., network issue, service outage). |
+| `FAILED` | The delivery attempt failed for an unspecified reason (e.g., invalid token, authentication error). |
 
 ## Usage
 
-This enum is typically returned by methods that handle push notification delivery. For example:
+This enum is typically returned by push notification service methods to indicate the result of a delivery attempt. Example:
 
 ```java
-PushDeliveryResult result = notificationService.sendPush(user, message);
+PushDeliveryResult result = pushService.sendNotification(user, message);
 switch (result) {
     case SENT:
-        // Log success
+        // handle success
         break;
     case NO_TOKENS:
-        // Handle missing tokens
+        // log warning
         break;
     case UNAVAILABLE:
-        // Retry later
+        // retry later
         break;
     case FAILED:
-        // Log error
+        // log error
         break;
 }
 ```
-
-## Package
-
-`com.upmatches.app.features.notification.models`

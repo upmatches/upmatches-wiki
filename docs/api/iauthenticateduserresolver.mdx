@@ -6,43 +6,40 @@ sidebar_label: IAuthenticatedUserResolver
 
 # IAuthenticatedUserResolver Interface
 
-The `IAuthenticatedUserResolver` interface defines a contract for resolving the currently authenticated user's unique identifier (UUID) within the application. It provides two methods to retrieve the user ID: one that throws an exception if the user is not authenticated, and another that returns an `Optional` to handle the absence of an authenticated user gracefully.
+The `IAuthenticatedUserResolver` interface defines a contract for resolving the currently authenticated user's unique identifier (UUID) within the application. It provides two methods to access the user ID: one that throws an exception if no user is authenticated, and another that returns an `Optional` to safely handle cases where the user is not authenticated.
 
-This interface is declared as a **sealed interface**, meaning only the permitted class `AuthenticatedUserResolver` can implement it. This design ensures controlled extension and a clear, single implementation path for resolving the authenticated user.
+This interface is a **sealed interface**, meaning it restricts which classes or interfaces can implement it. In this case, only `AuthenticatedUserResolver` is permitted to implement `IAuthenticatedUserResolver`. This design ensures controlled extensibility and enforces a single, well-defined implementation.
 
 ## Purpose
 
-- **Centralize User Resolution**: Provides a single, consistent way to obtain the current user's ID across the application.
-- **Handle Authentication States**: Offers both a strict (exception-throwing) and a safe (Optional-based) approach to handle cases where the user may or may not be authenticated.
-- **Enforce Implementation Control**: The sealed keyword restricts implementation to `AuthenticatedUserResolver`, preventing unintended or unauthorized implementations.
+The primary purpose of this interface is to abstract the retrieval of the authenticated user's ID, decoupling the authentication mechanism from the rest of the application. By using this interface, services and components can obtain the current user's ID without needing to know the underlying authentication implementation details.
 
-## Public Methods
+## Methods
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `requireUserId()` | `UUID` | Returns the unique identifier of the currently authenticated user. Throws an exception (e.g., `IllegalStateException` or a custom exception) if no user is authenticated. |
-| `optionalUserId()` | `Optional<UUID>` | Returns an `Optional` containing the unique identifier of the currently authenticated user, or an empty `Optional` if no user is authenticated. |
+| `requireUserId()` | `UUID` | Returns the UUID of the currently authenticated user. Throws an exception (e.g., `IllegalStateException` or a custom exception) if no user is authenticated. |
+| `optionalUserId()` | `Optional<UUID>` | Returns an `Optional<UUID>` containing the UUID of the authenticated user if present, or an empty `Optional` if no user is authenticated. |
 
 ## Usage Example
 
 ```java
-// Using requireUserId() when a user must be authenticated
+// Assuming an implementation is injected
+IAuthenticatedUserResolver userResolver = new AuthenticatedUserResolver();
+
+// Get the user ID, throwing an exception if not authenticated
 UUID userId = userResolver.requireUserId();
 
-// Using optionalUserId() when authentication is optional
-userResolver.optionalUserId().ifPresentOrElse(
-    userId -> {
-        // User is authenticated, proceed with userId
-    },
-    () -> {
-        // No authenticated user, handle accordingly
-    }
+// Safely get the user ID, handling absence
+Optional<UUID> optionalUserId = userResolver.optionalUserId();
+optionalUserId.ifPresentOrElse(
+    id -> System.out.println("User ID: " + id),
+    () -> System.out.println("No authenticated user")
 );
 ```
 
-## Notes
+## Implementation Notes
 
-- The interface is part of the `com.upmatches.app.features.game.services` package.
-- The only permitted implementation is `AuthenticatedUserResolver`.
-- The `requireUserId()` method is suitable for scenarios where the operation cannot proceed without an authenticated user.
-- The `optionalUserId()` method is ideal for operations that can adapt to the presence or absence of an authenticated user.
+- The interface is sealed, so only `AuthenticatedUserResolver` can implement it.
+- The `requireUserId()` method is intended for use cases where the presence of an authenticated user is mandatory.
+- The `optionalUserId()` method is suitable for scenarios where the user may or may not be authenticated, allowing for graceful handling.

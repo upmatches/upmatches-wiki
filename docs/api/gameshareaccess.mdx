@@ -6,60 +6,48 @@ sidebar_label: GameShareAccess
 
 # GameShareAccess
 
-The `GameShareAccess` entity represents a record of a user being granted access to a shared game. It is used to track which users have been given permission to view or interact with a specific game resource.
+The `GameShareAccess` entity represents a record of when a specific user was granted access to a shared game. It is used to track and audit game-sharing events within the application.
 
 ## Purpose
 
-This entity serves as a join table between `Game` and `User` entities, enforcing a unique constraint that ensures each user can only have one access record per game. The `resolvedAt` timestamp captures the exact moment when the access was granted, providing an audit trail for game sharing activities.
+This JPA entity is designed to persist the relationship between a `Game` and a `User` when access is shared. Each record captures the exact moment the access was resolved (granted). The table enforces a unique constraint on the combination of `game_id` and `user_id`, ensuring that a user can only have one access record per game.
 
 ## Entity Details
 
-- **Table Name:** `game_share_accesses`
-- **Unique Constraint:** `(game_id, user_id)` – prevents duplicate access records for the same game and user combination.
-- **Primary Key:** UUID (auto-generated)
-- **Package:** `com.upmatches.app.features.game.entities`
-
-## Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `UUID` | Primary key, auto-generated using UUID strategy |
-| `game` | `Game` | The game that access is granted to (many-to-one relationship) |
-| `user` | `User` | The user who is granted access (many-to-one relationship) |
-| `resolvedAt` | `Instant` | Timestamp when the access was created (non-nullable, non-updatable) |
+| Field        | Type    | Description                                                                 |
+|--------------|---------|-----------------------------------------------------------------------------|
+| `id`         | UUID    | Primary key, auto-generated using UUID strategy.                            |
+| `game`       | Game    | Many-to-one relationship to the `Game` entity. Cannot be null.              |
+| `user`       | User    | Many-to-one relationship to the `User` entity. Cannot be null.              |
+| `resolvedAt` | Instant | Timestamp of when the access was created. Set automatically on persist.     |
 
 ## Public Methods
 
 ### `create(Game game, User user)`
 
-Creates a new `GameShareAccess` instance with the specified game and user.
+Creates a new `GameShareAccess` instance with the specified game and user. The `resolvedAt` timestamp is automatically set when the entity is persisted.
 
-**Parameters:**
+| Parameter | Type | Description                          |
+|-----------|------|--------------------------------------|
+| `game`    | Game | The game to which access is granted. |
+| `user`    | User | The user who is granted access.      |
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `game` | `Game` | The game to grant access to |
-| `user` | `User` | The user to grant access to |
+**Returns:** `GameShareAccess` — a new instance ready for persistence.
 
-**Returns:** `GameShareAccess` – a new instance with the provided game and user, and the `resolvedAt` timestamp set to the current time upon persistence.
+## Database Constraints
+
+- **Unique Constraint:** The combination of `game_id` and `user_id` must be unique across the `game_share_accesses` table. This prevents duplicate access records for the same user and game.
 
 ## Lifecycle Callbacks
 
-### `onCreate()`
-
-A `@PrePersist` callback that automatically sets the `resolvedAt` field to the current instant (`Instant.now()`) before the entity is persisted to the database. This ensures the timestamp is always recorded at the moment of creation.
+- **`@PrePersist`**: The `onCreate()` method sets the `resolvedAt` field to the current UTC timestamp (`Instant.now()`) just before the entity is persisted. This field is immutable after creation (`updatable = false`).
 
 ## Usage Example
 
 ```java
-// Create a new game share access record
+Game game = gameRepository.findById(gameId).orElseThrow();
+User user = userRepository.findById(userId).orElseThrow();
+
 GameShareAccess access = GameShareAccess.create(game, user);
 gameShareAccessRepository.save(access);
 ```
-
-## Dependencies
-
-- **Jakarta Persistence (JPA):** For entity mapping and database operations
-- **Lombok:** Provides `@Getter` and `@NoArgsConstructor` annotations
-- **User entity:** From `com.upmatches.app.features.user.entities`
-- **Game entity:** From the same package

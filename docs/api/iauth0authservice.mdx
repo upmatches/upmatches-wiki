@@ -1,102 +1,82 @@
 ---
-id: iauth0-auth-service
-title: IAuth0AuthService Interface
+id: iauth0authservice
+title: IAuth0AuthService Interface Documentation
 sidebar_label: IAuth0AuthService
 ---
 
-# IAuth0AuthService Interface
+# IAuth0AuthService
 
-The `IAuth0AuthService` interface defines the contract for Auth0 authentication operations within the application. It provides methods for generating authorization URLs and exchanging authorization codes for verified user claims.
+The `IAuth0AuthService` is a sealed interface that defines the contract for Auth0 authentication operations in the UpMatches application. It provides methods for generating authorization URLs and exchanging authorization codes for verified claims.
 
-This is a **sealed interface** that permits only the `Auth0AuthService` class to implement it, ensuring controlled inheritance and a well-defined authentication service hierarchy.
+## Interface Overview
 
-## Purpose
+This interface is part of the `com.upmatches.app.features.auth.services` package and is designed to be implemented only by `Auth0AuthService`. It encapsulates the core authentication flow with Auth0, including OAuth 2.0 authorization code flow with PKCE (Proof Key for Code Exchange).
 
-- **Standardize Auth0 authentication flow** by defining a clear contract for authorization URL generation and token exchange
-- **Ensure type safety** with sealed interface pattern, restricting implementation to a single concrete class
-- **Encapsulate verified claims** through the inner record `Auth0VerifiedClaims`, providing a structured representation of authenticated user data
+## Sealed Interface
 
-## Inner Record: Auth0VerifiedClaims
-
-The `Auth0VerifiedClaims` record represents the verified claims extracted from an Auth0 ID token after successful authentication.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `sub` | `String` | The Auth0 user identifier (subject claim) |
-| `pictureUrl` | `String` | URL to the user's profile picture |
-| `email` | `String` | User's email address |
+The interface is declared as `sealed`, meaning only the specified class `Auth0AuthService` is permitted to implement it. This ensures controlled extension and maintains the integrity of the authentication service.
 
 ## Methods
 
-### getAuthorizationUrl
+### `getAuthorizationUrl`
 
-Generates the Auth0 authorization URL for initiating the OAuth 2.0 authentication flow.
-
-```java
-String getAuthorizationUrl(
-    String state,
-    String nonce,
-    String codeVerifier,
-    String connection)
-```
-
-**Parameters:**
+Generates the authorization URL for redirecting users to Auth0's authentication page.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `state` | `String` | Anti-CSRF state parameter for protecting against cross-site request forgery |
-| `nonce` | `String` | Cryptographic nonce for replay attack prevention |
-| `codeVerifier` | `String` | PKCE code verifier for secure authorization code exchange |
-| `connection` | `String` | Auth0 connection type (e.g., "google-oauth2", "facebook", "Username-Password-Authentication") |
+| `state` | `String` | A random string to prevent CSRF attacks |
+| `nonce` | `String` | A random string to prevent replay attacks |
+| `codeVerifier` | `String` | A cryptographically random string used for PKCE |
+| `connection` | `String` | The Auth0 connection type (e.g., "google-oauth2", "facebook") |
 
-**Returns:** `String` - The fully constructed authorization URL to redirect the user to Auth0.
+**Returns:** `String` - The complete authorization URL to redirect the user to Auth0.
 
-### exchangeAuthorizationCode
+### `exchangeAuthorizationCode`
 
-Exchanges an authorization code for verified user claims after successful authentication.
-
-```java
-Auth0VerifiedClaims exchangeAuthorizationCode(
-    String authorizationCode,
-    String codeVerifier,
-    String nonce)
-```
-
-**Parameters:**
+Exchanges an authorization code for verified claims from Auth0.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `authorizationCode` | `String` | The authorization code received from Auth0 callback |
-| `codeVerifier` | `String` | PKCE code verifier used in the initial authorization request |
-| `nonce` | `String` | Cryptographic nonce used in the initial authorization request |
+| `codeVerifier` | `String` | The same code verifier used in the authorization request |
+| `nonce` | `String` | The same nonce used in the authorization request |
 
-**Returns:** `Auth0VerifiedClaims` - A record containing the verified user claims (sub, pictureUrl, email).
+**Returns:** `Auth0VerifiedClaims` - A record containing the verified user claims.
+
+## Inner Record: `Auth0VerifiedClaims`
+
+This record represents the verified claims returned by Auth0 after successful authentication.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sub` | `String` | The Auth0 user ID (subject) |
+| `pictureUrl` | `String` | URL to the user's profile picture |
+| `email` | `String` | The user's email address |
 
 ## Usage Example
 
 ```java
-// Generate authorization URL
-String authUrl = authService.getAuthorizationUrl(
-    state,
-    nonce,
-    codeVerifier,
-    "google-oauth2"
-);
-
-// Exchange authorization code for claims
-Auth0VerifiedClaims claims = authService.exchangeAuthorizationCode(
-    authorizationCode,
-    codeVerifier,
-    nonce
-);
-
-String userId = claims.sub();
-String email = claims.email();
-String picture = claims.pictureUrl();
+// Implementation example
+public class Auth0AuthService implements IAuth0AuthService {
+    
+    @Override
+    public String getAuthorizationUrl(String state, String nonce, 
+                                      String codeVerifier, String connection) {
+        // Implementation logic
+    }
+    
+    @Override
+    public Auth0VerifiedClaims exchangeAuthorizationCode(String authorizationCode, 
+                                                         String codeVerifier, 
+                                                         String nonce) {
+        // Implementation logic
+    }
+}
 ```
 
-## Implementation Notes
+## Security Considerations
 
-- The interface is sealed, meaning only `Auth0AuthService` can implement it
-- All methods are expected to throw appropriate exceptions (e.g., `IllegalArgumentException`, `AuthenticationException`) in case of invalid parameters or authentication failures
-- The `Auth0VerifiedClaims` record is immutable and thread-safe by design
+- The `state` parameter helps prevent CSRF attacks
+- The `nonce` parameter prevents replay attacks
+- The `codeVerifier` ensures PKCE flow security
+- All parameters should be cryptographically random and securely generated

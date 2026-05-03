@@ -6,101 +6,106 @@ sidebar_label: CorrelationIdFilter
 
 # CorrelationIdFilter
 
+The `CorrelationIdFilter` is a Spring Boot servlet filter that ensures every HTTP request processed by the application has a unique correlation ID. This ID is used for distributed tracing, logging correlation, and debugging across microservices.
+
 ## Purpose
 
-The `CorrelationIdFilter` is a Spring Boot servlet filter that implements a distributed tracing pattern by managing a correlation ID across HTTP requests. It runs with the highest precedence in the filter chain and ensures that every incoming request is tagged with a unique identifier that can be propagated through downstream services.
+In a distributed system, it is essential to trace a single request as it flows through multiple services. The `CorrelationIdFilter` intercepts every incoming HTTP request and:
 
-This filter:
-- Extracts an existing correlation ID from the `X-Correlation-Id` HTTP header if present
-- Generates a new 8-character UUID-based correlation ID if none exists
-- Stores the correlation ID in the SLF4J Mapped Diagnostic Context (MDC) for logging purposes
-- Sets the correlation ID on the HTTP response header for client-side tracing
-- Properly cleans up the MDC context after request processing
+1. **Extracts** an existing correlation ID from the `X-Correlation-Id` request header (if present).
+2. **Generates** a new correlation ID if none is provided.
+3. **Injects** the correlation ID into the **Mapped Diagnostic Context (MDC)** for use by logging frameworks (e.g., Logback, Log4j).
+4. **Propagates** the correlation ID back to the client via the `X-Correlation-Id` response header.
+
+This filter runs with the highest precedence (`@Order(Ordered.HIGHEST_PRECEDENCE)`) to ensure it executes before any other filters in the chain.
 
 ## Class Details
 
-| Property | Value |
-|----------|-------|
-| **Package** | `com.upmatches.app.shared.tracing.filters` |
-| **Type** | Spring `@Component`, `@Order(Ordered.HIGHEST_PRECEDENCE)` |
-| **Extends** | `OncePerRequestFilter` |
-| **Purpose** | Ensures each HTTP request has a correlation ID for distributed tracing |
+| Attribute       | Value                              |
+|-----------------|------------------------------------|
+| **Package**     | `com.upmatches.app.shared.tracing.filters` |
+| **Extends**     | `OncePerRequestFilter`             |
+| **Annotations** | `@Component`, `@Order(Ordered.HIGHEST_PRECEDENCE)` |
 
 ## Constants
 
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `MDC_REQUEST_ID` | `"requestId"` | MDC key used to store the correlation ID |
-| `HEADER_CORRELATION_ID` | `"X-Correlation-Id"` | HTTP header name for the correlation ID |
-| `CORRELATION_ID_LENGTH` | `8` | Length of generated correlation IDs (UUID substring) |
+| Constant Name          | Value              | Description                                      |
+|------------------------|--------------------|--------------------------------------------------|
+| `MDC_REQUEST_ID`       | `"requestId"`      | MDC key under which the correlation ID is stored |
+| `HEADER_CORRELATION_ID`| `"X-Correlation-Id"`| HTTP header name for the correlation ID          |
 
 ## Public Methods
 
 ### `doFilterInternal`
 
-```java
-protected void doFilterInternal(HttpServletRequest request,
-                                HttpServletResponse response,
-                                FilterChain filterChain) throws ServletException, IOException
-```
+This is the core method of the filter. It is invoked once per request.
 
-The main filter logic that processes each incoming HTTP request.
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `request` | `HttpServletRequest` | The incoming HTTP request |
-| `response` | `HttpServletResponse` | The outgoing HTTP response |
-| `filterChain` | `FilterChain` | The filter chain to pass request/response to |
+| Parameter       | Type                   | Description                                      |
+|-----------------|------------------------|--------------------------------------------------|
+| `request`       | `HttpServletRequest`   | The incoming HTTP request                        |
+| `response`      | `HttpServletResponse`  | The outgoing HTTP response                       |
+| `filterChain`   | `FilterChain`          | The filter chain to pass the request/response to |
 
 **Behavior:**
 
-1. Resolves the correlation ID using `resolveCorrelationId()`
-2. Checks if a correlation ID already exists in the MDC context
-3. If no existing ID, stores the resolved ID in MDC under the `requestId` key
-4. Sets the `X-Correlation-Id` response header to the current MDC value
-5. Continues the filter chain processing
-6. In the `finally` block, removes the MDC entry if it was newly added (to prevent memory leaks)
+1. Resolves the correlation ID using `resolveCorrelationId(request)`.
+2. Checks if a correlation ID already exists in the MDC.
+3. If not present, stores the resolved correlation ID in the MDC under the key `MDC_REQUEST_ID`.
+4. Sets the `X-Correlation-Id` response header to the current MDC value.
+5. Calls `filterChain.doFilter(request, response)` to continue processing the request.
+6. In the `finally` block, removes the MDC entry if it was added by this filter (to prevent memory leaks).
+
+**Return Type:** `void`
 
 ## Private Methods
 
 ### `resolveCorrelationId`
 
-```java
-private String resolveCorrelationId(HttpServletRequest request)
-```
+This method determines the correlation ID to use for the current request.
 
-Determines the correlation ID to use for the current request.
+| Parameter | Type                 | Description                    |
+|-----------|----------------------|--------------------------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request      |
 
-**Parameters:**
+**Behavior:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `request` | `HttpServletRequest` | The incoming HTTP request |
+1. Checks the `X-Correlation-Id` request header.
+2. If the header exists and is not blank, returns its value.
+3. Otherwise, generates a new UUID, takes the first 8 characters, and returns that as the correlation ID.
 
-**Returns:** `String` - The correlation ID
-
-**Logic:**
-
-1. Checks the `X-Correlation-Id` header from the incoming request
-2. If the header exists and is not blank, returns the header value (preserving upstream correlation)
-3. If no valid header exists, generates a new UUID, takes the first 8 characters, and returns that as the correlation ID
+**Return Type:** `String`
 
 ## Usage Example
 
-```java
-// In your application.properties or application.yml
-// No additional configuration needed - the filter is auto-discovered via @Component
+Once the filter is registered as a Spring component (via `@Component`), it automatically applies to all incoming requests. No additional configuration is required.
 
-// In your logback configuration, you can reference the MDC key:
-// %X{requestId}
+### Logging Configuration
+
+To include the correlation ID in your logs, configure your logging framework to use the MDC key `requestId`. For example, in Logback:
+
+```xml
+<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [%X{requestId}] %msg%n</pattern>
 ```
 
-## Important Notes
+### Client-Side Usage
 
-- The filter uses `OncePerRequestFilter` to guarantee it executes only once per request dispatch
-- The `@Order(Ordered.HIGHEST_PRECEDENCE)` annotation ensures this filter runs before any other filters
-- MDC cleanup is handled in a `finally` block to guarantee proper resource cleanup even if exceptions occur
-- The correlation ID length of 8 characters provides a balance between uniqueness and readability
-- When a correlation ID exists in the incoming request header, it is preserved rather than replaced, enabling end-to-end tracing across microservices
+Clients can optionally send an `X-Correlation-Id` header to correlate requests across services. If omitted, the filter generates one automatically.
+
+```
+GET /api/users HTTP/1.1
+Host: example.com
+X-Correlation-Id: abc12345
+```
+
+The response will include the same correlation ID:
+
+```
+HTTP/1.1 200 OK
+X-Correlation-Id: abc12345
+```
+
+## Notes
+
+- The filter extends `OncePerRequestFilter`, which guarantees it executes only once per request, even if the filter is mapped to multiple URL patterns.
+- The correlation ID is truncated to 8 characters when generated automatically. This is a design choice for brevity; adjust `CORRELATION_ID_LENGTH` if a longer ID is needed.
+- The MDC cleanup in the `finally` block prevents memory leaks in long-running applications.

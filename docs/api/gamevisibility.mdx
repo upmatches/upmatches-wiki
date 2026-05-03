@@ -6,7 +6,7 @@ sidebar_label: GameVisibility
 
 # GameVisibility Enum
 
-The `GameVisibility` enum defines the visibility options available for a game within the application. It is used to control whether a game is publicly accessible or restricted to a private audience.
+The `GameVisibility` enum defines the visibility options available for a game within the application. It is used to control whether a game is accessible to all users or restricted to a specific group.
 
 ## Package
 
@@ -17,23 +17,23 @@ The `GameVisibility` enum defines the visibility options available for a game wi
 | Value | Description |
 |-------|-------------|
 | `PUBLIC` | The game is visible and accessible to all users. |
-| `PRIVATE` | The game is hidden from public view and only accessible to invited or authorized users. |
+| `PRIVATE` | The game is only visible and accessible to invited or authorized users. |
 
 ## Usage
 
-This enum is typically used as a field in game-related entities or data transfer objects (DTOs) to specify the visibility level of a game. For example:
+This enum is typically used in game configuration settings, matchmaking logic, or user interface components to determine how a game should be displayed and who can join it.
+
+### Example
 
 ```java
 GameVisibility visibility = GameVisibility.PUBLIC;
+
+if (visibility == GameVisibility.PRIVATE) {
+    // Handle private game logic
+}
 ```
 
-## Methods
+## See Also
 
-Since `GameVisibility` is a simple enum with no custom methods, it inherits the standard methods from `java.lang.Enum`:
-
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `values()` | `GameVisibility[]` | Returns an array containing all enum constants in the order they are declared. |
-| `valueOf(String name)` | `GameVisibility` | Returns the enum constant with the specified name. |
-| `name()` | `String` | Returns the name of this enum constant. |
-| `ordinal()` | `int` | Returns the ordinal (position) of this enum constant. |
+- Game configuration classes
+- Matchmaking services

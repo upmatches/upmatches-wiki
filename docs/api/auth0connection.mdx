@@ -6,34 +6,32 @@ sidebar_label: Auth0Connection
 
 # Auth0Connection Enum
 
-The `Auth0Connection` enum maps social login providers to their corresponding Auth0 connection identifiers. It provides a type-safe way to reference supported authentication providers (Google and Facebook) throughout the application, along with their Auth0-specific connection strings.
+The `Auth0Connection` enum maps social login providers to their corresponding Auth0 connection identifiers. It provides a type-safe way to reference supported authentication providers and their Auth0 connection strings throughout the application.
 
 ## Purpose
 
-This enum serves two primary purposes:
-1. **Provider Mapping**: Associates human-readable provider names (e.g., "google", "facebook") with their Auth0 connection identifiers (e.g., "google-oauth2", "facebook").
-2. **Lookup Utility**: Provides a static method to resolve an `Auth0Connection` instance from a provider string, returning an `Optional` to handle invalid or missing provider values gracefully.
+This enum serves as a centralized mapping between human-readable provider names (e.g., "google", "facebook") and the technical connection identifiers used by Auth0 (e.g., "google-oauth2", "facebook"). It simplifies provider lookup and ensures consistency when working with Auth0 authentication flows.
 
-## Enum Constants
+## Enum Values
 
-| Constant   | Provider | Connection ID    |
-|------------|----------|------------------|
-| `GOOGLE`   | google   | google-oauth2    |
-| `FACEBOOK` | facebook | facebook         |
+| Enum Constant | Provider Name | Auth0 Connection ID |
+|---------------|---------------|---------------------|
+| `GOOGLE` | `google` | `google-oauth2` |
+| `FACEBOOK` | `facebook` | `facebook` |
 
 ## Public Methods
 
 ### `fromProvider(String provider)`
 
-Resolves an `Auth0Connection` from a provider string.
+Resolves a provider name string to its corresponding `Auth0Connection` enum value.
 
-| Parameter  | Type     | Description                                      |
-|------------|----------|--------------------------------------------------|
-| `provider` | `String` | The provider name to look up (case-insensitive). |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `provider` | `String` | The provider name to look up (case-insensitive) |
 
-**Returns**: `Optional<Auth0Connection>` — An `Optional` containing the matching `Auth0Connection` if found, or `Optional.empty()` if the provider is `null`, blank, or not recognized.
+**Returns:** `Optional<Auth0Connection>` - An `Optional` containing the matching enum value, or `Optional.empty()` if no match is found or the input is null/blank.
 
-**Example**:
+**Example:**
 ```java
 Optional<Auth0Connection> connection = Auth0Connection.fromProvider("google");
 // Returns Optional.of(Auth0Connection.GOOGLE)
@@ -44,24 +42,30 @@ Optional<Auth0Connection> invalid = Auth0Connection.fromProvider("twitter");
 
 ### `provider()`
 
-Returns the human-readable provider name.
+Returns the human-readable provider name associated with this enum value.
 
-**Returns**: `String` — The provider name (e.g., "google", "facebook").
+**Returns:** `String` - The provider name (e.g., "google", "facebook")
 
 ### `connectionId()`
 
-Returns the Auth0 connection identifier.
+Returns the Auth0 connection identifier associated with this enum value.
 
-**Returns**: `String` — The Auth0 connection ID (e.g., "google-oauth2", "facebook").
+**Returns:** `String` - The Auth0 connection ID (e.g., "google-oauth2", "facebook")
 
 ## Usage Example
 
 ```java
-// Look up a connection by provider name
+// Look up a provider and use its connection ID
 String providerName = "google";
 Auth0Connection.fromProvider(providerName)
     .ifPresent(connection -> {
         String auth0ConnectionId = connection.connectionId();
-        // Use auth0ConnectionId for authentication flow
+        // Use auth0ConnectionId in authentication requests
     });
 ```
+
+## Notes
+
+- The `fromProvider()` method performs a case-insensitive comparison, so "Google", "GOOGLE", and "google" all resolve to `Auth0Connection.GOOGLE`.
+- Returns `Optional.empty()` for null, blank, or unrecognized provider names, encouraging safe handling of missing values.
+- The enum is immutable after initialization, with both fields being `final`.

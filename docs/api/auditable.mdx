@@ -6,109 +6,54 @@ sidebar_label: Auditable
 
 # Auditable Annotation
 
-The `@Auditable` annotation is a custom Java annotation used to mark methods that should be audited within the application. It provides a declarative way to specify audit metadata, enabling automatic logging of user actions, resource access, and sensitive operations.
+The `@Auditable` annotation is a custom Java annotation used to mark methods that should be audited. When applied to a method, it enables automatic audit logging of the method's execution, capturing metadata such as the action performed, the category of the audit event, the resource type, and whether the operation involves sensitive data.
 
 ## Purpose
 
-This annotation serves as a marker for methods that require audit trail generation. When applied to a method, it captures:
-- The action being performed (e.g., CREATE, UPDATE, DELETE)
-- The category of the audit event
-- The type of resource being accessed
-- An expression to dynamically resolve the resource identifier
-- Whether the operation involves sensitive data
+This annotation is designed to integrate with an audit framework to track and log user actions or system events. It provides a declarative way to specify audit metadata directly on methods, reducing boilerplate code and ensuring consistent audit logging across the application.
 
-## Package Location
+## Usage
 
-```
-com.upmatches.app.features.audit.annotations
-```
+Apply the `@Auditable` annotation to any method that requires audit logging. The annotation's attributes allow you to customize the audit entry for each method.
 
-## Annotation Definition
+### Example
 
 ```java
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Auditable {
-    String action();
-    AuditCategory category() default AuditCategory.WRITE;
-    String resourceType() default "";
-    String resourceIdExpression() default "";
-    boolean sensitive() default false;
+import com.upmatches.app.features.audit.annotations.Auditable;
+import com.upmatches.app.features.audit.enums.AuditCategory;
+
+public class UserService {
+
+    @Auditable(
+        action = "CREATE_USER",
+        category = AuditCategory.WRITE,
+        resourceType = "User",
+        resourceIdExpression = "#user.id",
+        sensitive = true
+    )
+    public void createUser(User user) {
+        // Method implementation
+    }
 }
 ```
 
-## Elements
+## Attributes
 
-| Element | Type | Required | Default | Description |
-|---------|------|----------|---------|-------------|
-| `action` | `String` | Yes | - | A descriptive name for the audited action (e.g., "CREATE_USER", "UPDATE_PROFILE") |
-| `category` | `AuditCategory` | No | `AuditCategory.WRITE` | The category of the audit event (READ, WRITE, DELETE, etc.) |
-| `resourceType` | `String` | No | `""` | The type of resource being accessed (e.g., "User", "Order", "Document") |
-| `resourceIdExpression` | `String` | No | `""` | A SpEL expression to dynamically resolve the resource identifier from method parameters |
-| `sensitive` | `boolean` | No | `false` | Indicates whether the operation involves sensitive data that may require special handling |
+| Attribute | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `action` | `String` | Yes | - | A descriptive name for the action being audited (e.g., "CREATE_USER", "UPDATE_PROFILE"). |
+| `category` | `AuditCategory` | No | `AuditCategory.WRITE` | The category of the audit event, such as `READ`, `WRITE`, `DELETE`, or `EXECUTE`. |
+| `resourceType` | `String` | No | `""` | The type of resource being acted upon (e.g., "User", "Order", "Document"). |
+| `resourceIdExpression` | `String` | No | `""` | A SpEL (Spring Expression Language) expression to dynamically resolve the resource ID at runtime. |
+| `sensitive` | `boolean` | No | `false` | Indicates whether the audited operation involves sensitive data. When `true`, the audit framework may mask or omit sensitive details. |
 
-## Usage Examples
+## Retention and Target
 
-### Basic Usage
+- **Retention**: `RetentionPolicy.RUNTIME` – The annotation is retained at runtime, allowing it to be accessed via reflection by the audit framework.
+- **Target**: `ElementType.METHOD` – The annotation can only be applied to methods.
 
-```java
-@Auditable(action = "CREATE_USER")
-public User createUser(UserDto userDto) {
-    // method implementation
-}
-```
+## Integration Notes
 
-### With Category and Resource Type
-
-```java
-@Auditable(
-    action = "UPDATE_PROFILE",
-    category = AuditCategory.UPDATE,
-    resourceType = "User"
-)
-public User updateProfile(Long userId, ProfileDto profileDto) {
-    // method implementation
-}
-```
-
-### With Resource ID Expression
-
-```java
-@Auditable(
-    action = "DELETE_ORDER",
-    category = AuditCategory.DELETE,
-    resourceType = "Order",
-    resourceIdExpression = "#orderId"
-)
-public void deleteOrder(Long orderId) {
-    // method implementation
-}
-```
-
-### Marking Sensitive Operations
-
-```java
-@Auditable(
-    action = "CHANGE_PASSWORD",
-    category = AuditCategory.UPDATE,
-    resourceType = "User",
-    sensitive = true
-)
-public void changePassword(Long userId, PasswordChangeDto passwordDto) {
-    // method implementation
-}
-```
-
-## Best Practices
-
-1. **Use descriptive action names**: Follow a consistent naming convention like `VERB_NOUN` (e.g., `CREATE_USER`, `DELETE_ORDER`).
-2. **Specify resource types**: Always provide a meaningful `resourceType` to help identify which domain objects are affected.
-3. **Leverage resource ID expressions**: Use SpEL expressions to dynamically capture the actual resource ID from method parameters.
-4. **Mark sensitive operations**: Set `sensitive = true` for operations involving passwords, personal data, or financial information.
-5. **Choose appropriate categories**: Use the correct `AuditCategory` to enable proper filtering and analysis of audit logs.
-
-## Related Components
-
-- **AuditAspect**: The AOP aspect that intercepts methods annotated with `@Auditable` and performs the actual audit logging.
-- **AuditCategory**: The enum defining the available audit categories (READ, WRITE, DELETE, etc.).
-- **AuditService**: The service responsible for persisting audit events to the database or external audit system.
+- The `AuditCategory` enum is expected to define categories such as `READ`, `WRITE`, `DELETE`, and `EXECUTE`.
+- The `resourceIdExpression` attribute supports SpEL expressions, enabling dynamic resolution of resource identifiers from method parameters.
+- When `sensitive` is set to `true`, the audit framework should handle the data appropriately (e.g., redacting sensitive fields in logs).

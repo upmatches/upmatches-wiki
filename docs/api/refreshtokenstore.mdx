@@ -6,7 +6,7 @@ sidebar_label: RefreshTokenStore
 
 # RefreshTokenStore
 
-The `RefreshTokenStore` class is a Spring service that manages refresh tokens for user authentication. It provides secure storage, validation, rotation, and revocation of refresh tokens using Redis as the backing store. The class implements the `IRefreshTokenStore` interface and is conditionally loaded only when a `SigningKeyProvider` bean is available.
+The `RefreshTokenStore` class is a Spring service that manages refresh tokens for user authentication. It provides secure storage, validation, rotation, and revocation of refresh tokens using Redis as the backing store. The class implements the `IRefreshTokenStore` interface and is conditionally created only when a `SigningKeyProvider` bean is available.
 
 ## Purpose
 
@@ -14,51 +14,39 @@ This service handles the complete lifecycle of refresh tokens:
 - **Storage**: Securely stores refresh tokens with SHA-256 hashing
 - **Validation & Rotation**: Validates tokens and automatically rotates them upon use
 - **Revocation**: Supports revoking all tokens for a specific user
-- **Expiry Management**: Automatically handles token expiration based on configured duration
+- **Expiry Management**: Automatically manages token expiration based on configured duration
 
-## Dependencies
+## Key Features
 
-| Dependency | Description |
-|------------|-------------|
-| `StringRedisTemplate` | Redis client for token storage |
-| `ObjectMapper` | JSON serialization/deserialization |
-| `IJwtTokenService` | Service for generating new refresh tokens |
-| `JwtProperties` | Configuration properties for token expiry |
+- **Token Hashing**: All tokens are hashed using SHA-256 before storage for security
+- **Redis Backend**: Uses Redis for fast, scalable token storage
+- **Automatic Rotation**: Tokens are rotated on each validation to prevent replay attacks
+- **User-Level Management**: Tracks all tokens per user for efficient revocation
 
 ## Public Methods
 
 ### `store(UUID userId, String refreshToken)`
 
-Stores a refresh token for a user.
+Stores a new refresh token for a user.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `userId` | `UUID` | The user's unique identifier |
+| `userId` | `UUID` | The unique identifier of the user |
 | `refreshToken` | `String` | The refresh token to store |
 
-The method hashes the token using SHA-256 and stores it in Redis with:
-- A key prefix `refresh_token:` followed by the hash
-- A user-specific set key `refresh_tokens:user:` followed by the user ID
-- Configurable expiry duration from `JwtProperties`
+The method hashes the token, creates a `RefreshTokenEntry` with the current timestamp, and stores it in Redis with the configured expiry duration. It also maintains a set of token hashes per user for efficient revocation.
 
 ### `validateAndRotate(String refreshToken)`
 
-Validates a refresh token and rotates it (returns a new token).
+Validates a refresh token and rotates it, returning a new token.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `refreshToken` | `String` | The refresh token to validate |
+| `refreshToken` | `String` | The refresh token to validate and rotate |
 
-| Return Type | Description |
-|-------------|-------------|
-| `ValidationResult` | Contains the user ID and new refresh token, or `null` if validation fails |
+**Returns**: `ValidationResult` containing the user ID and new refresh token, or `null` if the token is invalid or expired.
 
-The method:
-1. Hashes the token and retrieves it from Redis
-2. Deletes the old token atomically using `getAndDelete`
-3. Removes the token hash from the user's token set
-4. Generates a new refresh token and stores it
-5. Returns a `ValidationResult` with the user ID and new token
+The method atomically retrieves and deletes the old token, removes it from the user's token set, generates a new token, and stores it. This prevents token replay attacks.
 
 ### `revokeAllForUser(UUID userId)`
 
@@ -66,22 +54,19 @@ Revokes all refresh tokens for a specific user.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `userId` | `UUID` | The user whose tokens should be revoked |
+| `userId` | `UUID` | The unique identifier of the user |
 
-This method:
-1. Retrieves all token hashes for the user from Redis
-2. Deletes each individual token entry
-3. Deletes the user's token set
+This method retrieves all token hashes associated with the user, deletes each individual token entry, and then removes the user's token set from Redis.
 
-## Inner Types
+## Inner Records
 
 ### `ValidationResult`
 
-A record that holds the result of token validation and rotation.
+A record containing the result of token validation and rotation.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `userId` | `UUID` | The user's unique identifier |
+| `userId` | `UUID` | The user ID associated with the validated token |
 | `newRefreshToken` | `String` | The newly generated refresh token |
 
 ### `RefreshTokenEntry`
@@ -90,16 +75,19 @@ A private record representing a stored refresh token entry.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `userId` | `UUID` | The user's unique identifier |
-| `createdAt` | `Instant` | Timestamp when the token was created |
+| `userId` | `UUID` | The user ID who owns this token |
+| `createdAt` | `Instant` | The timestamp when the token was created |
+
+## Dependencies
+
+- **StringRedisTemplate**: Redis client for token storage operations
+- **ObjectMapper**: Jackson JSON serializer/deserializer for token entries
+- **IJwtTokenService**: Service for generating new refresh tokens
+- **JwtProperties**: Configuration properties for token expiry duration
 
 ## Security Considerations
 
-- **Token Hashing**: All tokens are hashed using SHA-256 before storage, ensuring plaintext tokens are never stored
-- **Atomic Operations**: Token validation and deletion use atomic Redis operations to prevent race conditions
-- **Token Rotation**: Each validation automatically generates a new token, limiting the window for token theft
-- **User-Level Revocation**: Supports bulk revocation of all tokens for a user, useful for security incidents
-
-## Configuration
-
-The token expiry duration is configured through `JwtProperties.refreshTokenExpiryDays()`. This value is converted to a `Duration` object and applied to all stored tokens.
+- Tokens are hashed using SHA-256 before storage, so the raw token is never persisted
+- Token rotation prevents replay attacks by invalidating tokens after use
+- All token operations are atomic to prevent race conditions
+- Token expiry is enforced at the Redis level for automatic cleanup

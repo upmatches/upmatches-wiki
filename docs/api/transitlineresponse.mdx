@@ -6,42 +6,62 @@ sidebar_label: TransitLineResponse
 
 # TransitLineResponse
 
-The `TransitLineResponse` is a Java record class used to represent a simplified view of a transit line associated with a specific station. It is primarily designed for API responses, providing a lightweight data transfer object (DTO) that includes the transit line's code, name, color, and the station number on that line.
+The `TransitLineResponse` class is a Java record that serves as a Data Transfer Object (DTO) for representing transit line information in API responses. It encapsulates the essential details of a transit line associated with a specific station, including the line's code, name, color, and the station's number on that line.
 
 ## Purpose
 
-This record serves as a response model for endpoints that need to return transit line information in a concise format. By using a record, it automatically provides `equals()`, `hashCode()`, `toString()`, and accessor methods, reducing boilerplate code. The static factory method `fromStationLine()` converts a `StationLine` entity into this response object, ensuring a clean separation between the persistence layer and the API layer.
+This record is designed to provide a lightweight, immutable representation of transit line data when communicating with clients (e.g., mobile apps or web frontends). It transforms domain entities (`StationLine` and its associated `TransitLine`) into a simplified response format, ensuring that only necessary information is exposed while maintaining data integrity.
 
 ## Record Components
 
-| Component       | Type      | Description                                      |
-|-----------------|-----------|--------------------------------------------------|
-| `code`          | `String`  | The unique code identifying the transit line.    |
-| `name`          | `String`  | The human-readable name of the transit line.     |
-| `color`         | `String`  | The color associated with the transit line.      |
-| `stationNumber` | `Integer` | The station's number or order on this line.      |
+| Component | Type | Description |
+|-----------|------|-------------|
+| `code` | `String` | The unique code identifying the transit line (e.g., "RED", "BLUE") |
+| `name` | `String` | The human-readable name of the transit line |
+| `color` | `String` | The color associated with the transit line (e.g., hex code or color name) |
+| `stationNumber` | `Integer` | The station's number/order on this transit line |
 
-## Public Methods
+## Methods
 
-### `fromStationLine(StationLine stationLine)`
+### `fromStationLine`
+
+```java
+public static TransitLineResponse fromStationLine(StationLine stationLine)
+```
 
 Creates a `TransitLineResponse` instance from a `StationLine` entity.
 
-| Parameter      | Type           | Description                                      |
-|----------------|----------------|--------------------------------------------------|
-| `stationLine`  | `StationLine`  | The entity containing transit line and station data. |
+**Parameters:**
 
-**Returns:** `TransitLineResponse` — A new response object populated with data from the provided entity.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `stationLine` | `StationLine` | The domain entity containing transit line and station information |
 
-**Example usage:**
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `TransitLineResponse` | A new response object populated with data from the provided entity |
+
+**Behavior:**
+
+This factory method extracts data from the `StationLine` entity and its associated `TransitLine` entity to construct the response. It retrieves:
+- The transit line's code, name, and color from the `TransitLine` object
+- The station's number from the `StationLine` object
+
+**Example Usage:**
 
 ```java
-StationLine stationLine = stationLineRepository.findById(stationLineId);
+// Assuming stationLine is a valid StationLine entity
 TransitLineResponse response = TransitLineResponse.fromStationLine(stationLine);
+// response.code() -> "RED"
+// response.name() -> "Red Line"
+// response.color() -> "#FF0000"
+// response.stationNumber() -> 5
 ```
 
-## Usage Notes
+## Notes
 
-- This record is immutable by design, making it safe for use in concurrent environments.
-- The `fromStationLine()` method extracts data from the nested `TransitLine` entity within the `StationLine` object, so ensure that the `StationLine` entity is properly loaded with its associated `TransitLine` before calling this method.
-- The `stationNumber` field represents the station's position on the transit line (e.g., stop number or order index).
+- This class is a Java record, providing automatic implementations of `equals()`, `hashCode()`, `toString()`, and accessor methods.
+- The record is immutable, making it safe for use in concurrent environments and API responses.
+- The `fromStationLine` method assumes that `stationLine.getTransitLine()` returns a non-null `TransitLine` entity. Ensure proper null handling in production code.

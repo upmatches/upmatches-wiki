@@ -6,21 +6,22 @@ sidebar_label: ListActivitiesService
 
 # ListActivitiesService
 
-The `ListActivitiesService` class is a Spring service component responsible for retrieving a paginated list of activities from the database. It implements the `IListActivitiesService` interface and provides a transactional, read-only operation to fetch activities with pagination support.
+The `ListActivitiesService` class is a Spring service component responsible for retrieving a paginated list of activities from the database. It implements the `IListActivitiesService` interface and provides a single public method to fetch activities with pagination support.
 
-## Purpose
+This service is designed to be used in REST API endpoints where clients need to browse activities in a paginated manner. It leverages Spring Data's `Pageable` abstraction to handle pagination parameters and returns a standardized `PagedResponse` wrapper.
 
-This service encapsulates the business logic for listing activities, leveraging Spring Data's pagination capabilities to return results in a structured, page-based format. It uses the `ServiceOperationExecutor` utility to handle common cross-cutting concerns such as error handling and operation status tracking.
+## Class Overview
 
-## Class Details
+- **Package:** `com.upmatches.app.features.activity.services`
+- **Annotations:** `@Service`, `@Transactional(readOnly = true)`
+- **Modifiers:** `public non-sealed`
+- **Implements:** `IListActivitiesService`
 
-| Property | Value |
-|----------|-------|
-| **Package** | `com.upmatches.app.features.activity.services` |
-| **Type** | `non-sealed class` |
-| **Implements** | `IListActivitiesService` |
-| **Annotations** | `@Service` |
-| **Dependencies** | `ActivityRepository` |
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `ActivityRepository` | Constructor Injection | Spring Data JPA repository for activity entity persistence |
 
 ## Constructor
 
@@ -30,7 +31,7 @@ Creates a new instance of the service with the required repository dependency.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `activityRepository` | `ActivityRepository` | The repository used to access activity data from the database |
+| `activityRepository` | `ActivityRepository` | The repository used to access activity data |
 
 ## Public Methods
 
@@ -42,37 +43,32 @@ Retrieves a paginated list of activities from the database.
 |-----------|------|-------------|
 | `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sort parameters |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| Success | `PagedResponse<ActivityResponse>` | A paginated response containing activity data |
-| Error | Throws `ResourceNotFoundException` | If no activities are found or an error occurs during retrieval |
+**Returns:** `PagedResponse<ActivityResponse>` - A paginated response containing activity data wrapped in `ActivityResponse` objects.
 
-**Transactional Behavior:** This method is marked as `@Transactional(readOnly = true)`, ensuring it runs within a read-only database transaction for optimal performance.
+**Exceptions:** Throws `ResourceNotFoundException` if the operation fails (wrapped by `ServiceOperationExecutor`).
 
-**Example Usage:**
+**Transactional Behavior:** The method is marked as `@Transactional(readOnly = true)` to optimize database access for read-only operations.
+
+## Usage Example
 
 ```java
-// Create a pageable request for page 0 with 10 items per page
-Pageable pageable = PageRequest.of(0, 10);
+// Create a Pageable instance
+Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
 
 // Execute the service
-PagedResponse<ActivityResponse> response = listActivitiesService.execute(pageable);
+PagedResponse<ActivityResponse> activities = listActivitiesService.execute(pageable);
 
 // Access paginated data
-List<ActivityResponse> activities = response.getContent();
-int totalPages = response.getTotalPages();
-long totalElements = response.getTotalElements();
+List<ActivityResponse> items = activities.getContent();
+int totalPages = activities.getTotalPages();
+long totalElements = activities.getTotalElements();
 ```
 
-## Error Handling
+## Implementation Details
 
-The service uses `ServiceOperationExecutor.execute()` to handle errors consistently. If the repository returns no results or an error occurs during retrieval, a `ResourceNotFoundException` is thrown with the `RETRIEVE` operation status.
+The `execute` method uses `ServiceOperationExecutor.execute()` which provides:
+- Consistent error handling across all service operations
+- Automatic wrapping of results in appropriate response types
+- Standardized exception handling with `ResourceNotFoundException`
 
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `ActivityRepository` | Repository | Spring Data JPA repository for activity entities |
-| `ServiceOperationExecutor` | Utility | Handles common service operation patterns (error handling, status tracking) |
-| `PagedResponse` | Response DTO | Generic wrapper for paginated API responses |
-| `ActivityResponse` | Response DTO | Data transfer object for activity data |
+The method converts domain entities to response DTOs using the `ActivityResponse::fromActivity` mapper method, ensuring that internal domain models are not exposed to API consumers.

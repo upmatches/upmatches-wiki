@@ -6,23 +6,23 @@ sidebar_label: IUserService
 
 # IUserService Interface
 
-The `IUserService` interface defines the contract for user profile management operations within the UpMatches application. It serves as the abstraction layer between the controller and the concrete implementation (`UserService`), ensuring a clean separation of concerns and promoting testability.
+The `IUserService` interface defines the contract for user profile management operations within the UpMatches application. It serves as the abstraction layer between the presentation layer and the concrete implementation (`UserService`), ensuring loose coupling and adherence to the Dependency Inversion Principle.
 
 ## Purpose
 
-This sealed interface establishes a clear API for managing user profiles, including:
+This sealed interface establishes a clear set of operations for managing user profiles, including:
 - Retrieving the current user's profile
-- Completing an initial profile setup
-- Updating an existing profile
+- Completing an initial user profile setup
+- Updating an existing user profile
 - Deleting a user account
 
-By using Java's `sealed` keyword, the interface restricts implementation to only the `UserService` class, providing compile-time safety and a controlled extension point.
+The interface is sealed to restrict implementation to only the `UserService` class, providing controlled extensibility and ensuring all implementations follow the defined contract.
 
 ## Interface Definition
 
 ```java
 public sealed interface IUserService permits UserService {
-    // Method declarations
+    // Method signatures
 }
 ```
 
@@ -33,37 +33,42 @@ public sealed interface IUserService permits UserService {
 | `getProfile()` | `UserProfileResponse` | Retrieves the profile of the currently authenticated user |
 | `completeProfile(CompleteProfileRequest request)` | `UserProfileResponse` | Completes the initial profile setup with the provided information |
 | `updateProfile(UpdateProfileRequest request)` | `UserProfileResponse` | Updates the existing user profile with new information |
-| `deleteUser()` | `void` | Deletes the currently authenticated user's account |
+| `deleteUser()` | `void` | Permanently deletes the current user's account |
 
 ### Method Details
 
 #### `getProfile()`
-- **Purpose**: Fetches and returns the complete profile data for the authenticated user.
+- **Purpose**: Fetches and returns the complete profile data for the currently authenticated user
 - **Parameters**: None
 - **Returns**: `UserProfileResponse` containing the user's profile information
+- **Throws**: May throw authentication exceptions if no user is currently logged in
 
 #### `completeProfile(CompleteProfileRequest request)`
-- **Purpose**: Finalizes the initial profile creation process by adding required details that were not provided during registration.
+- **Purpose**: Handles the initial profile setup process, typically called after user registration
 - **Parameters**: 
-  - `request` (`CompleteProfileRequest`): Contains the necessary data to complete the user's profile
-- **Returns**: `UserProfileResponse` with the updated profile after completion
+  - `request` (`CompleteProfileRequest`): Contains the required fields for completing the user profile
+- **Returns**: `UserProfileResponse` with the newly completed profile data
+- **Throws**: May throw validation exceptions if required fields are missing or invalid
 
 #### `updateProfile(UpdateProfileRequest request)`
-- **Purpose**: Allows the user to modify their existing profile information.
+- **Purpose**: Updates specific fields of an existing user profile
 - **Parameters**:
-  - `request` (`UpdateProfileRequest`): Contains the fields to be updated in the user's profile
-- **Returns**: `UserProfileResponse` reflecting the applied changes
+  - `request` (`UpdateProfileRequest`): Contains the fields to be updated
+- **Returns**: `UserProfileResponse` with the updated profile data
+- **Throws**: May throw validation exceptions if update data is invalid
 
 #### `deleteUser()`
-- **Purpose**: Permanently removes the authenticated user's account and associated data from the system.
+- **Purpose**: Permanently removes the current user's account and associated data from the system
 - **Parameters**: None
 - **Returns**: `void`
+- **Throws**: May throw authentication exceptions or data integrity exceptions
 
 ## Usage Example
 
 ```java
 // Inject the service
-private final IUserService userService;
+@Autowired
+private IUserService userService;
 
 // Get current profile
 UserProfileResponse profile = userService.getProfile();
@@ -80,9 +85,9 @@ UserProfileResponse updatedProfile = userService.updateProfile(updateRequest);
 userService.deleteUser();
 ```
 
-## Related Components
+## Related Classes
 
-- **`UserService`**: The sole implementation of this interface
-- **`CompleteProfileRequest`**: Request DTO for profile completion
-- **`UpdateProfileRequest`**: Request DTO for profile updates
-- **`UserProfileResponse`**: Response DTO containing user profile data
+- `UserService` - The sole permitted implementation of this interface
+- `CompleteProfileRequest` - Request DTO for profile completion
+- `UpdateProfileRequest` - Request DTO for profile updates
+- `UserProfileResponse` - Response DTO containing user profile data

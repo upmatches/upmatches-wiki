@@ -10,143 +10,221 @@ The `AuthController` class is a Spring REST controller that handles all authenti
 
 ## Purpose
 
-This controller serves as the central authentication gateway, managing:
-- **Singpass Login**: Initiates the Singpass authentication flow using PAR (Pushed Authorization Request)
-- **Auth0 Login**: Handles Auth0-based authentication with support for multiple providers
-- **Apple Login**: Processes Sign in with Apple requests
-- **Token Refresh**: Manages access token refresh using refresh tokens
-- **Logout**: Handles user logout and token revocation
+This controller serves as the main entry point for authentication operations, managing the complete authentication lifecycle including:
+- Initiating OAuth2/OIDC login flows for Singpass and Auth0
+- Handling Apple Sign-In
+- Token refresh and rotation
+- Session logout and token revocation
 
 ## Dependencies
 
-The controller relies on several service interfaces for its operations:
+The controller depends on several service interfaces for authentication operations:
 
-| Service | Purpose |
-|---------|---------|
-| `ISingpassAuthService` | Handles Singpass authentication flow |
-| `IAuth0AuthService` | Manages Auth0 authentication |
-| `IAppleLoginService` | Processes Apple Sign In |
-| `IAuthSessionStore` | Stores authentication session data |
-| `IJwtTokenService` | Generates and manages JWT tokens |
-| `IRefreshTokenStore` | Manages refresh token storage and validation |
-| `UserRepository` | Accesses user data from the database |
-| `ICookieHelper` | Manages HTTP cookies for token storage |
+| Dependency | Type | Purpose |
+|------------|------|---------|
+| `ISingpassAuthService` | Service | Handles Singpass authentication via PAR (Pushed Authorization Request) |
+| `IAuth0AuthService` | Service | Manages Auth0 authentication flows |
+| `IAppleLoginService` | Service | Processes Apple Sign-In requests |
+| `IAuthSessionStore` | Service | Stores authentication session data (state, nonce, code verifier) |
+| `IJwtTokenService` | Service | Generates and manages JWT access tokens |
+| `IRefreshTokenStore` | Service | Manages refresh token storage, validation, and rotation |
+| `UserRepository` | Repository | Accesses user data from the database |
+| `ICookieHelper` | Service | Manages HTTP cookies for token storage |
 
 ## Endpoints
 
 ### Singpass Login
 
-Initiates the Singpass authentication flow.
+Initiates the Singpass authentication flow using Pushed Authorization Request (PAR).
 
 **Endpoint:** `GET /api/v1/auth/login/singpass`
 
+**Parameters:**
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `platform` | String | No | Platform identifier (e.g., "mobile") |
-| `request` | HttpServletRequest | Yes | HTTP request object |
+| `platform` | String | No | Platform identifier. If "mobile", returns authorization URL in response body instead of redirect |
 
-**Returns:** 
-- For mobile platforms: `ResponseEntity<Object>` with authorization URL in response body
-- For web platforms: HTTP 302 redirect to the authorization URL
+**Response:**
 
-**Throws:** `AuthenticationException` if PAR request fails
+| Status | Description |
+|--------|-------------|
+| `200 OK` | Mobile platform: Returns `AuthorizationUrlResponse` with the authorization URL |
+| `302 Found` | Web platform: Redirects to the Singpass authorization URL |
+| `500 Internal Server Error` | If PAR request fails, throws `AuthenticationException` |
+
+**Example Response (Mobile):**
+```json
+{
+  "success": true,
+  "data": {
+    "authorizationUrl": "https://singpass.gov.sg/authorize?state=..."
+  },
+  "message": "Authorization URL generated.",
+  "path": "/api/v1/auth/login/singpass"
+}
+```
 
 ### Auth0 Login
 
-Initiates the Auth0 authentication flow.
+Initiates the Auth0 authentication flow with optional provider connection.
 
 **Endpoint:** `GET /api/v1/auth/login/auth0`
 
+**Parameters:**
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `platform` | String | No | Platform identifier (e.g., "mobile") |
-| `provider` | String | No | Auth0 provider name |
-| `request` | HttpServletRequest | Yes | HTTP request object |
+| `platform` | String | No | Platform identifier. If "mobile", returns authorization URL in response body |
+| `provider` | String | No | Auth0 connection provider (e.g., "google", "facebook"). Must be a valid `Auth0Connection` |
 
-**Returns:**
-- For mobile platforms: `ResponseEntity<Object>` with authorization URL in response body
-- For web platforms: HTTP 302 redirect to the authorization URL
+**Response:**
 
-**Throws:** `InvalidAuthRequestException` if provider is unsupported
+| Status | Description |
+|--------|-------------|
+| `200 OK` | Mobile platform: Returns `AuthorizationUrlResponse` with the authorization URL |
+| `302 Found` | Web platform: Redirects to the Auth0 authorization URL |
+| `400 Bad Request` | If provider is invalid, throws `InvalidAuthRequestException` |
+
+**Example Response (Mobile):**
+```json
+{
+  "success": true,
+  "data": {
+    "authorizationUrl": "https://auth0.com/authorize?state=..."
+  },
+  "message": "Authorization URL generated.",
+  "path": "/api/v1/auth/login/auth0"
+}
+```
 
 ### Apple Login
 
-Processes Sign in with Apple authentication.
+Processes Apple Sign-In authentication.
 
 **Endpoint:** `POST /api/v1/auth/login/apple`
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `body` | AppleLoginRequest | Yes | Apple login request payload |
-| `request` | HttpServletRequest | Yes | HTTP request object |
+**Request Body:**
 
-**Returns:** `ResponseEntity<Object>` with Apple login response
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `identityToken` | String | Yes | Apple identity token |
+| `authorizationCode` | String | Yes | Apple authorization code |
+| `user` | String | No | Apple user identifier |
+
+**Response:**
+
+| Status | Description |
+|--------|-------------|
+| `200 OK` | Returns `AppleLoginResponse` with authentication result |
+| `400 Bad Request` | If request body validation fails |
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOi...",
+    "refreshToken": "rt_abc123...",
+    "expiresAt": "2024-01-01T00:00:00Z"
+  },
+  "message": "Signed in with Apple.",
+  "path": "/api/v1/auth/login/apple"
+}
+```
 
 ### Token Refresh
 
-Refreshes an access token using a refresh token.
+Refreshes an expired access token using a refresh token.
 
 **Endpoint:** `POST /api/v1/auth/refresh`
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `body` | RefreshRequest | No | Refresh token request body (required for mobile) |
-| `request` | HttpServletRequest | Yes | HTTP request object |
-| `response` | HttpServletResponse | Yes | HTTP response object |
+**Request Body (Optional):**
 
-**Returns:** `ResponseEntity<Object>` with new token data
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `refreshToken` | String | No | Refresh token (required for mobile; web uses cookies) |
 
-**Throws:**
-- `InvalidAuthRequestException` if refresh token is missing
-- `InvalidRefreshTokenException` if refresh token is invalid or revoked
+**Response:**
+
+| Status | Description |
+|--------|-------------|
+| `200 OK` | Returns new access token and rotated refresh token |
+| `400 Bad Request` | If refresh token is missing |
+| `401 Unauthorized` | If refresh token is invalid or revoked |
+
+**Example Response (Mobile):**
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOi...",
+    "refreshToken": "rt_new123...",
+    "expiresAt": "2024-01-01T00:00:00Z"
+  },
+  "message": "Token refreshed successfully.",
+  "path": "/api/v1/auth/refresh"
+}
+```
 
 ### Logout
 
-Logs out the current user and revokes all refresh tokens.
+Logs out the user by revoking all refresh tokens and clearing authentication cookies.
 
 **Endpoint:** `POST /api/v1/auth/logout`
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `request` | HttpServletRequest | Yes | HTTP request object |
-| `response` | HttpServletResponse | Yes | HTTP response object |
+**Response:**
 
-**Returns:** `ResponseEntity<Object>` with success message
+| Status | Description |
+|--------|-------------|
+| `200 OK` | Logout successful |
 
-## Internal Methods
-
-### `generateState()`
-
-Generates a unique state string for CSRF protection.
-
-**Returns:** String - A UUID without hyphens
-
-### `doRefresh()`
-
-Handles the token refresh logic, supporting both mobile (request body) and web (cookie) refresh token delivery.
-
-### `throwInvalidRefreshToken()`
-
-Creates and throws an `InvalidRefreshTokenException`, clearing auth cookies for web clients.
-
-### `doLogout()`
-
-Handles the logout logic, revoking all refresh tokens for the user and clearing cookies.
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "Logged out successfully.",
+  "path": "/api/v1/auth/logout"
+}
+```
 
 ## Error Handling
 
-The controller uses custom exceptions for error handling:
+The controller throws the following custom exceptions:
 
-| Exception | Description |
-|-----------|-------------|
-| `AuthenticationException` | General authentication failure |
-| `InvalidAuthRequestException` | Invalid authentication request parameters |
-| `InvalidRefreshTokenException` | Invalid or revoked refresh token |
+| Exception | HTTP Status | Description |
+|-----------|-------------|-------------|
+| `AuthenticationException` | 500 | Generic authentication failure |
+| `InvalidAuthRequestException` | 400 | Invalid request parameters |
+| `InvalidRefreshTokenException` | 401 | Invalid or revoked refresh token |
 
 ## Security Considerations
 
-- Uses state and nonce parameters for CSRF protection
-- Implements PKCE (Proof Key for Code Exchange) via code verifier
-- Supports token rotation for refresh tokens
-- Clears authentication cookies on logout and invalid token scenarios
-- Validates provider names against `Auth0Connection` enum
+1. **State Parameter**: Each login request generates a unique state parameter to prevent CSRF attacks
+2. **Nonce**: A nonce is generated for each authentication request to prevent replay attacks
+3. **Code Verifier**: PKCE (Proof Key for Code Exchange) is used for secure authorization code exchange
+4. **Token Rotation**: Refresh tokens are rotated on each use to limit exposure
+5. **Cookie Security**: Authentication tokens are stored in HTTP-only cookies for web clients
+
+## Implementation Details
+
+### Session Management
+
+The controller stores authentication sessions using the `IAuthSessionStore` service, which maps state parameters to `AuthSession` objects containing:
+- State
+- Nonce
+- Code Verifier
+- Platform identifier
+
+### Token Generation
+
+Access tokens are generated using the `IJwtTokenService` with user identifiers from multiple authentication providers (Singpass UUID, Auth0 UUID, Apple UUID).
+
+### Refresh Token Flow
+
+1. Extract refresh token from request body (mobile) or cookies (web)
+2. Validate and rotate the refresh token using `IRefreshTokenStore`
+3. Look up the user associated with the refresh token
+4. Generate a new access token
+5. Return new tokens or set cookies based on platform

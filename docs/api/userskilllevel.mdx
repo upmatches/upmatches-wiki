@@ -6,11 +6,15 @@ sidebar_label: UserSkillLevel
 
 # UserSkillLevel
 
-The `UserSkillLevel` entity represents the association between a user and a specific skill level within the context of an activity. It serves as a join table in a many-to-many relationship between `User` and `SkillLevel`, while also linking to the associated `Activity`.
+The `UserSkillLevel` entity represents the association between a user and a specific skill level within the context of an activity. It serves as a join table that links users to their proficiency levels for various activities.
 
 ## Purpose
 
-This entity is used to track which skill level a user has achieved for a particular activity. It ensures that each user-skill-level combination is unique and properly associated with the correct activity.
+This entity is designed to:
+- Track which skill level a user has achieved for a particular activity
+- Maintain a many-to-many relationship between users and skill levels
+- Ensure that each user-skill level combination is unique (via the composite key)
+- Automatically associate the correct activity based on the skill level
 
 ## Entity Details
 
@@ -25,37 +29,56 @@ This entity is used to track which skill level a user has achieved for a particu
 | `id` | `UserSkillLevelId` | Composite primary key consisting of `userId` and `skillLevelId` |
 | `user` | `User` | The user associated with this skill level |
 | `skillLevel` | `SkillLevel` | The skill level assigned to the user |
-| `activity` | `Activity` | The activity context for this user-skill-level association |
+| `activity` | `Activity` | The activity context for this user-skill level association |
 
-## Relationships
+## Constructor
 
-- **Many-to-One with User:** Each `UserSkillLevel` belongs to one `User`. The foreign key `user_id` maps to the `userId` part of the composite key.
-- **Many-to-One with SkillLevel:** Each `UserSkillLevel` belongs to one `SkillLevel`. The foreign key `skill_level_id` maps to the `skillLevelId` part of the composite key.
-- **Many-to-One with Activity:** Each `UserSkillLevel` is associated with one `Activity`. The foreign key `activity_id` is non-nullable.
+### `protected UserSkillLevel()`
 
-## Public Methods
+Default no-argument constructor (protected for JPA compliance).
+
+## Static Factory Method
 
 ### `create(User user, SkillLevel skillLevel)`
 
-Creates a new `UserSkillLevel` instance.
+Creates a new `UserSkillLevel` instance with the specified user and skill level.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `user` | `User` | The user to associate with the skill level |
 | `skillLevel` | `SkillLevel` | The skill level to assign to the user |
 
-**Returns:** `UserSkillLevel` - A new instance with the composite key, user, skill level, and activity (derived from the skill level) set.
+**Returns:** `UserSkillLevel` - A new instance with:
+- Auto-generated composite key from user and skill level IDs
+- The activity automatically set from the skill level's associated activity
 
-**Usage Example:**
+**Example usage:**
 ```java
 User user = userRepository.findById(1L).orElseThrow();
-SkillLevel skillLevel = skillLevelRepository.findById(2L).orElseThrow();
+SkillLevel skillLevel = skillLevelRepository.findById(5L).orElseThrow();
 UserSkillLevel userSkillLevel = UserSkillLevel.create(user, skillLevel);
 ```
 
+## Relationships
+
+| Relationship | Target Entity | Join Column | Description |
+|--------------|---------------|-------------|-------------|
+| Many-to-One | `User` | `user_id` | The user in this association |
+| Many-to-One | `SkillLevel` | `skill_level_id` | The skill level assigned |
+| Many-to-One | `Activity` | `activity_id` | The activity context (derived from skill level) |
+
+## Database Mapping
+
+The entity maps to the `user_skill_levels` table with the following columns:
+- `user_id` (part of composite key, foreign key to `users` table)
+- `skill_level_id` (part of composite key, foreign key to `skill_levels` table)
+- `activity_id` (foreign key to `activities` table, not null)
+
 ## Notes
 
-- The class uses a **protected no-arg constructor** required by JPA.
-- The `activity` field is automatically populated from the `SkillLevel`'s associated activity during creation.
-- The composite primary key is implemented via the `UserSkillLevelId` embedded class.
-- Lombok's `@Getter` annotation generates getters for all fields.
+- The composite primary key is implemented via the `UserSkillLevelId` embeddable class
+- The `activity` field is automatically populated from the skill level's activity during creation
+- This entity uses Lombok's `@Getter` annotation to generate getters for all fields
+- The protected no-argument constructor is required by JPA but not intended for direct use

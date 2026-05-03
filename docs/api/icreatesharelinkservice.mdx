@@ -4,57 +4,77 @@ title: ICreateShareLinkService Interface
 sidebar_label: ICreateShareLinkService
 ---
 
-# ICreateShareLinkService
-
-The `ICreateShareLinkService` interface defines the contract for creating share links within the UpMatches application. It is a sealed interface, meaning only the explicitly permitted class (`CreateShareLinkService`) can implement it. This design enforces a controlled implementation hierarchy and ensures that the share link creation logic is centralized and consistent.
+# ICreateShareLinkService Interface
 
 ## Purpose
 
-The primary purpose of this interface is to abstract the operation of generating a share link. By defining a single `execute` method, it provides a clear and testable entry point for creating share links. The sealed keyword restricts implementation to a single class, which helps maintain a clean architecture and prevents unintended extensions.
+The `ICreateShareLinkService` interface defines the contract for creating share links within the UpMatches application. It serves as the abstraction layer for the share link creation functionality, allowing for a clean separation between the service interface and its implementation.
+
+This sealed interface restricts implementation to only the `CreateShareLinkService` class, ensuring controlled extension and maintaining a strict hierarchy in the share link creation domain.
+
+## Interface Definition
+
+```java
+public sealed interface ICreateShareLinkService permits CreateShareLinkService
+```
+
+The interface is declared as `sealed`, meaning only the explicitly permitted class (`CreateShareLinkService`) can implement it. This design pattern provides:
+- **Controlled extensibility**: Only authorized implementations are allowed
+- **Compile-time safety**: The compiler enforces the permitted implementation list
+- **Clear domain boundaries**: Prevents unauthorized implementations from being created
 
 ## Method Summary
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `execute(CreateShareLinkRequest request)` | `ShareLinkResponse` | Processes a `CreateShareLinkRequest` and returns a `ShareLinkResponse` containing the result of the share link creation. |
+| `execute(CreateShareLinkRequest request)` | `ShareLinkResponse` | Processes a share link creation request and returns the corresponding response |
 
 ## Method Details
 
 ### `execute`
 
 ```java
-ShareLinkResponse execute(CreateShareLinkRequest request);
+ShareLinkResponse execute(CreateShareLinkRequest request)
 ```
 
-This method takes a `CreateShareLinkRequest` object as input and returns a `ShareLinkResponse`. The implementation is responsible for validating the request, generating the share link, and returning the appropriate response.
+This is the single method defined in the interface. It takes a `CreateShareLinkRequest` object as input and returns a `ShareLinkResponse` object.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `CreateShareLinkRequest` | The request object containing the necessary data to create a share link (e.g., target resource ID, expiration settings). |
+| `request` | `CreateShareLinkRequest` | The request object containing all necessary data to create a new share link |
 
 **Returns:**
 
 | Type | Description |
 |------|-------------|
-| `ShareLinkResponse` | The response object containing the generated share link details (e.g., the URL, expiration date, status). |
+| `ShareLinkResponse` | The response object containing the result of the share link creation operation |
+
+## Dependencies
+
+The interface relies on the following classes from the same package:
+
+- `CreateShareLinkRequest` - The request DTO containing share link creation parameters
+- `ShareLinkResponse` - The response DTO containing the result of the operation
+- `CreateShareLinkService` - The sole permitted implementation class
 
 ## Usage Example
 
 ```java
-// Assuming CreateShareLinkService is the permitted implementation
-ICreateShareLinkService service = new CreateShareLinkService();
+// Inject the service
+private final ICreateShareLinkService shareLinkService;
 
-CreateShareLinkRequest request = new CreateShareLinkRequest();
-// Populate request with necessary data
+// Create a request
+CreateShareLinkRequest request = new CreateShareLinkRequest(/* parameters */);
 
-ShareLinkResponse response = service.execute(request);
-// Use the response (e.g., display the share link to the user)
+// Execute the service
+ShareLinkResponse response = shareLinkService.execute(request);
 ```
 
-## Related Types
+## Implementation Notes
 
-- `CreateShareLinkRequest`: The input data transfer object for the share link creation operation.
-- `ShareLinkResponse`: The output data transfer object containing the result of the operation.
-- `CreateShareLinkService`: The sole permitted implementation of this interface.
+- The interface uses Java's sealed class feature (introduced in Java 17) to restrict implementation
+- Only `CreateShareLinkService` is permitted to implement this interface
+- The single method `execute` follows the command pattern, encapsulating the entire share link creation operation in one method call
+- All related classes (`CreateShareLinkRequest`, `ShareLinkResponse`, `CreateShareLinkService`) reside in the same package: `com.upmatches.app.features.sharelink.services`

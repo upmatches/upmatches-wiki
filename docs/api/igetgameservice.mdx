@@ -6,19 +6,21 @@ sidebar_label: IGetGameService
 
 # IGetGameService Interface
 
-The `IGetGameService` interface defines the contract for retrieving a single game entity by its unique identifier. It is a sealed interface, meaning only the explicitly permitted class `GetGameService` can implement it. This design enforces a controlled hierarchy and ensures that the retrieval logic is centralized and consistent across the application.
+The `IGetGameService` interface defines the contract for retrieving a single game entity by its unique identifier. It is part of the game feature's service layer within the `com.upmatches.app` application.
+
+This interface is declared as a **sealed interface**, meaning it restricts which classes or interfaces can implement it. In this case, only `GetGameService` is permitted to implement `IGetGameService`. This design pattern enforces a controlled hierarchy and ensures that the retrieval logic is centralized and maintainable.
 
 ## Purpose
 
-- Provides a single method to fetch a game based on its UUID.
+- Provides a single method to fetch a game by its UUID.
 - Encapsulates the retrieval logic behind a clean, testable interface.
-- Uses Java's sealed interface feature to restrict implementation to a specific service class.
+- Enforces a single implementation (`GetGameService`) to prevent unauthorized extensions.
 
 ## Method Summary
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `execute(UUID id)` | `GameResponse` | Retrieves a game by its unique identifier and returns the corresponding response object. |
+| `execute(UUID id)` | `GameResponse` | Retrieves a game entity identified by the given UUID and returns a `GameResponse` object. |
 
 ## Method Details
 
@@ -38,32 +40,29 @@ GameResponse execute(UUID id);
 
 | Type | Description |
 |------|-------------|
-| `GameResponse` | The response object containing the game data. |
+| `GameResponse` | A response object containing the game data. The exact structure of `GameResponse` is defined elsewhere in the `com.upmatches.app.features.game.responses` package. |
 
 **Throws:**
 
-| Exception | Condition |
-|-----------|-----------|
-| `IllegalArgumentException` | If the provided `id` is null. |
-| `NoSuchElementException` | If no game exists with the given `id`. |
+This method does not declare any checked exceptions. However, implementations may throw runtime exceptions such as `IllegalArgumentException` if the provided `id` is null, or a custom exception if the game is not found.
 
 ## Usage Example
 
 ```java
-// Assuming GetGameService is properly instantiated
-IGetGameService gameService = new GetGameService();
+// Assuming an implementation is injected
+IGetGameService getGameService = new GetGameService();
 
 UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-GameResponse response = gameService.execute(gameId);
+GameResponse response = getGameService.execute(gameId);
 ```
 
 ## Implementation Notes
 
-- The interface is sealed, so only `GetGameService` can implement it.
-- The `execute` method is the single entry point for game retrieval.
-- The returned `GameResponse` object should contain all necessary game information for the client.
+- The interface is sealed to `GetGameService` only. Any attempt to create another implementation will result in a compilation error.
+- The `execute` method is intentionally simple, focusing on a single responsibility: retrieving a game by ID.
+- The `GameResponse` class should be designed to be immutable or at least effectively immutable for thread safety.
 
 ## Related Components
 
-- `GetGameService` - The only permitted implementation of this interface.
+- `GetGameService` - The sole permitted implementation of this interface.
 - `GameResponse` - The data transfer object returned by the `execute` method.

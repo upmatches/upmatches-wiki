@@ -6,256 +6,112 @@ sidebar_label: DatabaseConfiguration
 
 # DatabaseConfiguration
 
-The `DatabaseConfiguration` class is a Spring Boot configuration class responsible for creating and configuring the primary `DataSource` bean for the application. It provides a robust, production-ready database connection pool using HikariCP, with automatic driver detection, database-specific optimizations (PostgreSQL and H2), and integrated monitoring via Micrometer.
+The `DatabaseConfiguration` class is a Spring Boot configuration class responsible for creating and configuring the primary `DataSource` bean for the application. It provides a robust, production-ready database connection pool using HikariCP, with support for PostgreSQL and H2 databases.
 
 ## Purpose
 
-This class serves as the central point for database connectivity setup. It reads configuration from `DatabaseProperties`, resolves the appropriate JDBC driver based on the URL, applies connection pool sizing and timeout settings, and configures database-specific optimizations for PostgreSQL and H2 databases. It also integrates with Micrometer for metrics collection and provides comprehensive logging of the final configuration.
+This configuration class:
+- Creates a HikariCP-based `DataSource` bean
+- Automatically detects the database type from the JDBC URL
+- Applies database-specific optimizations for PostgreSQL and H2
+- Configures connection pooling parameters (size, timeouts, leak detection)
+- Integrates with Micrometer for metrics monitoring
+- Masks sensitive credentials in log output
+- Supports multiple Spring profiles for pool naming
 
-## Dependencies
+## Class Overview
 
-- **Spring Boot**: `@Configuration`, `@EnableConfigurationProperties`, `@ConditionalOnProperty`
-- **HikariCP**: Connection pooling
-- **Micrometer**: Metrics collection
-- **SLF4J**: Logging
-
-## Configuration Properties
-
-The class relies on properties bound to `DatabaseProperties` and `HikariProperties`. Key configuration points include:
-
-| Property | Description | Default |
-|----------|-------------|---------|
-| `app.database.enabled` | Enable/disable the datasource | `true` |
-| `app.database.url` | JDBC URL | Required |
-| `app.database.username` | Database username | - |
-| `app.database.password` | Database password | - |
-| `app.database.driver-class-name` | JDBC driver class (optional) | Auto-detected |
-| `app.database.hikari.*` | HikariCP pool settings | See defaults below |
+| Aspect | Details |
+|--------|---------|
+| **Package** | `com.upmatches.app.shared.database.configurations` |
+| **Annotations** | `@Configuration(proxyBeanMethods = false)`, `@EnableConfigurationProperties(DatabaseProperties.class)` |
+| **Dependencies** | `DatabaseProperties`, `Environment`, `MeterRegistry` (nullable) |
 
 ## Public Methods
 
 ### `dataSource()`
 
-Creates and returns the primary `DataSource` bean.
+Creates and configures the primary HikariCP `DataSource` bean.
 
-| Aspect | Details |
-|--------|---------|
-| **Return Type** | `javax.sql.DataSource` |
+| Property | Value |
+|----------|-------|
 | **Bean Name** | `dataSource` |
 | **Primary** | Yes |
-| **Condition** | `app.database.enabled=true` (default) |
-| **Throws** | `IllegalStateException` if JDBC URL is not configured |
+| **Condition** | `app.database.enabled=true` (default: true) |
+| **Return Type** | `javax.sql.DataSource` |
 
 **Configuration Process:**
 1. Validates that the JDBC URL is configured
-2. Resolves the JDBC driver class name (auto-detected or explicitly configured)
-3. Creates a `HikariConfig` with:
-   - JDBC URL, username, password
-   - Auto-commit disabled (`false`)
-   - Read-only disabled (`false`)
-4. Applies pool sizing (max pool size, minimum idle)
-5. Applies timeout settings (connection, idle, max lifetime, leak detection)
-6. Applies database-specific optimizations:
-   - **PostgreSQL**: TCP keep-alive, application name, prepared statement caching, batched inserts
-   - **H2**: DB close delay, cache size, lock timeout
-7. Configures monitoring (Micrometer metrics)
-8. Logs the complete configuration summary
-9. Returns a new `HikariDataSource`
+2. Resolves the JDBC driver class name
+3. Configures HikariCP with pool sizing, timeouts, and monitoring
+4. Applies database-specific optimizations (PostgreSQL or H2)
+5. Logs a comprehensive configuration summary
 
-## Private Methods
+**Throws:**
+- `IllegalStateException` if the database URL is not configured
+- `IllegalArgumentException` if the JDBC URL is unsupported
 
-### `resolveDriverClassName(String jdbcUrl)`
+## Configuration Properties
 
-Resolves the JDBC driver class name.
+### Pool Sizing
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `jdbcUrl` | `String` | The JDBC URL |
-| **Returns** | `String` | The driver class name |
+| Property | Default | Description |
+|----------|---------|-------------|
+| `app.database.hikari.maximum-pool-size` | `10` | Maximum number of connections in the pool |
+| `app.database.hikari.minimum-idle` | `10` | Minimum number of idle connections |
 
-If a driver class is explicitly configured in properties, it is used. Otherwise, the driver is auto-detected from the JDBC URL.
+### Timeouts
 
-### `getDriverClassName(String jdbcUrl)`
+| Property | Default | Description |
+|----------|---------|-------------|
+| `app.database.hikari.connection-timeout` | `30000` (30s) | Maximum time to wait for a connection |
+| `app.database.hikari.idle-timeout` | `600000` (10min) | Maximum time a connection can be idle |
+| `app.database.hikari.max-lifetime` | `1800000` (30min) | Maximum lifetime of a connection |
+| `app.database.hikari.leak-detection-threshold` | Disabled | Threshold for connection leak detection |
+| `app.database.hikari.initialization-fail-timeout` | `1` | Timeout for pool initialization failure |
 
-Determines the driver class name from the JDBC URL.
+### Database-Specific Optimizations
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `jdbcUrl` | `String` | The JDBC URL |
-| **Returns** | `String` | The driver class name |
-| **Throws** | `IllegalArgumentException` | If the JDBC URL is unsupported |
+#### PostgreSQL Optimizations
 
-Supported JDBC URL prefixes: `jdbc:h2:`, `jdbc:postgresql:`, `jdbc:mysql:`
+| Property | Value | Description |
+|----------|-------|-------------|
+| `tcpKeepAlive` | `true` | Enable TCP keep-alive |
+| `ApplicationName` | Resolved application name | Application identifier |
+| `assumeMinServerVersion` | `9.4` | Minimum PostgreSQL server version |
+| `reWriteBatchedInserts` | `true` | Enable batched insert rewriting |
+| `prepareThreshold` | `5` | Statement preparation threshold |
+| `preparedStatementCacheQueries` | `256` | Prepared statement cache size |
+| `preparedStatementCacheSizeMiB` | `5` | Prepared statement cache memory limit |
+| `maintainTimeStats` | `false` | Disable time statistics maintenance |
 
-### `getDatabaseType(String jdbcUrl)`
+#### H2 Optimizations
 
-Returns the database type name from the JDBC URL.
+| Property | Value | Description |
+|----------|-------|-------------|
+| `DB_CLOSE_DELAY` | `-1` | Keep database open until JVM shutdown |
+| `DB_CLOSE_ON_EXIT` | `false` | Disable close on exit |
+| `CACHE_SIZE` | `131072` (128MB) | Cache size in KB |
+| `LOCK_TIMEOUT` | `10000` (10s) | Lock timeout in milliseconds |
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `jdbcUrl` | `String` | The JDBC URL |
-| **Returns** | `String` | Database type name or "UNKNOWN" |
+### Monitoring
 
-### `resolvePoolName()`
+The class integrates with Micrometer for metrics collection when a `MeterRegistry` bean is available in the application context.
 
-Generates a unique pool name based on active Spring profiles.
+## Logging
 
-| Returns | Description |
-|---------|-------------|
-| `String` | Pool name with profile suffix if profiles are active |
-
-Format: `HikariPool-{profiles}` or `HikariPool` if no profiles are active.
-
-### `applyPoolSizing(HikariConfig config)`
-
-Applies minimum idle and maximum pool size settings.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `config` | `HikariConfig` | The HikariCP configuration |
-
-### `getMaximumPoolSize()`
-
-Returns the configured maximum pool size.
-
-| Returns | Default |
-|---------|---------|
-| `int` | `10` |
-
-### `getMinimumIdle()`
-
-Returns the configured minimum idle connections.
-
-| Returns | Default |
-|---------|---------|
-| `int` | `10` |
-
-### `applyTimeouts(HikariConfig hikariConfig)`
-
-Applies all timeout settings to the HikariCP configuration.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `hikariConfig` | `HikariConfig` | The HikariCP configuration |
-
-### `getInitializationFailTimeout()`
-
-Returns the initialization fail timeout.
-
-| Returns | Default |
-|---------|---------|
-| `long` | `-1` (fail fast) |
-
-### `getConnectionTimeout()`
-
-Returns the connection timeout in milliseconds.
-
-| Returns | Default |
-|---------|---------|
-| `long` | `30000` (30 seconds) |
-
-### `getIdleTimeout()`
-
-Returns the idle timeout in milliseconds.
-
-| Returns | Default |
-|---------|---------|
-| `long` | `600000` (10 minutes) |
-
-### `getMaxLifetime()`
-
-Returns the maximum lifetime of a connection in milliseconds.
-
-| Returns | Default |
-|---------|---------|
-| `long` | `1800000` (30 minutes) |
-
-### `applyPostgreSQLOptimizations(HikariConfig hikariConfig, String applicationName)`
-
-Applies PostgreSQL-specific optimizations.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `hikariConfig` | `HikariConfig` | The HikariCP configuration |
-| `applicationName` | `String` | Application name for PostgreSQL |
-
-Optimizations include:
-- TCP keep-alive enabled
-- Application name set
-- Server version assumption
-- Batched inserts rewriting
-- Prepared statement caching (queries and size)
-- Time statistics disabled
-
-### `resolveApplicationName()`
-
-Resolves the application name from Spring properties.
-
-| Returns | Description |
-|---------|-------------|
-| `String` | Application name with optional profile suffix |
-
-Uses `spring.application.name` property or defaults to `"upmatches"`.
-
-### `applyH2Optimizations(HikariConfig hikariConfig)`
-
-Applies H2-specific optimizations.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `hikariConfig` | `HikariConfig` | The HikariCP configuration |
-
-Optimizations include:
-- DB close delay
-- DB close on exit
-- Cache size
-- Lock timeout
-
-### `applyMonitoring(HikariConfig config)`
-
-Configures Micrometer metrics tracking.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `config` | `HikariConfig` | The HikariCP configuration |
-
-If a `MeterRegistry` bean is available, it creates a `MicrometerMetricsTrackerFactory` for metrics collection.
-
-### `logConfigurationSummary(HikariConfig config, String driver, String applicationName)`
-
-Logs the complete configuration summary at INFO level.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `config` | `HikariConfig` | The HikariCP configuration |
-| `driver` | `String` | The JDBC driver class name |
-| `applicationName` | `String` | The application name |
-
-Logs include:
-- Pool name
-- Pool size (min/max)
-- Timeouts (connection, idle, max lifetime)
-- Leak detection threshold
-- Database URL (masked)
-- Driver class
+The class provides comprehensive logging at INFO level, including:
+- Pool name and sizing configuration
+- Timeout settings
+- Leak detection status
+- Database URL (with credentials masked)
+- Driver class name
 - Application name
-
-### `maskSensitiveUrl(String url)`
-
-Masks sensitive information (username/password) in JDBC URLs for logging.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `url` | `String` | The JDBC URL |
-| **Returns** | `String` | Masked URL or "N/A" |
 
 ## Usage Example
 
-```java
-// The DataSource is automatically created by Spring Boot
-// when app.database.enabled=true (default)
-
-// application.yml configuration:
+```yaml
+# application.yml
 app:
   database:
     url: jdbc:postgresql://localhost:5432/mydb
@@ -264,17 +120,20 @@ app:
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
+      connection-timeout: 5000
+      leak-detection-threshold: 60000
 ```
 
-## Logging
+## Security
 
-The class provides detailed INFO-level logging of the datasource configuration, including:
-- Initialization message with database type
-- Complete HikariCP configuration summary
-- Metrics integration status
-- Database-specific optimizations (debug level for H2)
+The class masks sensitive credentials in log output using the following patterns:
+- `URL_CREDENTIALS_PATTERN`: Masks username:password in URLs
+- `URL_PASSWORD_PATTERN`: Masks password parameter in URLs
 
-Sensitive information in JDBC URLs (credentials) is masked in logs for security.
+## Dependencies
+
+- **HikariCP**: Connection pool implementation
+- **Micrometer**: Metrics collection and monitoring
+- **Spring Boot**: Configuration and dependency injection
+- **JSpecify**: Nullable annotations
+- **SLF4J**: Logging framework

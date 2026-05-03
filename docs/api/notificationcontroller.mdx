@@ -6,9 +6,11 @@ sidebar_label: Notification Controller
 
 # Notification Controller
 
-The `NotificationController` class is a REST controller that handles HTTP requests related to user notifications. It provides endpoints for listing notifications, retrieving the unread count, marking notifications as read (individually or all at once), and deleting notifications.
+The `NotificationController` class is a REST controller that handles HTTP requests related to user notifications in the UpMatches application. It provides endpoints for listing notifications, retrieving unread counts, marking notifications as read, and deleting notifications.
 
-This controller is part of the notification feature module and follows a service-oriented architecture, delegating business logic to dedicated service interfaces.
+## Purpose
+
+This controller serves as the API gateway for all notification-related operations. It delegates business logic to dedicated service interfaces, ensuring a clean separation of concerns between the web layer and the application logic.
 
 ## Endpoints
 
@@ -16,108 +18,85 @@ This controller is part of the notification feature module and follows a service
 
 Retrieves a paginated list of notifications for the authenticated user.
 
-**HTTP Method:** `GET`  
-**Path:** `/api/v1/notifications`
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/notifications` | Returns a paginated list of notifications |
 
 **Query Parameters:**
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `page` | Integer | `0` | The page number to retrieve (zero-indexed). |
-| `size` | Integer | `20` | The number of notifications per page. |
+| `page` | Integer | 0 | The page number to retrieve (zero-indexed) |
+| `size` | Integer | 20 | The number of items per page |
 
-**Response:** `200 OK` with a paginated response containing `NotificationResponse` objects.
-
-**Example Request:**
-```
-GET /api/v1/notifications?page=0&size=10
-```
+**Response:** `200 OK` with `ApiResponse<PagedResponse<NotificationResponse>>`
 
 ### Get Unread Count
 
-Retrieves the total number of unread notifications for the authenticated user.
+Retrieves the count of unread notifications for the authenticated user.
 
-**HTTP Method:** `GET`  
-**Path:** `/api/v1/notifications/unread-count`
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/notifications/unread-count` | Returns the number of unread notifications |
 
-**Response:** `200 OK` with an `UnreadCountResponse` object.
-
-**Example Request:**
-```
-GET /api/v1/notifications/unread-count
-```
+**Response:** `200 OK` with `ApiResponse<UnreadCountResponse>`
 
 ### Mark Notification as Read
 
-Marks a specific notification as read by its ID.
+Marks a specific notification as read.
 
-**HTTP Method:** `PUT`  
-**Path:** `/api/v1/notifications/{id}/read`
+| Method | Path | Description |
+|--------|------|-------------|
+| PUT | `/api/v1/notifications/{id}/read` | Marks the specified notification as read |
 
 **Path Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | UUID | The unique identifier of the notification to mark as read. |
+| `id` | UUID | The unique identifier of the notification |
 
-**Response:** `200 OK` with the updated `NotificationResponse` object.
-
-**Example Request:**
-```
-PUT /api/v1/notifications/550e8400-e29b-41d4-a716-446655440000/read
-```
+**Response:** `200 OK` with `ApiResponse<NotificationResponse>`
 
 ### Mark All Notifications as Read
 
-Marks all unread notifications for the authenticated user as read.
+Marks all notifications for the authenticated user as read.
 
-**HTTP Method:** `PUT`  
-**Path:** `/api/v1/notifications/read-all`
+| Method | Path | Description |
+|--------|------|-------------|
+| PUT | `/api/v1/notifications/read-all` | Marks all notifications as read |
 
-**Response:** `200 OK` with the number of notifications that were updated.
-
-**Example Request:**
-```
-PUT /api/v1/notifications/read-all
-```
+**Response:** `200 OK` with `ApiResponse<Integer>` (returns the number of updated notifications)
 
 ### Delete Notification
 
-Deletes a specific notification by its ID.
+Deletes a specific notification.
 
-**HTTP Method:** `DELETE`  
-**Path:** `/api/v1/notifications/{id}`
+| Method | Path | Description |
+|--------|------|-------------|
+| DELETE | `/api/v1/notifications/{id}` | Deletes the specified notification |
 
 **Path Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | UUID | The unique identifier of the notification to delete. |
+| `id` | UUID | The unique identifier of the notification |
 
-**Response:** `204 No Content` on successful deletion.
-
-**Example Request:**
-```
-DELETE /api/v1/notifications/550e8400-e29b-41d4-a716-446655440000
-```
+**Response:** `204 No Content`
 
 ## Dependencies
 
-The controller relies on the following service interfaces:
+The controller depends on the following service interfaces:
 
-- `IListNotificationsService` - Handles paginated notification retrieval.
-- `IGetUnreadCountService` - Handles unread count calculation.
-- `IMarkNotificationReadService` - Handles marking a single notification as read.
-- `IMarkAllReadService` - Handles marking all notifications as read.
-- `IDeleteNotificationService` - Handles notification deletion.
+- `IListNotificationsService` - Handles paginated notification retrieval
+- `IGetUnreadCountService` - Handles unread count calculation
+- `IMarkNotificationReadService` - Handles marking individual notifications as read
+- `IMarkAllReadService` - Handles marking all notifications as read
+- `IDeleteNotificationService` - Handles notification deletion
 
-## Error Handling
+## Validation
 
-The controller uses `ValidationHelper.validatePaginationParameters()` to ensure valid pagination parameters are provided. Invalid parameters will result in appropriate error responses.
+The controller uses `ValidationHelper.validatePaginationParameters()` to validate pagination parameters before processing list requests.
 
-## Notes
+## Sorting
 
-- All endpoints are prefixed with `/api/v1/notifications`.
-- The controller uses Spring's `ResponseEntity` for consistent HTTP response handling.
-- Pagination is sorted by `createdAt` in descending order by default.
-- The controller returns standardized API responses using the `ApiResponse` wrapper class.
+Notifications are sorted by `createdAt` in descending order by default, ensuring the most recent notifications appear first.

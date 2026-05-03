@@ -1,105 +1,59 @@
 ---
 id: sharelink-controller
-title: ShareLinkController - API Endpoint Documentation
+title: ShareLinkController
 sidebar_label: ShareLinkController
 ---
 
 # ShareLinkController
 
-The `ShareLinkController` is a REST controller that manages share link operations in the UpMatches application. It provides endpoints for creating new share links and resolving existing ones using a unique alphanumeric code.
+The `ShareLinkController` is a REST controller that handles the creation and resolution of share links within the UpMatches application. It exposes two endpoints under the `/api/v1/share-links` base path: one for generating new share links and another for resolving existing share links using a unique code.
 
 ## Purpose
 
-This controller handles two primary operations:
-- **Creating** a new share link that can be shared with other users
-- **Resolving** an existing share link by its unique 8-character alphanumeric code
+This controller serves as the entry point for the share link feature, allowing users to:
+- **Create** a new share link by providing the necessary data via a POST request.
+- **Resolve** an existing share link by providing its 8-character alphanumeric code via a GET request.
+
+The controller delegates the actual business logic to two service interfaces: `ICreateShareLinkService` and `IResolveShareLinkService`.
 
 ## Endpoints
 
-### Create Share Link
+### POST `/api/v1/share-links`
 
-Creates a new share link based on the provided request data.
+Creates a new share link.
 
-**HTTP Method:** `POST`
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `body` | `CreateShareLinkRequest` (Request Body) | The request payload containing the data needed to create a share link. Must be valid. |
+| `request` | `HttpServletRequest` | The HTTP request object, used to capture the request URI for the response. |
 
-**Endpoint:** `/api/v1/share-links`
+**Response:** `201 Created` with an `ApiResponse<ShareLinkResponse>` containing the created share link details and a success message.
 
-**Request Body:** `CreateShareLinkRequest` (validated)
+### GET `/api/v1/share-links/{code}`
 
-**Response:** `ApiResponse<ShareLinkResponse>` with HTTP status `201 Created`
+Resolves an existing share link by its unique code.
 
-### Resolve Share Link
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `code` | `String` (Path Variable) | The 8-character alphanumeric code of the share link. Must match the pattern `^[0-9A-Za-z]{8}$`. |
+| `request` | `HttpServletRequest` | The HTTP request object, used to capture the request URI for the response. |
 
-Resolves an existing share link using its unique code.
-
-**HTTP Method:** `GET`
-
-**Endpoint:** `/api/v1/share-links/{code}`
-
-**Path Variable:** `code` - An 8-character alphanumeric string (validated with regex pattern `^[0-9A-Za-z]{8}$`)
-
-**Response:** `ApiResponse<PublicShareLinkResponse>` with HTTP status `200 OK`
-
-## Public Methods
-
-| Method | Parameters | Return Type | Description |
-|--------|------------|-------------|-------------|
-| `createShareLink` | `@Valid @RequestBody CreateShareLinkRequest body`, `HttpServletRequest request` | `ResponseEntity<ApiResponse<ShareLinkResponse>>` | Creates a new share link and returns the created link details |
-| `resolveShareLink` | `@PathVariable @Pattern(regexp = "^[0-9A-Za-z]{8}$") String code`, `HttpServletRequest request` | `ResponseEntity<ApiResponse<PublicShareLinkResponse>>` | Resolves a share link by its 8-character alphanumeric code |
-
-## Dependencies
-
-The controller depends on two service interfaces:
-
-| Service Interface | Purpose |
-|-------------------|---------|
-| `ICreateShareLinkService` | Handles the business logic for creating share links |
-| `IResolveShareLinkService` | Handles the business logic for resolving share links |
+**Response:** `200 OK` with an `ApiResponse<PublicShareLinkResponse>` containing the resolved share link data and a success message.
 
 ## Validation
 
-The controller uses Jakarta Bean Validation annotations to ensure data integrity:
+The controller uses Jakarta Bean Validation annotations to ensure input data integrity:
+- The `code` path variable is validated against the regex pattern `^[0-9A-Za-z]{8}$` to ensure it is exactly 8 alphanumeric characters.
+- The `CreateShareLinkRequest` body is validated using the `@Valid` annotation.
 
-- **Request Body:** Validated with `@Valid` annotation on `CreateShareLinkRequest`
-- **Code Parameter:** Validated with `@Pattern` annotation requiring exactly 8 alphanumeric characters (`^[0-9A-Za-z]{8}$`)
+## Dependencies
 
-## Response Format
+The controller depends on the following services:
+- `ICreateShareLinkService`: Handles the creation of share links.
+- `IResolveShareLinkService`: Handles the resolution of share links by code.
 
-Both endpoints return responses wrapped in an `ApiResponse` object with the following structure:
-
-- **data:** The response payload (`ShareLinkResponse` or `PublicShareLinkResponse`)
-- **message:** A success message describing the operation result
-- **path:** The request URI for traceability
+Both services are injected via constructor injection.
 
 ## Error Handling
 
-The controller leverages Spring's validation framework to handle invalid inputs:
-
-- Invalid request body will return a `400 Bad Request` with validation error details
-- Invalid share link code (not matching the 8-character alphanumeric pattern) will return a `400 Bad Request` with the message "Share link code must be 8 alphanumeric characters."
-
-## Usage Example
-
-### Creating a Share Link
-
-```http
-POST /api/v1/share-links
-Content-Type: application/json
-
-{
-  // CreateShareLinkRequest payload
-}
-```
-
-### Resolving a Share Link
-
-```http
-GET /api/v1/share-links/ABC12345
-```
-
-## Notes
-
-- The controller is mapped to the base path `/api/v1/share-links`
-- All endpoints are validated at the class level with `@Validated`
-- The controller uses constructor injection for its dependencies
-- Success messages are defined as constants for consistency
+Validation errors are automatically handled by Spring's validation framework, returning appropriate error responses when input constraints are violated. The controller itself does not implement custom error handling, relying on the global exception handling mechanisms of the application.

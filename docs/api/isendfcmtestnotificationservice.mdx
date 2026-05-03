@@ -8,30 +8,24 @@ sidebar_label: ISendFcmTestNotificationService
 
 ## Purpose
 
-The `ISendFcmTestNotificationService` interface defines the contract for sending test Firebase Cloud Messaging (FCM) notifications within the UpMatches application. It follows a sealed interface pattern to restrict implementation to a single concrete class (`SendFcmTestNotificationService`), ensuring controlled and secure usage of the notification testing functionality.
+The `ISendFcmTestNotificationService` interface defines the contract for sending Firebase Cloud Messaging (FCM) test notifications within the UpMatches application. It follows a sealed interface pattern to restrict implementation to a single concrete class (`SendFcmTestNotificationService`), ensuring controlled extensibility and type safety.
 
-This interface is part of the notification feature module and is designed to support testing workflows where developers or administrators need to send test push notifications to verify FCM integration and device token validity.
+This interface is part of the notification feature module and is responsible for executing the business logic required to send a test push notification via FCM. By abstracting the execution logic behind an interface, the application promotes loose coupling and testability.
 
-## Interface Definition
+## Interface Declaration
 
 ```java
-public sealed interface ISendFcmTestNotificationService permits SendFcmTestNotificationService {
-    FcmTestNotificationResponse execute(SendFcmTestNotificationRequest request);
-}
+public sealed interface ISendFcmTestNotificationService permits SendFcmTestNotificationService
 ```
 
-### Sealed Interface
-
-The interface is declared as `sealed`, meaning only the explicitly permitted class (`SendFcmTestNotificationService`) can implement it. This design choice provides:
-- **Controlled extensibility**: Only one implementation exists, preventing unauthorized implementations.
-- **Pattern matching support**: Enables exhaustive pattern matching in switch expressions.
-- **Security**: Ensures test notification logic follows a single, approved implementation path.
+- **Sealed Interface**: The `sealed` keyword restricts which classes or interfaces can implement this interface. Only `SendFcmTestNotificationService` is permitted to implement it.
+- **Package**: `com.upmatches.app.features.notification.services`
 
 ## Method Summary
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `execute(SendFcmTestNotificationRequest request)` | `FcmTestNotificationResponse` | Executes the test notification sending process based on the provided request parameters. |
+| `execute(SendFcmTestNotificationRequest request)` | `FcmTestNotificationResponse` | Executes the logic to send a test FCM notification based on the provided request data and returns the response. |
 
 ## Parameters
 
@@ -39,40 +33,28 @@ The interface is declared as `sealed`, meaning only the explicitly permitted cla
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `SendFcmTestNotificationRequest` | Contains the necessary data for sending a test FCM notification, such as device token, notification title, body, and optional data payload. |
+| `request` | `SendFcmTestNotificationRequest` | The request object containing the necessary data to send a test FCM notification (e.g., device token, message payload). |
 
 ## Return Type
 
 | Type | Description |
 |------|-------------|
-| `FcmTestNotificationResponse` | Encapsulates the result of the test notification operation, including success status, message ID, and any error details if the operation fails. |
+| `FcmTestNotificationResponse` | The response object containing the result of the FCM test notification operation (e.g., success status, message ID, or error details). |
 
 ## Usage Example
 
 ```java
-// Assuming you have an instance of the service
-ISendFcmTestNotificationService testService = new SendFcmTestNotificationService();
+// Assuming the implementation is injected via dependency injection
+ISendFcmTestNotificationService service = new SendFcmTestNotificationService();
 
-// Create a test notification request
-SendFcmTestNotificationRequest request = new SendFcmTestNotificationRequest(
-    "device-token-12345",
-    "Test Notification",
-    "This is a test message from UpMatches"
-);
+SendFcmTestNotificationRequest request = new SendFcmTestNotificationRequest();
+// Populate request fields...
 
-// Execute the test notification
-FcmTestNotificationResponse response = testService.execute(request);
-
-// Check the result
-if (response.isSuccess()) {
-    System.out.println("Test notification sent successfully. Message ID: " + response.getMessageId());
-} else {
-    System.err.println("Failed to send test notification: " + response.getError());
-}
+FcmTestNotificationResponse response = service.execute(request);
 ```
 
 ## Related Classes
 
-- `SendFcmTestNotificationService` - The sole permitted implementation of this interface.
-- `SendFcmTestNotificationRequest` - Request DTO containing test notification parameters.
-- `FcmTestNotificationResponse` - Response DTO containing the result of the test notification operation.
+- `SendFcmTestNotificationService` — The sole permitted implementation of this interface.
+- `SendFcmTestNotificationRequest` — The request DTO containing notification parameters.
+- `FcmTestNotificationResponse` — The response DTO containing the operation result.

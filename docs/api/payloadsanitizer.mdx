@@ -6,69 +6,100 @@ sidebar_label: PayloadSanitizer
 
 # PayloadSanitizer
 
-The `PayloadSanitizer` class is a Spring `@Component` that provides a utility for sanitizing Java objects before they are logged or stored. Its primary purpose is to prevent sensitive data (such as passwords, tokens, and personal identifiable information) from being exposed in plain text. It recursively traverses the object graph, masks sensitive fields, and optionally truncates the resulting JSON string to a maximum size.
+The `PayloadSanitizer` class is a Spring `@Component` that provides a utility for sanitizing and redacting sensitive information from Java objects before they are logged, stored, or transmitted. It is designed to prevent accidental exposure of personally identifiable information (PII) and security credentials in audit logs, error messages, or API responses.
 
-## Features
+## Purpose
 
-- **Sensitive Field Redaction**: Automatically replaces values for keys like `password`, `token`, `nric`, `secret`, and `apikey` with `***`.
-- **Email Masking**: Partially masks email addresses (e.g., `j***@example.com`).
-- **Phone Number Masking**: Shows only the last 4 digits of phone numbers (e.g., `***6789`).
-- **Recursive Traversal**: Handles nested objects and arrays.
-- **Payload Truncation**: Limits the final JSON string to 8 KB to avoid excessively large log entries.
+- **Redact sensitive fields**: Automatically replaces values for keys like `password`, `token`, `nric`, `secret`, and `apikey` with `***`.
+- **Mask email addresses**: Partially obscures email addresses by showing only the first character and the domain (e.g., `j***@example.com`).
+- **Mask phone numbers**: Shows only the last 4 digits of phone numbers (e.g., `***1234`).
+- **Truncate large payloads**: Limits the output to 8 KB to prevent excessively large log entries or responses.
+
+## Dependencies
+
+- **Jackson**: Uses `ObjectMapper` for JSON serialization and tree manipulation.
+- **Spring**: The class is annotated with `@Component` for automatic dependency injection.
+
+## Constructor
+
+| Constructor | Description |
+|---|---|
+| `PayloadSanitizer(ObjectMapper objectMapper)` | Creates a new sanitizer instance with the provided Jackson `ObjectMapper`. |
 
 ## Public Methods
 
-| Method | Description | Parameters | Returns |
-|--------|-------------|------------|---------|
-| `sanitize(Object payload)` | Sanitizes the given payload by masking sensitive fields and truncating the result. | `payload` – The object to sanitize. Can be `null`. | A sanitized JSON string, or `null` if the input is `null` or an error occurs during processing. |
+### `sanitize(Object payload)`
 
-## Usage Example
+Sanitizes the given payload object by masking sensitive fields and truncating the output if necessary.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `payload` | `Object` | The Java object to sanitize. Can be `null`. |
+
+| Returns | Type | Description |
+|---|---|---|
+| Success | `String` | A JSON string with sensitive fields masked and truncated if over 8 KB. |
+| Failure | `null` | If the payload is `null` or cannot be serialized to JSON. |
+
+**Example usage:**
 
 ```java
-import com.upmatches.app.shared.audit.utils.PayloadSanitizer;
-import com.fasterxml.jackson.databind.ObjectMapper;
+@Autowired
+private PayloadSanitizer sanitizer;
 
-public class AuditService {
-    private final PayloadSanitizer sanitizer;
-
-    public AuditService(ObjectMapper objectMapper) {
-        this.sanitizer = new PayloadSanitizer(objectMapper);
-    }
-
-    public void logRequest(Object requestBody) {
-        String safePayload = sanitizer.sanitize(requestBody);
-        // Log safePayload instead of the raw request body
-        logger.info("Request payload: {}", safePayload);
-    }
+public void logRequest(Object requestBody) {
+    String safePayload = sanitizer.sanitize(requestBody);
+    log.info("Request payload: {}", safePayload);
 }
 ```
 
+## Internal Behavior
+
+### Sensitive Key Detection
+
+The following keys (case-insensitive) are fully redacted:
+
+| Category | Keys |
+|---|---|
+| Authentication | `password`, `token`, `accesstoken`, `refreshtoken`, `idtoken`, `authorization` |
+| Personal Identifiers | `nric`, `fin` |
+| Cryptographic | `privatekey`, `secret`, `apikey` |
+
+### Email Masking
+
+For keys matching `email`, the value is masked to show only the first character and the domain:
+
+- `john.doe@example.com` → `j***@example.com`
+- If the email has no `@` or the local part is 1 character or less, the entire value is replaced with `***`.
+
+### Phone Number Masking
+
+For keys matching `phone`, `phonenumber`, or `mobile`, the value is masked to show only the last 4 digits:
+
+- `+65 9123 4567` → `***4567`
+- If the phone number is 4 characters or less, the entire value is replaced with `***`.
+
+### Truncation
+
+If the resulting JSON string exceeds 8 KB (8,192 bytes) in UTF-8 encoding, it is truncated to exactly 8 KB and appended with `...[truncated]`.
+
 ## Configuration
 
-The class uses the following constants, which can be adjusted by modifying the source code:
+The following constants can be adjusted by modifying the class source:
 
 | Constant | Default Value | Description |
-|----------|---------------|-------------|
-| `REDACT_KEYS` | `password`, `token`, `accesstoken`, `refreshtoken`, `idtoken`, `authorization`, `nric`, `fin`, `privatekey`, `secret`, `apikey` | Keys whose values are fully redacted. |
-| `EMAIL_KEYS` | `email` | Keys whose values are partially masked as emails. |
-| `PHONE_KEYS` | `phone`, `phonenumber`, `mobile` | Keys whose values are partially masked as phone numbers. |
-| `MAX_PAYLOAD_BYTES` | `8192` (8 KB) | Maximum allowed size of the output JSON string in bytes. |
-| `PHONE_SUFFIX_LENGTH` | `4` | Number of trailing digits to keep when masking phone numbers. |
+|---|---|---|
+| `MAX_PAYLOAD_BYTES` | `8 * 1024` (8 KB) | Maximum allowed payload size in bytes. |
+| `PHONE_SUFFIX_LENGTH` | `4` | Number of trailing digits to preserve in phone numbers. |
+| `TRUNCATED_SUFFIX` | `...[truncated]` | Suffix appended to truncated payloads. |
 
-## How It Works
+## Error Handling
 
-1. **Input Validation**: If the `payload` is `null`, the method returns `null`.
-2. **JSON Conversion**: The input object is converted into a Jackson `JsonNode` tree using `ObjectMapper.valueToTree()`.
-3. **Recursive Masking**: The `mask()` method traverses the tree:
-   - For `ObjectNode` instances, it iterates over all fields and applies the appropriate masking based on the field name (case-insensitive).
-   - For `ArrayNode` instances, it recursively masks each element.
-   - For other node types, it returns the node unchanged.
-4. **Truncation**: The resulting JSON string is truncated to `MAX_PAYLOAD_BYTES` bytes if it exceeds that limit, appending `...[truncated]` to indicate the truncation.
-5. **Error Handling**: If any exception occurs during processing (e.g., `JsonProcessingException`), the method returns `null`.
+- If the input payload is `null`, the method returns `null`.
+- If serialization fails (e.g., due to circular references or unsupported types), the method returns `null` and the exception is silently caught.
 
-## Important Notes
+## Notes
 
-- The class is **not thread-safe** if the `ObjectMapper` instance is shared and configured differently across threads. Ensure thread safety by using a separate `ObjectMapper` per thread or by configuring the mapper to be thread-safe.
-- The masking logic is case-insensitive for field names.
-- The truncation is byte-based, not character-based, so multi-byte characters (e.g., emoji) may be split incorrectly at the boundary. The `TRUNCATED_SUFFIX` is appended after the truncation to indicate this.
-- The class does **not** modify the original input object; it works on a copy of the JSON tree.
+- The sanitizer works recursively on nested objects and arrays.
+- Only string values are masked; non-textual values for email/phone keys are left unchanged.
+- The class is thread-safe as it uses no mutable state beyond the injected `ObjectMapper`.

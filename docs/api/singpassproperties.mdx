@@ -6,45 +6,53 @@ sidebar_label: SingpassProperties
 
 # SingpassProperties
 
-The `SingpassProperties` class is a Spring Boot configuration properties record that encapsulates all configuration parameters required for integrating with the Singpass authentication system. It uses the `@ConfigurationProperties` annotation with the prefix `app.singpass`, allowing these values to be easily configured via `application.properties` or `application.yml` files.
+The `SingpassProperties` class is a Spring Boot configuration properties record that encapsulates all configuration parameters required for integrating with the Singpass authentication system. It is annotated with `@ConfigurationProperties(prefix = "app.singpass")`, meaning all properties defined in the application's configuration files (e.g., `application.yml` or `application.properties`) under the `app.singpass` prefix will be automatically bound to this record's components.
 
-This record provides a centralized and type-safe way to manage Singpass OAuth 2.0 / OpenID Connect configuration, including endpoints, client credentials, and authentication context settings.
+This record provides a centralized and type-safe way to manage Singpass OAuth 2.0 / OpenID Connect settings, including endpoints, client credentials, and authentication context parameters.
 
-## Constructor Behavior
+## Purpose
 
-The compact constructor of this record applies default values for two optional fields:
-- **scopes**: Defaults to `"openid"` if not provided or blank.
-- **authContextType**: Defaults to `"APP_AUTHENTICATION_DEFAULT"` if not provided or blank.
+- **Centralized Configuration**: Aggregates all Singpass-related configuration in one place.
+- **Type Safety**: Uses a Java record to ensure immutability and compile-time safety.
+- **Default Values**: Provides sensible defaults for `scopes` and `authContextType` if not explicitly configured.
+- **Spring Boot Integration**: Leverages Spring Boot's `@ConfigurationProperties` for automatic binding and validation.
 
-## Configuration Properties
+## Constructor
 
-The following table describes each configuration property that can be set using the `app.singpass` prefix:
+The compact constructor of the record applies default values for `scopes` and `authContextType` when they are `null` or blank:
 
-| Property | Type | Description | Default |
-|----------|------|-------------|---------|
-| `clientId` | `String` | The client identifier assigned by Singpass | Required |
-| `redirectUri` | `String` | The redirect URI for OAuth callbacks | Required |
-| `issuer` | `String` | The issuer identifier for the Singpass provider | Required |
-| `authorizationEndpoint` | `String` | The authorization endpoint URL | Required |
-| `parEndpoint` | `String` | The pushed authorization request (PAR) endpoint URL | Required |
-| `tokenEndpoint` | `String` | The token endpoint URL | Required |
-| `jwksEndpoint` | `String` | The JWKS (JSON Web Key Set) endpoint URL | Required |
-| `userinfoEndpoint` | `String` | The userinfo endpoint URL | Required |
-| `scopes` | `String` | The OAuth scopes to request | `"openid"` |
-| `authContextType` | `String` | The authentication context type | `"APP_AUTHENTICATION_DEFAULT"` |
-| `authContextMessage` | `String` | The authentication context message | Required |
-| `privateSigningKeyPath` | `String` | Path to the private signing key file | Required |
-| `privateEncryptionKeyPath` | `String` | Path to the private encryption key file | Required |
+- **scopes**: Defaults to `"openid"` if not provided.
+- **authContextType**: Defaults to `"APP_AUTHENTICATION_DEFAULT"` if not provided.
 
-## Usage Example
+## Properties
 
-To configure this properties class, add the following to your `application.yml`:
+All properties are bound from the `app.singpass` prefix in the application configuration.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `clientId` | `String` | The client identifier assigned by Singpass. |
+| `redirectUri` | `String` | The URI to which Singpass redirects after authentication. |
+| `issuer` | `String` | The issuer URL of the Singpass OpenID Provider. |
+| `authorizationEndpoint` | `String` | The authorization endpoint URL for initiating the OAuth flow. |
+| `parEndpoint` | `String` | The Pushed Authorization Request (PAR) endpoint URL. |
+| `tokenEndpoint` | `String` | The token endpoint URL for exchanging authorization codes for tokens. |
+| `jwksEndpoint` | `String` | The JWKS (JSON Web Key Set) endpoint URL for public key retrieval. |
+| `userinfoEndpoint` | `String` | The UserInfo endpoint URL for retrieving user claims. |
+| `scopes` | `String` | The requested OAuth scopes. Defaults to `"openid"`. |
+| `authContextType` | `String` | The authentication context type. Defaults to `"APP_AUTHENTICATION_DEFAULT"`. |
+| `authContextMessage` | `String` | A message associated with the authentication context. |
+| `privateSigningKeyPath` | `String` | The file path to the private signing key (e.g., for JWT assertion). |
+| `privateEncryptionKeyPath` | `String` | The file path to the private encryption key (e.g., for decrypting responses). |
+
+## Example Configuration
+
+### application.yml
 
 ```yaml
 app:
   singpass:
     client-id: your-client-id
-    redirect-uri: https://your-app.com/callback
+    redirect-uri: https://yourapp.com/callback
     issuer: https://singpass.gov.sg
     authorization-endpoint: https://singpass.gov.sg/auth
     par-endpoint: https://singpass.gov.sg/par
@@ -53,24 +61,65 @@ app:
     userinfo-endpoint: https://singpass.gov.sg/userinfo
     scopes: openid profile
     auth-context-type: APP_AUTHENTICATION_DEFAULT
-    auth-context-message: Please authenticate with Singpass
+    auth-context-message: "Authenticate with Singpass"
     private-signing-key-path: /path/to/signing-key.pem
     private-encryption-key-path: /path/to/encryption-key.pem
 ```
 
-## Dependencies
+### application.properties
 
-This class requires the following Spring Boot dependency:
+```properties
+app.singpass.client-id=your-client-id
+app.singpass.redirect-uri=https://yourapp.com/callback
+app.singpass.issuer=https://singpass.gov.sg
+app.singpass.authorization-endpoint=https://singpass.gov.sg/auth
+app.singpass.par-endpoint=https://singpass.gov.sg/par
+app.singpass.token-endpoint=https://singpass.gov.sg/token
+app.singpass.jwks-endpoint=https://singpass.gov.sg/jwks
+app.singpass.userinfo-endpoint=https://singpass.gov.sg/userinfo
+app.singpass.scopes=openid profile
+app.singpass.auth-context-type=APP_AUTHENTICATION_DEFAULT
+app.singpass.auth-context-message=Authenticate with Singpass
+app.singpass.private-signing-key-path=/path/to/signing-key.pem
+app.singpass.private-encryption-key-path=/path/to/encryption-key.pem
+```
 
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-validation</artifactId>
-</dependency>
+## Usage
+
+To use this configuration in your Spring Boot application, enable `@ConfigurationProperties` scanning and inject the record:
+
+```java
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@EnableConfigurationProperties(SingpassProperties.class)
+public class SingpassConfig {
+    // SingpassProperties will be automatically bound
+}
+```
+
+Then inject it into your services:
+
+```java
+import org.springframework.stereotype.Service;
+
+@Service
+public class AuthService {
+    private final SingpassProperties properties;
+
+    public AuthService(SingpassProperties properties) {
+        this.properties = properties;
+    }
+
+    public String getAuthorizationUrl() {
+        return properties.authorizationEndpoint() + "?client_id=" + properties.clientId();
+    }
+}
 ```
 
 ## Notes
 
-- All properties are required except `scopes` and `authContextType`, which have sensible defaults.
-- The record is immutable after construction, ensuring thread-safe access to configuration values.
-- The `@ConfigurationProperties` annotation enables Spring Boot's configuration property binding and validation.
+- The record is immutable after construction, ensuring thread safety.
+- Default values are applied only if the property is not set or is blank in the configuration.
+- All properties are required except `scopes` and `authContextType`, which have defaults.

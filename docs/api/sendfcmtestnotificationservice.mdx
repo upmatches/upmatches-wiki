@@ -8,122 +8,220 @@ sidebar_label: SendFcmTestNotificationService
 
 ## Purpose
 
-The `SendFcmTestNotificationService` class is a Spring service bean, active only in the `dev` profile, designed for testing Firebase Cloud Messaging (FCM) push notifications and Resend email notifications. It provides a controlled environment for developers to send test notifications of various types (e.g., player joined, game updated, reminders) without relying on real user data or external triggers.
+The `SendFcmTestNotificationService` class is a Spring service bean, active only in the `dev` profile, designed for testing Firebase Cloud Messaging (FCM) push notifications and Resend email notifications. It provides a controlled environment for developers to simulate various notification types (e.g., player joined, game updated, reminders) without affecting production users.
 
-This service implements the `ISendFcmTestNotificationService` interface and is responsible for:
-- Constructing notification payloads (title, body, badge count) based on the requested `NotificationType`.
-- Sending push notifications via Firebase Cloud Messaging to a specified device token.
-- Sending HTML email notifications via the Resend API to a specified email address.
-- Generating deterministic placeholder data for testing purposes (e.g., game titles, dates, resource IDs).
+This service implements the `ISendFcmTestNotificationService` interface and handles the complete lifecycle of a test notification: resolving notification content (title, body, badge), sending via FCM push and/or Resend email, and returning a response with the delivery identifiers.
+
+## Key Features
+
+- **Dual-channel delivery**: Supports sending both FCM push notifications and Resend emails in a single request.
+- **Notification type simulation**: Covers all notification types defined in `NotificationType` enum (player events, game events, reminders).
+- **Dynamic content resolution**: Automatically generates titles, bodies, and badge counts based on the notification type and request parameters.
+- **Graceful fallback**: Uses `ObjectProvider` to handle missing Firebase or Resend beans, throwing `ExternalServiceException` when unavailable.
+- **Email rendering**: Leverages `EmailContentRenderer` to build HTML email content with details tables and call-to-action buttons.
 
 ## Public Methods
 
-### `execute(SendFcmTestNotificationRequest request)`
-
-The main entry point for sending a test notification. It processes the request, resolves notification content, and sends both push and email notifications as requested.
+### `execute`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `SendFcmTestNotificationRequest` | The request object containing test notification parameters (type, device token, email, game details, etc.) |
+| `request` | `SendFcmTestNotificationRequest` | The test notification request containing device token, email, notification type, and optional parameters |
 
-**Returns:** `FcmTestNotificationResponse` - A response object containing the message ID, email ID, notification type, title, body, and badge count.
+| Returns | Type | Description |
+|---------|------|-------------|
+| Response | `FcmTestNotificationResponse` | Contains the message ID (push), email ID, notification type, title, body, and badge count |
 
-**Throws:** `ExternalServiceException` if FirebaseMessaging or Resend beans are unavailable, or if sending fails.
+This is the main entry point for sending a test notification. It:
+1. Resolves the notification title, body, court count, date, and badge based on the request.
+2. Sends a push notification if a device token is provided.
+3. Sends an email if an email address is provided.
+4. Returns a consolidated response with delivery identifiers.
+
+**Example usage:**
+```java
+SendFcmTestNotificationRequest request = new SendFcmTestNotificationRequest(
+    "device-token-123",
+    "user@example.com",
+    NotificationType.PLAYER_JOINED,
+    "Morning Badminton",
+    "Sports Hall",
+    2,
+    LocalDate.now(),
+    LocalTime.of(9, 0),
+    LocalTime.of(11, 0),
+    "Intermediate",
+    "https://app.com/game/123",
+    5
+);
+
+FcmTestNotificationResponse response = service.execute(request);
+// response.messageId() -> "projects/.../messages/..."
+// response.emailId() -> "email-id-456"
+```
 
 ## Internal Methods
 
-### `resolveTitle(NotificationType type)`
-
-Resolves the notification title based on the notification type.
+### `resolveTitle`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `type` | `NotificationType` | The type of notification to send |
+| `type` | `NotificationType` | The type of notification to generate a title for |
 
-**Returns:** `String` - The resolved title for the notification.
+| Returns | Type | Description |
+|---------|------|-------------|
+| Title | `String` | The resolved notification title |
 
-### `resolveBody(NotificationType type, String gameTitle, int courtCount, LocalDate date)`
+Maps each `NotificationType` to a predefined title string (e.g., `PLAYER_JOINED` → "A player joined your game").
 
-Resolves the notification body/message based on the notification type and parameters.
+### `resolveBody`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `type` | `NotificationType` | The type of notification to send |
-| `gameTitle` | `String` | The title of the game (used in some notification types) |
-| `courtCount` | `int` | The number of courts (used in reminder notifications) |
-| `date` | `LocalDate` | The date of the game (used in reminder notifications) |
+| `type` | `NotificationType` | The type of notification |
+| `gameTitle` | `String` | The title of the game |
+| `courtCount` | `int` | Number of courts (for reminders) |
+| `date` | `LocalDate` | The game date (for reminders) |
 
-**Returns:** `String` - The resolved body message for the notification.
+| Returns | Type | Description |
+|---------|------|-------------|
+| Body | `String` | The resolved notification body text |
 
-### `resolveBadge(SendFcmTestNotificationRequest request)`
+Generates the notification body message based on the type, using `String.format` with the provided parameters.
 
-Resolves the badge count for the notification. If a badge is explicitly provided in the request, it is used. Otherwise, if an email is provided, the badge count is calculated from the user's unread notifications (capped at 999).
+### `resolveBadge`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `request` | `SendFcmTestNotificationRequest` | The test notification request |
 
-**Returns:** `Integer` - The badge count, or `null` if no badge should be set.
+| Returns | Type | Description |
+|---------|------|-------------|
+| Badge count | `Integer` | The badge number (null if not applicable) |
 
-### `resolveCourtCount(NotificationType type, Integer requested)`
+Determines the badge count:
+- Uses the request's badge value if provided.
+- If an email is provided, queries the database for the user's unread notification count (capped at 999).
+- Returns `null` if no email is provided and no badge is specified.
 
-Resolves the court count for the notification. If a court count is explicitly provided, it is used. Otherwise, defaults to 3 for 3-day reminders and 1 for all other types.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `type` | `NotificationType` | The type of notification |
-| `requested` | `Integer` | The requested court count (may be null) |
-
-**Returns:** `int` - The resolved court count.
-
-### `resolveDate(NotificationType type, LocalDate requested)`
-
-Resolves the date for the notification. If a date is explicitly provided, it is used. Otherwise, defaults to 3 days from now for 3-day reminders and 1 day from now for all other types.
+### `sendPush`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `type` | `NotificationType` | The type of notification |
-| `requested` | `LocalDate` | The requested date (may be null) |
+| `deviceToken` | `String` | The FCM device token |
+| `type` | `NotificationType` | The notification type |
+| `title` | `String` | The notification title |
+| `body` | `String` | The notification body |
+| `badge` | `Integer` | The badge count (optional) |
 
-**Returns:** `LocalDate` - The resolved date.
+| Returns | Type | Description |
+|---------|------|-------------|
+| Message ID | `String` | The FCM message ID |
+
+Sends a push notification via Firebase Cloud Messaging. If a badge is provided, it configures both APNs (iOS) and Android notification badge settings.
+
+### `sendEmail`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `email` | `String` | The recipient email address |
+| `type` | `NotificationType` | The notification type |
+| `title` | `String` | The email subject |
+| `body` | `String` | The email body text |
+| `context` | `EmailContext` | The email context for rendering HTML content |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| Email ID | `String` | The Resend email ID |
+
+Sends an HTML email via Resend. Builds the email content using `EmailContentRenderer` with a details table and call-to-action button.
+
+### `buildEmailContext`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The notification type |
+| `gameTitle` | `String` | The game title |
+| `venue` | `String` | The venue name |
+| `date` | `LocalDate` | The game date |
+| `startTime` | `LocalTime` | The start time |
+| `endTime` | `LocalTime` | The end time |
+| `skillLevel` | `String` | The skill level |
+| `courtCount` | `int` | Number of courts |
+| `gameUrl` | `String` | The game URL |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| Context | `EmailContext` | The email context object |
+
+Constructs the `EmailContext` for email rendering. For `GAME_REMINDER_3_DAYS` type, it creates an aggregate reminder context.
+
+### `buildData`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The notification type |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| Data map | `Map<String, String>` | The FCM data payload |
+
+Builds the FCM data payload containing the notification type and, for game-related notifications, a resource type and placeholder resource ID.
+
+### `resolveCourtCount`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The notification type |
+| `requested` | `Integer` | The requested court count (nullable) |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| Court count | `int` | The resolved court count |
+
+Returns the requested court count if provided, otherwise defaults to 3 for 3-day reminders and 1 for all other types.
+
+### `resolveDate`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `NotificationType` | The notification type |
+| `requested` | `LocalDate` | The requested date (nullable) |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| Date | `LocalDate` | The resolved date in Singapore time |
+
+Returns the requested date if provided, otherwise defaults to 3 days from now for 3-day reminders and 1 day from now for all other types.
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
 | `FirebaseMessaging` | `ObjectProvider` | Firebase Cloud Messaging client for sending push notifications |
-| `Resend` | `ObjectProvider` | Resend email client for sending email notifications |
+| `Resend` | `ObjectProvider` | Resend email client for sending transactional emails |
 | `ResendProperties` | Configuration | Properties for Resend email configuration (from name, address) |
 | `UserRepository` | Repository | Data access for user lookup by email |
 | `NotificationRepository` | Repository | Data access for counting unread notifications |
+| `EmailContentRenderer` | Utility | Helper class for building HTML email content |
 
-## Usage Example
+## Error Handling
 
-```java
-// Create a test notification request
-SendFcmTestNotificationRequest request = new SendFcmTestNotificationRequest(
-    NotificationType.PLAYER_JOINED,
-    "device-token-123",
-    "test@example.com",
-    "Saturday Badminton",
-    "Sports Hall",
-    2,
-    LocalDate.now().plusDays(1),
-    LocalTime.of(14, 0),
-    LocalTime.of(16, 0),
-    "Intermediate",
-    5,
-    "https://app.example.com/game/123"
-);
+The service throws `ExternalServiceException` in the following scenarios:
 
-// Execute the test notification
-FcmTestNotificationResponse response = sendFcmTestNotificationService.execute(request);
+| Scenario | Error Message |
+|----------|---------------|
+| FirebaseMessaging bean unavailable | "FirebaseMessaging bean is not available; cannot send dev FCM test notification." |
+| Resend client unavailable | "Resend client is not available; cannot send dev test email." |
+| FCM push send failure | "Failed to send dev FCM test push: {error message}" |
+| Resend email send failure | "Failed to send dev test email: {error message}" |
+
+## Profile Activation
+
+This service is only active when the Spring profile `dev` is set. This ensures test notification functionality is isolated from production environments.
+
+```yaml
+# application-dev.yml
+spring:
+  profiles: dev
 ```
-
-## Notes
-
-- This service is only active when the `dev` Spring profile is enabled.
-- The service uses `ObjectProvider` for FirebaseMessaging and Resend beans, allowing graceful handling when these beans are not available.
-- All resource IDs generated for test notifications are deterministic UUIDs based on the notification type namespace.
-- The badge count is capped at 999 to prevent excessively large badge numbers.
-- Email notifications use HTML templates rendered by `EmailContentRenderer`.

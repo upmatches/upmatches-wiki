@@ -1,99 +1,71 @@
 ---
 id: activity-entity
 title: Activity Entity
-sidebar_label: Activity Entity
+sidebar_label: Activity
 ---
 
 # Activity Entity
 
-The `Activity` class is a JPA entity that represents an activity within the UpMatches application. It is mapped to the `activities` database table and provides a structured way to manage activity data, including a unique name, a reference identifier, and automatic timestamp management for creation and updates.
+The `Activity` class is a JPA entity that represents an activity within the UpMatches application. It maps to the `activities` database table and encapsulates the core data fields and lifecycle management for an activity record.
 
-This entity is designed to be immutable after creation, with only the `name` field being updatable through a dedicated method. The class leverages Lombok's `@Getter` annotation to automatically generate getter methods for all fields, reducing boilerplate code.
+## Purpose
 
-## Entity Structure
+This entity is designed to store and manage activity information, including a unique identifier, a reference ID, a name, and timestamps for creation and updates. It provides a factory method for creating new instances and ensures automatic timestamp management through JPA lifecycle callbacks.
 
-The `Activity` entity is annotated with `@Entity` and `@Table(name = "activities")`, indicating that instances of this class are persisted in the `activities` table. It uses a UUID as the primary key, generated automatically by the persistence provider.
+## Entity Mapping
 
-### Fields
+The class is annotated with `@Entity` and `@Table(name = "activities")`, mapping it to the `activities` table in the database.
+
+## Fields
 
 | Field | Type | Database Column | Constraints | Description |
 |-------|------|-----------------|-------------|-------------|
-| `id` | `UUID` | `id` | Primary Key, Auto-generated | Unique identifier for the activity |
-| `referenceId` | `Integer` | `reference_id` | Not Null, Unique, Non-insertable, Non-updatable | External reference identifier (managed by database) |
-| `name` | `String` | `name` | Not Null, Unique, Max 100 characters | The name of the activity |
+| `id` | `UUID` | `id` | Primary Key, Generated | Unique identifier for the activity |
+| `referenceId` | `Integer` | `reference_id` | Not Null, Unique, Non-insertable, Non-updatable | External reference identifier |
+| `name` | `String` | `name` | Not Null, Unique, Max Length 100 | Name of the activity |
 | `createdAt` | `Instant` | `created_at` | Not Null, Non-updatable | Timestamp when the activity was created |
 | `updatedAt` | `Instant` | `updated_at` | Nullable | Timestamp when the activity was last updated |
 
-## Constructor
-
-### `protected Activity()`
-
-A protected no-argument constructor required by JPA. This constructor is not intended for direct use; instead, use the static factory method `create()` to instantiate new `Activity` objects.
-
 ## Public Methods
 
-### `static Activity create(String name)`
+### `create(String name)`
 
 Creates a new `Activity` instance with the specified name.
-
-**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `name` | `String` | The name for the new activity |
 
-**Returns:** A new `Activity` instance with the provided name.
+**Returns:** `Activity` - A new Activity instance with the provided name
 
-**Example:**
-```java
-Activity hiking = Activity.create("Hiking");
-```
+### `updateName(String name)`
 
-### `void updateName(String name)`
-
-Updates the name of the activity. This is the only mutable field in the entity.
-
-**Parameters:**
+Updates the name of the activity.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `name` | `String` | The new name for the activity |
 
-**Example:**
-```java
-activity.updateName("Mountain Hiking");
-```
+**Returns:** `void`
 
 ## Lifecycle Callbacks
 
-The entity uses JPA lifecycle callbacks to automatically manage timestamp fields.
+The entity uses JPA lifecycle callbacks to automatically manage timestamps:
 
-### `@PrePersist void onCreate()`
-
-Called automatically before the entity is persisted for the first time. Sets both `createdAt` and `updatedAt` to the current instant.
-
-### `@PreUpdate void onUpdate()`
-
-Called automatically before the entity is updated. Sets `updatedAt` to the current instant.
+- **`@PrePersist` (`onCreate()`)**: Sets both `createdAt` and `updatedAt` to the current instant before persisting a new entity.
+- **`@PreUpdate` (`onUpdate()`)**: Updates the `updatedAt` field to the current instant before updating an existing entity.
 
 ## Usage Example
 
 ```java
 // Create a new activity
-Activity cooking = Activity.create("Cooking Class");
-
-// Persist the activity (typically done through a repository)
-// activityRepository.save(cooking);
-
+Activity activity = Activity.create("Hiking");
 // Update the activity name
-cooking.updateName("Advanced Cooking Class");
-
-// Save the changes
-// activityRepository.save(cooking);
+activity.updateName("Mountain Hiking");
 ```
 
 ## Notes
 
-- The `referenceId` field is marked as `insertable = false` and `updatable = false`, meaning it is managed entirely by the database (e.g., through a sequence or trigger).
-- The entity uses `Instant` for timestamp fields, providing precise time information with nanosecond precision.
-- The class is designed to be immutable after creation, with only the `name` field being modifiable through the `updateName()` method.
+- The `referenceId` field is marked as `insertable = false` and `updatable = false`, meaning it is managed externally (likely by the database or another system component).
+- The class uses Lombok's `@Getter` annotation to generate getters for all fields.
+- The protected no-argument constructor is required by JPA for entity instantiation.

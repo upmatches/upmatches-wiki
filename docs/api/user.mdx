@@ -6,13 +6,13 @@ sidebar_label: User
 
 # User Entity
 
-The `User` entity represents a user within the UpMatches application. It is a JPA entity mapped to the `users` database table and serves as the central model for user authentication, profile management, and skill level tracking.
+The `User` entity represents a user in the UpMatches application. It is a JPA entity mapped to the `users` table and serves as the central domain model for user management, authentication, and profile operations.
 
 ## Purpose
 
 This class handles:
-- User creation from various identity providers (Singpass, Auth0, Apple)
-- Profile management (name, contact methods, avatar)
+- User creation from multiple identity providers (Singpass, Auth0, Apple)
+- Profile management (name, contact information, avatar)
 - Skill level associations
 - Login tracking
 - Onboarding completion status
@@ -29,15 +29,15 @@ This class handles:
 | `lastLoginAt` | `Instant` | Timestamp of last login |
 | `name` | `String` | User's display name |
 | `whatsapp` | `String` | WhatsApp contact |
-| `telegram` | `String` | Telegram handle |
+| `telegram` | `String` | Telegram contact |
 | `messenger` | `String` | Messenger contact |
 | `avatarUrl` | `String` | URL to user's avatar image |
 | `email` | `String` | User's email address |
-| `skillLevels` | `Set<UserSkillLevel>` | Associated skill levels |
-| `hasCompletedOnboarding` | `boolean` | Onboarding completion status |
+| `skillLevels` | `Set<UserSkillLevel>` | User's skill level associations |
+| `hasCompletedOnboarding` | `boolean` | Whether onboarding is complete |
 | `penaltyPoints` | `int` | Accumulated penalty points |
-| `createdAt` | `Instant` | Record creation timestamp |
-| `updatedAt` | `Instant` | Record update timestamp |
+| `createdAt` | `Instant` | Creation timestamp (non-updatable) |
+| `updatedAt` | `Instant` | Last update timestamp |
 
 ## Public Methods
 
@@ -45,20 +45,20 @@ This class handles:
 
 | Method | Parameters | Return Type | Description |
 |--------|------------|-------------|-------------|
-| `createFromSingpass` | `String singpassUuid` | `User` | Creates a new user authenticated via Singpass |
-| `createFromAuth0` | `String auth0Uuid, String avatarUrl, String email` | `User` | Creates a new user authenticated via Auth0 |
-| `createFromApple` | `String appleUuid, String displayName, String email` | `User` | Creates a new user authenticated via Apple |
+| `createFromSingpass` | `String singpassUuid` | `User` | Creates a new user from Singpass authentication |
+| `createFromAuth0` | `String auth0Uuid, String avatarUrl, String email` | `User` | Creates a new user from Auth0 authentication |
+| `createFromApple` | `String appleUuid, String displayName, String email` | `User` | Creates a new user from Apple authentication |
 
 ### Instance Methods
 
 | Method | Parameters | Return Type | Description |
 |--------|------------|-------------|-------------|
-| `canCreateGame` | None | `boolean` | Checks if user can create games (requires Singpass) |
+| `canCreateGame` | None | `boolean` | Checks if user can create a game (requires Singpass) |
 | `updateAvatarUrl` | `String url` | `void` | Updates the user's avatar URL |
 | `applyIdpEmail` | `String email` | `void` | Applies email from identity provider if not null/blank |
-| `recordLogin` | None | `void` | Records the current timestamp as last login |
-| `updateProfile` | `ProfileData data` | `void` | Updates full profile and marks onboarding as complete |
-| `patchProfile` | `PatchData data` | `void` | Partially updates profile fields |
+| `recordLogin` | None | `void` | Records the current time as last login |
+| `updateProfile` | `ProfileData data` | `void` | Updates full user profile and marks onboarding as complete |
+| `patchProfile` | `PatchData data` | `void` | Partially updates user profile fields |
 
 ## Inner Records
 
@@ -69,8 +69,9 @@ Used for full profile updates during onboarding.
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | `String` | User's display name |
+| `email` | `String` | Email address |
 | `whatsapp` | `String` | WhatsApp contact |
-| `telegram` | `String` | Telegram handle |
+| `telegram` | `String` | Telegram contact |
 | `messenger` | `String` | Messenger contact |
 | `skillLevels` | `List<SkillLevel>` | List of skill levels |
 
@@ -82,13 +83,40 @@ Used for partial profile updates.
 |-------|------|-------------|
 | `name` | `String` | User's display name (nullable) |
 | `whatsapp` | `String` | WhatsApp contact (nullable) |
-| `telegram` | `String` | Telegram handle (nullable) |
+| `telegram` | `String` | Telegram contact (nullable) |
 | `messenger` | `String` | Messenger contact (nullable) |
 | `skillLevels` | `List<SkillLevel>` | List of skill levels (nullable) |
 
 ## Key Behaviors
 
-- **Automatic Timestamps**: `createdAt` and `updatedAt` are automatically managed via `@PrePersist` and `@PreUpdate` lifecycle callbacks
-- **Skill Level Management**: Skill levels are replaced entirely during profile updates, not merged
-- **Null Handling**: Blank or null values for contact fields and email are normalized to `null`
-- **Onboarding**: Completing a full profile update automatically marks onboarding as finished
+- **Identity Provider Uniqueness**: Each identity provider UUID field (`singpassUuid`, `auth0Uuid`, `appleUuid`) is unique in the database
+- **Skill Level Management**: Skill levels are managed through a `UserSkillLevel` join entity with cascade operations
+- **Null Handling**: Blank strings are converted to null for email and profile fields
+- **Timestamps**: `createdAt` and `updatedAt` are automatically managed via JPA lifecycle callbacks
+- **Onboarding**: The `hasCompletedOnboarding` flag is set to `true` only when `updateProfile` is called
+
+## Usage Example
+
+```java
+// Create a new user from Singpass
+User user = User.createFromSingpass("singpass-uuid-123");
+
+// Update full profile
+user.updateProfile(new User.ProfileData(
+    "John Doe",
+    "john@example.com",
+    "+6512345678",
+    "@johndoe",
+    "john.doe",
+    List.of(skillLevel1, skillLevel2)
+));
+
+// Partial update
+user.patchProfile(new User.PatchData(
+    "John Updated",
+    null,
+    null,
+    null,
+    null
+));
+```

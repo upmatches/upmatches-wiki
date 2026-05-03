@@ -6,67 +6,82 @@ sidebar_label: LeaveGameService
 
 # LeaveGameService
 
-The `LeaveGameService` class is a Spring service that handles the logic for a user leaving a game. It ensures that only active participants can leave a game, updates the participant's status, and publishes a notification event to inform other players.
+The `LeaveGameService` class is a Spring service responsible for handling the logic when a user leaves a game. It ensures that only active participants can leave a game, updates the participant's status, and publishes a notification event to inform other players.
 
 ## Purpose
 
-This service is responsible for:
-- Validating that the authenticated user is an active participant of the specified game.
-- Updating the participant's status to indicate they have left the game.
-- Persisting the change to the database.
-- Publishing a `GameNotificationEvent` to notify other players that a user has left.
+- **Game Participation Management**: Manages the process of a user leaving a game, including validation of active participation.
+- **Audit Logging**: Uses the `@Auditable` annotation to log the action for auditing purposes.
+- **Event Publishing**: Publishes a `GameNotificationEvent` to notify other participants that a player has left.
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
 | `GameParticipantRepository` | Repository | Data access for game participant records |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID |
-| `ApplicationEventPublisher` | Spring Event | Publishes domain events for notification |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
+| `ApplicationEventPublisher` | Spring | Publishes application events for notification |
+
+## Constructor
+
+### `LeaveGameService(GameParticipantRepository, IAuthenticatedUserResolver, ApplicationEventPublisher)`
+
+Initializes the service with required dependencies.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `participantRepository` | `GameParticipantRepository` | Repository for game participant data |
+| `userResolver` | `IAuthenticatedUserResolver` | Resolver for the authenticated user |
+| `eventPublisher` | `ApplicationEventPublisher` | Publisher for application events |
 
 ## Public Methods
 
 ### `execute(UUID id)`
 
-Handles the complete leave-game workflow for the authenticated user.
+Processes the leave game request for the currently authenticated user.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `id` | `UUID` | The unique identifier of the game to leave |
 
-**Return Type:** `void`
-
 **Behavior:**
 1. Retrieves the authenticated user's ID via `userResolver.requireUserId()`.
-2. Looks up an active `GameParticipant` record matching the game ID and user ID.
-3. Throws `ResourceNotFoundException` if no active participation is found (message: "User '{userId}' is not an active participant of game '{gameId}'.").
+2. Looks up the active participant record for the given game and user.
+3. Throws `ResourceNotFoundException` if the user is not an active participant.
 4. Calls `participant.leave()` to update the participant's status.
-5. Persists the updated participant using `ServiceOperationExecutor.execute()`.
-6. Publishes a `GameNotificationEvent` with:
-   - Game ID
-   - User ID
-   - Notification type: `PLAYER_LEFT`
-   - Game title (from the associated activity, if available)
+5. Saves the updated participant record using `ServiceOperationExecutor`.
+6. Publishes a `GameNotificationEvent` with type `PLAYER_LEFT`.
 
-**Annotations:**
-- `@Transactional` – Ensures the entire operation is atomic.
-- `@Auditable(action = "GAME_LEFT", resourceType = "GAME", resourceIdExpression = "#args[0]")` – Logs the audit trail for this action.
+**Throws:**
+- `ResourceNotFoundException` if the user is not an active participant of the specified game.
 
-**Exceptions:**
-- `ResourceNotFoundException` – Thrown when the user is not an active participant of the specified game.
+**Transactional:** Yes, the entire operation is wrapped in a database transaction.
 
-## Usage Example
+**Auditable:** Yes, logs the action as `GAME_LEFT` with the game ID as the resource identifier.
+
+## Example Usage
 
 ```java
 @Autowired
 private LeaveGameService leaveGameService;
 
-// User leaves game with ID 550e8400-e29b-41d4-a716-446655440000
-leaveGameService.execute(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
+public void handleLeaveGameRequest(UUID gameId) {
+    leaveGameService.execute(gameId);
+}
 ```
 
-## Notes
+## Error Handling
 
-- The service uses `ServiceOperationExecutor` to handle the save operation with consistent error handling and status tracking.
-- The notification event is published after the database update, ensuring the event is only sent if the operation succeeds.
-- The game title is extracted from the associated activity (if present) for richer notification content.
+The service throws a `ResourceNotFoundException` with a descriptive message when the user is not an active participant:
+
+```
+User '<userId>' is not an active participant of game '<gameId>'.
+```
+
+## Notification Details
+
+When a player successfully leaves a game, a `GameNotificationEvent` is published with:
+- **Game ID**: The ID of the game being left
+- **User ID**: The ID of the user who left
+- **Notification Type**: `PLAYER_LEFT`
+- **Game Title**: The name of the game's activity (if available)

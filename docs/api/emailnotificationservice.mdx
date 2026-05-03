@@ -6,101 +6,94 @@ sidebar_label: EmailNotificationService
 
 # EmailNotificationService
 
-The `EmailNotificationService` class is a Spring service that implements the `IEmailNotificationService` interface. It is responsible for sending email notifications using the Resend email API. This service handles the complete lifecycle of sending an email notification, including recipient validation, content rendering, and error handling.
+The `EmailNotificationService` class is a Spring service that implements the `IEmailNotificationService` interface. It is responsible for sending email notifications using the Resend email API. This service handles the complete lifecycle of email generation, from building HTML content to sending the email through the Resend client.
 
 ## Purpose
 
-This service provides a robust mechanism for sending transactional emails as part of the notification system. It:
-- Validates that recipients have a valid email address before attempting to send
-- Gracefully handles cases where the Resend service is unavailable
-- Renders rich HTML email content using the `EmailContentRenderer` utility
-- Provides comprehensive logging for debugging and monitoring
-
-## Class Details
-
-| Attribute | Value |
-|-----------|-------|
-| **Package** | `com.upmatches.app.features.notification.services` |
-| **Annotations** | `@Service` |
-| **Modifiers** | `public non-sealed` |
-| **Implements** | `IEmailNotificationService` |
-
-## Constructor
-
-### `EmailNotificationService(ResendProperties resendProperties, ObjectProvider<Resend> resendProvider)`
-
-Creates a new instance of the email notification service.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `resendProperties` | `ResendProperties` | Configuration properties for the Resend email service (e.g., sender name, sender address) |
-| `resendProvider` | `ObjectProvider<Resend>` | Provider for lazy initialization of the Resend client instance |
-
-## Public Methods
-
-### `void send(Notification notification, EmailContext context)`
-
-Sends an email notification to the recipient associated with the given notification.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `notification` | `Notification` | The notification entity containing recipient information, title, and message |
-| `context` | `EmailContext` | Optional context data for rendering dynamic content (e.g., game URLs, additional details) |
-
-**Behavior:**
-
-1. **Recipient Validation**: Checks if the recipient has a valid email address. If the email is `null` or blank, the method logs a debug message and returns without sending.
-
-2. **Service Availability**: Attempts to obtain a `Resend` instance from the provider. If the service is unavailable, it logs a debug message and returns.
-
-3. **Content Rendering**: Uses `EmailContentRenderer` to build the HTML email content:
-   - Renders a details table based on the notification type and context
-   - Builds a call-to-action button if a game URL is present in the context
-   - Wraps everything in a complete HTML template with the notification title and message
-
-4. **Email Construction**: Creates a `CreateEmailOptions` object with:
-   - **From**: Formatted as `"Sender Name <sender@email.com>"` using properties
-   - **To**: The recipient's email address
-   - **Subject**: The notification title
-   - **HTML**: The rendered HTML content
-
-5. **Sending**: Attempts to send the email via the Resend API. If sending fails, it logs a warning with the notification ID and error message.
-
-**Return Type:** `void`
-
-**Logging:**
-- `DEBUG`: When recipient has no email or Resend is unavailable
-- `WARN`: When email sending fails
+This service provides a robust mechanism for sending transactional emails as part of the notification system. It handles:
+- Graceful degradation when the Resend client is unavailable
+- Proper handling of recipients without email addresses
+- HTML email generation with dynamic content
+- Error handling and logging for failed email sends
 
 ## Dependencies
 
-| Dependency | Purpose |
-|------------|---------|
-| `com.resend.Resend` | Resend email API client |
-| `com.resend.services.emails.model.CreateEmailOptions` | Email message options builder |
-| `com.upmatches.app.features.notification.entities.Notification` | Notification entity |
-| `com.upmatches.app.features.notification.models.EmailContext` | Context data for email rendering |
-| `com.upmatches.app.features.notification.properties.ResendProperties` | Configuration properties |
-| `com.upmatches.app.features.notification.utils.EmailContentRenderer` | HTML content rendering utility |
-| `org.slf4j.Logger` | Logging framework |
-| `org.springframework.beans.factory.ObjectProvider` | Lazy dependency injection |
+| Dependency | Description |
+|------------|-------------|
+| `ResendProperties` | Configuration properties for the Resend email service |
+| `ObjectProvider<Resend>` | Provider for the Resend client instance |
+| `EmailContentRenderer` | Utility class for building HTML email content |
+| `Logger` | SLF4J logger for logging events and errors |
+
+## Public Methods
+
+### `send(Notification notification, EmailContext context)`
+
+Sends an email notification to the recipient specified in the notification object.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notification` | `Notification` | The notification entity containing recipient information and message details |
+| `context` | `EmailContext` | Optional context object containing dynamic data for email rendering |
+
+**Return Type:** `void`
+
+**Behavior:**
+1. Retrieves the recipient's email address from the notification
+2. If the email is null or blank, logs a debug message and exits
+3. Attempts to get the Resend client from the provider
+4. If the Resend client is unavailable, logs a debug message and exits
+5. Builds the HTML email content using `EmailContentRenderer`:
+   - Generates a details table based on notification type and context
+   - Creates a call-to-action button if a game URL is present
+   - Wraps everything in a complete HTML template
+6. Constructs the email options with sender information, recipient, subject, and HTML body
+7. Sends the email through the Resend API
+8. Catches and logs any exceptions during the send process
+
+## Logging Constants
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `LOG_NO_EMAIL` | `"Recipient {} has no email; skipping email for notification {}"` | Logged when recipient has no email address |
+| `LOG_UNAVAILABLE` | `"Resend unavailable; skipping email for notification {}"` | Logged when Resend client is not available |
+| `LOG_SEND_FAILED` | `"Failed to send Resend email for notification {}: {}"` | Logged when email send fails |
 
 ## Usage Example
 
 ```java
-// The service is typically injected and used in a controller or other service
+// Inject the service
 @Autowired
-private EmailNotificationService emailService;
+private EmailNotificationService emailNotificationService;
 
-// Sending a notification
-Notification notification = notificationRepository.findById(123L);
-EmailContext context = new EmailContext("https://example.com/game/456");
-emailService.send(notification, context);
+// Create a notification
+Notification notification = new Notification();
+notification.setTitle("Welcome!");
+notification.setMessage("Thank you for joining our platform");
+notification.setRecipient(user);
+
+// Create email context
+EmailContext context = new EmailContext(
+    "https://example.com/get-started",
+    Map.of("username", "john_doe")
+);
+
+// Send the email
+emailNotificationService.send(notification, context);
 ```
 
 ## Error Handling
 
-The service employs a fail-safe approach:
-- Missing recipient email: Silently skips with debug logging
-- Resend service unavailable: Silently skips with debug logging
-- API call failure: Logs warning but does not throw exceptions, preventing cascading failures
+The service implements defensive programming patterns:
+- **Null/Empty Email:** Silently skips the email with a debug log
+- **Unavailable Service:** Gracefully handles missing Resend client
+- **Send Failures:** Catches exceptions and logs warnings without throwing exceptions upstream
+- **Null Context:** Falls back to an empty context if none is provided
+
+## Configuration
+
+The service relies on `ResendProperties` for configuration, which should include:
+- `fromName`: The display name for the sender
+- `fromAddress`: The email address for the sender
+
+These properties are used to construct the `From` header in the format: `"Display Name <email@example.com>"`

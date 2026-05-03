@@ -6,20 +6,30 @@ sidebar_label: CreateActivityService
 
 # CreateActivityService
 
-The `CreateActivityService` class is a Spring service responsible for creating new `Activity` entities. It implements the `ICreateActivityService` interface and provides a transactional, auditable method to create an activity from a `CreateActivityRequest`. The service ensures that duplicate activities (by name) are not created and delegates the actual persistence and response mapping to helper methods.
+The `CreateActivityService` class is a Spring service responsible for creating new `Activity` entities. It implements the `ICreateActivityService` interface and provides a transactional, auditable method to handle the creation workflow. The service ensures that duplicate activities are not created by checking for existing names before persisting.
 
 ## Purpose
 
-- **Activity Creation**: Handles the business logic for creating a new activity.
-- **Duplicate Prevention**: Checks if an activity with the given name already exists and throws an `ActivityAlreadyExistsException` if so.
-- **Audit Support**: Uses the `@Auditable` annotation to log the creation event.
-- **Transactional Execution**: Wraps the creation logic in a Spring `@Transactional` context to ensure data integrity.
+- Encapsulates the business logic for creating an activity.
+- Validates that the activity name does not already exist in the repository.
+- Persists the new activity and returns a response DTO.
+- Integrates with auditing and transaction management.
 
 ## Dependencies
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `ActivityRepository` | Constructor Injection | Repository for persisting and querying `Activity` entities. |
+| Dependency | Description |
+|------------|-------------|
+| `ActivityRepository` | Spring Data repository for `Activity` entities. |
+
+## Constructor
+
+### `CreateActivityService(ActivityRepository activityRepository)`
+
+Constructs the service with the required repository.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `activityRepository` | `ActivityRepository` | The repository used for activity persistence. |
 
 ## Public Methods
 
@@ -29,27 +39,24 @@ Creates a new activity based on the provided request.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `CreateActivityRequest` | The request object containing the activity name. |
+| `request` | `CreateActivityRequest` | The request containing the activity name. |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `ActivityResponse` | `ActivityResponse` | The response object representing the newly created activity. |
+**Returns:** `ActivityResponse` - A response DTO representing the newly created activity.
 
 **Throws:**
-
-| Exception | Condition |
-|-----------|-----------|
-| `ActivityAlreadyExistsException` | If an activity with the same name already exists. |
-| `ResourceNotFoundException` | If the activity creation fails (wrapped by `ServiceOperationExecutor`). |
+- `ActivityAlreadyExistsException` - If an activity with the given name already exists.
+- `ResourceNotFoundException` - If the save operation fails (wrapped by `ServiceOperationExecutor`).
 
 **Behavior:**
-
-1. Checks if an activity with the given name already exists using `activityRepository.existsByName(request.name())`.
+1. Checks if an activity with the specified name already exists in the repository.
 2. If it exists, throws `ActivityAlreadyExistsException`.
-3. Otherwise, creates a new `Activity` entity via `Activity.create(request.name())`.
-4. Saves the entity using `activityRepository.save(activity)`.
-5. Converts the saved entity to an `ActivityResponse` using `ActivityResponse.fromActivity(activity)`.
-6. The entire operation is wrapped in `ServiceOperationExecutor.execute()` for consistent error handling and logging.
+3. Otherwise, creates a new `Activity` entity using the factory method `Activity.create(request.name())`.
+4. Saves the entity to the repository.
+5. Returns an `ActivityResponse` built from the saved entity.
+
+**Annotations:**
+- `@Transactional` - Ensures the method runs within a database transaction.
+- `@Auditable` - Records an audit event with action `ACTIVITY_CREATED`, resource type `ACTIVITY`, and the new activity's ID as the resource identifier.
 
 ## Usage Example
 
@@ -62,6 +69,6 @@ ActivityResponse response = createActivityService.execute(request);
 
 ## Notes
 
-- The class is declared as `non-sealed`, meaning it can be extended by other classes in the same package or module.
-- The `@Auditable` annotation automatically logs the creation event with the action `"ACTIVITY_CREATED"` and the resource type `"ACTIVITY"`.
-- The `ServiceOperationExecutor` provides a consistent pattern for executing service operations with error handling and logging.
+- The class is declared as `non-sealed`, allowing it to be extended by other classes in the same package or module.
+- The `ServiceOperationExecutor.execute` method handles the save operation and wraps any exceptions into a `ResourceNotFoundException` if the operation fails.
+- The `existsByName` check is performed before the transaction begins to avoid unnecessary database operations.

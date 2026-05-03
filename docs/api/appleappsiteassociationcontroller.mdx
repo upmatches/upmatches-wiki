@@ -8,26 +8,26 @@ sidebar_label: Apple App Site Association
 
 ## Purpose
 
-The `AppleAppSiteAssociationController` is a Spring Boot REST controller that serves the Apple App Site Association file required for Universal Links and Shared Web Credentials on iOS devices. This endpoint allows iOS applications to verify the association between your website and your iOS app, enabling features like seamless deep linking and password autofill.
+The `AppleAppSiteAssociationController` is a Spring Boot REST controller that serves the Apple App Site Association (AASA) file required for Universal Links and Shared Web Credentials on iOS devices. This file is hosted at the standard Apple-required path `/.well-known/apple-app-site-association` and allows iOS applications to verify that a website is associated with a specific app.
 
-The controller exposes a single endpoint at `/.well-known/apple-app-site-association` that returns a static JSON file (`apple-app-site-association.json`) located in the classpath resources. The response is cached for 24 hours to improve performance and reduce server load.
+The controller reads the AASA JSON file from the classpath, serves it with the correct `application/json` content type, and applies a 24-hour cache control header to optimize performance and reduce server load.
 
 ## Endpoint
 
-### GET `/.well-known/apple-app-site-association`
+### `GET /.well-known/apple-app-site-association`
 
-Returns the Apple App Site Association JSON file that defines which URLs your iOS app can handle and which credentials it can share with your website.
+Returns the Apple App Site Association JSON file that iOS devices use to validate app-to-website associations.
 
 #### Response
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| Status Code | `200 OK` | Successful response |
-| Content-Type | `application/json` | JSON media type |
-| Cache-Control | `public, max-age=86400` | Public cache for 24 hours (86400 seconds) |
-| Body | `Resource` | The `apple-app-site-association.json` file content |
+| Property | Value |
+|----------|-------|
+| HTTP Status | `200 OK` |
+| Content Type | `application/json` |
+| Cache Control | `public, max-age=86400` (24 hours) |
+| Response Body | The contents of `apple-app-site-association.json` from the classpath |
 
-#### Example Response
+#### Example Response Body
 
 ```json
 {
@@ -39,36 +39,22 @@ Returns the Apple App Site Association JSON file that defines which URLs your iO
         "paths": ["*"]
       }
     ]
-  },
-  "webcredentials": {
-    "apps": ["TEAMID.com.example.app"]
   }
 }
 ```
 
 ## Configuration
 
-The controller uses the following constants:
+The controller expects a file named `apple-app-site-association.json` to be present on the classpath (typically in `src/main/resources/`). The cache duration is set to 24 hours, which can be adjusted by modifying the `CACHE_HOURS` constant.
 
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `RESOURCE_PATH` | `apple-app-site-association.json` | Path to the JSON file in the classpath |
-| `CACHE_HOURS` | `24L` | Cache duration in hours |
+## Usage Notes
+
+- Ensure the AASA JSON file is valid and follows Apple's specification
+- The file must be accessible at `https://yourdomain.com/.well-known/apple-app-site-association`
+- For development testing, you may want to reduce the cache duration
+- The controller does not require any authentication as the endpoint must be publicly accessible
 
 ## Dependencies
 
-- **Spring Boot Web**: Provides `@RestController`, `@GetMapping`, and `ResponseEntity`
-- **Spring Core**: Provides `ClassPathResource` and `Resource` for file loading
-- **Spring HTTP**: Provides `CacheControl` and `MediaType` for response configuration
-
-## Usage
-
-1. Place your `apple-app-site-association.json` file in the `src/main/resources` directory of your Spring Boot application.
-2. The controller automatically serves the file at the required Apple endpoint.
-3. iOS devices will automatically fetch this file when users install your app or visit your website.
-
-## Notes
-
-- The file must be served without any file extension (the endpoint path does not include `.json`).
-- The response is cached for 24 hours to comply with Apple's recommended caching guidelines.
-- Ensure your `apple-app-site-association.json` file is valid JSON and follows Apple's specification for Universal Links and Shared Web Credentials.
+- Spring Boot Web (for `@RestController`, `@GetMapping`, and `ResponseEntity`)
+- Spring Core (for `ClassPathResource` and `Resource`)

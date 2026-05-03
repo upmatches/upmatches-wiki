@@ -6,35 +6,39 @@ sidebar_label: CursorPagedResponse
 
 # CursorPagedResponse
 
-The `CursorPagedResponse` record is a generic data carrier used to represent a single page of results in a cursor-based pagination system. It encapsulates the list of items for the current page and a cursor string that points to the next page of results.
+The `CursorPagedResponse` record is a generic data carrier used to represent a single page of results in a cursor-based pagination system. It encapsulates the list of items for the current page and an optional cursor string that points to the next page of results.
 
-This record is typically returned by API endpoints that implement cursor-based pagination, allowing clients to efficiently iterate through large datasets without the overhead of offset-based pagination.
+This record is typically returned by API endpoints that implement cursor-based pagination, where the client uses the `nextCursor` value to request the subsequent page. When `nextCursor` is `null` or empty, it indicates that there are no more pages available.
 
-## Purpose
+## Record Definition
 
-- Provides a standardized response format for cursor-paginated endpoints.
-- Encapsulates the current page's content and the cursor for the next page.
-- Supports generic typing, making it reusable across different entity types.
+```java
+public record CursorPagedResponse<T>(
+    List<T> content,
+    String nextCursor
+)
+```
 
-## Record Components
+## Components
 
-| Component    | Type          | Description                                                                 |
-|--------------|---------------|-----------------------------------------------------------------------------|
-| `content`    | `List<T>`     | The list of items for the current page.                                     |
-| `nextCursor` | `String`      | A cursor string that can be used to fetch the next page of results. If `null` or empty, indicates there are no more pages. |
+| Component    | Type        | Description                                                                 |
+|--------------|-------------|-----------------------------------------------------------------------------|
+| `content`    | `List<T>`   | The list of items for the current page. Can be empty if no results exist.   |
+| `nextCursor` | `String`    | An opaque cursor string to retrieve the next page. `null` indicates the end of the result set. |
 
 ## Usage Example
 
 ```java
-// Example: Creating a response for a page of User objects
-List<User> users = userService.getUsers(10, lastCursor);
-String nextCursor = users.size() == 10 ? users.get(users.size() - 1).getId() : null;
+// Creating a response with results and a next cursor
+List<User> users = List.of(user1, user2, user3);
+CursorPagedResponse<User> response = new CursorPagedResponse<>(users, "cursor_abc123");
 
-CursorPagedResponse<User> response = new CursorPagedResponse<>(users, nextCursor);
+// Creating a response indicating the last page
+CursorPagedResponse<User> lastPage = new CursorPagedResponse<>(users, null);
 ```
 
 ## Notes
 
-- The `nextCursor` field is typically `null` when the current page is the last page of results.
-- The generic type `T` allows this record to be used with any entity or DTO class.
-- This record is immutable and thread-safe by design, as it is a Java `record`.
+- The record is immutable and thread-safe by design.
+- The generic type parameter `T` allows this record to be used with any entity or DTO type.
+- The `nextCursor` value is opaque and should not be parsed or modified by clients.

@@ -6,21 +6,45 @@ sidebar_label: MarkNotificationReadService
 
 # MarkNotificationReadService
 
-The `MarkNotificationReadService` is a Spring service class responsible for marking a specific notification as read for the currently authenticated user. It ensures that only the intended recipient can mark a notification as read, providing a secure and transactional operation.
+The `MarkNotificationReadService` is a Spring service class responsible for marking a specific notification as read for the currently authenticated user. It ensures that only the intended recipient can mark a notification as read, providing both security and data integrity.
 
 ## Purpose
 
-- Marks a notification as read by its unique identifier (`UUID`).
-- Validates that the notification belongs to the authenticated user.
-- Updates the notification status in the database within a transactional context.
-- Returns a `NotificationResponse` DTO representing the updated notification.
+This service encapsulates the business logic of updating a notification's read status. It performs the following operations:
+1. Resolves the authenticated user's ID.
+2. Retrieves the notification by its ID and verifies it belongs to the authenticated user.
+3. Marks the notification as read using the domain entity's `markRead()` method.
+4. Persists the updated notification to the database.
+5. Returns a `NotificationResponse` DTO representing the updated notification.
+
+## Class Details
+
+| Property | Value |
+|----------|-------|
+| **Package** | `com.upmatches.app.features.notification.services` |
+| **Annotations** | `@Service` |
+| **Implements** | `IMarkNotificationReadService` |
+| **Modifiers** | `public non-sealed` |
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `NotificationRepository` | Repository | Data access layer for `Notification` entities. |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID. |
+| `NotificationRepository` | Field | Repository for accessing notification data |
+| `IAuthenticatedUserResolver` | Field | Service to resolve the currently authenticated user's ID |
+
+## Constructor
+
+### `MarkNotificationReadService(NotificationRepository, IAuthenticatedUserResolver)`
+
+Initializes the service with required dependencies.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notificationRepository` | `NotificationRepository` | Repository for notification persistence operations |
+| `userResolver` | `IAuthenticatedUserResolver` | Service to resolve the authenticated user's identity |
 
 ## Public Methods
 
@@ -28,45 +52,51 @@ The `MarkNotificationReadService` is a Spring service class responsible for mark
 
 Marks a notification as read for the authenticated user.
 
+**Parameters:**
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the notification to mark as read. |
+| `id` | `UUID` | The unique identifier of the notification to mark as read |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `NotificationResponse` | DTO | The updated notification data after marking it as read. |
+**Returns:** `NotificationResponse` - A DTO representing the updated notification with its read status changed.
 
 **Throws:**
 
 | Exception | Condition |
 |-----------|-----------|
-| `NotificationNotFoundException` | If the notification with the given ID does not exist or does not belong to the authenticated user. |
-| `ResourceNotFoundException` | If the database update operation fails unexpectedly. |
+| `NotificationNotFoundException` | When the notification with the given ID does not exist or does not belong to the authenticated user |
+| `ResourceNotFoundException` | When the database update operation fails |
 
-**Behavior:**
+**Transactional Behavior:** This method is annotated with `@Transactional`, ensuring that the entire operation (find, update, save) is executed within a single database transaction.
 
-1. Resolves the authenticated user's ID via `userResolver.requireUserId()`.
-2. Queries the database for a notification matching both the provided `id` and the user's ID.
-3. If not found, throws `NotificationNotFoundException` with a descriptive message.
-4. Calls `notification.markRead()` to update the entity's internal state.
-5. Persists the updated notification using `ServiceOperationExecutor.execute()` with the `UPDATE` operation status.
-6. Converts the saved entity to a `NotificationResponse` and returns it.
+## Error Handling
 
-## Example Usage
+The service uses a consistent error handling approach:
+
+1. **Notification Not Found**: If the notification cannot be found for the given ID and user combination, a `NotificationNotFoundException` is thrown with a descriptive message including the notification ID and user ID.
+
+2. **Update Failure**: If the database save operation fails, the `ServiceOperationExecutor.execute()` method wraps the exception in a `ResourceNotFoundException`.
+
+## Usage Example
 
 ```java
-// Assuming this service is injected into a controller or another service
+// In a controller or other service
 @Autowired
 private MarkNotificationReadService markNotificationReadService;
 
-public void markAsRead(UUID notificationId) {
+public ResponseEntity<NotificationResponse> markAsRead(@PathVariable UUID notificationId) {
     NotificationResponse response = markNotificationReadService.execute(notificationId);
-    // response now contains the updated notification data
+    return ResponseEntity.ok(response);
 }
 ```
 
-## Notes
+## Related Components
 
-- The class is declared as `non-sealed`, indicating it is part of a sealed interface hierarchy (`IMarkNotificationReadService`).
-- The operation is wrapped in `@Transactional` to ensure atomicity.
-- Error messages are formatted using `String.format` with the notification ID and user ID for clarity.
+| Component | Relationship |
+|-----------|--------------|
+| `Notification` | Domain entity that provides the `markRead()` method |
+| `NotificationRepository` | Data access layer for notification persistence |
+| `NotificationResponse` | DTO used to return notification data to clients |
+| `IAuthenticatedUserResolver` | Interface for resolving the current authenticated user |
+| `ServiceOperationExecutor` | Utility class for executing service operations with consistent error handling |
+| `NotificationNotFoundException` | Custom exception for notification not found scenarios |

@@ -1,138 +1,121 @@
 ---
 id: apple-auth-service
-title: AppleAuthService Documentation
+title: AppleAuthService
 sidebar_label: AppleAuthService
 ---
 
 # AppleAuthService
 
-The `AppleAuthService` class is a Spring service that implements the `IAppleAuthService` interface. It provides functionality to verify Apple Identity Tokens (JWT tokens) issued by Apple's authentication system. This service is essential for applications that support "Sign in with Apple" functionality.
+The `AppleAuthService` class is a Spring service component that handles verification of Apple Identity Tokens. It implements the `IAppleAuthService` interface and provides functionality to validate and extract claims from Apple's JWT tokens using Apple's public keys (JWKS).
 
 ## Purpose
 
-The primary purpose of this service is to:
-- Verify the authenticity of Apple ID tokens
-- Validate token claims (issuer, audience, subject)
-- Extract verified user claims (sub and email)
-- Cache Apple's JSON Web Key Set (JWKS) for performance optimization
+This service is responsible for:
+- Fetching and caching Apple's JSON Web Key Set (JWKS) for token signature verification
+- Verifying the authenticity of Apple Identity Tokens using RS256 algorithm
+- Extracting verified claims (subject identifier and email) from valid tokens
+- Ensuring token issuer and audience match configured Apple properties
 
-## Class Details
+## Dependencies
 
-- **Package**: `com.upmatches.app.features.auth.services`
-- **Type**: `non-sealed class` implementing `IAppleAuthService`
-- **Annotations**: `@Service`
-- **Dependencies**: `RestClient` (qualified as "appleRestClient"), `AppleProperties`
-
-## Constants
-
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `JWKS_CACHE_SECONDS` | 900 | Cache duration for JWKS (15 minutes) |
-| `EMAIL_CLAIM` | "email" | Claim key for email in JWT |
-| `MSG_ISSUER_MISMATCH` | "Apple ID token issuer mismatch." | Error message for issuer validation failure |
-| `MSG_AUDIENCE_MISMATCH` | "Apple ID token audience mismatch." | Error message for audience validation failure |
-| `MSG_MISSING_SUB` | "Apple ID token missing 'sub' claim." | Error message for missing subject claim |
-| `MSG_VERIFY_FAILED` | "Failed to verify Apple ID token" | Generic verification failure message |
-| `MSG_EMPTY_JWKS` | "Empty JWKS response from Apple" | Error message for empty JWKS response |
-| `MSG_FAILED_FETCH_JWKS` | "Failed to fetch Apple JWKS" | Error message for JWKS fetch failure |
-
-## Constructor
-
-### `AppleAuthService(RestClient restClient, AppleProperties properties)`
-
-Creates a new instance of the service with the specified dependencies.
-
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `restClient` | `RestClient` | The REST client configured for Apple API calls (qualified as "appleRestClient") |
-| `properties` | `AppleProperties` | Configuration properties for Apple authentication |
+| Dependency | Description |
+|------------|-------------|
+| `RestClient` | HTTP client for fetching Apple's JWKS endpoint |
+| `AppleProperties` | Configuration properties containing Apple's issuer, audience, and JWKS URI |
+| `Nimbus JOSE + JWT` | Library for JWT processing and verification |
 
 ## Public Methods
 
-### `verifyIdentityToken(String identityToken)`
+### `verifyIdentityToken`
 
-Verifies an Apple Identity Token and returns the verified claims.
+```java
+AppleVerifiedClaims verifyIdentityToken(String identityToken)
+```
+
+Verifies an Apple Identity Token and extracts the verified claims.
 
 **Parameters:**
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `identityToken` | `String` | The Apple ID token to verify |
+| `identityToken` | `String` | The Apple Identity Token to verify |
 
 **Returns:**
+
 | Type | Description |
 |------|-------------|
-| `AppleVerifiedClaims` | Object containing verified user claims (sub and email) |
+| `AppleVerifiedClaims` | Object containing verified claims (subject and email) |
 
 **Throws:**
+
 | Exception | Condition |
 |-----------|-----------|
-| `IllegalStateException` | If token verification fails for any reason (issuer mismatch, audience mismatch, missing subject, or general verification failure) |
+| `IllegalStateException` | If token verification fails due to issuer mismatch, audience mismatch, missing subject claim, or any other verification error |
 
-## Internal Methods
+## Internal Implementation Details
 
-### `verify(String identityToken)`
+### Token Verification Process
 
-Private method that performs the actual token verification process.
+1. **Fetch JWKS**: Retrieves Apple's public keys from the configured JWKS URI with caching
+2. **Configure JWT Processor**: Sets up a `DefaultJWTProcessor` with RS256 verification using Apple's public keys
+3. **Process Token**: Verifies the JWT signature and extracts claims
+4. **Validate Claims**:
+   - Checks that the token issuer matches the configured Apple issuer
+   - Verifies the audience contains the configured client ID
+   - Ensures the subject claim (`sub`) is present and non-blank
+5. **Extract Claims**: Retrieves the subject identifier and email claim from the verified token
 
-**Process:**
-1. Fetches Apple's JWKS (from cache or remote)
-2. Creates a JWT processor with RSA256 verification
-3. Processes the identity token to extract claims
-4. Validates the issuer matches the expected Apple issuer
-5. Validates the audience contains the expected client ID
-6. Extracts and validates the subject claim
-7. Extracts the email claim (optional)
-8. Returns `AppleVerifiedClaims` with sub and email
+### JWKS Caching
 
-### `getAppleJwks()`
+The service implements a thread-safe caching mechanism for Apple's JWKS:
 
-Private method that manages JWKS caching and retrieval.
+- **Cache Duration**: 900 seconds (15 minutes)
+- **Thread Safety**: Uses double-checked locking with `synchronized` block
+- **Cache Invalidation**: Automatically refreshes when cache expires
 
-**Caching Strategy:**
-- Uses double-checked locking pattern for thread safety
-- Cache duration: 900 seconds (15 minutes)
-- Fetches JWKS from Apple's JWKS endpoint using the configured `RestClient`
-- Parses the JSON response into a `JWKSet` object
+### Error Handling
+
+The service provides specific error messages for common failure scenarios:
+
+| Error Message | Description |
+|---------------|-------------|
+| `Apple ID token issuer mismatch` | Token issuer doesn't match configured Apple issuer |
+| `Apple ID token audience mismatch` | Token audience doesn't contain configured client ID |
+| `Apple ID token missing 'sub' claim` | Token doesn't contain a subject identifier |
+| `Failed to verify Apple ID token` | General verification failure |
+| `Empty JWKS response from Apple` | Apple returned empty JWKS data |
+| `Failed to fetch Apple JWKS` | Unable to retrieve JWKS from Apple's endpoint |
 
 ## Usage Example
 
 ```java
 @Service
-public class AuthenticationService {
+public class AuthController {
     private final AppleAuthService appleAuthService;
     
-    public AuthenticationService(AppleAuthService appleAuthService) {
+    public AuthController(AppleAuthService appleAuthService) {
         this.appleAuthService = appleAuthService;
     }
     
-    public void authenticateWithApple(String identityToken) {
+    public void handleAppleLogin(String identityToken) {
         try {
             AppleVerifiedClaims claims = appleAuthService.verifyIdentityToken(identityToken);
             String userId = claims.sub();
             String email = claims.email();
             // Process authenticated user
         } catch (IllegalStateException e) {
-            // Handle authentication failure
-            log.error("Apple authentication failed: {}", e.getMessage());
+            // Handle verification failure
         }
     }
 }
 ```
 
-## Dependencies
+## Configuration Requirements
 
-The service requires the following dependencies to be configured in the Spring context:
+The service requires the following properties to be configured in `AppleProperties`:
 
-1. **RestClient** (qualified as "appleRestClient"): Configured to communicate with Apple's authentication endpoints
-2. **AppleProperties**: Configuration properties containing:
-   - `issuer`: Apple's expected issuer URL
-   - `audience`: The application's client ID
-   - `jwksUri`: Apple's JWKS endpoint URL
-
-## Thread Safety
-
-The service is thread-safe due to:
-- Use of `volatile` keyword for cached JWKS and expiry time
-- Double-checked locking pattern in `getAppleJwks()` method
-- Immutable JWKSet creation for each verification
+| Property | Description |
+|----------|-------------|
+| `issuer` | Apple's token issuer URL (typically `https://appleid.apple.com`) |
+| `audience` | Your application's client ID registered with Apple |
+| `jwksUri` | Apple's JWKS endpoint URL |

@@ -6,39 +6,33 @@ sidebar_label: StationRepository
 
 # StationRepository
 
-The `StationRepository` interface provides database access operations for the `Station` entity. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD (Create, Read, Update, Delete) functionality while adding a custom query method for retrieving stations by their name.
+The `StationRepository` interface provides database access operations for the `Station` entity. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD functionality while adding a custom query method for looking up stations by name.
 
 ## Purpose
 
-This repository serves as the data access layer for the `Station` entity within the venue management feature of the application. By extending `JpaRepository<Station, Long>`, it automatically provides:
-
-- Basic CRUD operations (save, findById, findAll, delete, etc.)
+This repository serves as the data access layer for station entities in the venue management feature. By extending `JpaRepository<Station, Long>`, it automatically provides methods for:
+- Saving, updating, and deleting station records
+- Finding stations by their primary key (Long ID)
 - Pagination and sorting support
-- Batch operations
 
-The custom `findByName` method enables efficient lookup of stations using their unique name identifier.
+## Custom Query Methods
 
-## Methods
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `findByName(String name)` | `Optional<Station>` | Retrieves a station by its exact name. Returns an empty `Optional` if no station with the given name exists. |
 
-### Inherited from JpaRepository
+## Inherited Methods
 
-The following methods are inherited from `JpaRepository<Station, Long>` and are available without additional implementation:
+As a subinterface of `JpaRepository`, this repository inherits all standard CRUD operations:
 
 | Method | Description |
 |--------|-------------|
-| `List<Station> findAll()` | Retrieves all stations |
-| `Optional<Station> findById(Long id)` | Finds a station by its primary key |
-| `Station save(Station entity)` | Saves a station (insert or update) |
-| `void deleteById(Long id)` | Deletes a station by its ID |
-| `void delete(Station entity)` | Deletes a specific station |
-| `long count()` | Returns the total number of stations |
-| `boolean existsById(Long id)` | Checks if a station exists with the given ID |
-
-### Custom Methods
-
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `findByName(String name)` | `Optional<Station>` | `name` - The exact name of the station to find | Retrieves a station by its name. Returns an empty `Optional` if no station with the given name exists. |
+| `findAll()` | Returns all station records |
+| `findById(Long id)` | Finds a station by its primary key |
+| `save(Station entity)` | Persists a new station or updates an existing one |
+| `delete(Station entity)` | Removes a station record |
+| `deleteById(Long id)` | Deletes a station by its ID |
+| `count()` | Returns the total number of station records |
 
 ## Usage Example
 
@@ -54,21 +48,10 @@ public class StationService {
     public Optional<Station> findStationByName(String name) {
         return stationRepository.findByName(name);
     }
-    
-    public Station createStation(Station station) {
-        return stationRepository.save(station);
-    }
 }
 ```
 
 ## Dependencies
 
-- **Spring Data JPA**: Provides the `JpaRepository` base interface and query derivation
-- **Station entity**: The domain object this repository manages
-- **Java Optional**: Used for null-safe return values
-
-## Notes
-
-- The `findByName` method uses Spring Data JPA's query derivation mechanism, which automatically generates a query based on the method name
-- The method returns `Optional<Station>` to handle cases where no station matches the given name, promoting null-safe programming practices
-- The repository is designed to work with the `Station` entity, which must have a `Long` type primary key and a `name` field
+- Spring Data JPA
+- Station entity class (from `com.upmatches.app.features.venue.entities`)

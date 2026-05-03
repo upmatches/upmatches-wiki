@@ -6,38 +6,38 @@ sidebar_label: ViewerJoinabilityResponse
 
 # ViewerJoinabilityResponse
 
-The `ViewerJoinabilityResponse` record is a data carrier used to communicate whether a viewer is allowed to join a game session. It encapsulates three key pieces of information: a boolean flag indicating joinability, an optional reason for denial, and a list of warnings that may accompany either an allowed or blocked response.
+The `ViewerJoinabilityResponse` class is a Java record that encapsulates the result of a viewer's ability to join a game. It provides a structured response containing three key pieces of information: whether the viewer can join, the reason if they cannot, and any associated warnings.
 
-This record is designed to be immutable and provides factory methods for creating common response states, ensuring that the `warnings` list is never null (it defaults to an empty list if null is passed).
+This record is designed to be immutable and thread-safe, making it suitable for use in concurrent environments. It offers factory methods for creating instances representing allowed or blocked join attempts, ensuring consistent and safe handling of warning lists.
 
 ## Record Components
 
 | Component | Type | Description |
 |-----------|------|-------------|
-| `canJoin` | `Boolean` | Indicates whether the viewer is allowed to join (`true`) or blocked (`false`). |
-| `reason` | `JoinabilityReason` | The reason why the viewer is blocked. This is `null` when `canJoin` is `true`. |
-| `warnings` | `List<JoinabilityWarning>` | A list of warnings associated with the joinability decision. Guaranteed to be non-null and unmodifiable. |
+| `canJoin` | `Boolean` | Indicates whether the viewer is allowed to join the game. `true` if allowed, `false` if blocked. |
+| `reason` | `JoinabilityReason` | The reason why the viewer cannot join, if applicable. `null` when `canJoin` is `true`. |
+| `warnings` | `List<JoinabilityWarning>` | A list of warnings associated with the joinability check. Never `null`; returns an empty list if no warnings are provided. |
 
 ## Public Methods
 
 ### `allowed(List<JoinabilityWarning> warnings)`
 
-Creates a response indicating that the viewer is allowed to join.
+Creates a response indicating the viewer is allowed to join the game.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `warnings` | `List<JoinabilityWarning>` | A list of warnings to include. If `null`, an empty list is used. |
+| `warnings` | `List<JoinabilityWarning>` | Optional list of warnings. Can be `null`; will be converted to an empty list. |
 
 **Returns:** `ViewerJoinabilityResponse` with `canJoin` set to `true` and `reason` set to `null`.
 
 ### `blocked(JoinabilityReason reason, List<JoinabilityWarning> warnings)`
 
-Creates a response indicating that the viewer is blocked from joining.
+Creates a response indicating the viewer is blocked from joining the game.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `reason` | `JoinabilityReason` | The reason why the viewer is blocked. Must not be `null`. |
-| `warnings` | `List<JoinabilityWarning>` | A list of warnings to include. If `null`, an empty list is used. |
+| `reason` | `JoinabilityReason` | The reason why the viewer cannot join. Must not be `null`. |
+| `warnings` | `List<JoinabilityWarning>` | Optional list of warnings. Can be `null`; will be converted to an empty list. |
 
 **Returns:** `ViewerJoinabilityResponse` with `canJoin` set to `false` and `reason` set to the provided value.
 
@@ -48,9 +48,17 @@ Creates a response indicating that the viewer is blocked from joining.
 List<JoinabilityWarning> warnings = List.of(JoinabilityWarning.LOW_BALANCE);
 ViewerJoinabilityResponse allowedResponse = ViewerJoinabilityResponse.allowed(warnings);
 
-// Create a blocked response with a reason and warnings
+// Create a blocked response
 ViewerJoinabilityResponse blockedResponse = ViewerJoinabilityResponse.blocked(
-    JoinabilityReason.ACCOUNT_SUSPENDED,
-    List.of(JoinabilityWarning.VIOLATION_DETECTED)
+    JoinabilityReason.GAME_FULL,
+    List.of(JoinabilityWarning.WAITLIST_AVAILABLE)
 );
 ```
+
+## Internal Implementation Details
+
+The class uses a private helper method `safeWarnings` to ensure that the warnings list is never `null`. This method:
+- Returns an empty immutable list if the input is `null`
+- Returns an immutable copy of the input list if it is not `null`
+
+This defensive copying ensures the immutability of the record and prevents external modifications to the warnings list.

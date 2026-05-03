@@ -1,5 +1,5 @@
 ---
-id: notification-type
+id: notification-type-enum
 title: NotificationType Enum
 sidebar_label: NotificationType
 ---
@@ -10,42 +10,42 @@ The `NotificationType` enum defines the various types of notifications that can 
 
 ## Purpose
 
-This enum provides a standardized set of notification types that the system can generate. Each constant represents a specific event or action that triggers a notification to be sent to relevant users. The enum ensures type safety and consistency when processing notifications throughout the application.
+This enum provides a standardized set of notification types that the system can generate. Each constant represents a specific event or action that triggers a notification to be sent to relevant users. The enum is used throughout the notification system to determine the content, recipients, and handling logic for each notification type.
 
 ## Enum Constants
 
 | Constant | Description |
 |----------|-------------|
-| `PLAYER_JOINED` | Notification sent when a new player joins a game session |
-| `PLAYER_LEFT` | Notification sent when a player leaves a game session |
-| `PLAYER_WARNING_MISMATCH` | Notification indicating a player skill level or attribute mismatch warning |
-| `GAME_FULL` | Notification sent when a game session has reached its maximum capacity |
-| `GAME_REMINDER_3_DAYS` | Reminder notification sent 3 days before a scheduled game |
-| `GAME_REMINDER_1_DAY` | Reminder notification sent 1 day before a scheduled game |
-| `GAME_UPDATED` | Notification sent when game details have been modified |
-| `GAME_REMOVED` | Notification sent when a game session has been cancelled or removed |
-| `PLAYER_REMOVED_FROM_GAME` | Notification sent when a player has been removed from a game session |
+| `PLAYER_JOINED` | A player has joined a game session |
+| `PLAYER_LEFT` | A player has left a game session |
+| `PLAYER_WARNING_MISMATCH` | A player has been flagged for a mismatch warning |
+| `GAME_FULL` | The game session has reached its maximum capacity |
+| `GAME_REMINDER_3_DAYS` | Reminder notification sent 3 days before the game |
+| `GAME_REMINDER_1_DAY` | Reminder notification sent 1 day before the game |
+| `GAME_UPDATED` | The game session details have been updated |
+| `GAME_REMOVED` | The game session has been removed or cancelled |
+| `PLAYER_REMOVED_FROM_GAME` | A player has been removed from a game session |
 
 ## Usage
 
-The `NotificationType` enum is typically used in conjunction with notification services and handlers to determine the appropriate action or message template for each notification event. Example usage:
+The `NotificationType` enum is typically used in conjunction with a notification service or manager class to determine the appropriate action when a notification event occurs. For example:
 
 ```java
-// Example of using NotificationType in a notification service
-public void sendNotification(NotificationType type, Player player, Game game) {
-    switch (type) {
-        case PLAYER_JOINED:
-            // Handle player joined notification
-            break;
-        case GAME_REMINDER_1_DAY:
-            // Handle 1-day reminder notification
-            break;
-        // Handle other notification types...
-    }
+NotificationType type = NotificationType.PLAYER_JOINED;
+
+switch (type) {
+    case PLAYER_JOINED:
+        // Handle player joined notification
+        break;
+    case PLAYER_LEFT:
+        // Handle player left notification
+        break;
+    // ... handle other types
 }
 ```
 
-## Location
+## Package Location
 
-- **Package:** `com.upmatches.app.features.notification.enums`
-- **File:** `NotificationType.java`
+```
+com.upmatches.app.features.notification.enums
+```

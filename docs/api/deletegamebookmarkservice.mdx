@@ -6,23 +6,18 @@ sidebar_label: DeleteGameBookmarkService
 
 # DeleteGameBookmarkService
 
-The `DeleteGameBookmarkService` class is a Spring service responsible for removing a game bookmark for the currently authenticated user. It ensures that only the owner of a bookmark can delete it by resolving the authenticated user's ID and verifying the bookmark exists before deletion.
-
 ## Purpose
 
-This service encapsulates the business logic for deleting a game bookmark. It performs the following operations:
-- Resolves the authenticated user's ID
-- Finds the bookmark by game ID and user ID
-- Throws a `ResourceNotFoundException` if the bookmark does not exist
-- Deletes the bookmark using the repository
-- Wraps the deletion operation in a service operation executor for consistent error handling
+The `DeleteGameBookmarkService` class is a Spring service responsible for deleting a game bookmark for the currently authenticated user. It ensures that only the owner of the bookmark can delete it by resolving the authenticated user's ID and verifying the bookmark exists before deletion.
+
+This service implements the `IDeleteGameBookmarkService` interface and is annotated with `@Service` and `@Transactional` to ensure proper transaction management.
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `GameBookmarkRepository` | Repository | Data access layer for bookmark persistence |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID |
+| `GameBookmarkRepository` | Repository | Data access layer for `GameBookmark` entities |
+| `IAuthenticatedUserResolver` | Interface | Resolves the currently authenticated user's UUID |
 
 ## Public Methods
 
@@ -37,33 +32,39 @@ Deletes a game bookmark for the authenticated user.
 **Returns:** `void`
 
 **Throws:**
-- `ResourceNotFoundException` - If no bookmark exists for the given game ID and authenticated user
+- `ResourceNotFoundException` – If no bookmark exists for the given game ID and authenticated user ID
 
 **Behavior:**
-1. Resolves the authenticated user's ID via `userResolver.requireUserId()`
-2. Attempts to find the bookmark using `bookmarkRepository.findByGameIdAndUserId(gameId, userId)`
-3. If not found, throws `ResourceNotFoundException` with a formatted message containing the game ID and user ID
-4. If found, executes the deletion using `ServiceOperationExecutor.executeVoid()` with the `DELETE` operation status
+1. Resolves the authenticated user's UUID via `userResolver.requireUserId()`
+2. Searches for a `GameBookmark` matching both the provided `gameId` and the resolved `userId`
+3. If no bookmark is found, throws a `ResourceNotFoundException` with a descriptive message
+4. If found, deletes the bookmark using `ServiceOperationExecutor.executeVoid()` with the `DELETE` operation status
 
 ## Error Handling
 
-The service uses a consistent error handling pattern:
-- **Bookmark not found:** Throws `ResourceNotFoundException` with a descriptive message
-- **Operation execution:** Uses `ServiceOperationExecutor.executeVoid()` to wrap the deletion, which handles any repository-level exceptions and converts them to `ResourceNotFoundException`
+The service uses a custom error message template:
+```
+Bookmark for game '%s' and user '%s' not found.
+```
 
-## Example Usage
+Where `%s` is replaced with the `gameId` and `userId` respectively.
+
+## Transaction Management
+
+The `execute` method is annotated with `@Transactional`, ensuring that the delete operation is performed within a database transaction. If any exception occurs during execution, the transaction will be rolled back.
+
+## Usage Example
 
 ```java
 @Autowired
 private DeleteGameBookmarkService deleteGameBookmarkService;
 
-public void removeBookmark(UUID gameId) {
-    deleteGameBookmarkService.execute(gameId);
-}
+// Delete bookmark for game with ID 123e4567-e89b-12d3-a456-426614174000
+deleteGameBookmarkService.execute(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
 ```
 
 ## Notes
 
-- The service is annotated with `@Service` and `@Transactional` to ensure proper Spring bean management and database transaction handling
-- The class is declared as `non-sealed`, indicating it implements a sealed interface `IDeleteGameBookmarkService` and allows further extension
-- The error message template uses `String.format()` to dynamically insert the game ID and user ID for clear error reporting
+- The class is declared as `non-sealed`, indicating it is part of a sealed class hierarchy (likely implementing `IDeleteGameBookmarkService`)
+- The `ServiceOperationExecutor.executeVoid()` method handles the actual deletion and wraps any exceptions into `ResourceNotFoundException`
+- The service ensures data integrity by only allowing users to delete their own bookmarks

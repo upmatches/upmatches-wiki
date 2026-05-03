@@ -6,11 +6,11 @@ sidebar_label: MeController
 
 # MeController
 
-The `MeController` class provides REST API endpoints for managing the authenticated user's profile. It handles profile retrieval, completion, update, and deletion operations through a centralized `/api/v1/me` base path.
+The `MeController` class is a REST controller that handles all operations related to the currently authenticated user's profile. It provides endpoints for retrieving, creating, updating, and deleting the user's profile information.
 
-## Purpose
+## Base URL
 
-This controller serves as the primary interface for authenticated users to manage their personal profile data. It delegates all business logic to the `IUserService` implementation, ensuring separation of concerns and maintainability.
+All endpoints in this controller are mapped under `/api/v1/me`.
 
 ## Endpoints
 
@@ -18,60 +18,150 @@ This controller serves as the primary interface for authenticated users to manag
 
 Retrieves the profile of the currently authenticated user.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `request` | `HttpServletRequest` | The HTTP request object (injected automatically) |
+**Response:**
 
-**Response:** `200 OK` with `ApiResponse<UserProfileResponse>` containing the user's profile data.
+| Status Code | Description |
+|-------------|-------------|
+| 200 OK | Profile retrieved successfully |
+
+**Response Body:**
+
+```json
+{
+  "success": true,
+  "message": "User profile retrieved successfully.",
+  "data": {
+    // UserProfileResponse object
+  },
+  "path": "/api/v1/me"
+}
+```
 
 ### POST /api/v1/me
 
-Completes the user's profile with initial data.
+Completes the user's profile with the provided information. This endpoint is typically used during initial profile setup.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `body` | `CompleteProfileRequest` | The profile completion data (validated) |
-| `request` | `HttpServletRequest` | The HTTP request object (injected automatically) |
+**Request Body:**
 
-**Response:** `201 Created` with `ApiResponse<UserProfileResponse>` containing the completed profile.
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| (varies) | CompleteProfileRequest | Yes | Profile completion data |
+
+**Response:**
+
+| Status Code | Description |
+|-------------|-------------|
+| 201 Created | Profile completed successfully |
+
+**Response Body:**
+
+```json
+{
+  "success": true,
+  "message": "User profile completed successfully.",
+  "data": {
+    // UserProfileResponse object
+  },
+  "path": "/api/v1/me"
+}
+```
 
 ### PUT /api/v1/me
 
-Updates the authenticated user's profile.
+Updates the profile of the currently authenticated user.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `body` | `UpdateProfileRequest` | The profile update data (validated) |
-| `request` | `HttpServletRequest` | The HTTP request object (injected automatically) |
+**Request Body:**
 
-**Response:** `200 OK` with `ApiResponse<UserProfileResponse>` containing the updated profile.
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| (varies) | UpdateProfileRequest | Yes | Profile update data |
+
+**Response:**
+
+| Status Code | Description |
+|-------------|-------------|
+| 200 OK | Profile updated successfully |
+
+**Response Body:**
+
+```json
+{
+  "success": true,
+  "message": "User profile updated successfully.",
+  "data": {
+    // UserProfileResponse object
+  },
+  "path": "/api/v1/me"
+}
+```
 
 ### DELETE /api/v1/me
 
-Deletes the authenticated user's account.
+Deletes the currently authenticated user's account.
+
+**Response:**
+
+| Status Code | Description |
+|-------------|-------------|
+| 204 No Content | User deleted successfully |
+
+## Method Details
+
+### `getMe(HttpServletRequest request)`
+
+Retrieves the profile of the currently authenticated user.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| None | - | - |
+| request | HttpServletRequest | The HTTP request object used for generating the response path |
 
-**Response:** `204 No Content` with no response body.
+**Returns:** `ResponseEntity<ApiResponse<UserProfileResponse>>` - The user's profile wrapped in an API response.
+
+### `completeProfile(CompleteProfileRequest body, HttpServletRequest request)`
+
+Completes the user's profile with the provided data.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| body | CompleteProfileRequest | The profile completion request data (validated) |
+| request | HttpServletRequest | The HTTP request object used for generating the response path |
+
+**Returns:** `ResponseEntity<ApiResponse<UserProfileResponse>>` - The completed profile wrapped in an API response with HTTP 201 status.
+
+### `updateProfile(UpdateProfileRequest body, HttpServletRequest request)`
+
+Updates the profile of the currently authenticated user.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| body | UpdateProfileRequest | The profile update request data (validated) |
+| request | HttpServletRequest | The HTTP request object used for generating the response path |
+
+**Returns:** `ResponseEntity<ApiResponse<UserProfileResponse>>` - The updated profile wrapped in an API response.
+
+### `deleteMe()`
+
+Deletes the currently authenticated user's account.
+
+**Returns:** `ResponseEntity<Void>` - HTTP 204 No Content response.
 
 ## Dependencies
 
-- **IUserService**: Service interface for user profile operations
-- **CompleteProfileRequest**: Request DTO for profile completion
-- **UpdateProfileRequest**: Request DTO for profile updates
-- **UserProfileResponse**: Response DTO for user profile data
-- **ApiResponse**: Generic API response wrapper
+- **IUserService**: Service interface that provides the business logic for user profile operations.
+- **CompleteProfileRequest**: Request DTO for profile completion.
+- **UpdateProfileRequest**: Request DTO for profile updates.
+- **UserProfileResponse**: Response DTO containing user profile data.
+- **ApiResponse**: Generic API response wrapper used for consistent response formatting.
 
-## Error Handling
+## Notes
 
-All endpoints return appropriate HTTP status codes:
-- `200 OK` for successful GET and PUT operations
-- `201 Created` for successful POST operations
-- `204 No Content` for successful DELETE operations
-- Validation errors return `400 Bad Request` with error details
-
-## Security
-
-This controller is designed to work with Spring Security. All endpoints require authentication, and the `IUserService` implementation should handle authorization checks for the currently authenticated user.
+- All endpoints require authentication (the controller assumes the user is already authenticated).
+- The `POST` endpoint returns HTTP 201 (Created) while other successful operations return HTTP 200 (OK).
+- The `DELETE` endpoint returns HTTP 204 (No Content) with no response body.
+- Request validation is performed using `@Valid` annotation on request bodies.

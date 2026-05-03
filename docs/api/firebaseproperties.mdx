@@ -10,34 +10,30 @@ The `FirebaseProperties` class is a Spring Boot configuration properties record 
 
 ## Purpose
 
-This record simplifies the management of Firebase authentication credentials in a Spring Boot application. It provides a clean, immutable data structure that validates and normalizes the input values, ensuring that blank or null strings are treated as absent. The class also offers convenience methods to check which credential source is available.
+This record simplifies the management of Firebase authentication credentials in a Spring Boot application. It ensures that only one valid credential source is used at a time (either a file path or a JSON string) and provides convenient methods to check which source is available.
 
 ## Configuration Properties
 
-The following table describes the configuration properties bound by this record:
+The following properties can be set in your application configuration:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `app.firebase.service-account-path` | `String` | File path to the Firebase service account JSON file. |
-| `app.firebase.service-account-json` | `String` | Inline JSON string containing the Firebase service account credentials. |
+| `app.firebase.service-account-path` | String | File path to the Firebase service account JSON file |
+| `app.firebase.service-account-json` | String | Inline Firebase service account JSON string |
 
 ## Constructor
 
-The compact constructor normalizes the input parameters by converting blank strings to `null`. This ensures that the record's fields are either a valid non-blank string or `null`.
+The compact constructor normalizes the input values by converting blank strings to `null`. This ensures that empty or whitespace-only strings are treated as unset.
 
 ## Methods
 
 ### `hasJson()`
 
-Returns `true` if the `serviceAccountJson` field is not `null`, indicating that an inline JSON credential is available.
-
-**Return Type:** `boolean`
+Returns `true` if the `serviceAccountJson` property is set (non-null), otherwise `false`.
 
 ### `hasPath()`
 
-Returns `true` if the `serviceAccountPath` field is not `null`, indicating that a file path to the service account JSON is available.
-
-**Return Type:** `boolean`
+Returns `true` if the `serviceAccountPath` property is set (non-null), otherwise `false`.
 
 ## Usage Example
 
@@ -46,26 +42,19 @@ Returns `true` if the `serviceAccountPath` field is not `null`, indicating that 
 app:
   firebase:
     service-account-path: /path/to/firebase-service-account.json
-    # or
-    service-account-json: '{"type": "service_account", ...}'
 ```
 
-```java
-@Autowired
-private FirebaseProperties firebaseProperties;
+Or using inline JSON:
 
-public void configureFirebase() {
-    if (firebaseProperties.hasJson()) {
-        // Initialize Firebase with inline JSON
-    } else if (firebaseProperties.hasPath()) {
-        // Initialize Firebase from file path
-    } else {
-        throw new IllegalStateException("No Firebase credentials configured");
-    }
-}
+```yaml
+# application.yml
+app:
+  firebase:
+    service-account-json: '{"type": "service_account", ...}'
 ```
 
 ## Notes
 
-- The `blankToNull` helper method ensures that empty or whitespace-only strings are treated as missing values, preventing accidental configuration errors.
-- Only one of the two properties (`serviceAccountPath` or `serviceAccountJson`) should be provided at a time. The convenience methods `hasJson()` and `hasPath()` help determine which one is available.
+- Only one of `serviceAccountPath` or `serviceAccountJson` should be set at a time.
+- Blank strings are automatically converted to `null` to avoid empty values being treated as valid.
+- This record is immutable and thread-safe by design.

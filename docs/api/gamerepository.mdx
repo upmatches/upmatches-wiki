@@ -6,107 +6,85 @@ sidebar_label: GameRepository
 
 # GameRepository
 
-The `GameRepository` interface provides data access operations for the `Game` entity in the UpMatches application. It extends Spring Data JPA's `JpaRepository` and includes custom query methods for retrieving, filtering, and updating game records. This repository handles complex queries involving visibility rules, user participation, geolocation filtering, skill level matching, and time-based scheduling.
+The `GameRepository` interface provides data access operations for the `Game` entity in the UpMatches application. It extends Spring Data JPA's `JpaRepository` and includes custom query methods for retrieving, filtering, and updating game records with support for visibility rules, pagination, and concurrency control.
 
-## Package
+## Purpose
 
-`com.upmatches.app.features.game.repositories`
-
-## Interface Declaration
-
-```java
-public interface GameRepository extends JpaRepository<Game, UUID>
-```
+This repository handles all database interactions related to games, including:
+- Finding games by ID with soft-delete awareness
+- Retrieving games visible to a specific user based on visibility settings and participation
+- Filtering games by various criteria (venue, skill level, time, location, etc.)
+- Managing game lifecycle transitions (starting and expiring games)
+- Counting games joined or hosted by a user
 
 ## Methods
 
-### Basic Retrieval
+### Basic CRUD Operations
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
-| `findByIdAndDeletedAtIsNull` | `Optional<Game>` | `UUID id` | Finds a game by its ID where the `deletedAt` field is null (i.e., not soft-deleted). |
-| `findForUpdateById` | `Optional<Game>` | `UUID id` | Finds a game by ID with a pessimistic write lock, ensuring exclusive access for updates. The game must not be soft-deleted. |
+| `findByIdAndDeletedAtIsNull` | `Optional<Game>` | `UUID id` | Finds a game by ID that hasn't been soft-deleted |
+| `findForUpdateById` | `Optional<Game>` | `UUID id` | Finds a game with pessimistic write lock for concurrent updates |
 
 ### Visibility and Filtering
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
-| `findVisibleToUser` | `Page<Game>` | `UUID userId`, `Pageable pageable` | Retrieves a paginated list of scheduled games visible to a user. A game is visible if it is public, the user is the organizer, the user is an active participant, or the user has been granted share access. |
-| `findVisibleToUserFiltered` | `List<Game>` | See parameter table below | Retrieves a filtered, cursor-based list of scheduled games visible to a user, with support for venue, skill level, time range, and geolocation filters. |
-| `findVisibleForFilterOptions` | `List<Game>` | See parameter table below | Retrieves a filtered list of scheduled games visible to a user, designed for filter option previews. Includes game type filtering and a maximum result limit. |
+| `findVisibleToUser` | `Page<Game>` | `UUID userId`, `Pageable pageable` | Returns paginated games visible to a user (public, organized, participated, or shared) |
+| `findVisibleToUserFiltered` | `List<Game>` | Multiple filter parameters | Returns games visible to user with advanced filtering (cursor-based pagination, venue, skill level, time range, location) |
+| `findVisibleForFilterOptions` | `List<Game>` | Multiple filter parameters | Returns games visible to user for filter options with time range and game type filtering |
 
-#### Parameters for `findVisibleToUserFiltered`
+### User-Specific Queries
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findJoinedByUser` | `List<Game>` | `UUID userId`, `Instant afterStartTime`, `UUID afterId`, `int size` | Returns games the user has joined with cursor-based pagination |
+| `findHostedByUser` | `List<Game>` | `UUID userId`, `Instant afterStartTime`, `UUID afterId`, `int size` | Returns games the user is hosting with cursor-based pagination |
+| `countJoinedByUser` | `long` | `UUID userId` | Counts expired games the user has joined |
+| `countHostedByUser` | `long` | `UUID userId` | Counts expired games the user has hosted |
+
+### Lifecycle Management
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `markStartedBefore` | `int` | `Instant cutoff`, `Instant now` | Updates scheduled games to STARTED status if start time is before cutoff |
+| `markExpiredBefore` | `int` | `Collection<GameStatus> statuses`, `Instant cutoff`, `Instant now` | Updates games to EXPIRED status if end time is before cutoff |
+
+### Time-Based Queries
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findScheduledStartingBetween` | `List<Game>` | `Instant from`, `Instant to` | Finds scheduled games starting within a time range |
+| `findDistinctStartTimesBetween` | `List<Instant>` | `Instant from`, `Instant to` | Returns distinct start times for games within a time range |
+
+## Filter Parameters
+
+The advanced filtering methods (`findVisibleToUserFiltered` and `findVisibleForFilterOptions`) accept the following parameters:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `userId` | `UUID` | The ID of the user requesting the games. |
-| `afterStartTime` | `Instant` | Cursor: only return games starting after this time (or at the same time but with a greater ID). |
-| `afterId` | `UUID` | Cursor: used in conjunction with `afterStartTime` for stable pagination. |
-| `venueIds` | `Long[]` | Optional: filter by venue IDs. |
-| `skillLevelIds` | `Long[]` | Optional: filter by skill level IDs (matches if the game's skill level range includes any of the specified levels). |
-| `fromInstant` | `Instant` | Optional: filter games starting at or after this instant. |
-| `toInstant` | `Instant` | Optional: filter games starting before this instant. |
-| `fromMinutes` | `Integer` | Optional: filter by start time minute-of-day (in Singapore timezone). Used with `toMinutes`. |
-| `toMinutes` | `Integer` | Optional: filter by start time minute-of-day (in Singapore timezone). Used with `fromMinutes`. |
-| `latitude` | `BigDecimal` | Optional: center latitude for geolocation filtering. |
-| `longitude` | `BigDecimal` | Optional: center longitude for geolocation filtering. |
-| `radiusKm` | `Integer` | Optional: search radius in kilometers. |
-| `latMin` | `BigDecimal` | Minimum latitude for bounding box. |
-| `latMax` | `BigDecimal` | Maximum latitude for bounding box. |
-| `lngMin` | `BigDecimal` | Minimum longitude for bounding box. |
-| `lngMax` | `BigDecimal` | Maximum longitude for bounding box. |
-| `size` | `int` | Maximum number of results to return. |
-
-#### Parameters for `findVisibleForFilterOptions`
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `userId` | `UUID` | The ID of the user requesting the games. |
-| `fromInstant` | `Instant` | Filter games starting at or after this instant. |
-| `toInstant` | `Instant` | Filter games starting before this instant. |
-| `venueIds` | `Long[]` | Optional: filter by venue IDs. |
-| `skillLevelIds` | `Long[]` | Optional: filter by skill level IDs. |
-| `fromMinutes` | `Integer` | Optional: filter by start time minute-of-day. |
-| `toMinutes` | `Integer` | Optional: filter by start time minute-of-day. |
-| `gameType` | `String` | Optional: filter by game type. |
-| `latitude` | `BigDecimal` | Optional: center latitude for geolocation filtering. |
-| `longitude` | `BigDecimal` | Optional: center longitude for geolocation filtering. |
-| `radiusKm` | `Integer` | Optional: search radius in kilometers. |
-| `latMin` | `BigDecimal` | Minimum latitude for bounding box. |
-| `latMax` | `BigDecimal` | Maximum latitude for bounding box. |
-| `lngMin` | `BigDecimal` | Minimum longitude for bounding box. |
-| `lngMax` | `BigDecimal` | Maximum longitude for bounding box. |
-| `maxGames` | `int` | Maximum number of results to return. |
-
-### User-Specific Game Lists
-
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `findJoinedByUser` | `List<Game>` | `UUID userId`, `Instant afterStartTime`, `UUID afterId`, `int size` | Retrieves a cursor-based list of scheduled games that the user has joined as an active participant. |
-| `findHostedByUser` | `List<Game>` | `UUID userId`, `Instant afterStartTime`, `UUID afterId`, `int size` | Retrieves a cursor-based list of scheduled games that the user is hosting (organizing). |
-| `countJoinedByUser` | `long` | `UUID userId` | Counts the number of expired games that the user has joined as an active participant. |
-| `countHostedByUser` | `long` | `UUID userId` | Counts the number of expired games that the user has hosted. |
-
-### Batch Status Updates
-
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `markStartedBefore` | `int` | `Instant cutoff`, `Instant now` | Updates the status of all scheduled games that have a `startTime` at or before the cutoff to `STARTED`. Returns the number of affected rows. |
-| `markExpiredBefore` | `int` | `Collection<GameStatus> statuses`, `Instant cutoff`, `Instant now` | Updates the status of all games with the given statuses that have an `endTime` before the cutoff to `EXPIRED`. Returns the number of affected rows. |
-
-### Scheduling Queries
-
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `findScheduledStartingBetween` | `List<Game>` | `Instant from`, `Instant to` | Retrieves all scheduled games (not soft-deleted) that start within the specified time range. |
-| `findDistinctStartTimesBetween` | `List<Instant>` | `Instant from`, `Instant to` | Retrieves distinct start times of all non-deleted games within the specified time range. |
+| `userId` | `UUID` | The user requesting the games |
+| `afterStartTime` | `Instant` | Cursor for pagination (start time) |
+| `afterId` | `UUID` | Cursor for pagination (game ID) |
+| `venueIds` | `Long[]` | Filter by venue IDs |
+| `skillLevelIds` | `Long[]` | Filter by skill level IDs |
+| `fromInstant` | `Instant` | Start of time range filter |
+| `toInstant` | `Instant` | End of time range filter |
+| `fromMinutes` | `Integer` | Start of time-of-day filter (minutes from midnight) |
+| `toMinutes` | `Integer` | End of time-of-day filter (minutes from midnight) |
+| `latitude` | `BigDecimal` | Center latitude for location-based filtering |
+| `longitude` | `BigDecimal` | Center longitude for location-based filtering |
+| `radiusKm` | `Integer` | Search radius in kilometers |
+| `latMin`/`latMax` | `BigDecimal` | Latitude bounding box |
+| `lngMin`/`lngMax` | `BigDecimal` | Longitude bounding box |
+| `size`/`maxGames` | `int` | Maximum number of results to return |
+| `gameType` | `String` | Filter by game type (only in `findVisibleForFilterOptions`) |
 
 ## Usage Notes
 
-- **Soft Delete**: Most queries exclude games where `deletedAt IS NOT NULL`, ensuring soft-deleted games are not returned.
-- **Visibility Logic**: Games are visible to a user if they are public, the user is the organizer, the user is an active participant, or the user has share access.
-- **Pessimistic Locking**: The `findForUpdateById` method uses `PESSIMISTIC_WRITE` lock mode to prevent concurrent modifications during critical operations.
-- **Cursor-Based Pagination**: Methods like `findVisibleToUserFiltered`, `findJoinedByUser`, and `findHostedByUser` use cursor-based pagination with `afterStartTime` and `afterId` parameters for stable, efficient pagination.
-- **Geolocation Filtering**: The repository uses the Haversine formula to calculate distances and filter games by geographic proximity to a given location.
-- **Time Zone Handling**: Time-of-day filtering uses the `Asia/Singapore` timezone for consistent behavior.
-- **Native Queries**: Several methods use native SQL queries for complex filtering logic that cannot be expressed with JPQL alone.
+- All queries respect soft-delete by checking `deletedAt IS NULL`
+- Visibility rules ensure users only see games they have access to (public, organized, participated, or shared)
+- Location filtering uses the Haversine formula for distance calculation
+- Time-of-day filtering handles wrap-around cases (e.g., 10 PM to 2 AM)
+- The `findForUpdateById` method uses `PESSIMISTIC_WRITE` lock for safe concurrent updates
+- Lifecycle methods (`markStartedBefore`, `markExpiredBefore`) are annotated with `@Modifying` for bulk updates

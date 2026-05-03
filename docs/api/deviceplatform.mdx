@@ -4,47 +4,48 @@ title: DevicePlatform Enum
 sidebar_label: DevicePlatform
 ---
 
-# DevicePlatform Enum
+## Overview
 
-The `DevicePlatform` enum defines the supported device platforms for push notifications within the UpMatches application. It is used to specify the target operating system or environment when sending notifications, ensuring that messages are delivered to the correct platform-specific push notification service (e.g., Firebase Cloud Messaging for Android, Apple Push Notification Service for iOS, or Web Push for browsers).
+The `DevicePlatform` enum defines the supported device platforms for push notifications within the UpMatches application. It is used to specify the target platform when sending notifications, ensuring that messages are delivered to the correct device type.
 
-## Package Location
-
-`com.upmatches.app.features.notification.enums`
+This enum is part of the `com.upmatches.app.features.notification.enums` package and is primarily used in notification routing and device registration logic.
 
 ## Enum Values
 
-| Value     | Description                                                                 |
-|-----------|-----------------------------------------------------------------------------|
-| `ANDROID` | Represents the Android mobile operating system.                             |
-| `IOS`     | Represents the Apple iOS mobile operating system.                           |
-| `WEB`     | Represents web browser environments (e.g., desktop or mobile web browsers). |
+| Value     | Description                                      |
+|-----------|--------------------------------------------------|
+| `ANDROID` | Represents Android mobile devices.               |
+| `IOS`     | Represents Apple iOS devices (iPhone, iPad).     |
+| `WEB`     | Represents web browser-based platforms.          |
 
 ## Usage
 
-This enum is typically used in notification payloads or configuration objects to indicate the intended recipient platform. For example:
+The `DevicePlatform` enum is typically used in the following scenarios:
+
+- **Device Registration**: When a user registers a device for push notifications, the platform type is stored to route notifications correctly.
+- **Notification Dispatch**: When sending a push notification, the platform determines which push notification service (FCM for Android, APNs for iOS, or Web Push for browsers) to use.
+- **Platform-Specific Logic**: Conditional logic based on the device platform (e.g., different notification payload structures for Android vs. iOS).
+
+## Example
 
 ```java
-DevicePlatform platform = DevicePlatform.ANDROID;
-```
-
-It can also be used in switch statements or conditional logic to route notifications to the appropriate push service:
-
-```java
-switch (platform) {
-    case ANDROID:
-        // Send via Firebase Cloud Messaging
-        break;
-    case IOS:
-        // Send via Apple Push Notification Service
-        break;
-    case WEB:
-        // Send via Web Push API
-        break;
+// Example usage in a notification service
+public void sendNotification(DevicePlatform platform, String message) {
+    switch (platform) {
+        case ANDROID:
+            // Send via Firebase Cloud Messaging
+            break;
+        case IOS:
+            // Send via Apple Push Notification service
+            break;
+        case WEB:
+            // Send via Web Push API
+            break;
+    }
 }
 ```
 
-## Related
+## Related Components
 
-- [Notification Service](../notification-service) (hypothetical link)
-- [Push Notification Payload](../push-notification-payload) (hypothetical link)
+- **NotificationService**: Handles the routing and delivery of push notifications based on the device platform.
+- **DeviceRegistration**: Stores the platform type for each registered device token.

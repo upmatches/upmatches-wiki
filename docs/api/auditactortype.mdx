@@ -1,33 +1,54 @@
 ---
 id: audit-actor-type
-title: AuditActorType Enum
+title: Audit Actor Type Enum
 sidebar_label: AuditActorType
 ---
 
 # AuditActorType
 
-The `AuditActorType` enum defines the possible types of actors that can perform actions within the audit system. It is used to categorize who or what initiated an auditable event, enabling clear tracking and accountability in audit logs.
+The `AuditActorType` enum defines the possible types of actors that can perform actions within the audit system. It is used to categorize who or what initiated an auditable event, providing clarity and traceability in audit logs.
 
 ## Purpose
 
-This enum provides a standardized way to identify the origin of an audit event. By classifying actors into distinct types, the system can differentiate between actions performed by authenticated users, automated system processes, and unauthenticated visitors.
+This enum is part of the audit module and helps distinguish between actions performed by:
+- **Authenticated users** (e.g., a logged-in user modifying their profile)
+- **The system itself** (e.g., automated background jobs or scheduled tasks)
+- **Anonymous users** (e.g., unauthenticated visitors accessing public endpoints)
 
-## Enum Constants
+By classifying actors, the system can apply different audit policies, filtering, or reporting logic based on the actor type.
 
-| Constant    | Description                                                                 |
+## Enum Values
+
+| Value       | Description                                                                 |
 |-------------|-----------------------------------------------------------------------------|
-| `USER`      | Represents an action performed by an authenticated user.                    |
-| `SYSTEM`    | Represents an action performed by the system itself (e.g., scheduled jobs). |
-| `ANONYMOUS` | Represents an action performed by an unauthenticated or anonymous visitor.  |
+| `USER`      | Represents an authenticated user who performed an action.                   |
+| `SYSTEM`    | Represents an automated system process or internal operation.               |
+| `ANONYMOUS` | Represents an unauthenticated or unidentified actor.                        |
 
-## Usage
-
-The `AuditActorType` enum is typically used in conjunction with audit event classes to record the type of actor responsible for a given action. For example:
+## Usage Example
 
 ```java
-AuditEvent event = new AuditEvent();
-event.setActorType(AuditActorType.USER);
-event.setActorId("user123");
+AuditActorType actorType = AuditActorType.USER;
+
+switch (actorType) {
+    case USER:
+        // Handle user-initiated action
+        break;
+    case SYSTEM:
+        // Handle system-initiated action
+        break;
+    case ANONYMOUS:
+        // Handle anonymous action
+        break;
+}
 ```
 
-This allows the audit system to filter, search, and report on events based on the actor type, providing valuable insights into system usage and security.
+## Related Components
+
+- **AuditLog** – The entity that stores audit records, typically includes an `AuditActorType` field.
+- **AuditService** – The service layer that creates audit entries and uses this enum to categorize events.
+
+## Notes
+
+- This enum is immutable and thread-safe by design.
+- New actor types can be added in the future if the system requires additional categories (e.g., `THIRD_PARTY`).

@@ -6,59 +6,58 @@ sidebar_label: IListGameParticipantsService
 
 # IListGameParticipantsService Interface
 
-The `IListGameParticipantsService` interface defines the contract for retrieving a list of participants associated with a specific game. It serves as the abstraction layer for the participant listing use case, ensuring that any implementing class (such as `ListGameParticipantsService`) provides a consistent method for fetching game participant data.
+## Purpose
 
-This interface is declared as `sealed`, meaning only explicitly permitted classes (in this case, `ListGameParticipantsService`) can implement it. This design enforces a controlled hierarchy and improves maintainability by restricting implementation to known, trusted classes.
+The `IListGameParticipantsService` interface defines the contract for retrieving a list of participants associated with a specific game. It serves as the abstraction layer for the game participant listing functionality, ensuring a consistent API for fetching participant data across different implementations.
+
+This interface is sealed, meaning only the explicitly permitted class (`ListGameParticipantsService`) can implement it. This design pattern enforces controlled extension and provides compile-time safety by restricting the inheritance hierarchy.
 
 ## Interface Definition
 
 ```java
 public sealed interface IListGameParticipantsService permits ListGameParticipantsService {
-
     List<GameParticipantResponse> execute(UUID id);
-
 }
 ```
 
-## Method Summary
+## Methods
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `execute(UUID id)` | `List<GameParticipantResponse>` | Retrieves a list of game participants for the game identified by the provided UUID. |
+### `execute`
 
-## Parameters
+Retrieves a list of game participants for the specified game identifier.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the game for which participants are to be listed. |
+| `id` | `UUID` | The unique identifier of the game for which to retrieve participants |
 
-## Return Value
+| Returns | Description |
+|---------|-------------|
+| `List<GameParticipantResponse>` | A list of `GameParticipantResponse` objects representing the participants of the specified game |
 
-The method returns a `List<GameParticipantResponse>` containing the participant data for the specified game. Each element in the list represents a single participant's details as defined by the `GameParticipantResponse` class.
+**Behavior:**
+- Accepts a game ID as a `UUID` parameter
+- Returns a list of `GameParticipantResponse` objects
+- The implementation (`ListGameParticipantsService`) handles the actual data retrieval logic
 
 ## Usage Example
 
 ```java
-// Assuming you have an instance of IListGameParticipantsService
-IListGameParticipantsService listParticipantsService = new ListGameParticipantsService();
+// Assuming dependency injection provides the implementation
+IListGameParticipantsService listGameParticipantsService;
 
+// Retrieve participants for a specific game
 UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-List<GameParticipantResponse> participants = listParticipantsService.execute(gameId);
-
-// Process the list of participants
-for (GameParticipantResponse participant : participants) {
-    System.out.println("Participant: " + participant.getName());
-}
+List<GameParticipantResponse> participants = listGameParticipantsService.execute(gameId);
 ```
-
-## Implementation Notes
-
-- The interface is `sealed`, which restricts implementation to the `ListGameParticipantsService` class only.
-- The `execute` method is the single entry point for the participant listing operation.
-- The `GameParticipantResponse` class should contain the relevant participant data fields (e.g., name, role, join date).
-- The method expects a valid `UUID` representing the game ID; invalid or null values may result in exceptions depending on the implementation.
 
 ## Related Components
 
-- **ListGameParticipantsService**: The concrete implementation of this interface.
-- **GameParticipantResponse**: The data transfer object representing a single game participant.
+- **`ListGameParticipantsService`**: The sole permitted implementation of this interface
+- **`GameParticipantResponse`**: The response DTO representing individual game participant data
+- **Package**: `com.upmatches.app.features.game.services`
+
+## Design Notes
+
+- The interface uses Java's sealed class feature (introduced in Java 17) to restrict implementation to `ListGameParticipantsService` only
+- This pattern promotes a clean separation of concerns and makes the codebase more maintainable by clearly defining the service contract
+- The use of `UUID` for game identification ensures globally unique identifiers across the system

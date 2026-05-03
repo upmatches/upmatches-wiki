@@ -6,75 +6,83 @@ sidebar_label: NotificationRepository
 
 # NotificationRepository
 
-The `NotificationRepository` interface provides data access methods for the `Notification` entity in the UpMatches application. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD operations and defines custom query methods for notification-specific functionality such as retrieving notifications by recipient, checking unread counts, and bulk marking notifications as read.
+The `NotificationRepository` interface provides data access methods for the `Notification` entity in the UpMatches application. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD operations and defines custom query methods for notification-specific functionality, including paginated retrieval, unread counts, duplicate detection, and bulk read status updates.
 
-## Class Overview
-
-- **Package:** `com.upmatches.app.features.notification.repositories`
-- **Type:** Interface extending `JpaRepository<Notification, UUID>`
-- **Purpose:** Manages persistence and retrieval of `Notification` entities, supporting pagination, read status tracking, and duplicate prevention.
-
-## Public Methods
-
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `findByRecipientIdOrderByCreatedAtDesc` | `Page<Notification>` | `UUID recipientId`, `Pageable pageable` | Retrieves a paginated list of notifications for a specific recipient, ordered by creation date (newest first). |
-| `countByRecipientIdAndIsReadFalse` | `long` | `UUID recipientId` | Returns the count of unread notifications for a given recipient. |
-| `findByIdAndRecipientId` | `Optional<Notification>` | `UUID id`, `UUID recipientId` | Finds a notification by its ID and recipient ID, returning an empty `Optional` if not found. |
-| `existsByRecipientIdAndTypeAndResourceId` | `boolean` | `UUID recipientId`, `NotificationType type`, `UUID resourceId` | Checks if a notification already exists for a recipient with the given type and resource ID (useful for preventing duplicate notifications). |
-| `markAllReadByRecipientId` | `int` | `UUID recipientId`, `Instant readAt` | Marks all unread notifications for a recipient as read, setting the `readAt` timestamp. Returns the number of updated records. |
-
-## Method Details
-
-### `findByRecipientIdOrderByCreatedAtDesc`
-- **Query:** Derived from method name; Spring Data JPA automatically generates the query.
-- **Use Case:** Displaying a user's notification feed with pagination support.
-
-### `countByRecipientIdAndIsReadFalse`
-- **Query:** Derived from method name.
-- **Use Case:** Showing unread notification badge count in the UI.
-
-### `findByIdAndRecipientId`
-- **Query:** Derived from method name.
-- **Use Case:** Verifying that a notification belongs to the requesting user before performing operations.
-
-### `existsByRecipientIdAndTypeAndResourceId`
-- **Query:** Derived from method name.
-- **Use Case:** Preventing duplicate notifications for the same event (e.g., like, comment).
-
-### `markAllReadByRecipientId`
-- **Query:** Custom JPQL update query.
-- **Annotations:** `@Modifying` indicates this is a modifying query that requires a transaction.
-- **Use Case:** Bulk "mark all as read" functionality for a user's notification inbox.
-
-## Usage Example
+## Interface Definition
 
 ```java
-@Service
-public class NotificationService {
-    private final NotificationRepository notificationRepository;
-
-    public NotificationService(NotificationRepository notificationRepository) {
-        this.notificationRepository = notificationRepository;
-    }
-
-    public Page<Notification> getNotifications(UUID userId, Pageable pageable) {
-        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(userId, pageable);
-    }
-
-    public long getUnreadCount(UUID userId) {
-        return notificationRepository.countByRecipientIdAndIsReadFalse(userId);
-    }
-
-    @Transactional
-    public int markAllAsRead(UUID userId) {
-        return notificationRepository.markAllReadByRecipientId(userId, Instant.now());
-    }
-}
+public interface NotificationRepository extends JpaRepository<Notification, UUID>
 ```
 
-## Notes
+The repository operates on `Notification` entities with `UUID` primary keys.
 
-- The `markAllReadByRecipientId` method uses a custom JPQL query with `@Modifying` annotation, which requires the calling method to be transactional.
-- All methods that accept `UUID` parameters use the standard Java `UUID` type for primary key representation.
-- The `existsByRecipientIdAndTypeAndResourceId` method is particularly useful for idempotent notification creation.
+## Methods
+
+### findByRecipientIdOrderByCreatedAtDesc
+
+Retrieves a paginated list of notifications for a specific recipient, ordered by creation date in descending order (newest first).
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The unique identifier of the recipient |
+| `pageable` | `Pageable` | Pagination and sorting information |
+
+| Returns | Description |
+|---------|-------------|
+| `Page<Notification>` | A page of notifications for the specified recipient |
+
+### countByRecipientIdAndIsReadFalse
+
+Counts the number of unread notifications for a specific recipient.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The unique identifier of the recipient |
+
+| Returns | Description |
+|---------|-------------|
+| `long` | The count of unread notifications |
+
+### findByIdAndRecipientId
+
+Finds a specific notification by its ID and recipient ID. This ensures that a user can only access their own notifications.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the notification |
+| `recipientId` | `UUID` | The unique identifier of the recipient |
+
+| Returns | Description |
+|---------|-------------|
+| `Optional<Notification>` | An Optional containing the notification if found, or empty if not found |
+
+### existsByRecipientIdAndTypeAndResourceId
+
+Checks if a notification already exists for a given recipient, notification type, and resource ID. This is useful for preventing duplicate notifications.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The unique identifier of the recipient |
+| `type` | `NotificationType` | The type of notification |
+| `resourceId` | `UUID` | The unique identifier of the related resource |
+
+| Returns | Description |
+|---------|-------------|
+| `boolean` | `true` if a matching notification exists, `false` otherwise |
+
+### markAllReadByRecipientId
+
+Marks all unread notifications as read for a specific recipient. This is a modifying query that updates the `isRead` and `readAt` fields in a single database operation.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `recipientId` | `UUID` | The unique identifier of the recipient |
+| `readAt` | `Instant` | The timestamp when the notifications were marked as read |
+
+| Returns | Description |
+|---------|-------------|
+| `int` | The number of notifications that were updated |
+
+:::note
+This method is annotated with `@Modifying`, which means it executes an update operation rather than a select query. It should be called within a transactional context.
+:::

@@ -6,52 +6,59 @@ sidebar_label: IListVenuesService
 
 # IListVenuesService Interface
 
-The `IListVenuesService` interface defines the contract for retrieving a paginated list of venues in the UpMatches application. It is a sealed interface, meaning only the specified implementing class (`ListVenuesService`) is allowed to implement it. This design pattern enforces a controlled hierarchy and ensures that the venue listing logic is centralized and maintainable.
+The `IListVenuesService` interface defines the contract for retrieving a paginated list of venues in the UpMatches application. It serves as the abstraction layer between the controller and the concrete implementation, following the interface segregation principle.
 
-## Purpose
+This sealed interface permits only the `ListVenuesService` class to implement it, ensuring controlled extension and preventing unauthorized implementations.
 
-The primary purpose of this interface is to provide a standardized method for fetching venues with pagination support. By using a sealed interface, the application guarantees that only one implementation exists, which simplifies dependency injection and testing while preventing unauthorized extensions.
+## Interface Definition
 
-## Method Summary
+```java
+public sealed interface IListVenuesService permits ListVenuesService {
+    PagedResponse<VenueResponse> execute(Pageable pageable);
+}
+```
+
+## Methods
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
-| `execute` | `PagedResponse<VenueResponse>` | `Pageable pageable` | Retrieves a paginated list of venues based on the provided pagination information. |
+| `execute` | `PagedResponse<VenueResponse>` | `Pageable pageable` | Retrieves a paginated list of venues based on the provided pagination parameters |
 
-## Method Details
+### Method Details
 
-### `execute(Pageable pageable)`
+#### `execute(Pageable pageable)`
 
-This method accepts a Spring Data `Pageable` object containing pagination parameters (page number, page size, sorting criteria) and returns a `PagedResponse` containing a list of `VenueResponse` objects.
+This method accepts a Spring Data `Pageable` object that contains pagination information such as page number, page size, and sorting criteria. It returns a `PagedResponse` containing a list of `VenueResponse` objects along with pagination metadata.
 
 **Parameters:**
-- `pageable` (Pageable): The pagination information including page number, page size, and sort options.
+- `pageable` - A Spring Data `Pageable` instance specifying pagination and sorting parameters
 
 **Returns:**
-- `PagedResponse<VenueResponse>`: A paginated response wrapper containing the list of venue data and pagination metadata (total pages, total elements, current page, etc.).
-
-**Throws:**
-- This method does not declare any checked exceptions. However, implementations may throw runtime exceptions such as `DataAccessException` if database access fails.
+- `PagedResponse<VenueResponse>` - A paginated response containing venue data and pagination information
 
 ## Usage Example
 
 ```java
-@Autowired
-private IListVenuesService listVenuesService;
-
-public void displayVenues() {
-    Pageable pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
-    PagedResponse<VenueResponse> response = listVenuesService.execute(pageable);
+@Service
+public class VenueController {
+    private final IListVenuesService listVenuesService;
     
-    System.out.println("Total venues: " + response.getTotalElements());
-    System.out.println("Current page: " + response.getPageNumber());
-    response.getContent().forEach(venue -> System.out.println(venue.getName()));
+    public VenueController(IListVenuesService listVenuesService) {
+        this.listVenuesService = listVenuesService;
+    }
+    
+    @GetMapping("/venues")
+    public ResponseEntity<PagedResponse<VenueResponse>> getVenues(
+            @PageableDefault(size = 20, sort = "name") Pageable pageable) {
+        PagedResponse<VenueResponse> response = listVenuesService.execute(pageable);
+        return ResponseEntity.ok(response);
+    }
 }
 ```
 
-## Related Components
+## Related Types
 
-- **`ListVenuesService`**: The sole permitted implementation of this interface.
-- **`VenueResponse`**: The DTO representing venue data returned in the response.
-- **`PagedResponse`**: A generic wrapper for paginated API responses.
-- **`Pageable`**: Spring Data interface for pagination abstraction.
+- `VenueResponse` - The response DTO containing venue information
+- `PagedResponse` - Generic wrapper for paginated API responses
+- `ListVenuesService` - The permitted implementation class
+- `Pageable` - Spring Data interface for pagination abstraction

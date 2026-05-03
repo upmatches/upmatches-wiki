@@ -6,45 +6,62 @@ sidebar_label: UpdateActivityRequest
 
 # Update Activity Request
 
-The `UpdateActivityRequest` class is a Java record used to encapsulate the data required for updating an existing activity. It serves as a Data Transfer Object (DTO) for the activity update endpoint, ensuring that incoming requests contain valid and properly formatted data before being processed by the application.
+The `UpdateActivityRequest` class is a Java record that serves as a Data Transfer Object (DTO) for updating an existing activity. It encapsulates the request payload when a client wants to modify an activity's name. The record leverages Jakarta Bean Validation annotations to enforce input constraints, ensuring that the provided data meets the required criteria before processing.
 
-## Purpose
+## Class Overview
 
-This record provides a structured way to receive and validate activity update requests. By using Jakarta Bean Validation annotations, it enforces constraints on the input data at the API boundary, reducing the need for manual validation logic in service layers.
+- **Package:** `com.upmatches.app.features.activity.requests`
+- **Type:** Java Record
+- **Purpose:** Defines the structure and validation rules for updating an activity's name.
 
-## Record Definition
+## Record Components
 
-```java
-public record UpdateActivityRequest(
-    @NotBlank
-    @Size(max = 100)
-    String name
-) {}
-```
+| Component | Type   | Validation Constraints | Description                                      |
+|-----------|--------|------------------------|--------------------------------------------------|
+| `name`    | String | `@NotBlank`<br/>`@Size(max = 100)` | The new name for the activity. Must not be blank and cannot exceed 100 characters. |
 
-## Fields
+## Validation Details
 
-| Field | Type | Validation Constraints | Description |
-|-------|------|------------------------|-------------|
-| `name` | `String` | `@NotBlank`, `@Size(max = 100)` | The updated name for the activity. Must not be blank and must not exceed 100 characters. |
-
-## Validation Rules
-
-- **@NotBlank**: The `name` field must not be `null`, empty, or contain only whitespace characters.
-- **@Size(max = 100)**: The `name` field must not exceed 100 characters in length.
+- **`@NotBlank`**: Ensures that the `name` field is not null and contains at least one non-whitespace character. This prevents empty or whitespace-only strings from being accepted.
+- **`@Size(max = 100)`**: Limits the length of the `name` field to a maximum of 100 characters. This helps maintain data integrity and prevents excessively long names.
 
 ## Usage Example
 
-```java
-// Creating a valid update request
-UpdateActivityRequest request = new UpdateActivityRequest("Updated Activity Name");
+The following example demonstrates how to create an instance of `UpdateActivityRequest`:
 
-// Accessing the field
-String activityName = request.name();
+```java
+// Valid request
+UpdateActivityRequest validRequest = new UpdateActivityRequest("Updated Activity Name");
+
+// Invalid request (blank name)
+UpdateActivityRequest invalidRequest = new UpdateActivityRequest(""); // Will fail @NotBlank validation
+
+// Invalid request (name too long)
+UpdateActivityRequest tooLongRequest = new UpdateActivityRequest("A".repeat(101)); // Will fail @Size validation
 ```
 
-## Related Components
+## Integration with Jakarta Validation
 
-- **ActivityController**: The REST controller that accepts `UpdateActivityRequest` as a request body parameter.
-- **ActivityService**: The service layer that processes the update request and persists the changes.
-- **Activity Entity**: The JPA entity that represents the activity in the database.
+When used in a Spring Boot controller or similar framework, the validation annotations are automatically enforced. For example:
+
+```java
+@RestController
+@RequestMapping("/api/activities")
+public class ActivityController {
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateActivity(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateActivityRequest request) {
+        // The request is automatically validated before this method executes
+        // If validation fails, a 400 Bad Request response is returned
+        return ResponseEntity.ok().build();
+    }
+}
+```
+
+## Best Practices
+
+- Always use the `@Valid` annotation on controller method parameters to trigger validation.
+- Handle validation errors gracefully by providing meaningful error messages to the client.
+- Consider adding additional validation rules (e.g., custom annotations) if more complex business logic is required.

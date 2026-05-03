@@ -6,55 +6,41 @@ sidebar_label: GameFilterOptionsResponse
 
 # GameFilterOptionsResponse
 
-The `GameFilterOptionsResponse` is a Java record that encapsulates the available filter options for game search or listing functionality. It provides a structured response containing all possible filter criteria that users can apply when searching for games, such as venues, skill levels, start times, and game types.
+The `GameFilterOptionsResponse` class is a Java record that encapsulates the available filter options for game search or listing functionality. It provides a structured response containing all possible filter criteria that users can apply when searching for games, such as venues, skill levels, start times, and game types.
 
 ## Purpose
 
-This record serves as a data transfer object (DTO) that aggregates various filter options into a single response. It is typically returned by an API endpoint that provides the available filtering choices to the client, allowing users to narrow down game searches based on their preferences.
+This record serves as a data transfer object (DTO) that aggregates all filterable attributes into a single response. It is typically returned by an API endpoint that provides the initial set of filter options for the game search UI, allowing the frontend to populate dropdowns, checkboxes, or other filter controls.
 
-## Record Structure
+## Record Components
 
-Since this is a Java record, all fields are implicitly `private final` and the record automatically generates:
-- A canonical constructor
-- Getter methods (e.g., `venues()`, `skillLevels()`)
-- `equals()`, `hashCode()`, and `toString()` methods
-
-## Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `venues` | `List<VenueResponse>` | A list of available venues where games can be played |
-| `skillLevels` | `List<SkillLevelResponse>` | A list of available skill levels for filtering games |
-| `availableStartTimes` | `List<String>` | A list of available start times (as strings) for games |
-| `gameTypes` | `List<GameType>` | A list of available game types for filtering |
+| Component | Type | Description |
+|-----------|------|-------------|
+| `venues` | `List<VenueResponse>` | Available venues where games can be played |
+| `skillLevels` | `List<SkillLevelResponse>` | Available skill levels for game participation |
+| `availableStartTimes` | `List<String>` | Available start times for games (e.g., "09:00", "10:00") |
+| `gameTypes` | `List<GameType>` | Available game types (e.g., SINGLES, DOUBLES, MIXED) |
 
 ## Usage Example
 
 ```java
 // Example of creating a GameFilterOptionsResponse
 GameFilterOptionsResponse filterOptions = new GameFilterOptionsResponse(
-    venueList,
-    skillLevelList,
-    startTimeList,
-    gameTypeList
+    List.of(tennisVenue, basketballVenue),
+    List.of(beginnerLevel, intermediateLevel),
+    List.of("09:00", "10:00", "11:00"),
+    List.of(GameType.SINGLES, GameType.DOUBLES)
 );
-
-// Accessing fields
-List<VenueResponse> venues = filterOptions.venues();
-List<SkillLevelResponse> skillLevels = filterOptions.skillLevels();
-List<String> startTimes = filterOptions.availableStartTimes();
-List<GameType> gameTypes = filterOptions.gameTypes();
 ```
 
 ## Dependencies
 
-This record depends on the following types:
-- `VenueResponse` - from `com.upmatches.app.features.venue.responses`
-- `SkillLevelResponse` - from `com.upmatches.app.features.skilllevels.responses`
-- `GameType` - an enum from `com.upmatches.app.features.game.enums`
+- `VenueResponse` - Represents a venue with its details
+- `SkillLevelResponse` - Represents a skill level with its details
+- `GameType` - Enumeration of available game types
 
 ## Notes
 
-- The record is immutable by design, ensuring thread safety and predictable behavior.
-- All fields are required and cannot be `null` unless explicitly allowed by the referenced types.
-- The `availableStartTimes` field uses `String` type, which may represent time in a format like "HH:mm" or "HH:mm:ss".
+- This record is immutable by design, ensuring thread-safety and predictable behavior
+- The `availableStartTimes` list contains string representations of time slots
+- All lists are guaranteed to be non-null when properly constructed

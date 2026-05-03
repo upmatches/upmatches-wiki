@@ -6,27 +6,28 @@ sidebar_label: GetActivityService
 
 # GetActivityService
 
-The `GetActivityService` class is a Spring service component responsible for retrieving a single `Activity` entity by its unique identifier (UUID). It implements the `IGetActivityService` interface and provides a transactional, read-only operation that fetches an activity from the database and converts it into an `ActivityResponse` DTO.
+The `GetActivityService` class is a Spring service component responsible for retrieving a single `Activity` entity by its unique identifier (UUID). It implements the `IGetActivityService` interface and provides a transactional, read-only operation that fetches an activity from the database and returns it as an `ActivityResponse` DTO.
 
 ## Purpose
 
-This service encapsulates the business logic for fetching an activity by ID. It handles:
-- Database lookup via `ActivityRepository`
+This service encapsulates the business logic for fetching an activity by ID. It handles the following concerns:
+- Database retrieval via `ActivityRepository`
 - Error handling when the activity is not found (throws `ResourceNotFoundException`)
-- Conversion of the entity to a response DTO
-- Execution within a read-only transaction context for performance optimization
+- Conversion from the `Activity` entity to the `ActivityResponse` DTO
+- Transaction management (read-only)
+- Consistent operation execution and error wrapping via `ServiceOperationExecutor`
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `ActivityRepository` | Constructor Injection | Repository for accessing activity data in the database |
+| `ActivityRepository` | Constructor injection | Repository for accessing `Activity` entities in the database |
 
 ## Public Methods
 
 ### `execute(UUID id)`
 
-Retrieves an activity by its unique identifier and returns the corresponding response DTO.
+Retrieves an activity by its unique identifier.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -34,11 +35,14 @@ Retrieves an activity by its unique identifier and returns the corresponding res
 
 | Returns | Type | Description |
 |---------|------|-------------|
-| Success | `ActivityResponse` | The activity data wrapped in a response DTO |
-| Failure | Throws `ResourceNotFoundException` | If no activity exists with the given ID |
+| `ActivityResponse` | DTO | The activity data wrapped in a response object |
+
+**Throws:**
+- `ResourceNotFoundException` – If no activity exists with the given ID
+
+**Transactional Behavior:** Read-only transaction
 
 **Example Usage:**
-
 ```java
 @Autowired
 private GetActivityService getActivityService;
@@ -46,26 +50,22 @@ private GetActivityService getActivityService;
 public void someMethod() {
     UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
     ActivityResponse response = getActivityService.execute(activityId);
-    // Use response data...
+    // Use response data
 }
 ```
 
 ## Error Handling
 
-The service throws a `ResourceNotFoundException` with a formatted message when the requested activity ID does not exist in the database. The error message follows the pattern: `"Activity with ID '{uuid}' not found."`
+The service uses a custom error message template:
+```
+Activity with ID '%s' not found.
+```
 
-## Transactional Behavior
-
-The `execute` method is annotated with `@Transactional(readOnly = true)`, which:
-- Optimizes database access for read operations
-- Prevents unintended data modifications
-- Improves performance by allowing database-level read optimizations
+Where `%s` is replaced with the provided UUID. The `ResourceNotFoundException` is thrown when the activity is not found in the database.
 
 ## Implementation Details
 
-The service uses `ServiceOperationExecutor.execute()` to wrap the retrieval logic with standardized operation tracking and error handling. This utility method:
-- Executes the provided lambda function
-- Associates the operation with the `RETRIEVE` status
-- Wraps any `ResourceNotFoundException` appropriately
-
-The class is declared as `non-sealed`, allowing it to be extended by other service implementations if needed.
+- The class is declared as `non-sealed`, allowing it to be extended by other classes in the same package
+- Uses `ServiceOperationExecutor.execute()` for consistent operation tracking and error handling
+- The `RETRIEVE` operation status is passed to indicate this is a retrieval operation
+- The `ResourceNotFoundException` constructor reference is passed as a fallback error handler

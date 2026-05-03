@@ -6,62 +6,60 @@ sidebar_label: UpmatchesApplication
 
 # UpmatchesApplication
 
-The `UpmatchesApplication` class serves as the entry point for the Upmatches Spring Boot application. It is responsible for bootstrapping and launching the application using Spring Boot's auto-configuration capabilities.
+The `UpmatchesApplication` class serves as the entry point for the Upmatches Spring Boot application. It is responsible for bootstrapping and launching the application, as well as enabling the configuration of various external service properties.
 
 ## Purpose
 
-This class initializes the Spring application context and enables configuration properties for various authentication and feature modules. It acts as the main configuration hub that loads all necessary property classes required by the application's authentication system and shared features.
+This class initializes the Spring application context and registers multiple configuration property classes that are used throughout the application. These properties manage authentication providers (Singpass, Auth0, Apple, AuthDev), JWT token configuration, Infisical secrets management, share link settings, and logging aspects.
 
 ## Key Annotations
 
 | Annotation | Description |
-|------------|-------------|
-| `@SpringBootApplication` | Enables Spring Boot auto-configuration, component scanning, and configuration property binding |
-| `@EnableConfigurationProperties` | Activates support for `@ConfigurationProperties` beans, allowing externalized configuration |
+|---|---|
+| `@SpringBootApplication` | Standard Spring Boot application annotation that enables auto-configuration, component scanning, and additional configuration. |
+| `@EnableConfigurationProperties` | Enables support for `@ConfigurationProperties` beans, registering the specified property classes with the Spring container. |
 
-## Configuration Properties Enabled
+## Registered Configuration Properties
 
-The following configuration property classes are registered and bound to their respective property prefixes:
+The following property classes are enabled via `@EnableConfigurationProperties`:
 
 | Property Class | Purpose |
-|----------------|---------|
-| `LogAspectProperties` | Logging aspect configuration |
-| `SingpassProperties` | Singpass authentication settings |
+|---|---|
+| `LogAspectProperties` | Configuration for logging aspect behavior |
+| `SingpassProperties` | Singpass authentication provider settings |
 | `Auth0Properties` | Auth0 authentication provider settings |
-| `AppleProperties` | Apple Sign-In configuration |
+| `AppleProperties` | Apple Sign-In authentication settings |
 | `AuthDevProperties` | Development authentication settings |
 | `JwtProperties` | JWT token configuration |
 | `InfisicalProperties` | Infisical secrets management settings |
-| `ShareLinkProperties` | Share link feature configuration |
+| `ShareLinkProperties` | Share link generation and validation settings |
 
 ## Public Methods
 
 ### `main(String[] args)`
 
 | Parameter | Type | Description |
-|-----------|------|-------------|
+|---|---|---|
 | `args` | `String[]` | Command-line arguments passed to the application |
 
-**Returns:** `void`
+**Return Type:** `void`
 
-This is the standard Java entry point method. It calls `SpringApplication.run()` to start the Spring Boot application context, which triggers auto-configuration, component scanning, and property binding for all enabled configuration properties.
+This is the standard Java entry point method. It calls `SpringApplication.run()` to bootstrap the Spring application context and start the embedded web server.
 
 ## Usage
 
-The application is started by executing the `main` method, typically through a build tool like Maven or Gradle, or directly from an IDE:
+The application is started by executing the `main` method:
 
 ```bash
-# Using Maven
-mvn spring-boot:run
+java -jar upmatches-app.jar
+```
 
-# Using Gradle
-gradle bootRun
+Or via Maven:
+
+```bash
+mvn spring-boot:run
 ```
 
 ## Package Structure
 
-The class resides in the `com.upmatches.app` package and imports configuration property classes from the following sub-packages:
-
-- `com.upmatches.app.features.auth.properties` - Authentication-related properties
-- `com.upmatches.app.features.sharelink.properties` - Share link feature properties
-- `com.upmatches.app.shared.logging.properties` - Shared logging configuration
+The class resides in the `com.upmatches.app` package and imports configuration property classes from the `com.upmatches.app.features.auth.properties` and `com.upmatches.app.features.sharelink.properties` packages, as well as logging configuration from `com.upmatches.app.shared.logging.properties`.

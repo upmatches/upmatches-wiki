@@ -6,78 +6,87 @@ sidebar_label: DevAuthSafetyCheck
 
 # DevAuthSafetyCheck
 
-The `DevAuthSafetyCheck` class is a Spring Boot configuration component that provides a critical safety mechanism for development-only authentication features. Its primary purpose is to prevent the accidental exposure of a development endpoint that mints access tokens when the application is running in a production environment.
+The `DevAuthSafetyCheck` class is a Spring Boot configuration component that provides a critical safety mechanism for preventing the accidental exposure of development-only authentication endpoints in a production environment. It acts as a guardrail to ensure that a development endpoint capable of minting access tokens for any user is never enabled when the application is running with the "prod" profile.
 
-## Overview
+## Purpose
 
-This class acts as a runtime guard that checks whether the application has been misconfigured to enable a development-only token minting endpoint while the `prod` profile is active. If such a dangerous configuration is detected, it throws an `IllegalStateException` during application startup, effectively preventing the application from running in an insecure state.
+In development environments, it's common to have convenience endpoints that simplify testing, such as endpoints that generate authentication tokens without requiring full credentials. However, such endpoints represent a severe security risk if they become active in production. This class automatically checks at application startup whether both conditions are true:
+
+1. The development mint endpoint is enabled via configuration (`app.auth.dev.mint-endpoint-enabled=true`)
+2. The "prod" Spring profile is active
+
+If both conditions are met, the application fails to start with a clear, descriptive error message, preventing a potentially catastrophic security vulnerability.
 
 ## Class Details
 
-- **Package:** `com.upmatches.app.features.auth.configurations`
-- **Annotations:** `@Configuration`
-- **Dependencies:** `AuthDevProperties`, `Environment`
+| Aspect | Description |
+|--------|-------------|
+| **Package** | `com.upmatches.app.features.auth.configurations` |
+| **Annotations** | `@Configuration` |
+| **Dependencies** | `AuthDevProperties`, `Environment` |
 
 ## Constructor
 
-The constructor injects two dependencies required for the safety check:
+### `DevAuthSafetyCheck(AuthDevProperties, Environment)`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `authDevProperties` | `AuthDevProperties` | Configuration properties containing the development endpoint flag |
-| `environment` | `Environment` | Spring's environment abstraction to access active profiles |
+| `environment` | `Environment` | Spring's environment abstraction for accessing active profiles |
 
 ## Methods
 
-### `verify()`
+### `verify()` (package-private)
 
 | Aspect | Details |
 |--------|---------|
 | **Visibility** | Package-private (default) |
-| **Return Type** | `void` |
 | **Annotation** | `@PostConstruct` |
-| **Description** | Executes automatically after bean initialization to validate that the development token minting endpoint is not enabled in a production environment |
+| **Return Type** | `void` |
+| **Throws** | `IllegalStateException` if both conditions are met |
 
-**Behavior:**
+This method performs the core safety check:
 
-1. Retrieves the value of `authDevProperties.mintEndpointEnabled()` and checks if it is `true`
-2. Retrieves the list of active Spring profiles from the environment
-3. Checks if the `prod` profile is among the active profiles
-4. If both conditions are true (dev endpoint enabled AND prod profile active), throws an `IllegalStateException` with a descriptive error message
+1. Retrieves the value of `authDevProperties.mintEndpointEnabled()` and checks if it equals `Boolean.TRUE`
+2. Gets the list of active Spring profiles from the environment and checks if "prod" is among them
+3. If both conditions are true, throws an `IllegalStateException` with a descriptive error message
 
-**Error Message:**
+The method is annotated with `@PostConstruct`, meaning it executes automatically after the bean's dependencies are injected and before the bean is put into service. This ensures the safety check runs during application startup, preventing the application from starting in an unsafe configuration.
+
+## Error Message
+
+When the safety check fails, the application throws an `IllegalStateException` with the following message:
 
 ```
-FATAL: app.auth.dev.mint-endpoint-enabled=true is not allowed when the 'prod' profile is active. This would expose an endpoint that mints access tokens for any user.
+FATAL: app.auth.dev.mint-endpoint-enabled=true is not allowed when the 'prod' profile is active. 
+This would expose an endpoint that mints access tokens for any user.
 ```
 
-## Usage
+## Usage Example
 
-This class is automatically instantiated and executed by Spring Boot when the application context is loaded. No manual invocation is required. Simply include this class in your Spring Boot application, and it will automatically enforce the safety check during startup.
-
-## Example Configuration
-
-To properly use this safety check, ensure your `application-dev.yml` or `application-dev.properties` contains:
-
-```yaml
+```java
+// In application-dev.yml (safe configuration)
 app:
   auth:
     dev:
       mint-endpoint-enabled: true
-```
 
-And your `application-prod.yml` or `application-prod.properties` should either omit this property or set it to `false`:
-
-```yaml
+// In application-prod.yml (safe configuration - endpoint disabled)
 app:
   auth:
     dev:
       mint-endpoint-enabled: false
+
+// In application-prod.yml (UNSAFE configuration - application will fail to start)
+app:
+  auth:
+    dev:
+      mint-endpoint-enabled: true  // This will cause startup failure
 ```
 
-## Important Notes
+## Best Practices
 
-- This check runs during application startup, preventing the application from starting in an insecure configuration
-- The check is only performed once during the `@PostConstruct` phase
-- If the application starts successfully, it means the configuration is safe
-- This is a development safety feature and should not be removed or disabled in production builds
+- Always keep development endpoints disabled in production configuration files
+- Use this safety check pattern for any feature that should never be active in production
+- Consider adding similar checks for other development-only features
+- Ensure your CI/CD pipeline tests both safe and unsafe configurations

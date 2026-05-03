@@ -8,113 +8,105 @@ sidebar_label: ResolveShareLinkService
 
 ## Purpose
 
-The `ResolveShareLinkService` is a Spring service class responsible for resolving shared links within the UpMatches application. It handles the process of looking up a short link code, retrieving the associated resource (such as a game), and generating the appropriate web and mobile URLs for redirection. Additionally, it automatically grants access to private games when a user resolves a share link for a private game they haven't accessed before.
+The `ResolveShareLinkService` is a Spring service that resolves shared links (short URLs) and provides the appropriate redirect information. It handles the complete lifecycle of resolving a share link, including:
 
-This service implements the `IResolveShareLinkService` interface and is marked as a `non-sealed` class, indicating it's part of a sealed interface hierarchy.
+- Looking up the short link by its unique code
+- Incrementing the click counter for analytics
+- Automatically granting access to private games when the authenticated user follows a valid share link
+- Building both web and mobile URLs for the resolved resource
+- Auditing all resolution attempts for security monitoring
 
-## Key Features
-
-- **Short Link Resolution**: Looks up and validates short link codes
-- **Click Tracking**: Increments click count for resolved links
-- **Private Game Access**: Automatically grants access to private games when resolved by authenticated users
-- **URL Generation**: Builds both web and mobile URLs for the resolved resource
-- **Audit Logging**: Records share link resolution events for security auditing
-- **Transactional Execution**: Ensures data consistency during link resolution
-
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `ShortLinkRepository` | Repository | Data access for short link entities |
-| `IShareLinkUrlBuilder` | Service | Builds web and mobile URLs for resources |
-| `GameRepository` | Repository | Data access for game entities |
-| `GameShareAccessRepository` | Repository | Manages game share access records |
-| `UserRepository` | Repository | Data access for user entities |
+This service is part of the share link feature and implements the `IResolveShareLinkService` interface.
 
 ## Public Methods
 
 ### `execute(String code)`
 
-Resolves a share link code and returns the corresponding public share link response.
+Resolves a share link code and returns the corresponding resource information.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `code` | `String` | The unique short link code to resolve |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `PublicShareLinkResponse` | Object | Contains the resolved link details including web and mobile URLs |
+**Returns:** `PublicShareLinkResponse` containing:
+- The resolved resource type and ID
+- Web URL for browser access
+- Mobile URL for app deep linking
+- Original short link metadata
 
-**Behavior:**
-1. Looks up the short link by its code in the database
-2. Throws `ResourceNotFoundException` if the link is not found
-3. Increments the click count for the resolved link
-4. Automatically grants private game access if applicable (see `grantPrivateGameAccessIfApplicable`)
-5. Builds web and mobile URLs using the `IShareLinkUrlBuilder`
-6. Returns a `PublicShareLinkResponse` constructed from the short link and generated URLs
+**Exceptions:**
+- `ResourceNotFoundException` if no link exists with the given code
 
-**Audit Logging:**
-- Action: `SHARE_LINK_RESOLVED`
-- Category: `SENSITIVE_READ`
-- Resource Type: `SHARE_LINK`
-- Resource ID: The provided code parameter
+**Side Effects:**
+- Increments the click count on the short link
+- If the resource is a private game and the user is authenticated, automatically grants the user access to that game
+- Logs an audit event with category `SENSITIVE_READ`
 
-**Transactional:** Yes
-
-## Private Methods
+## Internal Methods
 
 ### `grantPrivateGameAccessIfApplicable(ShortLink link)`
 
-Grants access to a private game for the authenticated user if the link points to a private game and the user hasn't already been granted access.
+Grants access to a private game if the link points to a game resource and the authenticated user doesn't already have access.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `link` | `ShortLink` | The resolved short link entity |
 
 **Logic:**
-1. Checks if the link's resource type is `GAME`; returns if not
-2. Retrieves the authenticated user's ID from the security context
+1. Returns immediately if the resource type is not `GAME`
+2. Extracts the authenticated user's ID from the security context
 3. Returns if no authenticated user is found
-4. Parses the resource ID as a UUID; returns if parsing fails
-5. Looks up the game by ID; returns if not found or not private
-6. Looks up the user by ID; returns if not found
-7. Checks if access already exists; returns if it does
-8. Creates and saves a new `GameShareAccess` record
+4. Validates the resource ID is a valid UUID
+5. Checks if the game exists, is not deleted, and has `PRIVATE` visibility
+6. Verifies the user hasn't already been granted access
+7. Creates and saves a new `GameShareAccess` entity
 
 ### `getAuthenticatedUserIdOrNull()`
 
-Retrieves the authenticated user's ID from the Spring Security context.
+Extracts the authenticated user's UUID from the Spring Security context.
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `UUID` or `null` | UUID | The authenticated user's ID, or `null` if not authenticated or unable to parse |
+**Returns:** `UUID` or `null` if:
+- No authentication is present
+- The principal is not a JWT token
+- The JWT subject cannot be parsed as a UUID
 
-**Logic:**
-1. Gets the current `Authentication` from `SecurityContextHolder`
-2. Returns `null` if no authentication exists or principal is not a `Jwt`
-3. Parses the JWT subject as a UUID
-4. Returns the UUID or `null` if parsing fails
+## Dependencies
 
-## Error Handling
+| Dependency | Type | Purpose |
+|------------|------|---------|
+| `ShortLinkRepository` | Repository | Persistence for short link entities |
+| `IShareLinkUrlBuilder` | Service | Builds web and mobile URLs for resources |
+| `GameRepository` | Repository | Game entity persistence and lookup |
+| `GameShareAccessRepository` | Repository | Manages game access permissions |
+| `UserRepository` | Repository | User entity lookup |
+| `ServiceOperationExecutor` | Utility | Wraps service operations with error handling and auditing |
 
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | Thrown when the short link code is not found in the database |
+## Audit Configuration
 
-The service uses `ServiceOperationExecutor.execute()` which wraps the main logic and converts any `ResourceNotFoundException` to the appropriate exception type.
+The `execute` method is annotated with `@Auditable`:
+
+- **Action:** `SHARE_LINK_RESOLVED`
+- **Category:** `SENSITIVE_READ`
+- **Resource Type:** `SHARE_LINK`
+- **Resource ID Expression:** `#args[0]` (the code parameter)
 
 ## Usage Example
 
 ```java
-// Inject the service
 @Autowired
 private ResolveShareLinkService resolveShareLinkService;
 
 // Resolve a share link
-String shareCode = "abc123";
-PublicShareLinkResponse response = resolveShareLinkService.execute(shareCode);
+PublicShareLinkResponse response = resolveShareLinkService.execute("abc123");
 
-// Access the resolved URLs
+// Access resolved URLs
 String webUrl = response.getWebUrl();
 String mobileUrl = response.getMobileUrl();
 ```
+
+## Notes
+
+- The service is `@Transactional`, ensuring atomicity of the resolution and access granting operations
+- The class is declared as `non-sealed`, allowing for future extension while maintaining the sealed interface hierarchy
+- Private game access is only granted to authenticated users; anonymous users will receive the link information but won't gain access
+- The click counter is incremented regardless of whether the user is authenticated or the resource type

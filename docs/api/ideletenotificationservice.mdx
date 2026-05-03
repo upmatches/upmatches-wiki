@@ -4,25 +4,29 @@ title: IDeleteNotificationService Interface
 sidebar_label: IDeleteNotificationService
 ---
 
-# IDeleteNotificationService Interface
+# IDeleteNotificationService
 
-The `IDeleteNotificationService` interface defines a contract for deleting notifications within the application. It is a **sealed interface**, meaning that only explicitly permitted classes (in this case, `DeleteNotificationService`) can implement it. This design pattern enforces a controlled hierarchy and ensures that the deletion logic is centralized and secure.
+The `IDeleteNotificationService` interface defines a contract for deleting notifications within the application. It is a **sealed interface**, meaning that only explicitly permitted classes (in this case, `DeleteNotificationService`) can implement it. This design enforces a controlled hierarchy and ensures that the deletion logic is centralized and secure.
 
 ## Purpose
 
-- **Sealed Contract**: Restricts implementation to a single, known class (`DeleteNotificationService`), preventing unauthorized or accidental implementations.
-- **Single Responsibility**: Provides a single method for deleting a notification by its unique identifier (`UUID`).
-- **Decoupling**: Allows the notification deletion logic to be abstracted away from the caller, promoting loose coupling between components.
+- **Sealed Contract**: Restricts implementation to a single, known service class (`DeleteNotificationService`), preventing unauthorized or accidental implementations.
+- **Single Responsibility**: Provides a single method, `execute`, which encapsulates the operation of deleting a notification by its unique identifier.
+- **Decoupling**: Allows the notification deletion logic to be abstracted away from its callers, promoting loose coupling and testability.
 
 ## Method Summary
 
 | Method | Description |
 |--------|-------------|
-| `void execute(UUID id)` | Deletes a notification identified by the given `UUID`. The method does not return a value. |
+| `void execute(UUID id)` | Deletes a notification identified by the given `UUID`. |
 
 ## Method Details
 
-### `execute(UUID id)`
+### `execute`
+
+```java
+void execute(UUID id)
+```
 
 Deletes a notification from the system based on its unique identifier.
 
@@ -32,28 +36,26 @@ Deletes a notification from the system based on its unique identifier.
 |-----------|--------|-------------|
 | `id`      | `UUID` | The unique identifier of the notification to be deleted. |
 
-**Returns:** `void` (no return value)
+**Returns:** `void`
 
-**Throws:** The method does not declare any checked exceptions, but implementations may throw runtime exceptions (e.g., `IllegalArgumentException` if the `id` is null, or a custom exception if the notification is not found).
+**Throws:** This method may throw runtime exceptions depending on the implementation (e.g., if the notification does not exist or if there is a persistence error). The specific exceptions are not declared in the interface and should be documented in the implementing class.
 
 ## Usage Example
 
 ```java
-// Assuming you have an instance of DeleteNotificationService
-IDeleteNotificationService deleteService = new DeleteNotificationService();
-
-// Delete a notification by its UUID
+// Assuming a service instance is obtained via dependency injection
+IDeleteNotificationService deleteService = new DeleteNotificationService(/* dependencies */);
 UUID notificationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 deleteService.execute(notificationId);
 ```
 
 ## Implementation Notes
 
-- The interface is **sealed**, so only `DeleteNotificationService` can implement it. This ensures that all deletion logic follows the same pattern and can be easily audited.
-- The `execute` method is intentionally simple, accepting only a `UUID` parameter. This keeps the interface focused and easy to use.
-- Implementations should handle cases where the notification does not exist, typically by throwing an appropriate exception (e.g., `NotificationNotFoundException`).
+- The interface is **sealed**, so only `DeleteNotificationService` (or other classes explicitly listed in the `permits` clause) can implement it.
+- The implementing class should handle all necessary validation, such as checking that the notification exists before attempting deletion.
+- Consider using a repository pattern or data access object (DAO) within the implementation to interact with the underlying data store.
 
-## Related Components
+## Related
 
-- **`DeleteNotificationService`**: The sole permitted implementation of this interface, containing the actual deletion logic.
-- **Notification Entity**: The data model representing a notification, which is deleted by this service.
+- `DeleteNotificationService` – The sole permitted implementation of this interface.
+- `UUID` – The standard Java class used for universally unique identifiers.

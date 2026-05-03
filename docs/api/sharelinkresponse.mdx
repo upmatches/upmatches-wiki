@@ -1,35 +1,28 @@
 ---
 id: share-link-response
-title: ShareLinkResponse Documentation
+title: ShareLinkResponse
 sidebar_label: ShareLinkResponse
 ---
 
 # ShareLinkResponse
 
-The `ShareLinkResponse` class is a Java record that serves as a Data Transfer Object (DTO) for representing a share link's response data. It encapsulates all relevant information about a shortened link, including its unique identifier, generated code, resource details, and various URL formats for different platforms.
+The `ShareLinkResponse` class is a Java record that serves as a Data Transfer Object (DTO) for representing a shareable link response in the UpMatches application. It encapsulates all relevant information about a shortened link, including its unique identifier, generated code, resource type, and various URL representations for different platforms.
 
-## Purpose
-
-This record is designed to provide a standardized response format when returning share link information from the API. It transforms internal `ShortLink` entity data into a client-friendly format that includes:
-- Unique identification and tracking
-- Resource type and identifier for the linked content
-- Platform-specific URLs (share, web, mobile)
-- Click tracking statistics
-- Creation timestamp
+This record is designed to provide a clean, immutable response structure when clients request information about a shortened link. It includes both the original link metadata and the computed URLs for sharing across different contexts (web, mobile, and general share).
 
 ## Record Components
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | `UUID` | Unique identifier for the share link |
-| `code` | `String` | Shortened link code |
-| `resourceType` | `ResourceType` | Type of resource being shared (e.g., profile, post) |
+| `code` | `String` | Shortened code or alias for the link |
+| `resourceType` | `ResourceType` | Type of resource being shared (enum) |
 | `resourceId` | `String` | Identifier of the shared resource |
-| `shareUrl` | `String` | General share URL |
-| `webUrl` | `String` | Web-specific URL for desktop browsers |
-| `mobileUrl` | `String` | Mobile-specific URL for app deep linking |
+| `shareUrl` | `String` | General shareable URL |
+| `webUrl` | `String` | Web-specific URL for the resource |
+| `mobileUrl` | `String` | Mobile-specific URL for the resource |
 | `clickCount` | `Long` | Number of times the link has been clicked |
-| `createdAt` | `Instant` | Timestamp when the share link was created |
+| `createdAt` | `Instant` | Timestamp when the link was created |
 
 ## Methods
 
@@ -44,41 +37,40 @@ public static ShareLinkResponse fromShortLink(
     Long clickCount)
 ```
 
-Factory method that creates a `ShareLinkResponse` instance from a `ShortLink` entity and additional URL/click data.
+Factory method that creates a `ShareLinkResponse` instance from a `ShortLink` entity and additional URL information.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `link` | `ShortLink` | The source entity containing base share link data |
-| `shareUrl` | `String` | The generated share URL |
-| `webUrl` | `String` | The web-specific URL |
-| `mobileUrl` | `String` | The mobile-specific URL |
-| `clickCount` | `Long` | Current click count for the link |
+| `link` | `ShortLink` | The source `ShortLink` entity containing link metadata |
+| `shareUrl` | `String` | The general shareable URL for the link |
+| `webUrl` | `String` | The web-specific URL for the resource |
+| `mobileUrl` | `String` | The mobile-specific URL for the resource |
+| `clickCount` | `Long` | The current click count for the link |
 
 **Returns:**
 
 | Type | Description |
 |------|-------------|
-| `ShareLinkResponse` | A new response object populated with data from the provided `ShortLink` entity and URL parameters |
+| `ShareLinkResponse` | A new `ShareLinkResponse` instance populated with data from the provided `ShortLink` and URL parameters |
 
-## Usage Example
+**Example Usage:**
 
 ```java
-// Assuming you have a ShortLink entity and generated URLs
-ShortLink shortLink = shortLinkService.createShortLink(resource);
-String shareUrl = urlGenerator.generateShareUrl(shortLink.getCode());
-String webUrl = urlGenerator.generateWebUrl(shortLink.getCode());
-String mobileUrl = urlGenerator.generateMobileUrl(shortLink.getCode());
-Long clickCount = clickTrackingService.getClickCount(shortLink.getId());
-
+ShortLink shortLink = shortLinkRepository.findById(linkId);
 ShareLinkResponse response = ShareLinkResponse.fromShortLink(
-    shortLink, shareUrl, webUrl, mobileUrl, clickCount
+    shortLink,
+    "https://upmatches.com/s/abc123",
+    "https://upmatches.com/resource/123",
+    "upmatches://resource/123",
+    42L
 );
 ```
 
-## Notes
+## Implementation Notes
 
-- This record is immutable by design, leveraging Java's `record` feature for concise data carrier implementation.
-- The `fromShortLink` factory method provides a clean conversion from the persistence entity to the API response format.
-- All timestamps are represented as `Instant` for timezone-independent handling.
+- The record is immutable by design, ensuring thread safety and data consistency.
+- The `fromShortLink` factory method provides a convenient way to transform a `ShortLink` entity into a response DTO, separating the internal domain model from the API response format.
+- The `ResourceType` enum allows for flexible categorization of shared resources (e.g., user profiles, posts, events).
+- All timestamps are stored as `Instant` for precise time handling across different time zones.

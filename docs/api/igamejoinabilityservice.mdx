@@ -4,13 +4,11 @@ title: IGameJoinabilityService Interface
 sidebar_label: IGameJoinabilityService
 ---
 
-# IGameJoinabilityService
+# IGameJoinabilityService Interface
 
-The `IGameJoinabilityService` is a sealed interface that defines the contract for determining whether a viewer can join a game. It provides methods for both single game and batch joinability computations, taking into account participant counts and user-specific constraints.
+The `IGameJoinabilityService` interface defines the contract for determining whether a viewer can join a game session. It provides methods to evaluate joinability for individual games and batch operations, considering factors such as participant counts, game state, and user identity.
 
-## Purpose
-
-This interface serves as the core abstraction for game joinability logic in the UpMatches application. By using a sealed interface, it restricts implementation to only the `GameJoinabilityService` class, ensuring controlled and consistent joinability calculations across the system.
+This sealed interface permits only `GameJoinabilityService` as its implementation, ensuring controlled extension and type safety within the game joinability domain.
 
 ## Interface Definition
 
@@ -24,52 +22,60 @@ public sealed interface IGameJoinabilityService permits GameJoinabilityService {
 
 ### `compute`
 
-Computes the joinability status for a single game based on the current participant count and the requesting user.
+Evaluates joinability for a single game based on current participant count and requesting user.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `game` | `Game` | The game entity to evaluate joinability for |
+| `game` | `Game` | The game entity to evaluate for joinability |
 | `participantCount` | `long` | Current number of participants in the game |
-| `userId` | `UUID` | The unique identifier of the user requesting to join |
+| `userId` | `UUID` | Unique identifier of the user requesting to join |
 
-**Returns:** `ViewerJoinabilityResponse` - A response object containing the joinability status and any relevant information for the specified user.
+**Returns:** `ViewerJoinabilityResponse` - A response object indicating whether the viewer can join and any relevant constraints or reasons.
 
 ### `computeBatch`
 
-Computes joinability status for multiple games simultaneously, allowing for efficient batch processing.
+Evaluates joinability for multiple games simultaneously, allowing efficient batch processing.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `games` | `List<Game>` | A list of game entities to evaluate joinability for |
-| `participantCountsByGameId` | `Map<UUID, Long>` | A map associating each game's UUID with its current participant count |
-| `userId` | `UUID` | The unique identifier of the user requesting to join |
+| `games` | `List<Game>` | List of game entities to evaluate |
+| `participantCountsByGameId` | `Map<UUID, Long>` | Map of game IDs to their current participant counts |
+| `userId` | `UUID` | Unique identifier of the user requesting to join |
 
-**Returns:** `Map<UUID, ViewerJoinabilityResponse>` - A map where each key is a game UUID and the value is the corresponding `ViewerJoinabilityResponse` for that game.
-
-## Implementation Notes
-
-- The interface is sealed, meaning only `GameJoinabilityService` can implement it
-- Both methods require a `userId` parameter, indicating joinability decisions are user-specific
-- The batch method accepts participant counts as a separate map, allowing callers to provide pre-computed or cached participant data
-- The `ViewerJoinabilityResponse` type encapsulates the result of the joinability check, including whether the user can join and any relevant constraints or messages
+**Returns:** `Map<UUID, ViewerJoinabilityResponse>` - A map of game IDs to their corresponding joinability responses.
 
 ## Usage Example
 
 ```java
-// Single game check
+// Single game evaluation
 ViewerJoinabilityResponse response = joinabilityService.compute(
     game, 
     game.getParticipantCount(), 
     currentUserId
 );
 
-// Batch check for multiple games
-Map<UUID, Long> participantCounts = games.stream()
-    .collect(Collectors.toMap(Game::getId, Game::getParticipantCount));
-    
+if (response.canJoin()) {
+    // Allow user to join the game
+} else {
+    // Show reason why user cannot join
+    System.out.println("Cannot join: " + response.getReason());
+}
+
+// Batch evaluation for multiple games
+List<Game> availableGames = gameRepository.findAvailableGames();
+Map<UUID, Long> participantCounts = gameRepository.getParticipantCounts(availableGames);
 Map<UUID, ViewerJoinabilityResponse> responses = joinabilityService.computeBatch(
-    games,
+    availableGames,
     participantCounts,
     currentUserId
 );
 ```
+
+## Implementation Notes
+
+- The interface is sealed, meaning only `GameJoinabilityService` can implement it
+- The `ViewerJoinabilityResponse` object typically contains:
+  - `canJoin()` - boolean indicating joinability
+  - `getReason()` - string explaining why join is denied (if applicable)
+  - Additional metadata about game capacity or restrictions
+- Batch processing is optimized for performance when evaluating multiple games simultaneously

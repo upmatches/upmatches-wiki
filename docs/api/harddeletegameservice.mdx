@@ -6,62 +6,49 @@ sidebar_label: HardDeleteGameService
 
 # HardDeleteGameService
 
-The `HardDeleteGameService` class is a Spring service component responsible for permanently removing a `Game` entity from the database. Unlike soft deletion, this operation physically deletes the record and cannot be undone. Access is restricted to users with the `ADMIN` authority, and the operation is audited for compliance and traceability.
+The `HardDeleteGameService` class is a Spring service component responsible for permanently removing a `Game` entity from the database. This operation is irreversible and is restricted to users with `ADMIN` authority. The service ensures that the game exists before deletion and wraps the operation in a transactional context with auditing support.
 
-## Purpose
+## Class Overview
 
-- **Permanent Deletion**: Physically removes a game record from the database.
-- **Admin-Only Access**: Ensures only authorized administrators can perform hard deletions.
-- **Audit Trail**: Logs the deletion event with details about the resource and the user who performed the action.
-- **Transactional Safety**: Wraps the deletion in a database transaction to maintain data integrity.
-
-## Class Details
-
-| Aspect | Description |
-|--------|-------------|
-| **Package** | `com.upmatches.app.features.game.services` |
-| **Type** | `non-sealed class` implementing `IHardDeleteGameService` |
-| **Annotations** | `@Service` |
-| **Dependencies** | `GameRepository`, `IGameLookupService` |
-
-## Constructor
-
-### `HardDeleteGameService(GameRepository gameRepository, IGameLookupService lookupService)`
-
-Initializes the service with the required dependencies.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `gameRepository` | `GameRepository` | Repository for performing database operations on `Game` entities |
-| `lookupService` | `IGameLookupService` | Service for looking up game entities, including soft-deleted ones |
+- **Package:** `com.upmatches.app.features.game.services`
+- **Type:** `non-sealed class` implementing `IHardDeleteGameService`
+- **Annotations:** `@Service`
+- **Dependencies:**
+  - `GameRepository` – for database operations
+  - `IGameLookupService` – for looking up game entities
 
 ## Public Methods
 
 ### `execute(UUID id)`
 
-Permanently deletes a game from the database.
+Permanently deletes a game from the database by its unique identifier.
 
-| Aspect | Details |
-|--------|---------|
-| **Access Modifier** | `public` |
-| **Return Type** | `void` |
-| **Parameters** | `id` (`UUID`) – The unique identifier of the game to delete |
-| **Annotations** | `@Transactional`, `@PreAuthorize("hasAuthority('ADMIN')")`, `@Auditable(action = "GAME_HARD_DELETED", resourceType = "GAME", resourceIdExpression = "#args[0]")` |
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `id`      | `UUID` | The unique identifier of the game to be deleted. |
+
+**Return Type:** `void`
 
 **Behavior:**
+1. Retrieves the game entity using the lookup service, including soft-deleted records.
+2. If the game does not exist, throws a `ResourceNotFoundException`.
+3. Executes the deletion within a transactional context.
+4. Logs the operation as auditable with action `GAME_HARD_DELETED`.
 
-1. **Lookup**: Retrieves the game entity using `lookupService.findGameIgnoringDeletedOrThrow(id)`. This method will throw a `ResourceNotFoundException` if the game does not exist.
-2. **Deletion**: Calls `gameRepository.delete(game)` to physically remove the entity from the database.
-3. **Execution**: Uses `ServiceOperationExecutor.executeVoid()` to wrap the deletion operation, providing consistent error handling and logging.
+**Security:** Requires `ADMIN` authority.
 
 **Exceptions:**
+- `ResourceNotFoundException` – thrown if the game with the given ID does not exist.
 
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | Thrown if no game exists with the given ID |
-| `AccessDeniedException` | Thrown if the current user does not have the `ADMIN` authority |
+## Annotations
 
-**Example Usage:**
+| Annotation            | Description                                                                 |
+|-----------------------|-----------------------------------------------------------------------------|
+| `@Transactional`      | Ensures the deletion operation is executed within a database transaction.   |
+| `@PreAuthorize`       | Restricts access to users with `ADMIN` authority.                          |
+| `@Auditable`          | Records the deletion event for auditing purposes.                          |
+
+## Usage Example
 
 ```java
 @Autowired
@@ -69,23 +56,12 @@ private HardDeleteGameService hardDeleteGameService;
 
 public void deleteGame(UUID gameId) {
     hardDeleteGameService.execute(gameId);
-    // Game is permanently removed from the database
 }
 ```
 
-## Dependencies
+## Related Components
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `GameRepository` | Bean | Spring Data JPA repository for `Game` entities |
-| `IGameLookupService` | Bean | Service interface for game lookup operations |
-| `ServiceOperationExecutor` | Utility | Helper class for executing service operations with standardized error handling |
-
-## Security
-
-- **Authorization**: The `@PreAuthorize("hasAuthority('ADMIN')")` annotation ensures only users with the `ADMIN` authority can invoke this method.
-- **Auditing**: The `@Auditable` annotation automatically logs the deletion event, capturing the action type (`GAME_HARD_DELETED`), resource type (`GAME`), and the ID of the deleted game.
-
-## Transaction Management
-
-The `@Transactional` annotation ensures that the deletion operation is executed within a database transaction. If any exception occurs during the process, the transaction is rolled back, preventing partial deletions or inconsistent data states.
+- `GameRepository` – handles database operations for `Game` entities.
+- `IGameLookupService` – provides lookup functionality for game entities.
+- `ServiceOperationExecutor` – utility for executing service operations with standardized error handling.
+- `ResourceNotFoundException` – custom exception for missing resources.

@@ -6,7 +6,7 @@ sidebar_label: Auth0AuthService
 
 # Auth0AuthService
 
-The `Auth0AuthService` class is a Spring service that provides authentication functionality using Auth0 as the identity provider. It implements the `IAuth0AuthService` interface and handles the OAuth 2.0 Authorization Code flow with PKCE (Proof Key for Code Exchange) for secure authentication.
+The `Auth0AuthService` class is a Spring service that provides authentication functionality using Auth0 as the identity provider. It implements the `IAuth0AuthService` interface and handles OAuth 2.0 authorization code flow with PKCE (Proof Key for Code Exchange) for secure authentication.
 
 ## Purpose
 
@@ -16,84 +16,129 @@ This service manages the complete authentication lifecycle with Auth0, including
 - Verifying ID tokens using JWKS (JSON Web Key Set)
 - Caching JWKS for performance optimization
 
+## Class Details
+
+- **Package**: `com.upmatches.app.features.auth.services`
+- **Annotations**: `@Service`
+- **Implements**: `IAuth0AuthService`
+- **Dependencies**: RestClient, Auth0Properties, ObjectMapper
+
+## Constructor
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `restClient` | `RestClient` | Auth0-specific REST client for API calls |
+| `properties` | `Auth0Properties` | Auth0 configuration properties |
+| `objectMapper` | `ObjectMapper` | JSON object mapper for parsing responses |
+
 ## Public Methods
 
 ### `getAuthorizationUrl`
 
-Generates the Auth0 authorization URL for redirecting users to the login page.
+Generates the Auth0 authorization URL for user redirection.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `state` | `String` | Anti-CSRF state parameter |
+| `state` | `String` | CSRF protection state parameter |
 | `nonce` | `String` | Replay attack prevention nonce |
 | `codeVerifier` | `String` | PKCE code verifier for code challenge generation |
 | `connection` | `String` | Optional Auth0 connection (e.g., "google-oauth2") |
 
-**Returns:** `String` - The complete authorization URL
+**Returns**: `String` - The complete authorization URL
+
+**Example**:
+```java
+String authUrl = authService.getAuthorizationUrl(
+    "randomState123",
+    "randomNonce456",
+    "codeVerifier789",
+    "google-oauth2"
+);
+```
 
 ### `exchangeAuthorizationCode`
 
-Exchanges an authorization code for verified claims from Auth0.
+Exchanges an authorization code for verified user claims.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `authorizationCode` | `String` | The authorization code from Auth0 callback |
-| `codeVerifier` | `String` | The PKCE code verifier used in the authorization request |
-| `nonce` | `String` | The nonce used in the authorization request |
+| `codeVerifier` | `String` | PKCE code verifier used in authorization request |
+| `nonce` | `String` | Nonce used in authorization request |
 
-**Returns:** `Auth0VerifiedClaims` - Verified claims including subject, picture, and email
+**Returns**: `Auth0VerifiedClaims` - Verified user claims containing:
+- `sub` (String): User subject identifier
+- `picture` (String): User profile picture URL
+- `email` (String): User email address
 
-**Throws:** `IllegalStateException` if the token response is invalid or missing required fields
+**Throws**: `IllegalStateException` if:
+- ID token is missing from response
+- Token verification fails
+- Claims validation fails
 
-## Internal Methods
+**Example**:
+```java
+Auth0VerifiedClaims claims = authService.exchangeAuthorizationCode(
+    "authCode123",
+    "codeVerifier789",
+    "randomNonce456"
+);
+```
+
+## Private Methods
 
 ### `verifyIdToken`
 
-Verifies the ID token signature and validates claims.
+Verifies an Auth0 ID token and extracts claims.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `idToken` | `String` | The JWT ID token from Auth0 |
+| `idToken` | `String` | The JWT ID token to verify |
 | `nonce` | `String` | Expected nonce value for validation |
 
-**Returns:** `Auth0VerifiedClaims` - Verified claims from the token
+**Returns**: `Auth0VerifiedClaims` - Verified user claims
 
-**Throws:** `Exception` if token verification fails
+**Throws**: `IllegalStateException` if:
+- Issuer mismatch
+- Audience mismatch
+- Nonce mismatch or missing
+- Subject claim missing
 
 ### `getAuth0Jwks`
 
-Retrieves and caches the Auth0 JWKS (JSON Web Key Set) for token signature verification.
+Retrieves and caches Auth0 JWKS for token signature verification.
 
-**Returns:** `JWKSet` - The parsed JWKS from Auth0
+**Returns**: `JWKSet` - The JSON Web Key Set
 
-**Throws:** `IllegalStateException` if JWKS fetch fails or returns empty
+**Throws**: `IllegalStateException` if:
+- JWKS response is empty
+- Failed to fetch JWKS
 
 ## Configuration
 
-The service uses `Auth0Properties` for configuration, which includes:
-- `domain` - Auth0 tenant domain
-- `clientId` - Auth0 application client ID
-- `clientSecret` - Auth0 application client secret
-- `redirectUri` - Callback URL after authentication
-- `scopes` - Requested OAuth scopes
+The service uses the following constants for configuration:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `JWKS_CACHE_SECONDS` | `900` | JWKS cache duration (15 minutes) |
+| `HTTPS_PREFIX` | `https://` | URL scheme prefix |
+| `AUTHORIZE_PATH` | `/authorize` | Auth0 authorization endpoint |
+| `OAUTH_TOKEN_PATH` | `/oauth/token` | Auth0 token endpoint |
+| `WELL_KNOWN_JWKS_PATH` | `/.well-known/jwks.json` | JWKS endpoint |
+
+## Logging
+
+The service uses SLF4J logging with the following log levels:
+- **DEBUG**: Authorization code exchange, token verification, JWKS fetching
+- **WARN**: Missing ID token scenarios
+
+## Thread Safety
+
+The JWKS cache is protected by a `volatile` field and `synchronized` block for thread-safe double-checked locking pattern.
 
 ## Dependencies
 
-- **RestClient** - HTTP client for Auth0 API calls
-- **Auth0Properties** - Configuration properties
-- **ObjectMapper** - JSON parsing
-- **Nimbus JOSE + JWT** - JWT processing and verification
-
-## Error Handling
-
-The service throws `IllegalStateException` for various failure scenarios:
-- Missing ID token in response
-- Issuer mismatch
-- Audience mismatch
-- Nonce mismatch
-- Missing subject claim
-- Empty or failed JWKS fetch
-
-## Caching
-
-JWKS is cached for 900 seconds (15 minutes) to reduce network calls to Auth0's JWKS endpoint. The cache is thread-safe using double-checked locking with a volatile field.
+- **Nimbus JOSE+JWT**: For JWT processing and verification
+- **Spring Web**: For RestClient HTTP communication
+- **Jackson**: For JSON parsing
+- **SLF4J**: For logging

@@ -12,79 +12,79 @@ The `AuthenticatedUserResolver` class is a Spring service that provides a centra
 
 This service resolves the currently authenticated user's UUID from the JWT token stored in the Spring Security context. It offers two methods:
 - A **required** variant that throws an exception if no valid authentication is found
-- An **optional** variant that returns an empty `Optional` when authentication is unavailable
+- An **optional** variant that returns an empty `Optional` when authentication is missing or invalid
 
-This pattern allows callers to choose between strict authentication requirements and more flexible handling of unauthenticated requests.
+This pattern allows different parts of the application to handle authentication status appropriately—either enforcing authentication or gracefully handling unauthenticated requests.
 
 ## Class Details
 
 | Property | Value |
 |----------|-------|
 | **Package** | `com.upmatches.app.features.game.services` |
-| **Type** | `non-sealed` class |
-| **Annotation** | `@Service` |
+| **Modifiers** | `public non-sealed` |
 | **Implements** | `IAuthenticatedUserResolver` |
+| **Annotations** | `@Service` |
 
 ## Public Methods
 
 ### `requireUserId()`
 
-Returns the UUID of the currently authenticated user, throwing an exception if no valid authentication is present.
+Returns the UUID of the currently authenticated user, throwing an exception if no valid authentication is found.
 
 | Aspect | Details |
 |--------|---------|
 | **Return Type** | `UUID` |
-| **Throws** | `AuthenticationException` - if no authentication exists, the principal is not a JWT, or the token's subject is not a valid UUID |
+| **Throws** | `AuthenticationException` if no authentication exists, the principal is not a JWT, or the token's subject is not a valid UUID |
 
-**Behavior:**
-1. Retrieves the `Authentication` object from `SecurityContextHolder`
-2. Validates that authentication exists and the principal is a `Jwt` instance
-3. Parses the JWT's subject claim as a UUID
-4. Throws `AuthenticationException` with descriptive messages for each failure case
+**Usage Example:**
+```java
+@Autowired
+private AuthenticatedUserResolver userResolver;
+
+public void someSecuredMethod() {
+    UUID userId = userResolver.requireUserId();
+    // Use userId for database operations, etc.
+}
+```
 
 ### `optionalUserId()`
 
-Returns an `Optional<UUID>` containing the authenticated user's ID, or empty if no valid authentication is present.
+Returns an `Optional<UUID>` containing the authenticated user's ID, or an empty `Optional` if no valid authentication is present.
 
 | Aspect | Details |
 |--------|---------|
 | **Return Type** | `Optional<UUID>` |
+| **Returns** | `Optional.empty()` if no authentication exists, the principal is not a JWT, or the token's subject is not a valid UUID |
 
-**Behavior:**
-1. Retrieves the `Authentication` object from `SecurityContextHolder`
-2. Returns `Optional.empty()` if no authentication exists or the principal is not a `Jwt`
-3. Attempts to parse the JWT's subject claim as a UUID
-4. Returns `Optional.empty()` if parsing fails (e.g., invalid UUID format)
-
-## Usage Example
-
+**Usage Example:**
 ```java
-@Service
-public class GameService {
-    private final AuthenticatedUserResolver userResolver;
+@Autowired
+private AuthenticatedUserResolver userResolver;
 
-    public GameService(AuthenticatedUserResolver userResolver) {
-        this.userResolver = userResolver;
-    }
-
-    public void createGame() {
-        // Strict authentication required
-        UUID userId = userResolver.requireUserId();
-        // ... create game for userId
-    }
-
-    public Optional<Game> findGameForCurrentUser() {
-        // Optional authentication - works for both authenticated and anonymous users
-        Optional<UUID> userId = userResolver.optionalUserId();
-        return userId.flatMap(this::findGameByUserId);
-    }
+public void someOptionalMethod() {
+    Optional<UUID> userId = userResolver.optionalUserId();
+    userId.ifPresent(id -> {
+        // Perform user-specific operations
+    });
 }
 ```
 
 ## Error Handling
 
-The class uses two custom exception messages defined as constants:
-- `MSG_NO_AUTH`: "No valid authentication found." - thrown when authentication is missing or the principal is not a JWT
-- `MSG_INVALID_SUBJECT`: "Invalid user ID in token subject: %s" - thrown when the JWT subject cannot be parsed as a UUID
+Both methods handle two error scenarios:
 
-Both methods handle the `IllegalArgumentException` from `UUID.fromString()` gracefully, either by rethrowing as `AuthenticationException` (in `requireUserId()`) or returning `Optional.empty()` (in `optionalUserId()`).
+1. **Missing or Invalid Authentication**: When `SecurityContextHolder.getContext().getAuthentication()` returns `null` or the principal is not a `Jwt` instance.
+2. **Invalid Subject Format**: When the JWT's subject claim cannot be parsed as a valid `UUID`.
+
+The `requireUserId()` method throws an `AuthenticationException` with descriptive messages in both cases, while `optionalUserId()` silently returns `Optional.empty()`.
+
+## Dependencies
+
+| Dependency | Purpose |
+|------------|---------|
+| `org.springframework.security.core.Authentication` | Represents the authentication token/request |
+| `org.springframework.security.core.context.SecurityContextHolder` | Provides access to the current security context |
+| `org.springframework.security.oauth2.jwt.Jwt` | Represents the decoded JWT token |
+| `com.upmatches.app.features.auth.exceptions.AuthenticationException` | Custom exception for authentication failures |
+| `java.util.UUID` | For parsing and representing user identifiers |
+| `java.util.Optional` | For the optional return variant |

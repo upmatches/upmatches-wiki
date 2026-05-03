@@ -6,37 +6,31 @@ sidebar_label: GameStatus
 
 # GameStatus Enum
 
-The `GameStatus` enum defines the possible states a game can be in within the UpMatches application. It is used to track the lifecycle of a game from its creation through completion or cancellation.
+The `GameStatus` enum represents the possible states of a game within the application. It is used to track and manage the lifecycle of a game from its creation to its conclusion.
 
-## Package Location
+## Purpose
 
-`com.upmatches.app.features.game.enums`
+This enum provides a type-safe way to define and handle the different statuses a game can have. It ensures that only valid status values are used throughout the codebase, reducing errors and improving code readability.
 
 ## Enum Values
 
-| Value | Description |
-|-------|-------------|
-| `SCHEDULED` | The game has been created and scheduled for a future date/time. |
-| `STARTED` | The game is currently in progress. |
-| `EXPIRED` | The game has ended or passed its scheduled time without being completed. |
-| `CANCELLED` | The game was cancelled before it started. |
+| Value       | Description                                                                 |
+|-------------|-----------------------------------------------------------------------------|
+| `SCHEDULED` | The game has been planned and is set to occur at a future date and time.    |
+| `STARTED`   | The game is currently in progress.                                          |
+| `EXPIRED`   | The game has ended or its scheduled time has passed without being started.  |
+| `CANCELLED` | The game has been cancelled and will not take place.                        |
 
 ## Usage
 
-This enum is typically used in game-related entities and services to determine the current state of a game and control what actions are allowed. For example:
-
-- A game can only transition from `SCHEDULED` to `STARTED` when the scheduled time arrives.
-- A game in `STARTED` state cannot be cancelled.
-- `EXPIRED` and `CANCELLED` are terminal states.
-
-## Example
+The `GameStatus` enum is typically used in game-related entities, services, and controllers to represent and transition between game states. For example:
 
 ```java
-GameStatus status = GameStatus.SCHEDULED;
-
-if (status == GameStatus.STARTED) {
-    // Allow gameplay actions
-} else if (status == GameStatus.CANCELLED) {
-    // Notify players
-}
+GameStatus currentStatus = GameStatus.SCHEDULED;
+// Later, when the game starts:
+currentStatus = GameStatus.STARTED;
 ```
+
+## Package
+
+`com.upmatches.app.features.game.enums`

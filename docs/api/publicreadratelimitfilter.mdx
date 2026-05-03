@@ -8,79 +8,78 @@ sidebar_label: PublicReadRateLimitFilter
 
 ## Purpose
 
-The `PublicReadRateLimitFilter` is a Spring Boot servlet filter that implements rate limiting for public read endpoints in the UpMatches application. It extends `OncePerRequestFilter` to ensure each request is processed exactly once.
+The `PublicReadRateLimitFilter` is a Spring Boot servlet filter that implements rate limiting for public read-only API endpoints. It protects specific GET endpoints (`/api/v1/games`, `/api/v1/venues`, and `/api/v1/activities`) from excessive requests by tracking request counts per client in Redis.
 
-This filter protects three categories of endpoints from excessive usage:
-- **Games**: `/api/v1/games/**`
-- **Venues**: `/api/v1/venues`
-- **Activities**: `/api/v1/activities/**`
+The filter distinguishes between anonymous users (rate-limited by IP address) and authenticated users (rate-limited by JWT subject), applying different limits:
+- **Anonymous users**: 60 requests per 60-second window
+- **Authenticated users**: 240 requests per 60-second window
 
-Rate limits are enforced per client (identified by IP address or authenticated user subject) using Redis as the backing store. The filter differentiates between anonymous and authenticated users, applying different limits to each.
+When a client exceeds their rate limit, the filter returns a `429 Too Many Requests` response with a `ProblemDetail` JSON body and a `Retry-After` header.
 
-## Key Features
+## Dependencies
 
-- **Redis-backed rate limiting** using atomic increment operations
-- **Differentiated limits** for anonymous (60 requests/minute) and authenticated (240 requests/minute) users
-- **Client identification** via JWT subject for authenticated users or `X-Forwarded-For` header / remote IP for anonymous users
-- **RFC 9457 Problem Details** response format for rate limit exceeded errors
-- **Conditional activation** via `@ConditionalOnBean(StringRedisTemplate.class)`
+- **Spring Boot**: `OncePerRequestFilter`, `ConditionalOnBean`
+- **Spring Security**: `SecurityContextHolder`, `Jwt`
+- **Redis**: `StringRedisTemplate`
+- **Jackson**: `ObjectMapper`
+- **Jakarta Servlet**: `FilterChain`, `HttpServletRequest`, `HttpServletResponse`
 
 ## Configuration
 
-| Property | Value | Description |
-|----------|-------|-------------|
-| Anonymous limit | 60 | Maximum requests per minute for unauthenticated users |
-| Authenticated limit | 240 | Maximum requests per minute for authenticated users |
-| Window duration | 60 seconds | Time window for rate limit counting |
-
-## Endpoint Buckets
-
-| Bucket | Path Pattern | Redis Key Prefix |
-|--------|--------------|------------------|
-| `games` | `/api/v1/games/**` | `rl:public:games:` |
-| `venues` | `/api/v1/venues` | `rl:public:venues:` |
-| `activities` | `/api/v1/activities/**` | `rl:public:activities:` |
+The filter is automatically activated when a `StringRedisTemplate` bean is available in the application context (via `@ConditionalOnBean(StringRedisTemplate.class)`).
 
 ## Public Methods
 
-### Constructor
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `PublicReadRateLimitFilter(StringRedisTemplate redisTemplate)` | Constructor | Creates a new filter instance with the provided Redis template |
 
-| Method | Description |
-|--------|-------------|
-| `PublicReadRateLimitFilter(StringRedisTemplate redisTemplate)` | Creates a new filter instance with the provided Redis template |
+## Protected Methods
 
-### Inherited Methods (from `OncePerRequestFilter`)
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `shouldNotFilter(HttpServletRequest request)` | `boolean` | `request` - The incoming HTTP request | Determines if the request should bypass rate limiting. Returns `true` for non-GET methods or URIs not matching the protected paths |
+| `doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)` | `void` | `request` - The incoming HTTP request<br/>`response` - The HTTP response<br/>`filterChain` - The filter chain | Applies rate limiting logic: resolves the bucket, determines the client subject, checks the rate limit, and either proceeds with the filter chain or returns a 429 response |
 
-| Method | Description |
-|--------|-------------|
-| `shouldNotFilter(HttpServletRequest request)` | Determines if the request should bypass rate limiting |
-| `doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)` | Applies rate limiting logic and either allows or rejects the request |
-
-## Internal Methods
+## Private Methods
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `resolveBucket(String uri)` | `Bucket` or `null` | Maps the request URI to the appropriate rate limit bucket |
-| `isRateLimited(String key, int limit)` | `boolean` | Checks if the client has exceeded the rate limit for the given key |
-| `resolveClientIp(HttpServletRequest request)` | `String` | Extracts the client IP address from the request |
-| `resolveSubject(HttpServletRequest request)` | `String` | Determines the client identifier (JWT subject or IP address) |
-| `isAuthenticated()` | `boolean` | Checks if the current request is from an authenticated user |
-| `writeRateLimitResponse(HttpServletResponse response, String bucket, String instance)` | `void` | Writes a RFC 9457 Problem Details response for rate limit exceeded |
+| `resolveBucket(String uri)` | `Bucket` | Maps the request URI to a rate limit bucket (games, venues, or activities) |
+| `isRateLimited(String key, int limit)` | `boolean` | Checks if the client has exceeded the rate limit for the given Redis key |
+| `resolveClientIp(HttpServletRequest request)` | `String` | Extracts the client IP address from the `X-Forwarded-For` header or the remote address |
+| `resolveSubject(HttpServletRequest request)` | `String` | Determines the rate limiting subject: JWT subject for authenticated users, client IP for anonymous users |
+| `isAuthenticated()` | `boolean` | Checks if the current request is authenticated via a JWT token |
+| `writeRateLimitResponse(HttpServletResponse response, String bucket, String instance)` | `void` | Writes a `429 Too Many Requests` response with a `ProblemDetail` JSON body and `Retry-After` header |
 
-## Rate Limit Algorithm
+## Internal Record
 
-1. **Request arrives** and passes the `shouldNotFilter` check (must be GET request to a monitored endpoint)
-2. **Bucket resolution** maps the URI to a rate limit bucket
-3. **Subject resolution** identifies the client (JWT subject for authenticated users, IP for anonymous)
-4. **Redis increment** atomically increments the counter for the key `{bucketPrefix}{subject}`
-5. **First request** sets the key expiration to 60 seconds
-6. **Limit check** compares the counter against the appropriate limit (60 or 240)
-7. **If exceeded**, returns HTTP 429 with Problem Details JSON
-8. **If allowed**, continues the filter chain
+### `Bucket`
 
-## Response Format (Rate Limit Exceeded)
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `String` | Human-readable bucket name (e.g., "games", "venues", "activities") |
+| `keyPrefix` | `String` | Redis key prefix for the bucket (e.g., "rl:public:games:") |
 
-When the rate limit is exceeded, the filter returns an HTTP 429 response with `Content-Type: application/problem+json`:
+## Rate Limiting Algorithm
+
+1. **Subject Resolution**: The filter determines the client identity:
+   - If authenticated via JWT, uses the JWT subject
+   - If anonymous, uses the client IP address (respecting `X-Forwarded-For` header)
+
+2. **Key Construction**: Creates a Redis key combining the bucket prefix and the subject (e.g., `rl:public:games:user123`)
+
+3. **Counter Increment**: Uses Redis `INCR` command to atomically increment the counter for the key
+
+4. **Expiry Setting**: On the first request (counter = 1), sets a TTL of 60 seconds on the key
+
+5. **Limit Check**: Compares the counter value against the applicable limit (60 for anonymous, 240 for authenticated)
+
+6. **Response**: If the limit is exceeded, returns a 429 response; otherwise, continues the filter chain
+
+## Response Format
+
+When rate limited, the filter returns:
 
 ```json
 {
@@ -92,20 +91,26 @@ When the rate limit is exceeded, the filter returns an HTTP 429 response with `C
 }
 ```
 
-The response also includes a `Retry-After` header set to 60 seconds.
+With the following HTTP headers:
+- `Content-Type: application/problem+json`
+- `Retry-After: 60`
 
-## Dependencies
+## Protected Endpoints
 
-- Spring Boot Web (`jakarta.servlet`)
-- Spring Data Redis (`StringRedisTemplate`)
-- Spring Security (`Authentication`, `Jwt`)
-- Jackson (`ObjectMapper`)
-- Spring Boot auto-configuration (`@ConditionalOnBean`)
+| Endpoint | Bucket Name | Redis Key Prefix |
+|----------|-------------|------------------|
+| `/api/v1/games/**` | games | `rl:public:games:` |
+| `/api/v1/venues` | venues | `rl:public:venues:` |
+| `/api/v1/activities/**` | activities | `rl:public:activities:` |
 
-## Usage Notes
+## Usage Example
 
-- The filter is only activated when a `StringRedisTemplate` bean is available in the application context
-- Only GET requests to the specified endpoints are rate-limited
-- Authenticated users are identified by their JWT subject claim
-- Anonymous users are identified by the first IP address in the `X-Forwarded-For` header, falling back to the remote address
-- The filter uses a sliding window approach via Redis key expiration
+```java
+// The filter is automatically registered by Spring Boot
+// No additional configuration is needed beyond having a StringRedisTemplate bean
+
+// To customize limits, modify the constants:
+private static final int ANONYMOUS_LIMIT = 60;      // Change to desired limit
+private static final int AUTHENTICATED_LIMIT = 240;  // Change to desired limit
+private static final long WINDOW_SECONDS = 60L;      // Change to desired window
+```

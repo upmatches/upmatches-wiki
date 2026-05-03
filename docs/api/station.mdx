@@ -6,57 +6,52 @@ sidebar_label: Station
 
 # Station Entity
 
-The `Station` class is a JPA entity that represents a physical transit station or stop within the venue management system. It maps to the `stations` database table and stores essential geographic and identification information for each station.
+The `Station` class is a JPA entity that represents a physical transit station or stop within the venue management system. It maps to the `stations` database table and stores geographic coordinates along with associated transit line information.
 
 ## Purpose
 
-This entity serves as the core data model for managing transit stations. It captures:
-- Station identification and naming
-- Geographic coordinates (latitude/longitude)
-- Associated transit lines through a one-to-many relationship with `StationLine`
+This entity serves as the core data model for managing station locations. Each station has a name, precise latitude/longitude coordinates, and can be associated with multiple transit lines through the `StationLine` join entity. The class uses Lombok's `@Getter` annotation to automatically generate getter methods for all fields.
 
-## Class Overview
+## Entity Structure
 
-The entity uses Lombok's `@Getter` annotation to automatically generate getter methods for all fields. It implements a factory method pattern for object creation and provides a method to associate transit lines with the station.
+| Field | Type | Database Column | Constraints |
+|-------|------|-----------------|-------------|
+| `id` | `Long` | `id` | Primary key, auto-generated |
+| `name` | `String` | `name` | Length 150, not null |
+| `latitude` | `BigDecimal` | `latitude` | Precision 13, scale 10, not null |
+| `longitude` | `BigDecimal` | `longitude` | Precision 13, scale 10, not null |
+| `stationLines` | `List<StationLine>` | N/A (OneToMany) | Cascade all, orphan removal |
 
-## Fields
-
-| Field | Type | Database Column | Constraints | Description |
-|-------|------|-----------------|-------------|-------------|
-| `id` | `Long` | `id` | Primary Key, Auto-generated | Unique identifier for the station |
-| `name` | `String` | `name` | Not null, max 150 characters | Display name of the station |
-| `latitude` | `BigDecimal` | `latitude` | Not null, precision 13, scale 10 | Geographic latitude coordinate |
-| `longitude` | `BigDecimal` | `longitude` | Not null, precision 13, scale 10 | Geographic longitude coordinate |
-| `stationLines` | `List<StationLine>` | N/A (OneToMany) | Cascade ALL, orphan removal | Collection of station-line associations |
-
-## Methods
+## Public Methods
 
 ### `create(String name, BigDecimal latitude, BigDecimal longitude)`
 
+Static factory method to create a new `Station` instance.
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `name` | `String` | The display name for the station |
-| `latitude` | `BigDecimal` | The geographic latitude coordinate |
-| `longitude` | `BigDecimal` | The geographic longitude coordinate |
+| `name` | `String` | The station name (max 150 characters) |
+| `latitude` | `BigDecimal` | Geographic latitude coordinate |
+| `longitude` | `BigDecimal` | Geographic longitude coordinate |
 
-**Returns:** `Station` - A new Station instance with the specified properties.
-
-This static factory method creates a new Station entity with the provided name and geographic coordinates. It ensures proper initialization of the station's core attributes.
+**Returns:** `Station` - A new station entity with the provided values.
 
 ### `addLine(TransitLine transitLine, Integer stationNumber)`
 
+Associates a transit line with this station at a specific station number.
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `transitLine` | `TransitLine` | The transit line to associate with this station |
-| `stationNumber` | `Integer` | The station's number/order on the specified transit line |
+| `transitLine` | `TransitLine` | The transit line to associate |
+| `stationNumber` | `Integer` | The station's number/order on that line |
 
 **Returns:** `void`
 
-This method creates a new `StationLine` association between the current station and the provided transit line. The `stationNumber` parameter indicates the station's position or sequence number on that line. The new association is automatically added to the station's collection of station lines.
-
 ## Relationships
 
-- **One-to-Many with StationLine**: A station can be associated with multiple transit lines through the `stationLines` collection. The relationship is mapped by the `station` field in the `StationLine` entity and configured with cascade ALL operations and orphan removal.
+- **OneToMany with StationLine**: A station can have multiple `StationLine` entries, each representing a different transit line that serves this station. The relationship is bidirectional with `StationLine` owning the foreign key (`mappedBy = "station"`).
+- **CascadeType.ALL**: All operations (persist, merge, remove, refresh, detach) cascade to associated `StationLine` entities.
+- **orphanRemoval = true**: When a `StationLine` is removed from the collection, it is automatically deleted from the database.
 
 ## Usage Example
 
@@ -64,24 +59,20 @@ This method creates a new `StationLine` association between the current station 
 // Create a new station
 Station station = Station.create(
     "Central Station",
-    new BigDecimal("40.7128000"),
-    new BigDecimal("-74.0060000")
+    new BigDecimal("40.7128000000"),
+    new BigDecimal("-74.0060000000")
 );
 
-// Associate with a transit line
+// Add a transit line
 TransitLine lineA = transitLineRepository.findById(1L).orElseThrow();
-station.addLine(lineA, 1);
+station.addLine(lineA, 5);
+
+// Save the station (cascades to save StationLine)
+stationRepository.save(station);
 ```
 
-## Database Schema
+## Notes
 
-The entity maps to the `stations` table with the following structure:
-
-```sql
-CREATE TABLE stations (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
-    latitude DECIMAL(13,10) NOT NULL,
-    longitude DECIMAL(13,10) NOT NULL
-);
-```
+- The protected no-argument constructor is required by JPA and Lombok's `@Getter` annotation.
+- Geographic coordinates use `BigDecimal` with high precision (13 digits total, 10 decimal places) for accurate location storage.
+- The `stationLines` list is initialized as an empty `ArrayList` to prevent null pointer exceptions.

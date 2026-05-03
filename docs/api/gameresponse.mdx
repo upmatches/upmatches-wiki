@@ -6,15 +6,15 @@ sidebar_label: GameResponse
 
 # GameResponse
 
-The `GameResponse` record is a Data Transfer Object (DTO) used to represent a game's full details in API responses. It encapsulates all relevant information about a game, including activity, organizer, venue, skill levels, pricing, and viewer-specific context.
+The `GameResponse` record is a Data Transfer Object (DTO) used to represent a game's full details in API responses. It encapsulates all relevant information about a game, including its activity, organizer, venue, skill levels, pricing, and viewer-specific context.
 
 ## Purpose
 
-This record serves as the primary response object for game-related endpoints. It provides multiple factory methods to create instances with varying levels of detail, supporting different use cases such as:
+This record serves as the primary response object for game-related API endpoints. It provides multiple factory methods to construct instances with varying levels of detail, supporting different use cases such as:
 
-- Full game details for authenticated users
-- Anonymous game details (without organizer or pricing information)
-- Viewer-specific responses that indicate whether the current user is the organizer
+- **Standard game listing** with full details
+- **Viewer-specific responses** that include whether the current user is the organizer
+- **Anonymous responses** that omit organizer and pricing information for privacy
 
 ## Record Components
 
@@ -22,23 +22,23 @@ This record serves as the primary response object for game-related endpoints. It
 |-------|------|-------------|
 | `id` | `UUID` | Unique identifier for the game |
 | `activity` | `ActivitySummary` | Summary of the associated activity |
-| `organizer` | `OrganizerSummary` | Summary of the game organizer (can be `null` for anonymous responses) |
-| `venue` | `VenueSummary` | Summary of the venue location |
+| `organizer` | `OrganizerSummary` | Summary of the game organizer |
+| `venue` | `VenueSummary` | Summary of the game venue |
 | `skillLevel` | `SkillLevelRange` | Range of skill levels for the game |
-| `currency` | `String` | Currency code for pricing (can be `null`) |
-| `price` | `BigDecimal` | Price of the game (can be `null`) |
-| `pricing` | `PricingResponse` | Detailed pricing information (can be `null`) |
-| `slots` | `Integer` | Total number of available slots |
+| `currency` | `String` | Currency code for pricing |
+| `price` | `BigDecimal` | Price of the game |
+| `pricing` | `PricingResponse` | Detailed pricing information |
+| `slots` | `Integer` | Total number of slots available |
 | `numberOfPlayerJoined` | `Long` | Number of players who have joined |
-| `startTime` | `Instant` | Start time of the game |
-| `endTime` | `Instant` | End time of the game |
+| `startTime` | `Instant` | Game start time |
+| `endTime` | `Instant` | Game end time |
 | `visibility` | `GameVisibility` | Visibility setting of the game |
 | `gameType` | `GameType` | Type of game |
 | `status` | `GameStatus` | Current status of the game |
 | `remark` | `String` | Additional remarks or notes |
-| `shareLink` | `ShareLinkResponse` | Share link information (can be `null`) |
-| `viewerJoinability` | `ViewerJoinabilityResponse` | Joinability information for the viewer (can be `null`) |
-| `viewerIsOrganizer` | `Boolean` | Whether the viewer is the organizer (can be `null`) |
+| `shareLink` | `ShareLinkResponse` | Share link information |
+| `viewerJoinability` | `ViewerJoinabilityResponse` | Viewer's joinability status |
+| `viewerIsOrganizer` | `Boolean` | Whether the viewer is the organizer |
 | `createdAt` | `Instant` | Timestamp when the game was created |
 | `updatedAt` | `Instant` | Timestamp when the game was last updated |
 
@@ -46,7 +46,7 @@ This record serves as the primary response object for game-related endpoints. It
 
 ### `fromGame(Game game, long participantCount, ShareLinkResponse shareLink, ViewerJoinabilityResponse viewerJoinability, Boolean viewerIsOrganizer)`
 
-Creates a full `GameResponse` from a `Game` entity with all optional parameters.
+Creates a full `GameResponse` with all available information.
 
 **Parameters:**
 
@@ -55,14 +55,14 @@ Creates a full `GameResponse` from a `Game` entity with all optional parameters.
 | `game` | `Game` | The game entity to convert |
 | `participantCount` | `long` | Number of participants |
 | `shareLink` | `ShareLinkResponse` | Share link information |
-| `viewerJoinability` | `ViewerJoinabilityResponse` | Viewer joinability information |
+| `viewerJoinability` | `ViewerJoinabilityResponse` | Viewer's joinability status |
 | `viewerIsOrganizer` | `Boolean` | Whether the viewer is the organizer |
 
-**Returns:** `GameResponse` - A complete game response with all fields populated.
+**Returns:** `GameResponse` - A fully populated response object.
 
 ### `fromGame(Game game, long participantCount, ShareLinkResponse shareLink, ViewerJoinabilityResponse viewerJoinability)`
 
-Creates a `GameResponse` without specifying `viewerIsOrganizer` (defaults to `null`).
+Creates a `GameResponse` without specifying whether the viewer is the organizer.
 
 **Parameters:**
 
@@ -71,13 +71,13 @@ Creates a `GameResponse` without specifying `viewerIsOrganizer` (defaults to `nu
 | `game` | `Game` | The game entity to convert |
 | `participantCount` | `long` | Number of participants |
 | `shareLink` | `ShareLinkResponse` | Share link information |
-| `viewerJoinability` | `ViewerJoinabilityResponse` | Viewer joinability information |
+| `viewerJoinability` | `ViewerJoinabilityResponse` | Viewer's joinability status |
 
-**Returns:** `GameResponse` - A game response with `viewerIsOrganizer` set to `null`.
+**Returns:** `GameResponse` - A response object with `viewerIsOrganizer` set to `null`.
 
 ### `fromGame(Game game, long participantCount, ShareLinkResponse shareLink)`
 
-Creates a `GameResponse` with only share link information.
+Creates a `GameResponse` with share link but without viewer-specific information.
 
 **Parameters:**
 
@@ -87,11 +87,11 @@ Creates a `GameResponse` with only share link information.
 | `participantCount` | `long` | Number of participants |
 | `shareLink` | `ShareLinkResponse` | Share link information |
 
-**Returns:** `GameResponse` - A game response with share link but without viewer-specific information.
+**Returns:** `GameResponse` - A response object with `viewerJoinability` and `viewerIsOrganizer` set to `null`.
 
 ### `fromGame(Game game, long participantCount, ViewerJoinabilityResponse viewerJoinability)`
 
-Creates a `GameResponse` with only viewer joinability information.
+Creates a `GameResponse` with viewer joinability but without share link.
 
 **Parameters:**
 
@@ -99,9 +99,9 @@ Creates a `GameResponse` with only viewer joinability information.
 |-----------|------|-------------|
 | `game` | `Game` | The game entity to convert |
 | `participantCount` | `long` | Number of participants |
-| `viewerJoinability` | `ViewerJoinabilityResponse` | Viewer joinability information |
+| `viewerJoinability` | `ViewerJoinabilityResponse` | Viewer's joinability status |
 
-**Returns:** `GameResponse` - A game response with viewer joinability but without share link.
+**Returns:** `GameResponse` - A response object with `shareLink` and `viewerIsOrganizer` set to `null`.
 
 ### `fromGame(Game game, long participantCount)`
 
@@ -114,11 +114,11 @@ Creates a basic `GameResponse` without any viewer-specific or share link informa
 | `game` | `Game` | The game entity to convert |
 | `participantCount` | `long` | Number of participants |
 
-**Returns:** `GameResponse` - A basic game response without optional fields.
+**Returns:** `GameResponse` - A response object with `shareLink`, `viewerJoinability`, and `viewerIsOrganizer` set to `null`.
 
 ### `fromGameForViewer(Game game, long participantCount, ViewerJoinabilityResponse viewerJoinability, UUID viewerUserId)`
 
-Creates a `GameResponse` tailored for a specific viewer, including joinability information and whether the viewer is the organizer.
+Creates a `GameResponse` tailored for a specific viewer, including joinability and organizer status.
 
 **Parameters:**
 
@@ -126,10 +126,10 @@ Creates a `GameResponse` tailored for a specific viewer, including joinability i
 |-----------|------|-------------|
 | `game` | `Game` | The game entity to convert |
 | `participantCount` | `long` | Number of participants |
-| `viewerJoinability` | `ViewerJoinabilityResponse` | Viewer joinability information |
-| `viewerUserId` | `UUID` | The viewer's user ID |
+| `viewerJoinability` | `ViewerJoinabilityResponse` | Viewer's joinability status |
+| `viewerUserId` | `UUID` | ID of the viewer user |
 
-**Returns:** `GameResponse` - A viewer-specific game response.
+**Returns:** `GameResponse` - A response object with viewer-specific information.
 
 ### `fromGameForViewer(Game game, long participantCount, ShareLinkResponse shareLink, UUID viewerUserId)`
 
@@ -142,13 +142,13 @@ Creates a `GameResponse` for a viewer with share link information.
 | `game` | `Game` | The game entity to convert |
 | `participantCount` | `long` | Number of participants |
 | `shareLink` | `ShareLinkResponse` | Share link information |
-| `viewerUserId` | `UUID` | The viewer's user ID |
+| `viewerUserId` | `UUID` | ID of the viewer user |
 
-**Returns:** `GameResponse` - A viewer-specific game response with share link.
+**Returns:** `GameResponse` - A response object with share link and viewer organizer status.
 
 ### `fromGameForViewer(Game game, long participantCount, UUID viewerUserId)`
 
-Creates a basic viewer-specific `GameResponse`.
+Creates a basic viewer-specific `GameResponse` without share link or joinability information.
 
 **Parameters:**
 
@@ -156,13 +156,13 @@ Creates a basic viewer-specific `GameResponse`.
 |-----------|------|-------------|
 | `game` | `Game` | The game entity to convert |
 | `participantCount` | `long` | Number of participants |
-| `viewerUserId` | `UUID` | The viewer's user ID |
+| `viewerUserId` | `UUID` | ID of the viewer user |
 
-**Returns:** `GameResponse` - A basic viewer-specific game response.
+**Returns:** `GameResponse` - A response object with only viewer organizer status.
 
 ### `fromGameAnonymous(Game game, long participantCount)`
 
-Creates an anonymous `GameResponse` that excludes organizer, pricing, and viewer-specific information.
+Creates an anonymous `GameResponse` that omits organizer and pricing information for privacy.
 
 **Parameters:**
 
@@ -171,7 +171,7 @@ Creates an anonymous `GameResponse` that excludes organizer, pricing, and viewer
 | `game` | `Game` | The game entity to convert |
 | `participantCount` | `long` | Number of participants |
 
-**Returns:** `GameResponse` - An anonymous game response with limited information.
+**Returns:** `GameResponse` - A response object with `organizer`, `currency`, `price`, `pricing`, `shareLink`, `viewerJoinability`, and `viewerIsOrganizer` set to `null`.
 
 ## Nested Records
 
@@ -187,7 +187,7 @@ Creates an anonymous `GameResponse` that excludes organizer, pricing, and viewer
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | `UUID` | Organizer identifier |
-| `name` | `String` | Organizer name (defaults to "Anonymous" if missing) |
+| `name` | `String` | Organizer name (falls back to "Anonymous" if missing) |
 | `contactMethods` | `List<ContactMethod>` | Available contact methods |
 
 ### `VenueSummary`
@@ -197,8 +197,8 @@ Creates an anonymous `GameResponse` that excludes organizer, pricing, and viewer
 | `id` | `Long` | Venue identifier |
 | `name` | `String` | Venue name |
 | `address` | `String` | Venue address |
-| `latitude` | `BigDecimal` | Latitude coordinate |
-| `longitude` | `BigDecimal` | Longitude coordinate |
+| `latitude` | `BigDecimal` | Venue latitude |
+| `longitude` | `BigDecimal` | Venue longitude |
 
 ### `SkillLevelSummary`
 
@@ -226,7 +226,7 @@ Determines if the viewer is the organizer of the game.
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `game` | `Game` | The game entity |
-| `viewerUserId` | `UUID` | The viewer's user ID |
+| `viewerUserId` | `UUID` | ID of the viewer user |
 
 **Returns:** `Boolean` - `true` if the viewer is the organizer, `false` otherwise, or `null` if `viewerUserId` is `null`.
 
@@ -244,7 +244,7 @@ Extracts available contact methods from a user entity.
 
 ### `safeOrganizerName(Game game)`
 
-Returns the organizer's name, defaulting to "Anonymous" if the name is missing or blank.
+Returns the organizer's name, falling back to "Anonymous" if the name is missing or blank.
 
 **Parameters:**
 

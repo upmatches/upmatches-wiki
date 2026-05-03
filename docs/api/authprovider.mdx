@@ -4,32 +4,32 @@ title: AuthProvider Enum
 sidebar_label: AuthProvider
 ---
 
-# AuthProvider Enum
+# AuthProvider
 
-The `AuthProvider` enum defines the supported authentication providers for the application. It is used to specify which third-party service or system is responsible for authenticating a user during the login or registration process.
+The `AuthProvider` enum defines the supported authentication providers for the UpMatches application. It is used to specify which third-party identity provider a user chooses to authenticate with during the login or registration process.
 
 ## Purpose
 
-This enum centralizes the list of authentication providers, ensuring type safety and consistency when handling authentication flows. By using an enum instead of raw strings, the code avoids typos and makes it easier to extend or modify supported providers in the future.
+This enum centralizes the list of authentication providers, ensuring type safety and consistency across the application when handling user authentication flows. By using an enum rather than raw strings, the code avoids typos and makes it easy to extend with new providers in the future.
 
 ## Enum Values
 
 | Value      | Description                                                                 |
 |------------|-----------------------------------------------------------------------------|
-| `SINGPASS` | Represents Singapore's national digital identity authentication system.     |
-| `AUTH0`    | Represents Auth0, a popular identity management and authentication platform.|
-| `APPLE`    | Represents Apple's Sign in with Apple authentication service.               |
+| `SINGPASS` | Represents Singapore's national digital identity platform for authentication. |
+| `AUTH0`    | Represents Auth0, a universal identity platform for web and mobile apps.      |
+| `APPLE`    | Represents Apple's Sign in with Apple service for iOS and web applications.   |
 
 ## Usage
 
-The `AuthProvider` enum is typically used in authentication-related classes to indicate which provider was used to authenticate a user. For example, it may be stored as a field in a user entity or passed as a parameter to authentication service methods.
+The `AuthProvider` enum is typically used in user profile models, authentication service classes, or as a parameter in login methods to indicate which provider was used for authentication.
 
 ### Example
 
 ```java
-// Storing the authentication provider for a user
-AuthProvider provider = AuthProvider.SINGPASS;
-user.setAuthProvider(provider);
+// Storing the provider in a user object
+User user = new User();
+user.setAuthProvider(AuthProvider.SINGPASS);
 
 // Checking the provider in a conditional
 if (user.getAuthProvider() == AuthProvider.APPLE) {
@@ -37,6 +37,7 @@ if (user.getAuthProvider() == AuthProvider.APPLE) {
 }
 ```
 
-## Package
+## Location
 
-`com.upmatches.app.features.auth.enums`
+- **Package:** `com.upmatches.app.features.auth.enums`
+- **File:** `AuthProvider.java`

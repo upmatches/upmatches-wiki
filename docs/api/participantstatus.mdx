@@ -6,47 +6,35 @@ sidebar_label: ParticipantStatus
 
 # ParticipantStatus Enum
 
-The `ParticipantStatus` enum defines the possible states for a participant within a game session in the UpMatches application. It is part of the `com.upmatches.app.features.game.enums` package and is used to track whether a participant is currently active in the game or has left the session.
+The `ParticipantStatus` enum is part of the `com.upmatches.app.features.game.enums` package. It defines the possible states a participant can have within a game session.
 
 ## Purpose
 
-This enum provides a simple, type-safe way to represent the lifecycle status of a game participant. By using an enum rather than raw strings or integers, the codebase ensures consistency and prevents invalid status values from being assigned.
+This enum is used to track the current status of a participant (player) in a game. It provides a simple, type-safe way to represent whether a participant is actively playing or has left the game.
 
 ## Enum Values
 
-| Value | Description |
-|-------|-------------|
-| `ACTIVE` | The participant is currently active and participating in the game session. |
-| `LEFT` | The participant has left the game session and is no longer active. |
+| Value    | Description                                                                 |
+|----------|-----------------------------------------------------------------------------|
+| `ACTIVE` | Indicates the participant is currently active and participating in the game. |
+| `LEFT`   | Indicates the participant has left the game session.                        |
 
 ## Usage
 
-The `ParticipantStatus` enum is typically used in conjunction with a participant model or entity to track the current state of each player in a game. For example:
+This enum is typically used in game-related classes to manage participant state. For example:
 
-```java
-public class GameParticipant {
-    private String userId;
-    private ParticipantStatus status;
-    
-    // Constructor, getters, and setters
-}
-```
+- Checking if a participant is still in the game before processing their actions.
+- Updating a participant's status when they leave the game.
+- Filtering active participants from those who have left.
 
 ## Example
 
 ```java
-// Setting a participant's status
-GameParticipant player = new GameParticipant();
-player.setUserId("user123");
-player.setStatus(ParticipantStatus.ACTIVE);
+ParticipantStatus status = ParticipantStatus.ACTIVE;
 
-// Checking participant status
-if (player.getStatus() == ParticipantStatus.LEFT) {
-    // Handle player leaving the game
+if (status == ParticipantStatus.ACTIVE) {
+    // Participant is still playing
+} else if (status == ParticipantStatus.LEFT) {
+    // Participant has left the game
 }
 ```
-
-## Related Components
-
-- **GameSession**: The main game session class that manages participants and their statuses.
-- **ParticipantManager**: A service class that handles participant lifecycle events, including status transitions.

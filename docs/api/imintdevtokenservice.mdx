@@ -6,50 +6,54 @@ sidebar_label: IMintDevTokenService
 
 # IMintDevTokenService
 
-The `IMintDevTokenService` is a **sealed interface** that defines the contract for minting developer tokens within the authentication module of the UpMatches application. It serves as the abstraction layer for token generation, ensuring that only the permitted implementation (`MintDevTokenService`) can fulfill this contract.
+The `IMintDevTokenService` is a **sealed interface** that defines the contract for minting developer tokens within the authentication module of the UpMatches application. It establishes a single operation for generating a token response associated with a specific user.
 
 ## Purpose
 
-This interface is designed to encapsulate the logic for creating a new developer token associated with a specific user. By using a sealed interface, the design enforces a controlled hierarchy where only explicitly allowed classes can implement the token minting behavior, promoting security and maintainability.
+This interface serves as the abstraction layer for token minting operations. By sealing the interface with `permits MintDevTokenService`, the design enforces that only the `MintDevTokenService` class can implement this contract, ensuring a controlled and predictable implementation hierarchy.
 
 ## Method Summary
 
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `execute` | `TokenResponse` | `UUID userId` | Executes the token minting process for the given user identifier and returns the resulting token response. |
+| Method | Description |
+|--------|-------------|
+| `execute(UUID userId)` | Generates and returns a `TokenResponse` for the given user identifier. |
 
 ## Method Details
 
 ### `execute`
 
 ```java
-TokenResponse execute(UUID userId);
+TokenResponse execute(UUID userId)
 ```
 
-- **Description**: Initiates the token minting workflow for the specified user. The implementation is responsible for generating a new developer token, persisting it if necessary, and returning a `TokenResponse` object containing the token details.
-- **Parameters**:
-  - `userId` (`UUID`): The unique identifier of the user for whom the token is being minted.
-- **Returns**: `TokenResponse` – An object containing the generated token information (e.g., token string, expiration, etc.).
-- **Throws**: No checked exceptions are declared; however, implementations may throw runtime exceptions (e.g., `IllegalArgumentException` if `userId` is null).
+**Description:**  
+Executes the token minting process for the specified user. The implementation is responsible for creating a new developer token and returning the corresponding response object.
 
-## Permitted Implementations
+**Parameters:**
 
-The only class allowed to implement this interface is:
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | `UUID` | The unique identifier of the user for whom the token should be minted. |
 
-- `MintDevTokenService` – located in the same package (`com.upmatches.app.features.auth.services`).
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `TokenResponse` | The response object containing the minted token and any associated metadata. |
 
 ## Usage Example
 
 ```java
-// Assuming MintDevTokenService is injected or instantiated
+// Assuming an implementation is injected
 IMintDevTokenService tokenService = new MintDevTokenService();
 UUID userId = UUID.randomUUID();
 TokenResponse response = tokenService.execute(userId);
-// Use the response (e.g., return to client, store, etc.)
 ```
 
-## Notes
+## Dependencies
 
-- The interface is declared as `sealed`, which restricts implementation to the explicitly permitted class. This is a Java 17+ feature that enhances type safety and domain modeling.
-- The `TokenResponse` class is expected to be defined in the `com.upmatches.app.features.auth.responses` package.
-- This interface is part of the authentication feature and should be used within the service layer to maintain separation of concerns.
+- **Package:** `com.upmatches.app.features.auth.services`
+- **Imports:**
+  - `com.upmatches.app.features.auth.responses.TokenResponse`
+  - `java.util.UUID`
+- **Permitted Implementation:** `MintDevTokenService`

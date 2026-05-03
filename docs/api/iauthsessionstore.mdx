@@ -6,11 +6,9 @@ sidebar_label: IAuthSessionStore
 
 # IAuthSessionStore Interface
 
-The `IAuthSessionStore` interface defines the contract for managing authentication sessions in the UpMatches application. It provides a sealed interface pattern that restricts implementation to only the `AuthSessionStore` class, ensuring controlled and secure session management.
+The `IAuthSessionStore` interface defines the contract for managing authentication sessions in the UpMatches application. It provides a sealed interface pattern that restricts implementation to only the `AuthSessionStore` class, ensuring type safety and controlled extensibility.
 
-## Purpose
-
-This interface serves as the abstraction layer for storing, retrieving, and managing authentication session data. It is designed to handle OAuth-like authentication flows where a state parameter is used to track and validate authentication requests across different platforms.
+This interface is part of the authentication services layer and handles the lifecycle of authentication sessions, including storing, retrieving, and removing session data associated with a state parameter.
 
 ## Interface Definition
 
@@ -18,41 +16,45 @@ This interface serves as the abstraction layer for storing, retrieving, and mana
 public sealed interface IAuthSessionStore permits AuthSessionStore
 ```
 
-The interface uses Java's sealed class feature (introduced in Java 17) to restrict implementation to only the `AuthSessionStore` class. This design pattern ensures:
-- **Controlled implementation**: Only the permitted class can implement this interface
-- **Security**: Prevents unauthorized implementations that could compromise session management
-- **Maintainability**: Clear hierarchy and limited extension points
+The interface is declared as `sealed`, meaning only the specified class `AuthSessionStore` can implement it. This design pattern provides:
+- **Controlled inheritance**: Only authorized implementations are allowed
+- **Enhanced security**: Prevents unauthorized session store implementations
+- **Compile-time safety**: The compiler enforces the permitted implementations
 
 ## Methods
 
 | Method | Description | Parameters | Returns |
 |--------|-------------|------------|---------|
-| `store(String state, AuthSession session)` | Stores an authentication session associated with a state identifier | `state` - Unique identifier for the authentication request<br/>`session` - The authentication session data to store | `void` |
-| `retrieveAndRemove(String state)` | Retrieves and removes an authentication session by its state identifier | `state` - Unique identifier for the authentication request | `AuthSession` - The retrieved session data |
-| `getPlatform(String state)` | Retrieves the platform identifier associated with a given state | `state` - Unique identifier for the authentication request | `String` - Platform identifier (e.g., "google", "facebook") |
+| `store` | Stores an authentication session associated with a state identifier | `String state` - The state identifier for the session<br/>`AuthSession session` - The authentication session object to store | `void` |
+| `retrieveAndRemove` | Retrieves and removes an authentication session by its state identifier | `String state` - The state identifier of the session to retrieve | `AuthSession` - The retrieved authentication session, or `null` if not found |
+| `getPlatform` | Retrieves the platform identifier associated with a given state | `String state` - The state identifier to look up | `String` - The platform identifier associated with the state |
 
 ## Usage Example
 
 ```java
-// Store a new authentication session
-authSessionStore.store("state_abc123", new AuthSession("user@example.com", "google"));
+// Example implementation usage
+IAuthSessionStore sessionStore = new AuthSessionStore();
 
-// Retrieve and remove the session after authentication
-AuthSession session = authSessionStore.retrieveAndRemove("state_abc123");
+// Store a new session
+AuthSession session = new AuthSession(userId, token, platform);
+sessionStore.store("state123", session);
 
-// Get the platform for a specific state
-String platform = authSessionStore.getPlatform("state_abc123");
+// Retrieve and remove the session
+AuthSession retrievedSession = sessionStore.retrieveAndRemove("state123");
+
+// Get platform information
+String platform = sessionStore.getPlatform("state123");
 ```
 
 ## Implementation Notes
 
-- The `store` method should handle concurrent access safely, as multiple authentication requests may occur simultaneously
-- The `retrieveAndRemove` method should be atomic to prevent race conditions where the same state could be retrieved multiple times
-- The `getPlatform` method should return the platform identifier without modifying the stored session data
-- State values should be unique and cryptographically random to prevent session hijacking
+- The `store` method should handle cases where a session already exists for the given state
+- The `retrieveAndRemove` method atomically retrieves and removes the session to prevent duplicate processing
+- The `getPlatform` method should return the platform identifier without modifying the stored session
+- All implementations must handle `null` state parameters appropriately
 
 ## Related Components
 
-- **AuthSessionStore**: The sole implementing class that provides the actual storage mechanism
-- **AuthSession**: The data model representing an authentication session
-- **AuthService**: The service layer that utilizes this interface for authentication workflows
+- **AuthSessionStore**: The sole permitted implementation of this interface
+- **AuthSession**: The model class representing an authentication session
+- **Auth Services**: The service layer that utilizes this interface for session management

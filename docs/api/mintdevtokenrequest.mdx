@@ -6,43 +6,41 @@ sidebar_label: MintDevTokenRequest
 
 # MintDevTokenRequest
 
-The `MintDevTokenRequest` class is a Java record used to encapsulate the request payload for minting a developer token. It ensures that the required `userId` field is provided and validated before processing the token generation.
+The `MintDevTokenRequest` class is a Java record used to encapsulate the request payload for minting a developer token. It is part of the authentication feature within the `com.upmatches.app.features.auth.requests` package. This record ensures that the required `userId` field is provided and validated before processing the token minting operation.
 
 ## Purpose
 
-This record serves as a Data Transfer Object (DTO) for API endpoints that handle developer token minting. By leveraging Java records, it provides a concise, immutable data carrier with built-in `equals()`, `hashCode()`, and `toString()` methods. The `@NotNull` validation annotation enforces that the `userId` must be present in the request.
+This record serves as a Data Transfer Object (DTO) for API endpoints that handle developer token minting. By using a Java record, the class automatically generates constructors, getters, `equals()`, `hashCode()`, and `toString()` methods, reducing boilerplate code. The `@NotNull` validation annotation ensures that the `userId` cannot be null, enforcing data integrity at the request level.
 
-## Record Definition
+## Record Structure
 
-```java
-public record MintDevTokenRequest(@NotNull UUID userId) {}
-```
+| Field    | Type      | Description                                      | Validation |
+|----------|-----------|--------------------------------------------------|------------|
+| `userId` | `UUID`    | The unique identifier of the user requesting the token. | `@NotNull` |
 
-## Fields
+## Constructor
 
-| Field    | Type   | Validation | Description                                      |
-|----------|--------|------------|--------------------------------------------------|
-| `userId` | `UUID` | `@NotNull` | The unique identifier of the user requesting the developer token. |
+The record provides a canonical constructor that accepts a single parameter:
 
-## Usage
+- **`MintDevTokenRequest(UUID userId)`** - Creates a new instance with the specified user ID. The `@NotNull` constraint is enforced at runtime when validation is triggered (e.g., via Spring's `@Valid` annotation).
 
-The `MintDevTokenRequest` record is typically used in a Spring Boot controller or service layer to receive and validate incoming requests for developer token generation. Example:
+## Usage Example
 
 ```java
-@PostMapping("/mint-dev-token")
-public ResponseEntity<?> mintDevToken(@Valid @RequestBody MintDevTokenRequest request) {
-    UUID userId = request.userId();
-    // Process token minting logic...
-}
+// Creating a request instance
+UUID userUuid = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+MintDevTokenRequest request = new MintDevTokenRequest(userUuid);
+
+// Accessing the userId
+UUID id = request.userId();
 ```
 
 ## Validation
 
-- The `@NotNull` annotation (from `jakarta.validation.constraints`) ensures that the `userId` field cannot be `null`.
-- If a request is submitted without a `userId`, a validation error will be thrown, typically resulting in a `400 Bad Request` response.
+The `@NotNull` annotation on the `userId` field triggers validation failure if a `null` value is provided. This validation is typically enforced by a validation framework (e.g., Jakarta Bean Validation) when the request is processed in a controller method annotated with `@Valid`.
 
-## Notes
+## Related Components
 
-- The record is immutable, making it thread-safe and suitable for use in concurrent environments.
-- The `UUID` type provides a universally unique identifier, reducing the risk of ID collisions.
-- This class is part of the `com.upmatches.app.features.auth.requests` package, indicating its role in authentication-related request handling.
+- **Package:** `com.upmatches.app.features.auth.requests`
+- **Validation Framework:** Jakarta Bean Validation (via `jakarta.validation.constraints.NotNull`)
+- **Typical Usage:** Used in REST controllers or service layers that handle developer token minting requests.

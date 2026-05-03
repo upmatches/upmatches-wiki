@@ -6,68 +6,73 @@ sidebar_label: ShortLinkRepository
 
 # ShortLinkRepository
 
-The `ShortLinkRepository` interface provides database access operations for the `ShortLink` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD functionality and defines custom query methods for managing shortened URLs within the UpMatches application.
+The `ShortLinkRepository` interface provides database access operations for the `ShortLink` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD functionality and defines custom query methods for managing short links, including lookups by code, resource associations, and click count tracking.
 
-## Purpose
+## Interface Definition
 
-This repository handles persistence operations for short links, including:
-- Looking up short links by their unique code
-- Finding existing short links for a specific resource and creator
-- Checking code uniqueness
-- Incrementing click counters atomically
+```java
+public interface ShortLinkRepository extends JpaRepository<ShortLink, UUID>
+```
 
-## Methods
+The repository works with `ShortLink` entities keyed by `UUID` identifiers.
 
-### Standard CRUD Methods
+## Custom Query Methods
 
-The following methods are inherited from `JpaRepository<ShortLink, UUID>`:
-
-| Method | Description |
-|--------|-------------|
-| `findById(UUID id)` | Retrieves a short link by its primary key |
-| `findAll()` | Returns all short links |
-| `save(ShortLink entity)` | Creates or updates a short link |
-| `delete(ShortLink entity)` | Removes a short link |
-| `deleteById(UUID id)` | Deletes a short link by its ID |
-| `count()` | Returns the total number of short links |
-
-### Custom Query Methods
-
-| Method | Return Type | Parameters | Description |
+| Method | Description | Parameters | Return Type |
 |--------|-------------|------------|-------------|
-| `findByCode(String code)` | `Optional<ShortLink>` | `code` - The unique short code | Finds a short link by its generated code (e.g., "abc123") |
-| `findByResourceTypeAndResourceIdAndCreatedById(ResourceType resourceType, String resourceId, UUID createdById)` | `Optional<ShortLink>` | `resourceType` - Type of resource (enum), `resourceId` - Resource identifier, `createdById` - Creator's user ID | Finds an existing short link for a specific resource created by a specific user |
-| `existsByCode(String code)` | `boolean` | `code` - The short code to check | Returns `true` if the code is already in use |
-| `incrementClickCount(UUID id)` | `int` | `id` - The short link's ID | Atomically increments the click counter by 1. Returns the number of affected rows (should be 1) |
+| `findByCode(String code)` | Retrieves a short link by its unique code | `code` - The short link code (e.g., "abc123") | `Optional<ShortLink>` |
+| `findByResourceTypeAndResourceIdAndCreatedById(ResourceType resourceType, String resourceId, UUID createdById)` | Finds a short link by its associated resource type, resource ID, and creator | `resourceType` - The type of resource (enum), `resourceId` - The resource identifier, `createdById` - The UUID of the user who created the link | `Optional<ShortLink>` |
+| `existsByCode(String code)` | Checks whether a short link code already exists in the database | `code` - The short link code to check | `boolean` |
+| `incrementClickCount(UUID id)` | Atomically increments the click count for a short link by 1 | `id` - The UUID of the short link to update | `int` (number of affected rows) |
+
+## Method Details
+
+### findByCode
+Performs a lookup using the unique short code assigned to each link. Returns an `Optional` that is empty if no matching link is found.
+
+### findByResourceTypeAndResourceIdAndCreatedById
+Enables finding a short link based on the resource it points to and the user who created it. This is useful for preventing duplicate short links for the same resource by the same user.
+
+### existsByCode
+Provides a boolean check to determine if a particular short code is already in use, helping to enforce code uniqueness.
+
+### incrementClickCount
+Uses a custom JPQL `UPDATE` query annotated with `@Modifying` to increment the `clickCount` field atomically at the database level. This avoids race conditions that could occur with read-then-write operations. The method returns the number of database rows affected (should be 1 for a valid ID).
+
+## Inherited Methods
+
+As a `JpaRepository<ShortLink, UUID>`, this interface also inherits standard methods including:
+
+- `save(ShortLink entity)` - Persists a new or updates an existing short link
+- `findById(UUID id)` - Retrieves a short link by its primary key
+- `findAll()` - Returns all short links
+- `delete(ShortLink entity)` - Removes a short link
+- `count()` - Returns the total number of short links
 
 ## Usage Example
 
 ```java
-@Service
-public class ShortLinkService {
-    private final ShortLinkRepository repository;
+@Autowired
+private ShortLinkRepository shortLinkRepository;
 
-    public ShortLinkService(ShortLinkRepository repository) {
-        this.repository = repository;
-    }
+// Create a new short link
+ShortLink link = new ShortLink();
+link.setCode("xyz789");
+link.setResourceType(ResourceType.POST);
+link.setResourceId("post-123");
+link.setCreatedById(userId);
+shortLinkRepository.save(link);
 
-    public Optional<ShortLink> findByCode(String code) {
-        return repository.findByCode(code);
-    }
+// Find by code
+Optional<ShortLink> found = shortLinkRepository.findByCode("xyz789");
 
-    public boolean isCodeAvailable(String code) {
-        return !repository.existsByCode(code);
-    }
-
-    @Transactional
-    public void recordClick(UUID shortLinkId) {
-        repository.incrementClickCount(shortLinkId);
-    }
-}
+// Increment click count
+int updated = shortLinkRepository.incrementClickCount(link.getId());
 ```
 
-## Notes
+## Dependencies
 
-- The `incrementClickCount` method is annotated with `@Modifying`, indicating it performs an update operation rather than a select query
-- All custom queries use Spring Data JPA's derived query method naming conventions for automatic implementation
-- The repository uses `UUID` as the primary key type for `ShortLink` entities
+- Spring Data JPA (`JpaRepository`, `@Query`, `@Modifying`)
+- `ShortLink` entity class
+- `ResourceType` enum
+- `UUID` from `java.util`

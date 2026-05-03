@@ -6,41 +6,59 @@ sidebar_label: RegisterDeviceTokenRequest
 
 # RegisterDeviceTokenRequest
 
-The `RegisterDeviceTokenRequest` class is a Java record that serves as a Data Transfer Object (DTO) for registering a device token for push notifications. It encapsulates the necessary information required to associate a device with a user's notification preferences.
+The `RegisterDeviceTokenRequest` is a Java record class used to encapsulate the data required for registering a device token for push notifications. It serves as a Data Transfer Object (DTO) for incoming API requests, ensuring that the provided device token and platform information are valid before processing.
 
 ## Purpose
 
-This record is used to receive and validate incoming requests to register a device token. It ensures that the provided data meets the required constraints before being processed by the application's notification service.
+This record is designed to:
+- Receive and validate device token registration requests from mobile clients.
+- Enforce constraints on the device token length and ensure the platform is specified.
+- Provide a type-safe and immutable representation of the request data using Java records.
 
-## Record Structure
-
-The record defines two fields:
-
-| Field | Type | Validation Constraints | Description |
-|-------|------|------------------------|-------------|
-| `deviceToken` | `String` | `@NotBlank`, `@Size(max = 512)` | The unique token identifying the device for push notifications. Must not be blank and cannot exceed 512 characters. |
-| `platform` | `DevicePlatform` | `@NotNull` | The platform of the device (e.g., iOS, Android). Must not be null. |
-
-## Usage
-
-This record is typically used as a request body in a REST API endpoint for registering device tokens. For example:
+## Record Definition
 
 ```java
-@PostMapping("/register-device-token")
-public ResponseEntity<?> registerDeviceToken(@Valid @RequestBody RegisterDeviceTokenRequest request) {
-    // Process the registration
-}
+public record RegisterDeviceTokenRequest(
+    @NotBlank
+    @Size(max = 512)
+    String deviceToken,
+    @NotNull
+    DevicePlatform platform
+) {}
 ```
+
+## Fields
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `deviceToken` | `String` | `@NotBlank`, `@Size(max = 512)` | The unique token provided by the device's push notification service (e.g., APNs for iOS, FCM for Android). Must not be blank and cannot exceed 512 characters. |
+| `platform` | `DevicePlatform` | `@NotNull` | The platform of the device (e.g., iOS, Android). Must not be null. |
 
 ## Validation
 
-The record leverages Jakarta Bean Validation annotations to enforce data integrity:
+The record uses Jakarta Bean Validation annotations to ensure data integrity:
 
 - **`@NotBlank`** on `deviceToken`: Ensures the token is not null and contains at least one non-whitespace character.
-- **`@Size(max = 512)`** on `deviceToken`: Limits the token length to 512 characters to prevent excessively large payloads.
-- **`@NotNull`** on `platform`: Guarantees that a platform is always specified.
+- **`@Size(max = 512)`** on `deviceToken`: Limits the token length to a maximum of 512 characters to prevent excessively large payloads.
+- **`@NotNull`** on `platform`: Guarantees that the platform is always provided.
+
+## Usage Example
+
+```java
+// Creating a request for an iOS device
+RegisterDeviceTokenRequest request = new RegisterDeviceTokenRequest(
+    "abc123def456...", 
+    DevicePlatform.IOS
+);
+
+// Creating a request for an Android device
+RegisterDeviceTokenRequest androidRequest = new RegisterDeviceTokenRequest(
+    "xyz789...", 
+    DevicePlatform.ANDROID
+);
+```
 
 ## Related Components
 
-- **`DevicePlatform`**: An enum that defines the supported device platforms (e.g., `IOS`, `ANDROID`).
-- **Notification Service**: The service that processes the registration request and stores the device token.
+- **`DevicePlatform`**: An enum that defines supported device platforms (e.g., `IOS`, `ANDROID`).
+- **Notification Service**: The service that processes this request and stores the device token for future push notifications.

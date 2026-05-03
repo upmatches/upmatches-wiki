@@ -6,29 +6,24 @@ sidebar_label: IListGamesCursorService
 
 # IListGamesCursorService Interface
 
-The `IListGamesCursorService` interface defines a contract for retrieving a paginated list of games using cursor-based pagination. This approach is commonly used in modern APIs to efficiently handle large datasets by providing a cursor (e.g., a unique identifier or timestamp) that points to a specific position in the result set, rather than using traditional offset-based pagination.
+The `IListGamesCursorService` interface defines a contract for retrieving a paginated list of games using cursor-based pagination. This sealed interface is designed to provide a standardized way to fetch game data with filtering capabilities, returning results in a cursor-based paginated format.
 
 ## Purpose
 
-This interface is part of the game listing feature within the application. It provides a standardized way to fetch games with filtering capabilities and cursor-based pagination, enabling efficient and scalable data retrieval for game catalogs, search results, or user-specific game lists.
+This interface serves as the abstraction layer for game listing operations that require:
+- **Cursor-based pagination**: Efficiently navigate through large datasets without traditional page numbers
+- **Filtering capabilities**: Apply filters to narrow down game results
+- **Type-safe responses**: Return structured, typed responses for game data
 
 ## Interface Definition
 
-The interface is declared as `sealed`, meaning it restricts which classes or interfaces can implement it. In this case, only `ListGamesCursorService` is permitted to implement this interface.
-
 ```java
-public sealed interface IListGamesCursorService permits ListGamesCursorService {
-    // Method definition
-}
+public sealed interface IListGamesCursorService permits ListGamesCursorService
 ```
 
+The interface is declared as `sealed`, meaning only the specified class `ListGamesCursorService` is permitted to implement it. This ensures controlled inheritance and maintains a strict contract for the implementation.
+
 ## Method Summary
-
-| Method | Description |
-|--------|-------------|
-| `execute` | Retrieves a cursor-paginated list of games based on the provided filter criteria, cursor position, and page size. |
-
-## Method Details
 
 ### `execute`
 
@@ -36,21 +31,21 @@ public sealed interface IListGamesCursorService permits ListGamesCursorService {
 CursorPagedResponse<GameResponse> execute(ListGamesCursorFilterRequest filter, String cursor, int size)
 ```
 
-Retrieves a paginated list of games using cursor-based pagination.
+Executes a cursor-based paginated query to retrieve a list of games based on the provided filter criteria.
 
-**Parameters:**
+#### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `filter` | `ListGamesCursorFilterRequest` | Filter criteria to apply when querying games (e.g., genre, platform, release date range) |
-| `cursor` | `String` | The cursor indicating the position from which to start fetching results. Typically an encoded identifier or timestamp. Pass `null` or empty string for the first page |
-| `size` | `int` | The maximum number of game records to return in a single page |
+| `filter` | `ListGamesCursorFilterRequest` | Filter criteria to apply when querying games. Contains parameters for narrowing down the game results. |
+| `cursor` | `String` | The cursor indicating the position from which to start fetching results. Use `null` or empty string for the first page. |
+| `size` | `int` | The maximum number of game records to return in a single page. |
 
-**Returns:**
+#### Returns
 
 | Return Type | Description |
 |-------------|-------------|
-| `CursorPagedResponse<GameResponse>` | A response object containing the paginated list of games, along with cursor information for navigating to the next page |
+| `CursorPagedResponse<GameResponse>` | A paginated response containing a list of `GameResponse` objects, along with cursor information for navigating to the next page. |
 
 ## Usage Example
 
@@ -58,36 +53,25 @@ Retrieves a paginated list of games using cursor-based pagination.
 // Create an instance of the service (implementation)
 IListGamesCursorService gameService = new ListGamesCursorService();
 
-// Prepare filter criteria
+// Prepare filter request
 ListGamesCursorFilterRequest filter = new ListGamesCursorFilterRequest();
-filter.setGenre("Action");
-filter.setPlatform("PC");
+// Configure filter parameters...
 
-// Fetch the first page of results
+// Fetch first page of games
 CursorPagedResponse<GameResponse> firstPage = gameService.execute(filter, null, 20);
 
-// Process results
-for (GameResponse game : firstPage.getItems()) {
-    System.out.println("Game: " + game.getTitle());
-}
-
-// Use the next cursor to fetch subsequent pages
+// Use the cursor from the response to fetch the next page
 String nextCursor = firstPage.getNextCursor();
 if (nextCursor != null) {
     CursorPagedResponse<GameResponse> secondPage = gameService.execute(filter, nextCursor, 20);
-    // Process second page...
 }
 ```
 
 ## Related Types
 
-- `ListGamesCursorFilterRequest` - Request object containing filter parameters for game queries
-- `CursorPagedResponse<T>` - Generic response wrapper for cursor-based paginated results
-- `GameResponse` - Response object representing a single game's data
-- `ListGamesCursorService` - The permitted implementation class for this interface
-
-## Notes
-
-- The cursor-based pagination approach is particularly useful for real-time data feeds and infinite scroll implementations
-- The sealed interface pattern ensures that only the designated implementation class can implement this interface, providing better control over the API contract
-- The `CursorPagedResponse` typically contains both the list of items and metadata such as the next cursor for pagination
+| Type | Description |
+|------|-------------|
+| `ListGamesCursorFilterRequest` | Request object containing filter parameters for game queries |
+| `CursorPagedResponse<GameResponse>` | Generic response wrapper for cursor-based paginated results |
+| `GameResponse` | Data transfer object representing a single game's information |
+| `ListGamesCursorService` | The sole permitted implementation of this interface |

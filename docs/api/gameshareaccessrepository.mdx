@@ -6,7 +6,7 @@ sidebar_label: GameShareAccessRepository
 
 # GameShareAccessRepository
 
-The `GameShareAccessRepository` interface provides database access operations for the `GameShareAccess` entity. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD operations while adding a custom query method to check for existing share access records.
+The `GameShareAccessRepository` interface provides database access operations for the `GameShareAccess` entity. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD functionality while adding a custom query method to check for existing share access records.
 
 ## Purpose
 
@@ -32,7 +32,7 @@ The following methods are inherited from `JpaRepository<GameShareAccess, UUID>`:
 |--------|-------------|
 | `findAll()` | Returns all `GameShareAccess` entities |
 | `findById(UUID id)` | Finds a `GameShareAccess` by its UUID |
-| `save(GameShareAccess entity)` | Saves a new or existing `GameShareAccess` |
+| `save(GameShareAccess entity)` | Saves a new or existing `GameShareAccess` entity |
 | `deleteById(UUID id)` | Deletes a `GameShareAccess` by its UUID |
 | `count()` | Returns the total number of `GameShareAccess` records |
 
@@ -65,13 +65,12 @@ Checks whether a `GameShareAccess` record exists for the specified game and user
 @Autowired
 private GameShareAccessRepository repository;
 
-public boolean hasAccess(UUID gameId, UUID userId) {
+public boolean hasUserAccessToGame(UUID gameId, UUID userId) {
     return repository.existsByGameIdAndUserId(gameId, userId);
 }
 ```
 
-## Dependencies
-
-- **Spring Data JPA**: Provides the `JpaRepository` base interface and query derivation
-- **GameShareAccess entity**: The domain object this repository manages
-- **UUID**: Java's standard UUID class used as the entity identifier type
+This method is particularly useful for:
+- Preventing duplicate share access entries
+- Validating user permissions before granting access to game content
+- Implementing access control checks in service layers

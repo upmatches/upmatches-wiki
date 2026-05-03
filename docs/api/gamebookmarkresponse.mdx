@@ -8,44 +8,44 @@ sidebar_label: GameBookmarkResponse
 
 The `GameBookmarkResponse` record is a Data Transfer Object (DTO) used to represent a bookmarked game in API responses. It encapsulates both the bookmark metadata (such as when the game was bookmarked) and the full game details, providing a unified view for clients.
 
-This record is particularly useful when returning a list of bookmarked games to a user, as it combines the bookmark identifier, the game's current status, and the game's detailed information in a single response object.
+This record is particularly useful when returning bookmark lists to users, as it combines the bookmark identifier and timestamp with the underlying game information.
 
 ## Record Components
 
 | Component | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the bookmark entry. May be `null` when the response is created directly from a game without an existing bookmark. |
+| `id` | `UUID` | The unique identifier of the bookmark entry. `null` when the response is created directly from a game without an existing bookmark. |
 | `gameId` | `UUID` | The unique identifier of the associated game. |
-| `gameStatus` | `GameStatus` | The current status of the game (e.g., `ACTIVE`, `COMPLETED`, `CANCELLED`). |
-| `bookmarkedAt` | `Instant` | The timestamp when the game was bookmarked. May be `null` when the response is created directly from a game. |
-| `game` | `GameResponse` | The detailed game information, including participant count and other game-specific data. |
+| `gameStatus` | `GameStatus` | The current status of the game (e.g., active, completed, cancelled). |
+| `bookmarkedAt` | `Instant` | The timestamp when the game was bookmarked. `null` when the response is created from a game without a bookmark. |
+| `game` | `GameResponse` | The full game details, including participant count and other game-specific information. |
 
 ## Factory Methods
 
 ### `fromBookmark`
 
+Creates a `GameBookmarkResponse` from an existing `GameBookmark` entity and a participant count.
+
 ```java
 public static GameBookmarkResponse fromBookmark(GameBookmark bookmark, long participantCount)
 ```
-
-Creates a `GameBookmarkResponse` from an existing `GameBookmark` entity. This method extracts the bookmark's metadata and the associated game's details.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `bookmark` | `GameBookmark` | The bookmark entity containing the bookmark and game data. |
+| `bookmark` | `GameBookmark` | The bookmark entity containing the bookmark metadata and associated game. |
 | `participantCount` | `long` | The number of participants in the game. |
 
-**Returns:** A fully populated `GameBookmarkResponse` with the bookmark ID and timestamp.
+**Returns:** A fully populated `GameBookmarkResponse` with the bookmark ID, game ID, game status, bookmark timestamp, and game details.
 
 ### `fromGame`
+
+Creates a `GameBookmarkResponse` directly from a `Game` entity without an existing bookmark. This is useful when you want to represent a game in a bookmark-like format even though the user hasn't explicitly bookmarked it.
 
 ```java
 public static GameBookmarkResponse fromGame(Game game, long participantCount)
 ```
-
-Creates a `GameBookmarkResponse` directly from a `Game` entity without an existing bookmark. This is useful when you want to represent a game that could be bookmarked but hasn't been bookmarked yet.
 
 **Parameters:**
 
@@ -54,22 +54,22 @@ Creates a `GameBookmarkResponse` directly from a `Game` entity without an existi
 | `game` | `Game` | The game entity to convert. |
 | `participantCount` | `long` | The number of participants in the game. |
 
-**Returns:** A `GameBookmarkResponse` with `null` values for `id` and `bookmarkedAt`, indicating no bookmark exists.
+**Returns:** A `GameBookmarkResponse` with `id` set to `null` and `bookmarkedAt` set to `null`, indicating that no bookmark exists for this game.
 
 ## Usage Example
 
 ```java
-// Creating a response from an existing bookmark
+// Creating from an existing bookmark
 GameBookmark bookmark = bookmarkRepository.findById(bookmarkId);
 GameBookmarkResponse response = GameBookmarkResponse.fromBookmark(bookmark, 42);
 
-// Creating a response for a game without a bookmark
+// Creating from a game (no bookmark)
 Game game = gameRepository.findById(gameId);
-GameBookmarkResponse response = GameBookmarkResponse.fromGame(game, 15);
+GameBookmarkResponse responseWithoutBookmark = GameBookmarkResponse.fromGame(game, 15);
 ```
 
 ## Notes
 
-- The `id` and `bookmarkedAt` fields are `null` when using the `fromGame` factory method, allowing clients to distinguish between bookmarked and non-bookmarked games.
-- The `GameResponse` object is reused from the game domain, ensuring consistency in how game details are represented across the API.
-- This record is immutable by design, making it safe for use in concurrent environments and caching scenarios.
+- The `id` field is `null` when using `fromGame()` because there is no actual bookmark record.
+- The `bookmarkedAt` field is `null` when using `fromGame()` since no bookmark timestamp exists.
+- The `GameResponse` object is constructed using its own `fromGame()` factory method, ensuring consistent game detail representation across the API.

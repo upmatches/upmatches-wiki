@@ -6,76 +6,59 @@ sidebar_label: PricingRequest
 
 # PricingRequest
 
-The `PricingRequest` class is a Java record that serves as a Data Transfer Object (DTO) for creating or updating pricing configurations in the game feature module. It encapsulates all the necessary pricing parameters and provides validation constraints to ensure data integrity before processing.
-
-This record is part of the `com.upmatches.app.features.game.requests` package and is designed to be used in API endpoints where clients submit pricing information for game-related services.
+The `PricingRequest` class is a Java record that serves as a Data Transfer Object (DTO) for creating or updating pricing configurations within the game feature module. It encapsulates all necessary pricing parameters, including the pricing mode, currency, and various price components (flat, male, female, base, and per-shuttle prices). The record uses Jakarta Bean Validation annotations to enforce data integrity and business rules before processing.
 
 ## Purpose
 
-- **Data Transfer**: Transports pricing data from API requests to the service layer.
-- **Validation**: Enforces business rules through Jakarta Bean Validation annotations.
-- **Conversion**: Provides a `toPricing()` method to convert the request into a domain `Pricing` object.
+- **Data Transfer**: Provides a structured way to receive pricing data from API requests.
+- **Validation**: Ensures that all required fields are present and conform to expected formats and constraints.
+- **Conversion**: Offers a convenient `toPricing()` method to transform the request into a domain `Pricing` object for further business logic.
 
 ## Record Components
 
-The record contains the following components, each with specific validation constraints:
-
-| Component | Type | Validation | Description |
-|-----------|------|------------|-------------|
-| `mode` | `PricingMode` | `@NotNull` | The pricing mode (e.g., FLAT, GENDER_BASED, etc.) |
-| `currency` | `String` | `@NotNull`, `@Pattern(regexp = "^[A-Z]{3}$")` | ISO-4217 3-letter currency code |
-| `flatPrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Flat price for all users |
-| `malePrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price for male users |
-| `femalePrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price for female users |
-| `basePrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Base price for calculations |
-| `pricePerShuttle` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price per shuttle unit |
+| Component | Type | Validation Constraints | Description |
+|-----------|------|------------------------|-------------|
+| `mode` | `PricingMode` | `@NotNull` | The pricing mode (e.g., FLAT, GENDER_BASED). |
+| `currency` | `String` | `@NotNull`, `@Pattern(regexp = "^[A-Z]{3}$")` | ISO-4217 3-letter currency code. |
+| `flatPrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Flat price for all participants. |
+| `malePrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price for male participants. |
+| `femalePrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price for female participants. |
+| `basePrice` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Base price before any adjustments. |
+| `pricePerShuttle` | `BigDecimal` | `@DecimalMin("0.00")`, `@Digits(integer=8, fraction=2)` | Price per shuttle (e.g., in badminton). |
 
 ## Public Methods
 
 ### `toPricing()`
 
-Converts the `PricingRequest` record into a domain `Pricing` object.
+Converts this request object into a domain `Pricing` object.
 
-**Signature:**
+**Returns**: `Pricing` - A new `Pricing` instance constructed from the record's components.
+
+**Example**:
 ```java
-public Pricing toPricing()
-```
-
-**Returns:**
-- `Pricing` - A new `Pricing` instance constructed from the request's components.
-
-**Behavior:**
-- Creates a `Currency` value object from the `currency` string using `Currency.create()`.
-- Passes all pricing fields to the `Pricing` constructor.
-
-## Usage Example
-
-```java
-// Creating a pricing request for a flat-rate pricing model
 PricingRequest request = new PricingRequest(
     PricingMode.FLAT,
     "USD",
-    new BigDecimal("29.99"),  // flatPrice
-    null,                     // malePrice (not used in FLAT mode)
-    null,                     // femalePrice (not used in FLAT mode)
-    new BigDecimal("25.00"),  // basePrice
-    new BigDecimal("5.00")    // pricePerShuttle
+    new BigDecimal("50.00"),
+    null,
+    null,
+    null,
+    null
 );
-
-// Convert to domain object
 Pricing pricing = request.toPricing();
 ```
 
-## Validation Notes
+## Usage Notes
 
-- All `BigDecimal` fields must have a minimum value of `0.00`.
-- Numeric fields are limited to 8 integer digits and 2 decimal places.
-- The `currency` field must be a valid 3-letter uppercase ISO-4217 code.
-- The `mode` field is required and cannot be null.
+- All price fields (`flatPrice`, `malePrice`, `femalePrice`, `basePrice`, `pricePerShuttle`) are optional in the sense that they can be `null`, but if provided, they must meet the validation constraints.
+- The `currency` field must be a valid 3-letter uppercase ISO-4217 code (e.g., "USD", "EUR").
+- The `mode` field is mandatory and must be a valid `PricingMode` enum value.
+- The `toPricing()` method creates a `Currency` value object from the currency string using `Currency.create()`.
 
 ## Dependencies
 
-- **Jakarta Validation**: For bean validation annotations (`@NotNull`, `@DecimalMin`, `@Digits`, `@Pattern`).
-- **PricingMode**: Enum defining available pricing modes.
-- **Currency**: Value object for currency representation.
-- **Pricing**: Domain object representing a complete pricing configuration.
+- `com.upmatches.app.features.game.enums.PricingMode`
+- `com.upmatches.app.features.game.valueobjects.Currency`
+- `com.upmatches.app.features.game.valueobjects.Pricing`
+- `jakarta.validation.constraints.*`
+- `java.math.BigDecimal`

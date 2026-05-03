@@ -6,29 +6,47 @@ sidebar_label: AuthSessionStore
 
 # AuthSessionStore
 
-The `AuthSessionStore` class is a Spring service that provides Redis-backed storage for authentication sessions. It implements the `IAuthSessionStore` interface and handles serialization/deserialization of `AuthSession` objects using Jackson's `ObjectMapper`. Sessions are automatically expired after 5 minutes.
+The `AuthSessionStore` class is a Spring service responsible for managing authentication sessions in Redis. It provides methods to store, retrieve, and query authentication session data, with automatic expiration handling and JSON serialization/deserialization.
+
+## Purpose
+
+This service acts as a persistence layer for authentication sessions, using Redis as the backing store. It implements the `IAuthSessionStore` interface and handles the complete lifecycle of authentication sessions, including:
+
+- Storing new sessions with automatic expiration
+- Retrieving and removing sessions atomically
+- Querying session platform information
+- Error handling for serialization/deserialization failures
 
 ## Key Features
 
 - **Redis-backed storage**: Uses `StringRedisTemplate` for efficient key-value operations
-- **Automatic expiration**: Sessions expire after 5 minutes (configurable via `SESSION_EXPIRY_MINUTES`)
-- **Thread-safe**: Leverages Redis atomic operations for safe concurrent access
-- **Error handling**: Gracefully handles serialization/deserialization failures with logging
+- **Automatic expiration**: Sessions expire after 5 minutes by default
+- **JSON serialization**: Uses Jackson `ObjectMapper` for converting between `AuthSession` objects and JSON strings
+- **Atomic operations**: Uses `getAndDelete` for safe retrieval and removal
+- **Error resilience**: Gracefully handles serialization errors with logging
 
-## Dependencies
+## Configuration
 
-- `StringRedisTemplate` - Spring Data Redis template for string-based operations
-- `ObjectMapper` - Jackson library for JSON serialization/deserialization
-- `AuthSession` - The session model object being stored
+The class uses the following constants:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `KEY_PREFIX` | `"auth:session:"` | Prefix for all Redis keys |
+| `SESSION_EXPIRY_MINUTES` | `5` | Session expiration time in minutes |
+| `EXPIRY` | `Duration.ofMinutes(5)` | Duration object for Redis TTL |
 
 ## Constructor
 
+### `AuthSessionStore(StringRedisTemplate redisTemplate, ObjectMapper mapper)`
+
+Creates a new instance with the required dependencies.
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `redisTemplate` | `StringRedisTemplate` | Redis template for key-value operations |
-| `mapper` | `ObjectMapper` | Jackson mapper for JSON serialization |
+| `redisTemplate` | `StringRedisTemplate` | Redis template for string-based operations |
+| `mapper` | `ObjectMapper` | Jackson mapper for JSON serialization/deserialization |
 
-## Public Methods
+## Methods
 
 ### `store(String state, AuthSession session)`
 
@@ -36,7 +54,7 @@ Stores an authentication session in Redis with automatic expiration.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `state` | `String` | Unique state identifier used as part of the Redis key |
+| `state` | `String` | The state identifier for the session |
 | `session` | `AuthSession` | The authentication session to store |
 
 **Returns**: `void`
@@ -45,8 +63,8 @@ Stores an authentication session in Redis with automatic expiration.
 
 **Example**:
 ```java
-AuthSession session = new AuthSession("google", "token123");
-authSessionStore.store("state_abc123", session);
+AuthSession session = new AuthSession("web", "user123");
+authSessionStore.store("abc123", session);
 ```
 
 ### `retrieveAndRemove(String state)`
@@ -55,50 +73,43 @@ Retrieves and atomically removes an authentication session from Redis.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `state` | `String` | The state identifier to look up |
+| `state` | `String` | The state identifier for the session |
 
-**Returns**: `AuthSession` or `null` if not found or deserialization fails
+**Returns**: `AuthSession` - The retrieved session, or `null` if not found or deserialization fails
 
 **Example**:
 ```java
-AuthSession session = authSessionStore.retrieveAndRemove("state_abc123");
+AuthSession session = authSessionStore.retrieveAndRemove("abc123");
 if (session != null) {
-    // Process the retrieved session
+    // Process the session
 }
 ```
 
 ### `getPlatform(String state)`
 
-Retrieves only the platform information from a stored session without removing it.
+Retrieves the platform information from a stored authentication session without removing it.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `state` | `String` | The state identifier to look up |
+| `state` | `String` | The state identifier for the session |
 
-**Returns**: `String` (platform name) or `null` if not found or deserialization fails
+**Returns**: `String` - The platform value from the session, or `null` if not found or deserialization fails
 
 **Example**:
 ```java
-String platform = authSessionStore.getPlatform("state_abc123");
-if ("google".equals(platform)) {
-    // Handle Google authentication
+String platform = authSessionStore.getPlatform("abc123");
+if ("web".equals(platform)) {
+    // Handle web platform
 }
 ```
 
-## Internal Details
+## Error Handling
 
-### Key Format
-Sessions are stored in Redis using the key pattern: `auth:session:{state}`
+The class handles two types of errors:
 
-### Session Expiration
-- Default expiration: 5 minutes
-- Configurable via `SESSION_EXPIRY_MINUTES` constant
-- Uses Redis TTL (Time-To-Live) for automatic cleanup
+1. **Serialization errors**: When storing a session, if JSON serialization fails, an `IllegalStateException` is thrown with the message "Failed to serialize auth session".
 
-### Error Handling
-- Serialization failures throw `IllegalStateException`
-- Deserialization failures log a warning and return `null`
-- Missing sessions (null JSON) return `null` without logging
+2. **Deserialization errors**: When retrieving or querying sessions, if JSON deserialization fails, the error is logged as a warning and `null` is returned. This prevents the application from crashing due to corrupted data.
 
 ## Usage Example
 
@@ -106,24 +117,28 @@ Sessions are stored in Redis using the key pattern: `auth:session:{state}`
 @Service
 public class AuthService {
     private final AuthSessionStore sessionStore;
-
+    
     public AuthService(AuthSessionStore sessionStore) {
         this.sessionStore = sessionStore;
     }
-
-    public void initiateAuth(String state, String platform) {
-        AuthSession session = new AuthSession(platform, generateToken());
+    
+    public void createSession(String state, AuthSession session) {
         sessionStore.store(state, session);
     }
-
-    public AuthSession completeAuth(String state) {
+    
+    public AuthSession consumeSession(String state) {
         return sessionStore.retrieveAndRemove(state);
+    }
+    
+    public String getSessionPlatform(String state) {
+        return sessionStore.getPlatform(state);
     }
 }
 ```
 
-## Notes
+## Dependencies
 
-- The class is declared as `non-sealed`, allowing further extension if needed
-- All operations use Redis atomic commands for consistency
-- The `getPlatform` method is useful for routing authentication flows without consuming the session
+- `org.springframework.data.redis.core.StringRedisTemplate`
+- `tools.jackson.databind.ObjectMapper`
+- `org.slf4j.Logger`
+- `org.slf4j.LoggerFactory`

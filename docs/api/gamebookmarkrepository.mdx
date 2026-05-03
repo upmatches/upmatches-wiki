@@ -6,9 +6,7 @@ sidebar_label: GameBookmarkRepository
 
 # GameBookmarkRepository
 
-The `GameBookmarkRepository` interface provides data access operations for the `GameBookmark` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD functionality while adding custom query methods for bookmark-specific operations.
-
-This repository manages the relationship between users and games they have bookmarked, supporting operations such as checking bookmark existence, retrieving individual bookmarks, and implementing cursor-based pagination for efficient retrieval of large bookmark collections.
+The `GameBookmarkRepository` interface provides data access operations for the `GameBookmark` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD functionality and defines custom query methods for bookmark management, including existence checks, lookups, and cursor-based pagination.
 
 ## Interface Definition
 
@@ -16,7 +14,7 @@ This repository manages the relationship between users and games they have bookm
 public interface GameBookmarkRepository extends JpaRepository<GameBookmark, UUID>
 ```
 
-The repository works with `GameBookmark` entities using `UUID` as the primary key type.
+The repository works with `GameBookmark` entities and uses `UUID` as the primary key type.
 
 ## Methods
 
@@ -26,10 +24,11 @@ The following methods are inherited from `JpaRepository<GameBookmark, UUID>`:
 
 | Method | Description |
 |--------|-------------|
-| `findAll()` | Retrieves all game bookmarks |
-| `findById(UUID id)` | Finds a bookmark by its unique identifier |
+| `findAll()` | Returns all game bookmarks |
+| `findById(UUID id)` | Finds a bookmark by its ID |
 | `save(GameBookmark bookmark)` | Creates or updates a bookmark |
-| `deleteById(UUID id)` | Deletes a bookmark by its identifier |
+| `deleteById(UUID id)` | Deletes a bookmark by its ID |
+| `delete(GameBookmark bookmark)` | Deletes a specific bookmark |
 | `count()` | Returns the total number of bookmarks |
 
 ### Custom Query Methods
@@ -93,41 +92,21 @@ List<GameBookmark> findByUserIdCursor(
     @Param("size") int size)
 ```
 
-Performs cursor-based pagination to retrieve bookmarks for a specific user. This method efficiently handles large datasets by using a cursor approach rather than traditional offset-based pagination.
+Performs cursor-based pagination to retrieve bookmarks for a specific user. This method only returns bookmarks for games that have not been soft-deleted (`deleted_at IS NULL`).
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `userId` | `UUID` | The unique identifier of the user whose bookmarks to retrieve |
-| `afterBookmarkedAt` | `Instant` | The timestamp cursor; bookmarks bookmarked before this time will be returned. Pass `null` for the first page |
-| `afterId` | `UUID` | The ID cursor used for tie-breaking when multiple bookmarks have the same `bookmarked_at` timestamp |
-| `size` | `int` | The maximum number of bookmarks to return in a single page |
+| `afterBookmarkedAt` | `Instant` | The cursor timestamp for pagination. Pass `null` for the first page |
+| `afterId` | `UUID` | The cursor ID for pagination, used to break ties when multiple bookmarks have the same timestamp |
+| `size` | `int` | The maximum number of bookmarks to return |
 
-**Returns:** `List<GameBookmark>` - A list of bookmarks for the specified user, ordered by bookmark timestamp (newest first) and then by ID (ascending).
+**Returns:** `List<GameBookmark>` - A list of bookmarks sorted by `bookmarked_at` in descending order (most recent first), with ties broken by `id` in ascending order.
 
-**Query Logic:**
+**Pagination Behavior:**
 
-The native SQL query performs the following operations:
-
-1. **Joins** the `game_bookmarks` table with the `games` table to access game metadata
-2. **Filters** by the specified `userId`
-3. **Excludes** bookmarks for games that have been soft-deleted (`g.deleted_at IS NULL`)
-4. **Applies cursor logic**: If `afterBookmarkedAt` is provided, returns only bookmarks with:
-   - A `bookmarked_at` timestamp earlier than the cursor, OR
-   - The same `bookmarked_at` timestamp but with an ID greater than the cursor (for tie-breaking)
-5. **Orders** results by `bookmarked_at` descending (newest first) and `id` ascending
-6. **Limits** the result set to the specified page size
-
-**Usage Example:**
-
-```java
-// First page: no cursor
-List<GameBookmark> firstPage = repository.findByUserIdCursor(
-    userId, null, null, 20);
-
-// Subsequent pages: use the last bookmark's timestamp and ID
-GameBookmark lastBookmark = firstPage.get(firstPage.size() - 1);
-List<GameBookmark> nextPage = repository.findByUserIdCursor(
-    userId, lastBookmark.getBookmarkedAt(), lastBookmark.getId(), 20);
-```
+- For the first page, pass `null` for `afterBookmarkedAt` (any value for `afterId` is ignored in this case)
+- For subsequent pages, pass the `bookmarked_at` and `id` values from the last bookmark of the previous page
+- The query uses a composite cursor of `(bookmarked_at, id)` to ensure stable pagination even when multiple bookmarks share the same timestamp

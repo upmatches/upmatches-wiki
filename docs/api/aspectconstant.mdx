@@ -6,86 +6,95 @@ sidebar_label: AspectConstant
 
 # AspectConstant
 
-The `AspectConstant` class is a utility class that centralizes all constants used by AOP (Aspect-Oriented Programming) aspects within the `com.upmatches.app.shared.logging.constants` package. It provides a single source of truth for logging-related constants, including thresholds, MDC (Mapped Diagnostic Context) keys, metric names, and log message templates.
+The `AspectConstant` class is a utility class that centralizes all constant values used across the application's logging and monitoring aspects. It is part of the `com.upmatches.app.shared.logging.constants` package and is designed to be used with AOP (Aspect-Oriented Programming) implementations for method execution tracking, performance monitoring, and structured logging.
 
-This class is declared as `final` and has a private constructor to prevent instantiation, following the standard utility class pattern.
+This class is declared as `final` and has a private constructor to prevent instantiation, following the standard utility class pattern. All constants are `public static final`, making them accessible throughout the application without requiring an instance of the class.
 
 ## Constants
 
-### Execution Threshold
+### Performance Threshold
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `SLOW_EXECUTION_THRESHOLD_MS` | `long` | `1000` | Threshold in milliseconds for considering a method execution as slow |
+| `SLOW_EXECUTION_THRESHOLD_MS` | `long` | `1000` | The threshold in milliseconds above which a method execution is considered slow |
 
-### MDC Keys
+### MDC (Mapped Diagnostic Context) Keys
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `MDC_REQUEST_ID` | `String` | `"requestId"` | MDC key for storing the request identifier |
-| `MDC_METHOD` | `String` | `"method"` | MDC key for storing the method name |
-| `MDC_HTTP_METHOD` | `String` | `"httpMethod"` | MDC key for storing the HTTP method |
-| `MDC_ENDPOINT` | `String` | `"endpoint"` | MDC key for storing the endpoint path |
+| `MDC_REQUEST_ID` | `String` | `"requestId"` | Key for storing the request identifier in the logging context |
+| `MDC_METHOD` | `String` | `"method"` | Key for storing the method name in the logging context |
+| `MDC_HTTP_METHOD` | `String` | `"httpMethod"` | Key for storing the HTTP method in the logging context |
+| `MDC_ENDPOINT` | `String` | `"endpoint"` | Key for storing the endpoint path in the logging context |
 
 ### Status Tags
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `STATUS_TAG` | `String` | `"status"` | Tag name for status in metrics |
-| `STATUS_FAILURE` | `String` | `"failure"` | Value indicating a failure status |
-| `STATUS_SUCCESS` | `String` | `"success"` | Value indicating a success status |
+| `STATUS_TAG` | `String` | `"status"` | Tag name for execution status in metrics |
+| `STATUS_FAILURE` | `String` | `"failure"` | Value indicating a failed execution |
+| `STATUS_SUCCESS` | `String` | `"success"` | Value indicating a successful execution |
 
-### Component Types
-
-| Constant | Type | Value | Description |
-|----------|------|-------|-------------|
-| `COMPONENT_CONTROLLER` | `String` | `"controller"` | Identifier for controller components |
-| `COMPONENT_SERVICE` | `String` | `"service"` | Identifier for service components |
-
-### Metrics
+### Component Identifiers
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `METRIC_NAME` | `String` | `"app.method.execution"` | Name of the metric for method execution |
+| `COMPONENT_CONTROLLER` | `String` | `"controller"` | Identifier for controller layer components |
+| `COMPONENT_SERVICE` | `String` | `"service"` | Identifier for service layer components |
+
+### Metrics Configuration
+
+| Constant | Type | Value | Description |
+|----------|------|-------|-------------|
+| `METRIC_NAME` | `String` | `"app.method.execution"` | Base name for method execution metrics |
 | `METRIC_TAG_COMPONENT` | `String` | `"component"` | Tag name for component type in metrics |
 
 ### Log Message Templates
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `LOG_METHOD_SLOW` | `String` | `"Method {} executed slowly in {} ms"` | Log template for slow method execution |
-| `LOG_METHOD_SUCCESS` | `String` | `"Method {} executed successfully in {} ms"` | Log template for successful method execution |
-| `LOG_METHOD_FAILURE` | `String` | `"Method {} failed in {} ms with {}: {}"` | Log template for failed method execution |
+| `LOG_METHOD_SLOW` | `String` | `"Method {} executed slowly in {} ms"` | Log template for slow method executions |
+| `LOG_METHOD_SUCCESS` | `String` | `"Method {} executed successfully in {} ms"` | Log template for successful method executions |
+| `LOG_METHOD_FAILURE` | `String` | `"Method {} failed in {} ms with {}: {}"` | Log template for failed method executions |
 
 ### Miscellaneous
 
 | Constant | Type | Value | Description |
 |----------|------|-------|-------------|
-| `REQUEST_ID_SEPARATOR` | `String` | `"-"` | Separator used in request ID construction |
+| `REQUEST_ID_SEPARATOR` | `String` | `"-"` | Separator used in request ID generation |
 
-## Constructor
-
-The class has a private constructor that throws an `AssertionError` to prevent instantiation:
+## Usage Example
 
 ```java
-private AspectConstant() {
-    throw new AssertionError();
-}
-```
+import static com.upmatches.app.shared.logging.constants.AspectConstant.*;
 
-## Usage
-
-This class is typically used in AOP aspects to maintain consistency across logging and monitoring implementations. For example:
-
-```java
-// Using constants in an aspect
-if (executionTime > AspectConstant.SLOW_EXECUTION_THRESHOLD_MS) {
-    logger.warn(AspectConstant.LOG_METHOD_SLOW, methodName, executionTime);
+// In an aspect class
+@Around("execution(* com.upmatches..*(..))")
+public Object measureExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+    long start = System.currentTimeMillis();
+    String methodName = joinPoint.getSignature().toShortString();
+    
+    try {
+        Object result = joinPoint.proceed();
+        long duration = System.currentTimeMillis() - start;
+        
+        if (duration > SLOW_EXECUTION_THRESHOLD_MS) {
+            logger.warn(LOG_METHOD_SLOW, methodName, duration);
+        } else {
+            logger.info(LOG_METHOD_SUCCESS, methodName, duration);
+        }
+        
+        return result;
+    } catch (Exception e) {
+        long duration = System.currentTimeMillis() - start;
+        logger.error(LOG_METHOD_FAILURE, methodName, duration, e.getClass().getSimpleName(), e.getMessage());
+        throw e;
+    }
 }
 ```
 
 ## Notes
 
-- All constants are `public static final`, making them accessible throughout the application
-- The class cannot be instantiated or extended due to the `final` modifier and private constructor
-- Constants are organized by their functional purpose (thresholds, MDC keys, metrics, etc.)
+- The class cannot be instantiated due to its private constructor, which throws an `AssertionError` if called.
+- All constants are immutable and thread-safe.
+- The constants are designed to work together with SLF4J's MDC (Mapped Diagnostic Context) and Micrometer metrics for comprehensive observability.

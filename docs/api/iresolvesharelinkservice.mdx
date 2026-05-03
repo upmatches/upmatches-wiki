@@ -4,19 +4,19 @@ title: IResolveShareLinkService Interface
 sidebar_label: IResolveShareLinkService
 ---
 
-# IResolveShareLinkService
+# IResolveShareLinkService Interface
 
 ## Purpose
 
-The `IResolveShareLinkService` interface defines the contract for resolving shared links within the UpMatches application. It serves as the abstraction layer for processing share link codes and returning the corresponding public share link data. This sealed interface restricts implementation to the `ResolveShareLinkService` class, ensuring controlled extension and type safety.
+The `IResolveShareLinkService` interface defines the contract for resolving shared links within the UpMatches application. It serves as the abstraction layer for processing share link codes and returning the corresponding public share link data. This interface is part of the sealed interface hierarchy, restricting its implementation to the `ResolveShareLinkService` class only.
 
 ## Interface Definition
 
 ```java
-public sealed interface IResolveShareLinkService permits ResolveShareLinkService
+public sealed interface IResolveShareLinkService permits ResolveShareLinkService {
+    PublicShareLinkResponse execute(String code);
+}
 ```
-
-The interface is declared as `sealed`, meaning only the explicitly permitted class `ResolveShareLinkService` can implement it. This design pattern enforces a single, controlled implementation while maintaining the benefits of interface-based programming.
 
 ## Methods
 
@@ -24,26 +24,34 @@ The interface is declared as `sealed`, meaning only the explicitly permitted cla
 
 Resolves a share link code and returns the associated public share link response.
 
-| Parameter | Type     | Description                                      |
-|-----------|----------|--------------------------------------------------|
-| `code`    | `String` | The unique share link code to be resolved.       |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `code` | `String` | The unique share link code to be resolved |
 
-| Returns                  | Description                                                      |
-|--------------------------|------------------------------------------------------------------|
-| `PublicShareLinkResponse` | The response object containing the resolved public share link data. |
+| Returns | Description |
+|---------|-------------|
+| `PublicShareLinkResponse` | The response object containing the resolved share link data |
 
-**Usage Example:**
+## Usage Example
 
 ```java
-IResolveShareLinkService service = new ResolveShareLinkService();
-PublicShareLinkResponse response = service.execute("abc123");
+// Inject the service
+private final IResolveShareLinkService resolveShareLinkService;
+
+// Resolve a share link
+String shareCode = "abc123xyz";
+PublicShareLinkResponse response = resolveShareLinkService.execute(shareCode);
 ```
 
-## Related Types
+## Implementation Details
 
-- **`PublicShareLinkResponse`**: The response object returned by the `execute` method, located in `com.upmatches.app.features.sharelink.responses`.
-- **`ResolveShareLinkService`**: The sole permitted implementation of this interface, located in `com.upmatches.app.features.sharelink.services`.
+- **Sealed Interface**: This interface is declared as `sealed`, meaning only the explicitly permitted class `ResolveShareLinkService` can implement it. This provides compile-time safety and ensures controlled extension of the interface hierarchy.
+- **Single Method Contract**: The interface defines a single method `execute` that takes a share link code as input and returns a `PublicShareLinkResponse` object.
+- **Package Structure**: The interface resides in the `com.upmatches.app.features.sharelink.services` package, indicating its role within the share link feature module.
 
-## Package
+## Related Components
 
-`com.upmatches.app.features.sharelink.services`
+| Component | Description |
+|-----------|-------------|
+| `ResolveShareLinkService` | The sole permitted implementation of this interface |
+| `PublicShareLinkResponse` | The response DTO returned by the `execute` method |

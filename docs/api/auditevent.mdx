@@ -6,34 +6,30 @@ sidebar_label: AuditEvent
 
 # AuditEvent
 
-The `AuditEvent` class is a JPA entity that represents an auditable action within the system. It captures detailed information about user or system actions, including who performed the action, what action was taken, the outcome, and contextual metadata such as IP address, user agent, and correlation IDs. This entity is designed to support comprehensive audit logging for security, compliance, and debugging purposes.
+The `AuditEvent` class is a JPA entity that represents an auditable action or event within the application. It is used to record detailed information about user or system actions, including the actor, action type, outcome, and contextual metadata such as IP address, user agent, and request payload.
 
-## Entity Details
-
-- **Package:** `com.upmatches.app.features.audit.entities`
-- **Table:** `audit_events`
-- **Annotations:** `@Entity`, `@Table`, `@Getter` (Lombok), `@NoArgsConstructor(access = AccessLevel.PROTECTED)`
+This entity is mapped to the `audit_events` database table and is designed to be immutable after creation (fields are not updatable). It leverages Lombok's `@Getter` for read-only access and a protected no-args constructor for JPA compliance.
 
 ## Fields
 
-| Field | Type | Column | Constraints | Description |
-|-------|------|--------|-------------|-------------|
-| `id` | `Long` | `id` | Primary Key, Auto-generated | Unique identifier for the audit event record |
-| `uuid` | `UUID` | `uuid` | Not null, Unique, Updatable false | Public unique identifier for the event |
-| `occurredAt` | `Instant` | `occurred_at` | Not null, Updatable false | Timestamp when the event occurred |
-| `actorId` | `UUID` | `actor_id` | Nullable | Identifier of the actor who performed the action |
-| `actorType` | `AuditActorType` | `actor_type` | Not null, Length 32 | Type of actor (e.g., USER, SYSTEM, API) |
-| `action` | `String` | `action` | Not null, Length 64 | Description of the action performed |
-| `category` | `AuditCategory` | `category` | Not null, Length 32 | Category of the audit event |
-| `outcome` | `AuditOutcome` | `outcome` | Not null, Length 16 | Result of the action (e.g., SUCCESS, FAILURE) |
-| `resourceType` | `String` | `resource_type` | Length 64, Nullable | Type of resource affected |
-| `resourceId` | `String` | `resource_id` | Length 64, Nullable | Identifier of the affected resource |
-| `ipAddress` | `String` | `ip_address` | Length 64, Nullable | IP address of the actor |
-| `userAgent` | `String` | `user_agent` | Nullable | User agent string from the request |
-| `correlationId` | `String` | `correlation_id` | Length 64, Nullable | Correlation ID for tracing related events |
-| `requestPayload` | `String` | `request_payload` | JSONB type, Nullable | Request payload stored as JSON |
-| `errorCode` | `String` | `error_code` | Length 64, Nullable | Error code if the action failed |
-| `errorMessage` | `String` | `error_message` | Nullable | Error message if the action failed |
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `Long` | Auto-generated primary key (identity strategy). |
+| `uuid` | `UUID` | Unique, non-nullable, and immutable identifier for the event. |
+| `occurredAt` | `Instant` | Timestamp of when the event occurred (set automatically on persist). |
+| `actorId` | `UUID` | Identifier of the actor who performed the action (user or system). |
+| `actorType` | `AuditActorType` | Enum indicating the type of actor (e.g., USER, SYSTEM). |
+| `action` | `String` | Description of the action performed (e.g., "LOGIN", "UPDATE_PROFILE"). |
+| `category` | `AuditCategory` | Enum categorizing the event (e.g., AUTH, DATA_MODIFICATION). |
+| `outcome` | `AuditOutcome` | Enum indicating the result of the action (e.g., SUCCESS, FAILURE). |
+| `resourceType` | `String` | Type of resource affected (e.g., "User", "Order"). |
+| `resourceId` | `String` | Identifier of the affected resource. |
+| `ipAddress` | `String` | IP address of the client that initiated the action. |
+| `userAgent` | `String` | User agent string from the client's request. |
+| `correlationId` | `String` | Correlation ID for tracing related events across services. |
+| `requestPayload` | `String` | JSON payload of the request (stored as JSONB in the database). |
+| `errorCode` | `String` | Error code if the action resulted in an error. |
+| `errorMessage` | `String` | Error message if the action resulted in an error. |
 
 ## Public Methods
 
@@ -56,27 +52,27 @@ public static AuditEvent create(
     String errorMessage)
 ```
 
-Creates a new `AuditEvent` instance with the specified parameters. This is the primary factory method for constructing audit events.
+Creates a new `AuditEvent` instance with the provided parameters. This is the primary factory method for constructing audit events.
 
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `actorId` | `UUID` | Identifier of the actor performing the action |
-| `actorType` | `AuditActorType` | Type of actor (USER, SYSTEM, API, etc.) |
-| `action` | `String` | Description of the action performed |
-| `category` | `AuditCategory` | Category of the audit event |
-| `outcome` | `AuditOutcome` | Result of the action (SUCCESS, FAILURE, etc.) |
-| `resourceType` | `String` | Type of resource affected (nullable) |
-| `resourceId` | `String` | Identifier of the affected resource (nullable) |
-| `ipAddress` | `String` | IP address of the actor (nullable) |
-| `userAgent` | `String` | User agent string from the request (nullable) |
-| `correlationId` | `String` | Correlation ID for tracing (nullable) |
-| `requestPayload` | `String` | Request payload as JSON string (nullable) |
-| `errorCode` | `String` | Error code if action failed (nullable) |
-| `errorMessage` | `String` | Error message if action failed (nullable) |
+| `actorId` | `UUID` | Identifier of the actor. |
+| `actorType` | `AuditActorType` | Type of actor (e.g., USER, SYSTEM). |
+| `action` | `String` | Description of the action. |
+| `category` | `AuditCategory` | Category of the event. |
+| `outcome` | `AuditOutcome` | Outcome of the action. |
+| `resourceType` | `String` | Type of resource affected (nullable). |
+| `resourceId` | `String` | Identifier of the affected resource (nullable). |
+| `ipAddress` | `String` | Client IP address (nullable). |
+| `userAgent` | `String` | Client user agent (nullable). |
+| `correlationId` | `String` | Correlation ID for tracing (nullable). |
+| `requestPayload` | `String` | JSON request payload (nullable). |
+| `errorCode` | `String` | Error code (nullable). |
+| `errorMessage` | `String` | Error message (nullable). |
 
-**Returns:** `AuditEvent` - A new instance with all fields set according to the provided parameters.
+**Returns:** `AuditEvent` - A new, fully populated audit event instance.
 
 ## Lifecycle Callbacks
 
@@ -87,9 +83,7 @@ Creates a new `AuditEvent` instance with the specified parameters. This is the p
 void onCreate()
 ```
 
-Automatically called before the entity is persisted to the database. This method:
-- Generates a random `UUID` if one hasn't been set
-- Sets the `occurredAt` timestamp to the current time if not already set
+Automatically called by JPA before the entity is persisted. It sets the `uuid` to a random UUID and the `occurredAt` timestamp to the current instant if they are not already set. This ensures that every audit event has a unique identifier and a precise timestamp.
 
 ## Usage Example
 
@@ -98,22 +92,16 @@ AuditEvent event = AuditEvent.create(
     userId,
     AuditActorType.USER,
     "LOGIN",
-    AuditCategory.AUTHENTICATION,
+    AuditCategory.AUTH,
     AuditOutcome.SUCCESS,
-    "User",
-    userId.toString(),
+    null,
+    null,
     "192.168.1.1",
     "Mozilla/5.0...",
-    UUID.randomUUID().toString(),
+    "corr-123",
     null,
     null,
     null
 );
 auditEventRepository.save(event);
 ```
-
-## Related Enums
-
-- `AuditActorType` - Defines the types of actors (USER, SYSTEM, API, etc.)
-- `AuditCategory` - Defines audit categories (AUTHENTICATION, AUTHORIZATION, DATA_MODIFICATION, etc.)
-- `AuditOutcome` - Defines possible outcomes (SUCCESS, FAILURE, DENIED, etc.)

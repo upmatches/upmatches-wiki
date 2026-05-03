@@ -1,78 +1,95 @@
 ---
 id: user-skill-level-id
-title: UserSkillLevelId - Composite Primary Key Entity
+title: UserSkillLevelId - Composite Primary Key
 sidebar_label: UserSkillLevelId
 ---
 
-## Overview
+# UserSkillLevelId
 
-The `UserSkillLevelId` class is a **composite primary key** entity used in the UpMatches application. It represents the unique identifier for the association between a `User` and a `SkillLevel`. This class is annotated with `@Embeddable` from Jakarta Persistence, making it embeddable within another entity class.
+The `UserSkillLevelId` class is a **composite primary key** used in the `UserSkillLevel` entity. It is annotated with `@Embeddable` from Jakarta Persistence (JPA), allowing it to be embedded as a primary key in another entity.
 
-### Purpose
+This class implements `Serializable` and provides the necessary `equals()` and `hashCode()` methods required by JPA for composite key identification.
 
-- **Composite Key Definition**: Defines a two-field primary key consisting of a `userId` (UUID) and a `skillLevelId` (Long).
-- **JPA Embeddable**: Allows this composite key to be embedded in a JPA entity, enabling the creation of a many-to-many or one-to-many relationship table between users and skill levels.
-- **Serializable**: Implements `Serializable` to support JPA's requirement for composite key classes to be serializable.
-- **Equality and Hashing**: Provides proper `equals()` and `hashCode()` implementations based on both fields, ensuring correct behavior in collections and JPA contexts.
+## Purpose
 
-## Class Structure
+- Defines a composite key consisting of a `userId` (UUID) and a `skillLevelId` (Long).
+- Enables JPA to uniquely identify a `UserSkillLevel` record in the database.
+- Follows best practices for embeddable IDs by overriding `equals()` and `hashCode()`.
 
-### Fields
+## Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `userId` | `UUID` | The unique identifier of the user. |
-| `skillLevelId` | `Long` | The unique identifier of the skill level. |
+| Field          | Type   | Description                                      |
+|----------------|--------|--------------------------------------------------|
+| `userId`       | UUID   | The unique identifier of the user.               |
+| `skillLevelId` | Long   | The unique identifier of the skill level.        |
 
-### Constructors
+## Constructors
 
-| Constructor | Description |
-|-------------|-------------|
-| `UserSkillLevelId()` | Default no-argument constructor required by JPA. |
+| Constructor                                    | Description                                      |
+|------------------------------------------------|--------------------------------------------------|
+| `UserSkillLevelId()`                           | Default no-argument constructor (required by JPA). |
 | `UserSkillLevelId(UUID userId, Long skillLevelId)` | Parameterized constructor to initialize both fields. |
 
-### Methods
+## Methods
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `getUserId()` | `UUID` | Returns the user ID. |
-| `getSkillLevelId()` | `Long` | Returns the skill level ID. |
-| `equals(Object o)` | `boolean` | Compares this instance with another object for equality based on both `userId` and `skillLevelId`. |
-| `hashCode()` | `int` | Returns a hash code computed from both `userId` and `skillLevelId`. |
+### `getUserId()`
+
+```java
+public UUID getUserId()
+```
+
+Returns the user ID component of the composite key.
+
+**Returns:** `UUID` - the user identifier.
+
+### `getSkillLevelId()`
+
+```java
+public Long getSkillLevelId()
+```
+
+Returns the skill level ID component of the composite key.
+
+**Returns:** `Long` - the skill level identifier.
+
+### `equals(Object o)`
+
+```java
+@Override
+public boolean equals(Object o)
+```
+
+Compares this `UserSkillLevelId` to another object for equality based on both `userId` and `skillLevelId`.
+
+**Parameters:**
+- `o` - the object to compare with.
+
+**Returns:** `boolean` - `true` if both fields are equal, `false` otherwise.
+
+### `hashCode()`
+
+```java
+@Override
+public int hashCode()
+```
+
+Generates a hash code based on both `userId` and `skillLevelId`.
+
+**Returns:** `int` - the hash code value.
 
 ## Usage Example
 
 ```java
-// Creating a composite key instance
-UserSkillLevelId id = new UserSkillLevelId(
-    UUID.fromString("550e8400-e29b-41d4-a716-446655440000"),
-    42L
-);
+// Creating a composite key
+UserSkillLevelId id = new UserSkillLevelId(userId, skillLevelId);
 
-// Accessing fields
-UUID userId = id.getUserId();
-Long skillLevelId = id.getSkillLevelId();
+// Using it in an entity
+UserSkillLevel userSkillLevel = new UserSkillLevel();
+userSkillLevel.setId(id);
 ```
 
-## JPA Integration
+## Notes
 
-This class is typically used as an embedded ID in a JPA entity that maps the relationship between users and skill levels. For example:
-
-```java
-@Entity
-@Table(name = "user_skill_levels")
-public class UserSkillLevel {
-
-    @EmbeddedId
-    private UserSkillLevelId id;
-
-    // Additional fields and relationships...
-}
-```
-
-## Important Notes
-
-- The class is immutable in the sense that it has no setters; fields are only set via the constructor.
-- The `equals()` method uses `instanceof` pattern matching (Java 16+ feature) for type checking.
-- Both fields are used in the `equals()` and `hashCode()` implementations to ensure proper identity semantics.
-- The default constructor is required by JPA and should not be used directly in application code.
+- The class is immutable in the sense that it has no setters; fields are set only through the constructor.
+- The `equals()` and `hashCode()` implementations use `Objects.equals()` and `Objects.hash()` for null-safe comparisons.
+- This class is part of the `com.upmatches.app.features.user.entities` package.

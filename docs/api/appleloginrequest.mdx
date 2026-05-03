@@ -6,9 +6,9 @@ sidebar_label: AppleLoginRequest
 
 ## Overview
 
-The `AppleLoginRequest` class is a Java record that encapsulates the data required to authenticate a user via Apple's Sign In with Apple (SIWA) flow. It is used as a request DTO (Data Transfer Object) in the authentication module of the UpMatches application.
+The `AppleLoginRequest` class is a Java record used to encapsulate the data required for authenticating a user via Apple's Sign In with Apple service. It is part of the `com.upmatches.app.features.auth.requests` package and is designed to be used in REST API request bodies.
 
-This record ensures that incoming login requests contain the mandatory fields (`identityToken` and `userIdentifier`) while allowing optional fields (`authorizationCode`, `displayName`, `email`) to be provided. It also includes validation constraints to enforce data integrity and size limits.
+This record leverages Jakarta Bean Validation annotations to enforce constraints on the input fields, ensuring that the identity token and user identifier are provided and that all string fields do not exceed specified maximum lengths.
 
 ## Record Definition
 
@@ -18,19 +18,18 @@ public record AppleLoginRequest(
     @Size(max = 1024) String authorizationCode,
     @NotBlank @Size(max = 256) String userIdentifier,
     @Size(max = 200) String displayName,
-    @Size(max = 320) String email
-)
+    @Size(max = 320) String email)
 ```
 
 ## Fields
 
-| Field | Type | Required | Validation | Description |
-|-------|------|----------|------------|-------------|
-| `identityToken` | `String` | Yes | `@NotBlank`, max 4096 characters | The JWT identity token provided by Apple after user authentication. |
-| `authorizationCode` | `String` | No | max 1024 characters | The authorization code returned by Apple (used for server-side verification). |
-| `userIdentifier` | `String` | Yes | `@NotBlank`, max 256 characters | Apple's unique identifier for the user. |
-| `displayName` | `String` | No | max 200 characters | The user's display name as provided by Apple (optional). |
-| `email` | `String` | No | max 320 characters | The user's email address as provided by Apple (optional). |
+| Field              | Type   | Constraints                          | Description                                                                 |
+|--------------------|--------|--------------------------------------|-----------------------------------------------------------------------------|
+| `identityToken`    | String | `@NotBlank`, `@Size(max = 4096)`     | The JSON Web Token (JWT) provided by Apple after user authentication.       |
+| `authorizationCode`| String | `@Size(max = 1024)`                  | A one-time authorization code from Apple, used for server-side validation.  |
+| `userIdentifier`   | String | `@NotBlank`, `@Size(max = 256)`      | The unique user identifier provided by Apple for the authenticated user.    |
+| `displayName`      | String | `@Size(max = 200)`                   | The user's display name as provided by Apple (optional).                    |
+| `email`            | String | `@Size(max = 320)`                   | The user's email address as provided by Apple (optional).                   |
 
 ## Methods
 
@@ -41,30 +40,28 @@ public record AppleLoginRequest(
 public String toString()
 ```
 
-**Description:** Overrides the default record `toString()` method to mask sensitive information. Returns a fixed string that hides the actual values of `identityToken` and `userIdentifier` for security purposes.
+**Description:** Overrides the default `toString()` method to return a masked string representation of the request, hiding sensitive information for security purposes.
 
-**Returns:** `String` - The masked representation: `AppleLoginRequest[identityToken=***,userIdentifier=***]`
+**Returns:** A string in the format `AppleLoginRequest[identityToken=***,userIdentifier=***]`.
 
 ## Usage Example
 
 ```java
-// Creating a new Apple login request
 AppleLoginRequest request = new AppleLoginRequest(
-    "eyJraWQiOiJh...",           // identityToken (required)
-    "authorization_code_123",     // authorizationCode (optional)
-    "000123.abc...",              // userIdentifier (required)
-    "John Doe",                   // displayName (optional)
-    "john.doe@example.com"        // email (optional)
+    "eyJraWQiOiJ...",  // identityToken
+    "authorization_code_123",  // authorizationCode
+    "user_identifier_456",  // userIdentifier
+    "John Doe",  // displayName
+    "john.doe@example.com"  // email
 );
 
-// Logging the request (sensitive data is masked)
-System.out.println(request);
-// Output: AppleLoginRequest[identityToken=***,userIdentifier=***]
+// The toString() method will output:
+// AppleLoginRequest[identityToken=***,userIdentifier=***]
+System.out.println(request.toString());
 ```
 
-## Validation Notes
+## Security Considerations
 
-- The `identityToken` and `userIdentifier` fields are mandatory and must not be blank.
-- All string fields have maximum length constraints to prevent excessively large payloads.
-- The `authorizationCode`, `displayName`, and `email` fields are optional and can be `null` or empty.
-- Validation is typically performed using Jakarta Bean Validation (e.g., in a Spring Boot controller with `@Valid` annotation).
+- The `toString()` method is overridden to prevent accidental logging of sensitive tokens and identifiers.
+- The `identityToken` and `userIdentifier` fields are masked in the string representation.
+- All fields have maximum length constraints to prevent potential denial-of-service attacks through excessively large inputs.

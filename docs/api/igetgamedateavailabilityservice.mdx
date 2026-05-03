@@ -1,19 +1,16 @@
 ---
 id: igame-date-availability-service
-title: IGetGameDateAvailabilityService Interface
+title: IGetGameDateAvailabilityService
 sidebar_label: IGetGameDateAvailabilityService
 ---
 
-# IGetGameDateAvailabilityService Interface
-
-The `IGetGameDateAvailabilityService` is a **sealed interface** that defines the contract for retrieving game date availability within a specified date range. It serves as the abstraction layer for the `GetGameDateAvailabilityService` implementation, ensuring a consistent API for querying available game dates.
+# IGetGameDateAvailabilityService
 
 ## Purpose
 
-This interface is designed to:
-- Provide a standardized method for fetching game availability between two dates.
-- Leverage Java's sealed interface feature to restrict implementation to `GetGameDateAvailabilityService` only.
-- Return a list of `GameDateAvailabilityResponse` objects representing available game dates.
+The `IGetGameDateAvailabilityService` is a **sealed interface** that defines the contract for retrieving game date availability within a specified date range. It serves as the abstraction layer for the `GetGameDateAvailabilityService` implementation, ensuring type safety and controlled inheritance through Java's sealed interface mechanism.
+
+This interface is part of the game features module and is responsible for querying availability data between two dates, returning a list of `GameDateAvailabilityResponse` objects.
 
 ## Interface Definition
 
@@ -23,45 +20,41 @@ public sealed interface IGetGameDateAvailabilityService permits GetGameDateAvail
 }
 ```
 
-## Method Summary
+### Sealed Interface Details
 
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `execute` | `List<GameDateAvailabilityResponse>` | `LocalDate fromDate` - Start date of the range (inclusive) | Executes the query to retrieve all available game dates within the specified date range. |
-| | | `LocalDate toDate` - End date of the range (inclusive) | Returns a list of `GameDateAvailabilityResponse` objects representing available game dates. |
+- **Permitted Implementation**: Only `GetGameDateAvailabilityService` is allowed to implement this interface.
+- **Package**: `com.upmatches.app.features.game.services`
+- **Dependencies**: 
+  - `GameDateAvailabilityResponse` from `com.upmatches.app.features.game.responses`
+  - `LocalDate` from `java.time`
+  - `List` from `java.util`
 
-## Parameters
+## Public Methods
 
-### `fromDate`
-- **Type:** `java.time.LocalDate`
-- **Description:** The start date of the availability query range. This date is inclusive in the search.
+### `execute`
 
-### `toDate`
-- **Type:** `java.time.LocalDate`
-- **Description:** The end date of the availability query range. This date is inclusive in the search.
+| Property | Description |
+|----------|-------------|
+| **Signature** | `List<GameDateAvailabilityResponse> execute(LocalDate fromDate, LocalDate toDate)` |
+| **Purpose** | Retrieves game date availability for the specified date range |
+| **Parameters** | `fromDate` - The start date of the availability query (inclusive) <br/> `toDate` - The end date of the availability query (inclusive) |
+| **Returns** | `List<GameDateAvailabilityResponse>` - A list of availability responses for each date in the range |
+| **Throws** | No checked exceptions are declared |
 
-## Return Value
-
-- **Type:** `List<GameDateAvailabilityResponse>`
-- **Description:** A list of `GameDateAvailabilityResponse` objects, each representing a date and its availability status for games. The list may be empty if no available dates are found within the specified range.
-
-## Implementation Notes
-
-- The interface is **sealed**, meaning only the `GetGameDateAvailabilityService` class is permitted to implement it.
-- The `execute` method should handle date validation (e.g., ensuring `fromDate` is not after `toDate`).
-- Implementations should consider performance optimizations for large date ranges.
-
-## Example Usage
+## Usage Example
 
 ```java
-IGetGameDateAvailabilityService service = new GetGameDateAvailabilityService();
-LocalDate start = LocalDate.of(2024, 1, 1);
-LocalDate end = LocalDate.of(2024, 1, 31);
-List<GameDateAvailabilityResponse> availableDates = service.execute(start, end);
+// Assuming you have an instance of the service
+IGetGameDateAvailabilityService availabilityService = new GetGameDateAvailabilityService();
+
+// Query availability for the next 7 days
+LocalDate from = LocalDate.now();
+LocalDate to = from.plusDays(7);
+List<GameDateAvailabilityResponse> availability = availabilityService.execute(from, to);
 ```
 
-## Dependencies
+## Notes
 
-- `com.upmatches.app.features.game.responses.GameDateAvailabilityResponse`
-- `java.time.LocalDate`
-- `java.util.List`
+- The sealed interface pattern ensures that only the permitted implementation (`GetGameDateAvailabilityService`) can implement this interface, providing compile-time safety and clear contract enforcement.
+- The `execute` method is designed to be synchronous and returns a complete list of availability responses for the entire date range.
+- Date parameters are inclusive on both ends of the range.

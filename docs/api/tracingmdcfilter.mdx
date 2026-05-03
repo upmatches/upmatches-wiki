@@ -6,67 +6,125 @@ sidebar_label: TracingMdcFilter
 
 # TracingMdcFilter
 
-The `TracingMdcFilter` is a Spring Boot servlet filter that automatically injects distributed tracing identifiers (Trace ID and Span ID) into the **Mapped Diagnostic Context (MDC)** of SLF4J. This enables structured logging where every log entry produced during a request can be correlated with its corresponding trace and span in a distributed tracing system (e.g., Zipkin, Jaeger).
+The `TracingMdcFilter` is a Spring Boot servlet filter that automatically injects distributed tracing information (trace ID and span ID) into the **Mapped Diagnostic Context (MDC)** of SLF4J. This enables seamless correlation of log entries with distributed traces in a microservices environment.
 
-By placing the filter at the highest precedence, it ensures that trace and span IDs are available in the MDC for the entire duration of the HTTP request, and are cleaned up immediately after the response is processed.
+## Purpose
 
-## Key Features
+In distributed systems, tracing requests across multiple services is critical for debugging and monitoring. This filter bridges the gap between Micrometer Tracing (which manages trace/span contexts) and SLF4J's MDC (which enriches log output). By adding trace and span IDs to the MDC, you can configure your logging framework (e.g., Logback, Log4j2) to include these identifiers in every log line, making it easy to trace a request's journey through your system.
 
-- **Automatic MDC Injection**: Extracts the current trace and span IDs from Micrometer Tracing and adds them to the SLF4J MDC.
-- **Once-Per-Request Execution**: Extends `OncePerRequestFilter` to guarantee the filter logic runs exactly once per request, even if the filter is mapped multiple times.
-- **Conditional Activation**: Only activates when a `Tracer` bean is present in the application context (via `@ConditionalOnBean(Tracer.class)`).
-- **High Priority**: Runs at `Ordered.HIGHEST_PRECEDENCE + 10` to ensure tracing context is available before other filters.
-- **Automatic Cleanup**: Removes MDC entries in a `finally` block to prevent memory leaks and context pollution across requests.
+## How It Works
 
-## Constants
+1. **Before the request is processed**, the filter retrieves the current span from the `Tracer` bean.
+2. If a span exists, it extracts the `traceId` and `spanId` and places them into the MDC under the keys `traceId` and `spanId`.
+3. The request proceeds through the filter chain.
+4. **After the request completes**, the filter cleans up the MDC by removing both keys, preventing memory leaks and ensuring that subsequent requests (in a thread-pooled environment) do not inherit stale tracing data.
+
+## Dependencies
+
+- **Micrometer Tracing** (`io.micrometer.tracing.Tracer`, `io.micrometer.tracing.Span`)
+- **Jakarta Servlet API** (`jakarta.servlet`)
+- **SLF4J** (`org.slf4j.MDC`)
+- **Spring Boot** (auto-configuration, `@ConditionalOnBean`, `@Order`)
+
+## Class Details
+
+### Annotations
+
+| Annotation | Value | Purpose |
+|------------|-------|---------|
+| `@Component` | — | Registers this filter as a Spring bean. |
+| `@Order` | `Ordered.HIGHEST_PRECEDENCE + 10` | Ensures the filter runs early in the filter chain (high priority). |
+| `@ConditionalOnBean(Tracer.class)` | — | The filter is only created if a `Tracer` bean exists in the application context. This makes the filter optional for services that do not use tracing. |
+
+### Constants
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `MDC_TRACE_ID` | `"traceId"` | MDC key used to store the current trace ID. |
-| `MDC_SPAN_ID` | `"spanId"` | MDC key used to store the current span ID. |
+| `MDC_TRACE_ID` | `"traceId"` | The MDC key used to store the trace ID. |
+| `MDC_SPAN_ID` | `"spanId"` | The MDC key used to store the span ID. |
 
-## Constructor
+### Constructor
 
-| Constructor | Description |
-|-------------|-------------|
-| `TracingMdcFilter(Tracer tracer)` | Creates a new filter instance with the provided Micrometer Tracing `Tracer`. The tracer is used to obtain the current span for each request. |
+```java
+public TracingMdcFilter(Tracer tracer)
+```
 
-## Public Methods
+**Parameters:**
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain)` | `void` | Core filter logic. Retrieves the current span from the tracer, injects its trace and span IDs into the MDC, proceeds with the filter chain, and removes the MDC entries in the `finally` block. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `tracer` | `Tracer` | The Micrometer Tracing tracer instance used to obtain the current span. |
+
+### Methods
+
+#### `doFilterInternal`
+
+```java
+@Override
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws ServletException, IOException
+```
+
+This is the core method of the filter. It performs the following steps:
+
+1. Retrieves the current span from the `Tracer`.
+2. If a span exists, puts the `traceId` and `spanId` into the MDC.
+3. Calls `filterChain.doFilter(request, response)` to continue processing the request.
+4. In the `finally` block, removes both MDC keys to ensure cleanup.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `HttpServletRequest` | The incoming HTTP request. |
+| `response` | `HttpServletResponse` | The outgoing HTTP response. |
+| `filterChain` | `FilterChain` | The filter chain to pass the request/response to. |
+
+**Throws:**
+
+| Exception | Description |
+|-----------|-------------|
+| `ServletException` | If an error occurs during request processing. |
+| `IOException` | If an I/O error occurs. |
 
 ## Usage Example
 
 ### Logback Configuration
 
-To include the trace and span IDs in your log output, configure your Logback pattern to reference the MDC keys:
+To include trace and span IDs in your logs, configure your `logback-spring.xml` like this:
 
 ```xml
-<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-        <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - [%X{traceId},%X{spanId}] %msg%n</pattern>
-    </encoder>
-</appender>
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{traceId},%X{spanId}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>
 ```
 
-### Sample Log Output
+This will produce log lines like:
 
 ```
-2025-04-10 14:23:45.123 [http-nio-8080-exec-1] INFO  com.example.MyService - [abc123def456,ghi789jkl012] Processing user request
+2025-04-10 14:23:45.123 [http-nio-8080-exec-1] INFO  com.example.MyService [abc123def456,ghi789jkl012] - Processing order #42
 ```
 
-## Dependencies
+### Log4j2 Configuration
 
-- **Micrometer Tracing**: Provides the `Tracer` and `Span` APIs for distributed tracing.
-- **Jakarta Servlet API**: Required for the servlet filter infrastructure.
-- **SLF4J**: Used for the MDC (Mapped Diagnostic Context) API.
-- **Spring Boot**: Provides auto-configuration and conditional bean support.
+For Log4j2, use the `%X{traceId}` and `%X{spanId}` pattern converters:
+
+```xml
+<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} [%X{traceId},%X{spanId}] - %msg%n"/>
+```
 
 ## Notes
 
-- The filter is automatically registered as a Spring bean due to the `@Component` annotation.
-- It will only be created if a `Tracer` bean is available in the application context, making it safe to include in projects that may or may not have tracing enabled.
-- The `@Order(Ordered.HIGHEST_PRECEDENCE + 10)` annotation ensures this filter runs very early in the filter chain, but still allows for any absolutely critical filters (e.g., security) to run before it if needed.
-- MDC cleanup is guaranteed via the `finally` block, preventing trace context from leaking into subsequent requests processed by the same thread.
+- The filter extends `OncePerRequestFilter`, which guarantees it executes only once per request dispatch, even if the filter is mapped to multiple URL patterns.
+- The `@Order(Ordered.HIGHEST_PRECEDENCE + 10)` ensures this filter runs before most other filters, so tracing information is available throughout the entire request lifecycle.
+- The `@ConditionalOnBean(Tracer.class)` annotation makes this filter optional. If your application does not include Micrometer Tracing (e.g., no `spring-cloud-starter-sleuth` or `io.micrometer:micrometer-tracing-bridge-*` dependency), the filter will not be created, avoiding unnecessary overhead.
+- MDC cleanup in the `finally` block is essential to prevent memory leaks in thread-pooled environments (e.g., Tomcat's request processing threads).

@@ -6,59 +6,75 @@ sidebar_label: VenueRepository
 
 # VenueRepository
 
-The `VenueRepository` interface provides database access operations for the `Venue` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD (Create, Read, Update, Delete) functionality, and defines a custom query method for looking up venues by their external source identifier.
+The `VenueRepository` interface provides database access operations for the `Venue` entity. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD (Create, Read, Update, Delete) functionality, and includes a custom query method for looking up venues by their external source identifier.
 
 ## Purpose
 
-This repository serves as the data access layer for venue management within the application. By extending `JpaRepository<Venue, Long>`, it automatically provides methods for saving, finding, updating, and deleting `Venue` entities where the primary key is of type `Long`. The custom `findBySourceId` method enables efficient lookups of venues based on an external system's unique identifier, which is essential for data synchronization and deduplication when integrating with third-party venue data sources.
+This repository serves as the data access layer for venue management within the application. By extending `JpaRepository<Venue, Long>`, it automatically provides:
+
+- Standard CRUD operations (save, findById, findAll, delete, etc.)
+- Pagination and sorting support
+- Batch operations
+
+The custom `findBySourceId` method enables efficient lookups of venues using their external system identifier, which is essential for data synchronization and deduplication when integrating with third-party venue data sources.
 
 ## Public Methods
 
-### Inherited from JpaRepository
+### Inherited Methods from JpaRepository
 
-The following standard CRUD methods are inherited from `JpaRepository<Venue, Long>`:
+The following methods are inherited from `JpaRepository<Venue, Long>` and are available for use:
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `findAll()` | `List<Venue>` | Returns all venue entities |
-| `findById(Long id)` | `Optional<Venue>` | Finds a venue by its primary key |
-| `save(Venue venue)` | `Venue` | Saves a venue entity (insert or update) |
-| `saveAll(Iterable<Venue> venues)` | `List<Venue>` | Saves multiple venue entities |
-| `deleteById(Long id)` | `void` | Deletes a venue by its primary key |
-| `delete(Venue venue)` | `void` | Deletes a specific venue entity |
-| `count()` | `long` | Returns the total number of venue entities |
-| `existsById(Long id)` | `boolean` | Checks if a venue exists by its primary key |
+| Method | Description |
+|--------|-------------|
+| `findAll()` | Returns all venue entities |
+| `findById(Long id)` | Finds a venue by its primary key |
+| `save(Venue entity)` | Saves a venue entity (insert or update) |
+| `delete(Venue entity)` | Deletes a venue entity |
+| `deleteById(Long id)` | Deletes a venue by its primary key |
+| `count()` | Returns the total number of venue entities |
+| `existsById(Long id)` | Checks if a venue exists by its primary key |
 
-### Custom Query Methods
+### Custom Methods
 
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `findBySourceId(String sourceId)` | `Optional<Venue>` | `sourceId` - The external source identifier to search for | Finds a venue by its unique source identifier from an external system. Returns an empty `Optional` if no matching venue is found. |
+#### `findBySourceId(String sourceId)`
 
-## Usage Example
+Finds a venue by its external source identifier.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sourceId` | `String` | The unique identifier from an external system |
+
+| Return Type | Description |
+|-------------|-------------|
+| `Optional<Venue>` | An Optional containing the venue if found, or empty if no venue exists with the given source ID |
+
+**Usage Example:**
 
 ```java
-@Service
-public class VenueService {
-    
-    private final VenueRepository venueRepository;
-    
-    public VenueService(VenueRepository venueRepository) {
-        this.venueRepository = venueRepository;
-    }
-    
-    public Optional<Venue> findVenueByExternalId(String externalId) {
-        return venueRepository.findBySourceId(externalId);
-    }
-    
-    public Venue saveVenue(Venue venue) {
-        return venueRepository.save(venue);
-    }
+@Autowired
+private VenueRepository venueRepository;
+
+// Find a venue by its external source ID
+Optional<Venue> venue = venueRepository.findBySourceId("ext_venue_12345");
+if (venue.isPresent()) {
+    // Process the existing venue
+    Venue existingVenue = venue.get();
+} else {
+    // Create a new venue
+    Venue newVenue = new Venue();
+    newVenue.setSourceId("ext_venue_12345");
+    venueRepository.save(newVenue);
 }
 ```
 
 ## Dependencies
 
 - **Spring Data JPA**: Provides the `JpaRepository` interface and automatic query implementation
-- **Venue entity**: The domain object this repository manages
-- **Java Optional**: Used for null-safe return values in the custom query method
+- **Venue Entity**: The domain entity that this repository manages
+- **Java Optional**: Used for null-safe return values
+
+## Notes
+
+- The `findBySourceId` method is automatically implemented by Spring Data JPA based on the method naming convention
+- The `sourceId` field should be indexed in the database for optimal query performance
+- This repository is typically injected into service classes using `@Autowired` or constructor injection

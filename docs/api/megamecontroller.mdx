@@ -6,43 +6,47 @@ sidebar_label: MeGameController
 
 # MeGameController
 
-The `MeGameController` is a REST controller that provides endpoints for authenticated users to retrieve their personal game-related data. It exposes two main operations: fetching games the user has joined and games the user is hosting. Both endpoints use cursor-based pagination for efficient data retrieval.
+The `MeGameController` is a REST controller that provides endpoints for authenticated users to retrieve their personal game-related data. It exposes two main functionalities: listing games the user has joined and listing games the user is hosting. Both endpoints support cursor-based pagination for efficient data retrieval.
 
-## Location
+## Purpose
 
-**Package:** `com.upmatches.app.features.user.controllers`
-
-**Base URL:** `/api/v1/me/games`
-
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `IListMyJoinedGamesCursorService` | Service | Handles business logic for retrieving games the user has joined |
-| `IListMyHostedGamesCursorService` | Service | Handles business logic for retrieving games the user is hosting |
-| `ValidationHelper` | Utility | Validates cursor pagination parameters |
+This controller serves as the primary interface for users to manage and view their game participation history. It separates concerns by delegating the actual business logic to dedicated service interfaces (`IListMyJoinedGamesCursorService` and `IListMyHostedGamesCursorService`), following the Single Responsibility Principle.
 
 ## Endpoints
 
-### GET `/api/v1/me/games/joined`
+### Base URL
 
-Retrieves a paginated list of games that the current authenticated user has joined.
+All endpoints are prefixed with `/api/v1/me/games`.
 
-#### Request Parameters
+### 1. List Joined Games
+
+Retrieves a paginated list of games that the authenticated user has joined.
+
+**Endpoint:** `GET /api/v1/me/games/joined`
+
+**Query Parameters:**
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `cursor` | `String` | No | `null` | Pagination cursor for fetching the next page of results |
-| `size` | `Integer` | No | `20` | Number of items per page (validated by `ValidationHelper`) |
+| `cursor` | String | No | - | Cursor for pagination. If not provided, returns the first page. |
+| `size` | Integer | No | 20 | Number of items per page. Must be between 1 and 100. |
 
-#### Response
+**Response:** `200 OK`
 
 ```json
 {
-  "status": "success",
+  "success": true,
   "message": "Joined games retrieved successfully.",
   "data": {
-    "items": [...],
+    "items": [
+      {
+        "id": "string",
+        "name": "string",
+        "description": "string",
+        "status": "string",
+        "createdAt": "2024-01-01T00:00:00Z"
+      }
+    ],
     "nextCursor": "string",
     "hasMore": true
   },
@@ -50,33 +54,35 @@ Retrieves a paginated list of games that the current authenticated user has join
 }
 ```
 
-#### Success Response Codes
+### 2. List Hosted Games
 
-| HTTP Status | Description |
-|-------------|-------------|
-| `200 OK` | Games retrieved successfully |
+Retrieves a paginated list of games that the authenticated user is hosting.
 
----
+**Endpoint:** `GET /api/v1/me/games/hosted`
 
-### GET `/api/v1/me/games/hosted`
-
-Retrieves a paginated list of games that the current authenticated user is hosting.
-
-#### Request Parameters
+**Query Parameters:**
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `cursor` | `String` | No | `null` | Pagination cursor for fetching the next page of results |
-| `size` | `Integer` | No | `20` | Number of items per page (validated by `ValidationHelper`) |
+| `cursor` | String | No | - | Cursor for pagination. If not provided, returns the first page. |
+| `size` | Integer | No | 20 | Number of items per page. Must be between 1 and 100. |
 
-#### Response
+**Response:** `200 OK`
 
 ```json
 {
-  "status": "success",
+  "success": true,
   "message": "Hosted games retrieved successfully.",
   "data": {
-    "items": [...],
+    "items": [
+      {
+        "id": "string",
+        "name": "string",
+        "description": "string",
+        "status": "string",
+        "createdAt": "2024-01-01T00:00:00Z"
+      }
+    ],
     "nextCursor": "string",
     "hasMore": true
   },
@@ -84,19 +90,20 @@ Retrieves a paginated list of games that the current authenticated user is hosti
 }
 ```
 
-#### Success Response Codes
-
-| HTTP Status | Description |
-|-------------|-------------|
-| `200 OK` | Games retrieved successfully |
-
 ## Error Handling
 
-Both endpoints rely on `ValidationHelper.validateCursorPaginationParameters(size)` to validate the `size` parameter. If validation fails, the helper will throw an appropriate exception that should be handled by a global exception handler.
+Both endpoints validate the `size` parameter using `ValidationHelper.validateCursorPaginationParameters(size)`. If validation fails, the helper will throw an appropriate exception that is handled by the global exception handler, returning a structured error response.
+
+## Dependencies
+
+The controller depends on the following service interfaces:
+
+- `IListMyJoinedGamesCursorService` - Handles business logic for retrieving joined games with cursor-based pagination.
+- `IListMyHostedGamesCursorService` - Handles business logic for retrieving hosted games with cursor-based pagination.
+
+Both services are injected via constructor injection, ensuring immutability and testability.
 
 ## Usage Example
-
-### cURL
 
 ```bash
 # Get first page of joined games (20 items)
@@ -112,9 +119,8 @@ curl -X GET "https://api.example.com/api/v1/me/games/hosted" \
   -H "Authorization: Bearer <token>"
 ```
 
-## Implementation Notes
+## Notes
 
-- Both endpoints require authentication (handled by Spring Security configuration outside this controller).
-- The controller uses constructor injection for its service dependencies.
-- Cursor-based pagination is used instead of traditional offset pagination for better performance with large datasets.
-- The `HttpServletRequest` is injected to capture the request URI for response metadata.
+- Both endpoints require authentication (handled by Spring Security configuration, not shown in this controller).
+- Cursor-based pagination is more efficient than offset-based pagination for large datasets.
+- The `size` parameter is validated to ensure it falls within acceptable bounds (typically 1-100).

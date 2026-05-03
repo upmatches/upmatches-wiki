@@ -6,17 +6,17 @@ sidebar_label: IUpdateGameService
 
 # IUpdateGameService Interface
 
-The `IUpdateGameService` interface defines the contract for updating an existing game entity within the application. It follows a sealed interface pattern, restricting implementation to the `UpdateGameService` class only. This design ensures that all game update operations are performed through a single, controlled implementation, promoting consistency and maintainability.
+The `IUpdateGameService` interface defines the contract for updating an existing game entity within the application. It follows a sealed interface pattern, restricting implementation to the `UpdateGameService` class only. This design ensures that all game update operations adhere to a single, controlled implementation path.
 
 ## Purpose
 
-This interface serves as the service layer abstraction for modifying game data. By defining a single `execute` method, it encapsulates the business logic required to update a game identified by its unique ID (`UUID`) with the data provided in an `UpdateGameRequest`. The result is returned as a `GameResponse` object.
+This interface serves as the abstraction layer for the "Update Game" use case. By defining a single `execute` method, it encapsulates the logic required to modify a game's attributes based on the provided request data. The sealed keyword enforces compile-time safety by preventing unauthorized implementations.
 
 ## Method Summary
 
 | Method | Description |
 |--------|-------------|
-| `execute(UUID id, UpdateGameRequest request)` | Updates a game entity identified by the given UUID with the provided request data and returns the updated game information. |
+| `execute(UUID id, UpdateGameRequest request)` | Updates a game identified by the given UUID with the data provided in the request. Returns the updated game details. |
 
 ## Method Details
 
@@ -26,7 +26,7 @@ This interface serves as the service layer abstraction for modifying game data. 
 GameResponse execute(UUID id, UpdateGameRequest request)
 ```
 
-Updates an existing game with the specified identifier.
+Updates an existing game entity with the specified identifier.
 
 **Parameters:**
 
@@ -39,27 +39,33 @@ Updates an existing game with the specified identifier.
 
 | Type | Description |
 |------|-------------|
-| `GameResponse` | The response object containing the updated game information. |
+| `GameResponse` | The response object containing the updated game details. |
 
-**Implementation Constraints:**
+**Throws:**
 
-- This interface is `sealed`, meaning only the `UpdateGameService` class is permitted to implement it.
-- Any attempt to implement this interface from an unauthorized class will result in a compilation error.
+| Exception | Condition |
+|-----------|-----------|
+| `GameNotFoundException` | If no game exists with the provided UUID. |
+| `InvalidUpdateException` | If the update request contains invalid or inconsistent data. |
 
 ## Usage Example
 
 ```java
-// Assuming UpdateGameService is properly instantiated
-IUpdateGameService updateGameService = new UpdateGameService();
+@Autowired
+private IUpdateGameService updateGameService;
 
-UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-UpdateGameRequest request = new UpdateGameRequest("Updated Game Title", "New description");
-
-GameResponse response = updateGameService.execute(gameId, request);
+public void updateGameExample() {
+    UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+    UpdateGameRequest request = new UpdateGameRequest("Updated Title", "New Description");
+    
+    GameResponse response = updateGameService.execute(gameId, request);
+    // Process the updated game response
+}
 ```
 
-## Related Components
+## Implementation Notes
 
-- `UpdateGameRequest` - The input data transfer object containing the fields to be updated.
-- `GameResponse` - The output data transfer object representing the updated game state.
-- `UpdateGameService` - The sole implementation class of this interface.
+- The interface is **sealed**, meaning only the `UpdateGameService` class can implement it.
+- The `execute` method is the single entry point for game update operations.
+- The `UpdateGameRequest` and `GameResponse` classes are expected to be defined elsewhere in the application.
+- UUID is used for game identification to ensure globally unique identifiers.

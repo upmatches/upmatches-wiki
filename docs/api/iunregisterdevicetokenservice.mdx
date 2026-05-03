@@ -6,45 +6,54 @@ sidebar_label: IUnregisterDeviceTokenService
 
 # IUnregisterDeviceTokenService
 
+The `IUnregisterDeviceTokenService` interface defines the contract for removing a device token from the notification system. This is a sealed interface that restricts implementation to the `UnregisterDeviceTokenService` class, ensuring controlled and secure token deregistration.
+
 ## Purpose
 
-The `IUnregisterDeviceTokenService` interface defines the contract for unregistering a device token from the notification system. This is a sealed interface that restricts implementation to the `UnregisterDeviceTokenService` class, ensuring controlled and secure token removal.
-
-This interface is part of the notification feature module and is used to invalidate or remove device tokens that are no longer valid or when a user logs out, helping maintain an up-to-date and clean device token registry.
+When a user logs out, uninstalls the app, or opts out of push notifications, the associated device token must be removed from the server-side notification registry. This interface provides a single method to perform that operation, allowing the system to stop sending push notifications to that specific device.
 
 ## Interface Definition
 
 ```java
+package com.upmatches.app.features.notification.services;
+
 public sealed interface IUnregisterDeviceTokenService permits UnregisterDeviceTokenService {
+
     void execute(String deviceToken);
+
 }
 ```
 
-## Methods
+## Method Summary
 
-### `execute`
+| Method | Description |
+|--------|-------------|
+| `execute(String deviceToken)` | Removes the specified device token from the notification system, preventing further push notifications from being sent to that device. |
 
-| Property | Description |
-|----------|-------------|
-| **Signature** | `void execute(String deviceToken)` |
-| **Parameters** | `deviceToken` – The unique device token string to be unregistered from the notification system |
-| **Returns** | `void` – This method does not return a value |
-| **Description** | Executes the unregistration process for the provided device token. Implementations should handle token removal, database updates, and any necessary cleanup operations |
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `deviceToken` | `String` | The unique device token to be unregistered from the notification service. Must not be null or empty. |
 
 ## Implementation Details
 
-- The interface is declared as `sealed`, meaning only the specified permitted class (`UnregisterDeviceTokenService`) can implement it
-- This design pattern enforces a single, controlled implementation path for device token unregistration
-- The `execute` method is intentionally simple, accepting only the device token as a parameter
+- **Sealed Interface**: This interface is sealed and only permits the `UnregisterDeviceTokenService` class to implement it. This design ensures that all token deregistration logic flows through a single, controlled implementation.
+- **Return Type**: The `execute` method returns `void`, indicating that the operation is performed as a side effect (e.g., database deletion, API call to notification service).
+- **Thread Safety**: Implementations should consider thread safety, as device token unregistration may be called from different threads (e.g., logout flow, background service).
 
 ## Usage Example
 
 ```java
+// Inject or obtain the service implementation
 IUnregisterDeviceTokenService unregisterService = new UnregisterDeviceTokenService();
-unregisterService.execute("device-token-12345");
+
+// Unregister a device token
+unregisterService.execute("device-token-abc123");
 ```
 
 ## Related Components
 
-- **`UnregisterDeviceTokenService`** – The sole permitted implementation of this interface
-- **Notification feature module** – Part of the `com.upmatches.app.features.notification.services` package
+- **UnregisterDeviceTokenService**: The sole permitted implementation of this interface.
+- **RegisterDeviceTokenService**: The counterpart service for registering new device tokens.
+- **NotificationService**: The main service that manages push notification delivery and token lifecycle.

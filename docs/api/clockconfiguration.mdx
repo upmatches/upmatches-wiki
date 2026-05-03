@@ -1,32 +1,22 @@
 ---
 id: clock-configuration
 title: Clock Configuration
-sidebar_label: ClockConfiguration
+sidebar_label: Clock Configuration
 ---
 
-# ClockConfiguration
+# Clock Configuration
 
-The `ClockConfiguration` class is a Spring `@Configuration` class that provides a centralized bean definition for a `java.time.Clock` instance. By defining this bean, the application ensures that all components requiring a clock (e.g., for timestamp generation, scheduling, or time-based logic) use a consistent time source.
+The `ClockConfiguration` class is a Spring `@Configuration` class that provides a centralized bean definition for a `java.time.Clock` instance. This configuration ensures that all components in the application use a consistent clock source, which is essential for time-dependent operations, testing, and maintaining time zone consistency.
 
-Using a configurable clock bean simplifies testing, as you can easily replace the system clock with a fixed or offset clock in unit tests without modifying production code.
+By default, this configuration creates a clock that returns the current instant in the UTC time zone using `Clock.systemUTC()`. This approach simplifies testing by allowing the clock to be easily mocked or replaced with a fixed clock for deterministic time-based tests.
 
 ## Bean Definition
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `clock()` | `java.time.Clock` | Creates and returns a `Clock` instance configured to use the system's UTC time zone. |
+| `clock()` | `java.time.Clock` | Creates and returns a `Clock` instance set to the UTC time zone. This bean can be injected into any Spring-managed component that requires time-related functionality. |
 
-### `clock()`
-
-- **Purpose**: Provides a singleton `Clock` bean that returns the current time in UTC.
-- **Implementation**: Returns `Clock.systemUTC()`, which uses the system clock in the UTC time zone.
-- **Usage**: Inject this bean wherever time-related operations are needed, such as:
-  - Generating timestamps for audit logs
-  - Calculating time differences
-  - Scheduling tasks
-  - Validating time-based business rules
-
-## Example Usage
+## Usage Example
 
 ```java
 @Service
@@ -37,7 +27,7 @@ public class TimeService {
         this.clock = clock;
     }
 
-    public Instant now() {
+    public Instant getCurrentTime() {
         return Instant.now(clock);
     }
 }
@@ -45,19 +35,17 @@ public class TimeService {
 
 ## Testing Benefits
 
-By using a configurable `Clock` bean, you can easily test time-dependent code:
+Using a configurable `Clock` bean makes unit testing time-dependent code straightforward:
 
 ```java
 @Test
 void testWithFixedClock() {
-    Clock fixedClock = Clock.fixed(Instant.parse("2024-01-01T00:00:00Z"), ZoneOffset.UTC);
+    Instant fixedInstant = Instant.parse("2024-01-15T10:00:00Z");
+    Clock fixedClock = Clock.fixed(fixedInstant, ZoneOffset.UTC);
     
-    // Replace the clock bean in the test context
-    // The service will now use the fixed time
+    // Inject the fixed clock into your service
+    TimeService timeService = new TimeService(fixedClock);
+    
+    assertEquals(fixedInstant, timeService.getCurrentTime());
 }
 ```
-
-## Dependencies
-
-- **Spring Context**: `@Configuration` and `@Bean` annotations
-- **Java Standard Library**: `java.time.Clock`

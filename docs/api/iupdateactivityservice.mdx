@@ -6,11 +6,11 @@ sidebar_label: IUpdateActivityService
 
 # IUpdateActivityService Interface
 
-The `IUpdateActivityService` interface defines the contract for updating an existing activity in the system. It follows a sealed interface pattern to restrict implementation to a single concrete class (`UpdateActivityService`), ensuring controlled and consistent update behavior across the application.
+The `IUpdateActivityService` interface defines the contract for updating an existing activity within the application. It is a sealed interface, meaning only the explicitly permitted class (`UpdateActivityService`) can implement it. This design enforces a controlled extension point for the update activity use case.
 
 ## Purpose
 
-This interface encapsulates the business logic for modifying activity details. By defining a single `execute` method, it provides a clear and focused API for updating activities, promoting separation of concerns and testability.
+This interface serves as the service layer abstraction for the "Update Activity" feature. It encapsulates the business logic required to modify an activity's details, such as its name, description, or schedule. By defining a single `execute` method, it follows the Command Pattern, promoting separation of concerns and testability.
 
 ## Interface Definition
 
@@ -20,35 +20,41 @@ public sealed interface IUpdateActivityService permits UpdateActivityService {
 }
 ```
 
-- **Sealed Interface**: The `sealed` keyword restricts which classes can implement this interface. Only `UpdateActivityService` is permitted, ensuring that all update operations follow the same implementation pattern.
-- **Single Method**: The interface contains one method, `execute`, which takes an activity ID and an update request, returning an `ActivityResponse`.
-
-## Method Documentation
+## Methods
 
 ### `execute`
+
+Updates an existing activity identified by its unique ID with the provided request data.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `id` | `UUID` | The unique identifier of the activity to be updated. |
-| `request` | `UpdateActivityRequest` | An object containing the updated activity data. |
-| **Returns** | `ActivityResponse` | The response object containing the updated activity details. |
+| `request` | `UpdateActivityRequest` | The request object containing the updated activity data. |
 
-**Behavior**: This method processes the update request for the specified activity ID and returns the updated activity information. The concrete implementation (`UpdateActivityService`) handles validation, persistence, and response mapping.
+| Returns | Type | Description |
+|---------|------|-------------|
+| `ActivityResponse` | `ActivityResponse` | The response object containing the updated activity details. |
 
 ## Usage Example
 
 ```java
-// Assuming dependency injection provides an instance
-IUpdateActivityService updateService = new UpdateActivityService(/* dependencies */);
+// Assuming an implementation is injected
+IUpdateActivityService updateActivityService = new UpdateActivityService(/* dependencies */);
 
 UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-UpdateActivityRequest request = new UpdateActivityRequest(/* updated fields */);
+UpdateActivityRequest request = new UpdateActivityRequest("Updated Title", "Updated Description");
 
-ActivityResponse response = updateService.execute(activityId, request);
+ActivityResponse response = updateActivityService.execute(activityId, request);
 ```
 
-## Related Components
+## Dependencies
 
-- **`UpdateActivityRequest`**: The input DTO containing the fields to be updated.
-- **`ActivityResponse`**: The output DTO representing the updated activity.
-- **`UpdateActivityService`**: The sole permitted implementation of this interface.
+- `UpdateActivityRequest` – The input data transfer object containing the fields to be updated.
+- `ActivityResponse` – The output data transfer object representing the updated activity state.
+- `UpdateActivityService` – The sole permitted implementation of this interface.
+
+## Notes
+
+- The interface is **sealed**, ensuring that only `UpdateActivityService` can implement it. This prevents unauthorized extensions and maintains a clear architecture.
+- The `execute` method is synchronous and returns the updated activity data immediately after the update operation completes.
+- The `UUID` parameter ensures that the correct activity is targeted for modification.

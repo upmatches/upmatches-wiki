@@ -10,12 +10,12 @@ sidebar_label: GetUnreadCountService
 
 The `GetUnreadCountService` class is a Spring service component responsible for retrieving the count of unread notifications for the currently authenticated user. It implements the `IGetUnreadCountService` interface and provides a transactional read-only operation that queries the notification repository for unread notifications.
 
-This service is part of the notification feature in the UpMatches application, enabling efficient retrieval of unread notification counts without modifying any data.
+This service is part of the notification feature in the UpMatches application and follows a clean architecture pattern by separating the business logic from the data access layer.
 
 ## Class Details
 
-| Attribute | Value |
-|-----------|-------|
+| Property | Value |
+|----------|-------|
 | **Package** | `com.upmatches.app.features.notification.services` |
 | **Annotations** | `@Service` |
 | **Modifiers** | `public non-sealed` |
@@ -25,21 +25,8 @@ This service is part of the notification feature in the UpMatches application, e
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `NotificationRepository` | Constructor Injection | Repository for accessing notification data in the database |
+| `NotificationRepository` | Constructor Injection | Repository for accessing notification data |
 | `IAuthenticatedUserResolver` | Constructor Injection | Service to resolve the currently authenticated user's ID |
-
-## Constructor
-
-### `GetUnreadCountService(NotificationRepository, IAuthenticatedUserResolver)`
-
-Initializes the service with required dependencies.
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `notificationRepository` | `NotificationRepository` | Repository for notification data access |
-| `userResolver` | `IAuthenticatedUserResolver` | Service to resolve authenticated user identity |
 
 ## Public Methods
 
@@ -47,41 +34,33 @@ Initializes the service with required dependencies.
 
 Retrieves the count of unread notifications for the currently authenticated user.
 
-**Annotations:** `@Transactional(readOnly = true)`
-
-**Returns:**
-
-| Type | Description |
-|------|-------------|
-| `UnreadCountResponse` | Response object containing the count of unread notifications |
+| Aspect | Details |
+|--------|---------|
+| **Signature** | `public UnreadCountResponse execute()` |
+| **Transactional** | `@Transactional(readOnly = true)` |
+| **Returns** | `UnreadCountResponse` - A response object containing the unread notification count |
+| **Throws** | May throw exceptions from `userResolver.requireUserId()` if no authenticated user is found |
 
 **Behavior:**
-
 1. Resolves the authenticated user's ID using `userResolver.requireUserId()`
-2. Queries the notification repository for the count of notifications where:
-   - `recipientId` matches the authenticated user's ID
+2. Queries the `notificationRepository` for the count of notifications where:
+   - `recipientId` equals the resolved user ID
    - `isRead` is `false`
 3. Wraps the count in an `UnreadCountResponse` object using the static factory method `UnreadCountResponse.of()`
 
-**Example Usage:**
+## Usage Example
 
 ```java
 // Inject the service
 private final GetUnreadCountService getUnreadCountService;
 
-// Execute the service
+// Use the service
 UnreadCountResponse response = getUnreadCountService.execute();
 long unreadCount = response.getCount(); // Assuming getCount() method exists
 ```
 
-## Transactional Behavior
+## Notes
 
-The method is marked with `@Transactional(readOnly = true)`, which:
-
-- Ensures the database operation runs within a read-only transaction context
-- Optimizes performance by allowing the database to use read replicas or read-optimized connections
-- Prevents any accidental data modifications during the query execution
-
-## Error Handling
-
-The service relies on `userResolver.requireUserId()` to obtain the authenticated user's ID. If no authenticated user is found, this method is expected to throw an appropriate exception (e.g., `AuthenticationException` or `IllegalStateException`), which will propagate to the caller.
+- The service is declared as `non-sealed`, allowing it to be extended by other classes while maintaining the sealed interface hierarchy.
+- The `@Transactional(readOnly = true)` annotation optimizes database access by allowing the underlying database to use read-only connections when supported.
+- This service follows the command pattern where a single `execute()` method encapsulates the entire operation.

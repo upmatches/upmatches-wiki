@@ -6,28 +6,28 @@ sidebar_label: TokenResponse
 
 # TokenResponse
 
-The `TokenResponse` class is a Java record that encapsulates the response data returned after a successful authentication or token refresh operation. It provides a structured way to transport the access token, refresh token, and expiration timestamp between the authentication service and the client.
+The `TokenResponse` class is a Java record that encapsulates the response data returned after a successful authentication or token refresh operation. It provides a structured way to transport authentication tokens and their expiration details between the backend and client application.
 
 ## Purpose
 
 This record serves as a Data Transfer Object (DTO) for authentication responses. It bundles three critical pieces of information:
-- **Access Token**: The short-lived token used for API authorization
-- **Refresh Token**: A longer-lived token used to obtain new access tokens
-- **Expires At**: The Unix timestamp (in seconds or milliseconds) when the access token expires
+- An **access token** used for authorizing API requests
+- A **refresh token** used to obtain new access tokens without re-authentication
+- The **expiration timestamp** indicating when the access token becomes invalid
 
 ## Record Components
 
 | Component | Type | Description |
 |-----------|------|-------------|
-| `accessToken` | `String` | The JWT or bearer token for API authentication |
-| `refreshToken` | `String` | The token used to request new access tokens |
-| `expiresAt` | `Long` | Unix timestamp indicating when the access token expires |
+| `accessToken` | `String` | The JWT or bearer token used to authenticate API requests |
+| `refreshToken` | `String` | A long-lived token used to obtain new access tokens |
+| `expiresAt` | `Long` | Unix timestamp (in seconds or milliseconds) indicating when the access token expires |
 
-## Public Methods
+## Methods
 
 ### `of(String accessToken, String refreshToken, Long expiresAt)`
 
-Creates a new `TokenResponse` instance with the specified values.
+A static factory method that creates a new `TokenResponse` instance.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -35,7 +35,7 @@ Creates a new `TokenResponse` instance with the specified values.
 | `refreshToken` | `String` | The refresh token string |
 | `expiresAt` | `Long` | The expiration timestamp |
 
-**Returns:** `TokenResponse` - A new instance with the provided values.
+**Returns:** `TokenResponse` - A new instance of the record with the provided values.
 
 **Example usage:**
 ```java
@@ -48,9 +48,6 @@ TokenResponse response = TokenResponse.of(
 
 ## Notes
 
-- As a Java record, `TokenResponse` automatically provides:
-  - Constructor with all components
-  - `accessToken()`, `refreshToken()`, and `expiresAt()` accessor methods
-  - `equals()`, `hashCode()`, and `toString()` implementations
-- The static factory method `of()` provides a convenient way to create instances without using the `new` keyword
-- This class is immutable by design, making it safe for use in concurrent environments
+- As a Java record, `TokenResponse` automatically provides `equals()`, `hashCode()`, `toString()`, and accessor methods (e.g., `accessToken()`, `refreshToken()`, `expiresAt()`).
+- The record is immutable by design, ensuring thread safety and data integrity.
+- This class is part of the `com.upmatches.app.features.auth.responses` package, indicating its role in the authentication feature module.

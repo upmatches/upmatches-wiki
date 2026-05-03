@@ -10,16 +10,7 @@ The `GameBookmarkController` is a REST controller that manages game bookmarks fo
 
 ## Location
 
-**Package:** `com.upmatches.app.features.game.controllers`
-
-**Base URL:** `/api/v1/game-bookmarks`
-
-## Dependencies
-
-The controller relies on three service interfaces:
-- `ICreateGameBookmarkService` - Handles bookmark creation
-- `IDeleteGameBookmarkService` - Handles bookmark deletion
-- `IListGameBookmarksService` - Handles bookmark listing with cursor-based pagination
+`com.upmatches.app.features.game.controllers.GameBookmarkController`
 
 ## Endpoints
 
@@ -27,96 +18,62 @@ The controller relies on three service interfaces:
 
 Creates a new bookmark for a game.
 
-```
-POST /api/v1/game-bookmarks
-```
+**HTTP Method:** `POST`  
+**Endpoint:** `/api/v1/game-bookmarks`
 
-**Request Body:** `CreateGameBookmarkRequest` (validated)
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `body` | `@Valid @RequestBody CreateGameBookmarkRequest` | The request body containing the game ID to bookmark |
+| `request` | `HttpServletRequest` | The HTTP servlet request (injected automatically) |
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `gameId` | UUID | The ID of the game to bookmark |
-
-**Response:** `201 Created`
-
-```json
-{
-  "data": {
-    // GameBookmarkResponse object
-  },
-  "message": "Game bookmarked successfully.",
-  "path": "/api/v1/game-bookmarks"
-}
-```
+**Response:** `201 Created`  
+**Response Body:** `ApiResponse<GameBookmarkResponse>` containing the created bookmark details.
 
 ### List Game Bookmarks
 
 Retrieves a paginated list of game bookmarks using cursor-based pagination.
 
-```
-GET /api/v1/game-bookmarks?cursor={cursor}&size={size}
-```
+**HTTP Method:** `GET`  
+**Endpoint:** `/api/v1/game-bookmarks`
 
-**Query Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `cursor` | `String` | `null` | Cursor for pagination (optional) |
+| `size` | `Integer` | `20` | Number of items per page (optional) |
+| `request` | `HttpServletRequest` | - | The HTTP servlet request (injected automatically) |
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `cursor` | String | No | - | Cursor for pagination (opaque string) |
-| `size` | Integer | No | 20 | Number of items per page (validated) |
-
-**Response:** `200 OK`
-
-```json
-{
-  "data": {
-    // CursorPagedResponse<GameBookmarkResponse> object
-  },
-  "message": "Game bookmarks retrieved successfully.",
-  "path": "/api/v1/game-bookmarks"
-}
-```
+**Response:** `200 OK`  
+**Response Body:** `ApiResponse<CursorPagedResponse<GameBookmarkResponse>>` containing the paginated list of bookmarks.
 
 ### Delete Game Bookmark
 
-Removes a bookmark for a specific game.
+Deletes a specific game bookmark by game ID.
 
-```
-DELETE /api/v1/game-bookmarks/{gameId}
-```
-
-**Path Parameters:**
+**HTTP Method:** `DELETE`  
+**Endpoint:** `/api/v1/game-bookmarks/{gameId}`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `gameId` | UUID | The ID of the game to unbookmark |
+| `gameId` | `@PathVariable UUID` | The UUID of the game to unbookmark |
 
-**Response:** `204 No Content`
+**Response:** `204 No Content` (no response body)
+
+## Dependencies
+
+The controller depends on the following services:
+
+| Service | Description |
+|---------|-------------|
+| `ICreateGameBookmarkService` | Handles creation of game bookmarks |
+| `IDeleteGameBookmarkService` | Handles deletion of game bookmarks |
+| `IListGameBookmarksService` | Handles retrieval of game bookmarks |
+
+## Validation
+
+The controller uses `ValidationHelper.validateCursorPaginationParameters(size)` to validate pagination parameters before processing list requests.
 
 ## Error Handling
 
-- **400 Bad Request:** Returned when validation fails (e.g., invalid pagination size)
-- **404 Not Found:** May be returned by services if the game or bookmark doesn't exist
-- **409 Conflict:** May be returned if attempting to create a duplicate bookmark
-
-## Usage Example
-
-```java
-// Create a bookmark
-CreateGameBookmarkRequest request = new CreateGameBookmarkRequest(gameId);
-ResponseEntity<ApiResponse<GameBookmarkResponse>> response = 
-    controller.createGameBookmark(request, httpServletRequest);
-
-// List bookmarks with pagination
-ResponseEntity<ApiResponse<CursorPagedResponse<GameBookmarkResponse>>> listResponse = 
-    controller.listGameBookmarks("cursor123", 10, httpServletRequest);
-
-// Delete a bookmark
-ResponseEntity<Void> deleteResponse = controller.deleteGameBookmark(gameId);
-```
-
-## Notes
-
-- The controller uses cursor-based pagination for efficient retrieval of large bookmark collections
-- All responses follow a standard `ApiResponse` wrapper format
-- The `ValidationHelper.validateCursorPaginationParameters()` method ensures pagination parameters are within acceptable bounds
-- Service implementations handle the actual business logic and data persistence
+- Invalid request bodies will return validation errors due to the `@Valid` annotation
+- Invalid pagination parameters will be caught by the validation helper
+- Standard HTTP error codes apply for other error scenarios (e.g., 404 for not found, 500 for server errors)

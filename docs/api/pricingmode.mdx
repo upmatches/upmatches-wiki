@@ -6,42 +6,54 @@ sidebar_label: PricingMode
 
 # PricingMode Enum
 
-The `PricingMode` enum defines the available pricing strategies for matches within the UpMatches application. It is used to determine how the cost of a match is calculated and distributed among participants.
+The `PricingMode` enum defines the different pricing strategies available for game sessions within the UpMatches application. It is used to determine how the cost of a game is calculated and distributed among participants.
 
 ## Location
 
-`com.upmatches.app.features.game.enums.PricingMode`
+- **Package:** `com.upmatches.app.features.game.enums`
+- **File:** `PricingMode.java`
 
 ## Purpose
 
-This enum provides a clear and type-safe way to specify the pricing model for a game or match. By using an enum instead of raw strings or integers, the application ensures that only valid pricing modes are used throughout the codebase, reducing errors and improving maintainability.
+This enum provides a clear, type-safe way to represent the three distinct pricing models supported by the platform. By using an enum, the application ensures that only valid pricing modes are used throughout the codebase, reducing the risk of errors from using raw strings or integers.
 
 ## Enum Constants
 
 | Constant       | Description                                                                 |
 |----------------|-----------------------------------------------------------------------------|
-| `FLAT`         | A single, fixed price for all participants regardless of gender.            |
+| `FLAT`         | A single, fixed price for all participants regardless of any other factors. |
 | `GENDERED`     | Pricing varies based on the gender of the participant (e.g., different rates for men and women). |
-| `SHUTTLECOCK`  | Pricing is calculated per shuttlecock used during the match (common in badminton). |
+| `SHUTTLECOCK`  | Pricing is calculated per shuttlecock used during the game session.         |
 
-## Usage Example
+## Usage
+
+The `PricingMode` enum is typically used in conjunction with game configuration objects or pricing calculators. For example:
 
 ```java
-PricingMode mode = PricingMode.FLAT;
+// Example usage in a game configuration
+GameConfig config = new GameConfig();
+config.setPricingMode(PricingMode.FLAT);
 
-switch (mode) {
+// Switch on pricing mode to calculate cost
+switch (pricingMode) {
     case FLAT:
-        // Apply flat pricing logic
+        // Calculate flat rate
         break;
     case GENDERED:
-        // Apply gendered pricing logic
+        // Calculate gendered pricing
         break;
     case SHUTTLECOCK:
-        // Apply per-shuttlecock pricing logic
+        // Calculate per-shuttlecock pricing
         break;
 }
 ```
 
 ## Related Components
 
-This enum is typically used in conjunction with match creation and pricing calculation services within the `game` feature package. It may be stored as a field in match-related entities or DTOs to persist the selected pricing strategy.
+- **Game Configuration:** The enum is used to set the pricing strategy for a specific game session.
+- **Pricing Calculator:** A service or utility class that reads the `PricingMode` and applies the corresponding pricing logic.
+
+## Notes
+
+- This enum is immutable and thread-safe by design.
+- New pricing modes can be added in the future by simply adding new constants to this enum.

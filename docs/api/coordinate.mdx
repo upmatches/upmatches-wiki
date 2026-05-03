@@ -6,49 +6,80 @@ sidebar_label: Coordinate
 
 # Coordinate
 
-The `Coordinate` class is a Java record that represents a geographic coordinate pair consisting of latitude and longitude. It is designed as a value object within the venue feature of the application, ensuring that all coordinate instances are valid and immutable.
+The `Coordinate` class is a Java record that represents a geographic coordinate pair consisting of latitude and longitude. It ensures that the provided values are within valid geographic ranges and provides a factory method for creating instances.
 
 ## Purpose
 
-- **Encapsulation of Geographic Data**: Provides a structured way to handle latitude and longitude values.
-- **Validation**: Ensures that latitude is between -90 and 90, and longitude is between -180 and 180.
-- **Immutability**: As a Java record, `Coordinate` is immutable, making it safe for use in concurrent environments and as a key in collections.
-
-## Public Methods
-
-| Method | Description | Parameters | Return Type |
-|--------|-------------|------------|-------------|
-| `create(BigDecimal latitude, BigDecimal longitude)` | Static factory method to create a new `Coordinate` instance. | `latitude` - The latitude value (must be between -90 and 90). `longitude` - The longitude value (must be between -180 and 180). | `Coordinate` |
-| `toString()` | Returns a string representation of the coordinate in the format "latitude, longitude". | None | `String` |
+This value object is designed to encapsulate a location's latitude and longitude coordinates. It validates the input to ensure that latitude is between -90 and 90 degrees and longitude is between -180 and 180 degrees. The class is immutable and provides a clean, type-safe way to represent geographic coordinates in the venue feature of the application.
 
 ## Constructor
 
-The canonical constructor of the `Coordinate` record performs validation:
+The canonical constructor of the `Coordinate` record performs validation on the provided latitude and longitude values.
 
-- **Null Check**: Throws `IllegalArgumentException` if either `latitude` or `longitude` is `null`.
-- **Range Validation**: 
-  - Latitude must be between -90 and 90 (inclusive).
-  - Longitude must be between -180 and 180 (inclusive).
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `latitude` | `BigDecimal` | The latitude value, must be between -90 and 90 (inclusive) |
+| `longitude` | `BigDecimal` | The longitude value, must be between -180 and 180 (inclusive) |
+
+**Throws:**
+- `IllegalArgumentException` if either parameter is `null`
+- `IllegalArgumentException` if latitude is outside the range [-90, 90]
+- `IllegalArgumentException` if longitude is outside the range [-180, 180]
+
+## Public Methods
+
+### `create`
+
+```java
+public static Coordinate create(BigDecimal latitude, BigDecimal longitude)
+```
+
+Factory method to create a new `Coordinate` instance.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `latitude` | `BigDecimal` | The latitude value |
+| `longitude` | `BigDecimal` | The longitude value |
+
+**Returns:** `Coordinate` - A new validated Coordinate instance
+
+**Throws:** Same validation exceptions as the constructor
+
+### `toString`
+
+```java
+@Override
+public String toString()
+```
+
+Returns a string representation of the coordinate in the format "latitude, longitude".
+
+**Returns:** `String` - The coordinate as a comma-separated string (e.g., "40.7128, -74.0060")
+
+## Accessor Methods
+
+As a Java record, `Coordinate` automatically provides the following accessor methods:
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `latitude()` | `BigDecimal` | Returns the latitude value |
+| `longitude()` | `BigDecimal` | Returns the longitude value |
 
 ## Usage Example
 
 ```java
 import java.math.BigDecimal;
-import com.upmatches.app.features.venue.valueobjects.Coordinate;
 
-public class Example {
-    public static void main(String[] args) {
-        Coordinate coord = Coordinate.create(
-            new BigDecimal("40.7128"),
-            new BigDecimal("-74.0060")
-        );
-        System.out.println(coord.toString()); // Output: 40.7128, -74.0060
-    }
-}
+// Create a coordinate for New York City
+Coordinate nyc = Coordinate.create(
+    new BigDecimal("40.7128"),
+    new BigDecimal("-74.0060")
+);
+
+// Access values
+BigDecimal lat = nyc.latitude();
+BigDecimal lon = nyc.longitude();
+
+// String representation
+String coordString = nyc.toString(); // "40.7128, -74.0060"
 ```
-
-## Notes
-
-- The `SEPARATOR` constant is used in the `toString()` method to format the output as "latitude, longitude".
-- The class uses `BigDecimal` for precise decimal arithmetic, which is important for geographic calculations.
-- This value object is part of the `com.upmatches.app.features.venue.valueobjects` package.

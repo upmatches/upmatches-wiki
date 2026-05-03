@@ -6,118 +6,95 @@ sidebar_label: GameLookupService
 
 # GameLookupService
 
-The `GameLookupService` class is a Spring service component that provides centralized lookup operations for various entities within the UpMatches application. It implements the `IGameLookupService` interface and serves as a single point of access for retrieving `Game`, `Activity`, `Venue`, `User`, and `SkillLevel` entities from their respective repositories.
+The `GameLookupService` is a Spring `@Service` component that provides centralized lookup and validation methods for core domain entities within the UpMatches application. It acts as a single point of access for retrieving `Game`, `Activity`, `Venue`, `User`, and `SkillLevel` entities, throwing appropriate exceptions when an entity is not found.
 
-This service encapsulates the logic for entity retrieval, including handling of soft-deleted records, pessimistic locking for updates, and consistent error messaging when entities are not found. By centralizing these operations, it promotes code reuse and ensures uniform error handling across the application.
+This service implements the `IGameLookupService` interface and is declared as `non-sealed`, allowing for future extension if needed.
 
-## Constructor
+## Purpose
 
-### `GameLookupService(GameRepository, ActivityRepository, VenueRepository, UserRepository, SkillLevelRepository)`
+- **Centralized Entity Lookup**: Provides a consistent pattern for retrieving entities by their identifiers.
+- **Error Handling**: Throws specific exceptions (`GameNotFoundException` or `ResourceNotFoundException`) with descriptive messages when entities are not found.
+- **Pessimistic Locking Support**: Offers methods that acquire database-level locks for update operations (`findGameForUpdateOrThrow`, `findUserForUpdateOrThrow`).
+- **Soft Delete Awareness**: The `findGameOrThrow` method respects soft deletion by filtering out records where `deleted_at` is not null.
 
-Creates a new instance of `GameLookupService` with the required repository dependencies.
+## Dependencies
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `gameRepository` | `GameRepository` | Repository for Game entity operations |
-| `activityRepository` | `ActivityRepository` | Repository for Activity entity operations |
-| `venueRepository` | `VenueRepository` | Repository for Venue entity operations |
-| `userRepository` | `UserRepository` | Repository for User entity operations |
-| `skillLevelRepository` | `SkillLevelRepository` | Repository for SkillLevel entity operations |
+The service depends on five Spring Data JPA repositories injected via constructor injection:
 
-## Methods
+| Repository | Entity |
+|------------|--------|
+| `GameRepository` | `Game` |
+| `ActivityRepository` | `Activity` |
+| `VenueRepository` | `Venue` |
+| `UserRepository` | `User` |
+| `SkillLevelRepository` | `SkillLevel` |
 
-### `findGameOrThrow(UUID id)`
+## Public Methods
 
-Retrieves a non-deleted Game by its ID. Throws `GameNotFoundException` if the game does not exist or has been soft-deleted.
+### Game Lookup Methods
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the game |
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findGameOrThrow` | `Game` | `UUID id` | Finds a non-deleted game by ID. Throws `GameNotFoundException` if not found or soft-deleted. |
+| `findGameForUpdateOrThrow` | `Game` | `UUID id` | Finds a game with a pessimistic write lock. Throws `GameNotFoundException` if not found. |
+| `findGameIgnoringDeletedOrThrow` | `Game` | `UUID id` | Finds a game regardless of its deletion status. Throws `GameNotFoundException` if not found. |
 
-**Returns:** `Game` - The found game entity
+### Activity Lookup Method
 
-**Throws:** `GameNotFoundException` - If no active game exists with the given ID
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findActivityOrThrow` | `Activity` | `UUID id` | Finds an activity by ID. Throws `ResourceNotFoundException` if not found. |
 
-### `findGameForUpdateOrThrow(UUID id)`
+### Venue Lookup Method
 
-Retrieves a Game with a pessimistic lock for update operations. Throws `GameNotFoundException` if the game does not exist.
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findVenueOrThrow` | `Venue` | `Long id` | Finds a venue by ID. Throws `ResourceNotFoundException` if not found. |
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the game |
+### User Lookup Methods
 
-**Returns:** `Game` - The found game entity with a database lock
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findUserOrThrow` | `User` | `UUID id` | Finds a user by ID. Throws `ResourceNotFoundException` if not found. |
+| `findUserForUpdateOrThrow` | `User` | `UUID id` | Finds a user with a pessimistic write lock. Throws `ResourceNotFoundException` if not found. |
 
-**Throws:** `GameNotFoundException` - If no game exists with the given ID
+### Skill Level Lookup Method
 
-### `findGameIgnoringDeletedOrThrow(UUID id)`
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findSkillLevelOrThrow` | `SkillLevel` | `Long id` | Finds a skill level by ID. Throws `ResourceNotFoundException` if not found. |
 
-Retrieves a Game by its ID regardless of its deletion status. Throws `GameNotFoundException` if the game does not exist.
+## Exception Handling
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the game |
+The service uses two custom exception types:
 
-**Returns:** `Game` - The found game entity (may be soft-deleted)
+- **`GameNotFoundException`**: Thrown specifically for game-related lookups when the game is not found.
+- **`ResourceNotFoundException`**: Thrown for all other entity types (Activity, Venue, User, SkillLevel) when not found.
 
-**Throws:** `GameNotFoundException` - If no game exists with the given ID
+Each exception message includes the entity type and the requested ID for easier debugging.
 
-### `findActivityOrThrow(UUID id)`
+## Usage Example
 
-Retrieves an Activity by its ID. Throws `ResourceNotFoundException` if the activity does not exist.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the activity |
-
-**Returns:** `Activity` - The found activity entity
-
-**Throws:** `ResourceNotFoundException` - If no activity exists with the given ID
-
-### `findVenueOrThrow(Long id)`
-
-Retrieves a Venue by its ID. Throws `ResourceNotFoundException` if the venue does not exist.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `Long` | The unique identifier of the venue |
-
-**Returns:** `Venue` - The found venue entity
-
-**Throws:** `ResourceNotFoundException` - If no venue exists with the given ID
-
-### `findUserOrThrow(UUID id)`
-
-Retrieves a User by their ID. Throws `ResourceNotFoundException` if the user does not exist.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the user |
-
-**Returns:** `User` - The found user entity
-
-**Throws:** `ResourceNotFoundException` - If no user exists with the given ID
-
-### `findUserForUpdateOrThrow(UUID id)`
-
-Retrieves a User with a pessimistic lock for update operations. Throws `ResourceNotFoundException` if the user does not exist.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the user |
-
-**Returns:** `User` - The found user entity with a database lock
-
-**Throws:** `ResourceNotFoundException` - If no user exists with the given ID
-
-### `findSkillLevelOrThrow(Long id)`
-
-Retrieves a SkillLevel by its ID. Throws `ResourceNotFoundException` if the skill level does not exist.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `id` | `Long` | The unique identifier of the skill level |
-
-**Returns:** `SkillLevel` - The found skill level entity
-
-**Throws:** `ResourceNotFoundException` - If no skill level exists with the given ID
+```java
+@Service
+public class GameManagementService {
+    
+    private final GameLookupService lookupService;
+    
+    public GameManagementService(GameLookupService lookupService) {
+        this.lookupService = lookupService;
+    }
+    
+    public Game getGameDetails(UUID gameId) {
+        // Automatically throws GameNotFoundException if game doesn't exist
+        return lookupService.findGameOrThrow(gameId);
+    }
+    
+    public Game updateGame(UUID gameId, GameUpdateRequest request) {
+        // Acquires a pessimistic lock for safe concurrent updates
+        Game game = lookupService.findGameForUpdateOrThrow(gameId);
+        // ... update logic ...
+        return game;
+    }
+}
+```

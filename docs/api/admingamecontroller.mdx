@@ -6,33 +6,39 @@ sidebar_label: AdminGameController
 
 # Admin Game Controller
 
-The `AdminGameController` is a REST controller that provides administrative endpoints for managing games in the UpMatches application. It exposes a single endpoint for hard-deleting games from the system, bypassing any soft-delete mechanisms that may be in place for regular users.
+The `AdminGameController` is a REST controller that provides administrative endpoints for managing games in the UpMatches application. It exposes a single endpoint for permanently deleting (hard deleting) games from the system.
 
 ## Purpose
 
-This controller is designed for administrative operations only, specifically for permanently removing game records from the database. Unlike regular deletion endpoints that might mark records as inactive, this controller performs a complete removal of the game entity.
+This controller is designed for administrative operations that require elevated privileges. Unlike regular game deletion, which might perform a soft delete (marking the game as inactive), this controller performs a **hard delete** that permanently removes the game record from the database.
+
+## Dependencies
+
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `IHardDeleteGameService` | Service | Interface defining the contract for hard-deleting games |
 
 ## Endpoints
 
 ### Hard Delete Game
 
-Permanently removes a game from the system by its unique identifier.
+Permanently deletes a game from the system by its unique identifier.
 
 **HTTP Method:** `DELETE`
 
-**URL Pattern:** `/api/v1/admin/games/{id}`
+**Endpoint:** `/api/v1/admin/games/{id}`
 
-**Parameters:**
+**Path Parameters:**
 
-| Parameter | Type | Location | Description |
-|-----------|------|----------|-------------|
-| `id` | `UUID` | Path | The unique identifier of the game to be permanently deleted |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to permanently delete |
 
 **Response:**
 
 | Status Code | Description |
 |-------------|-------------|
-| `204 No Content` | The game was successfully deleted |
+| `204 No Content` | Game successfully deleted |
 
 **Example Request:**
 
@@ -42,18 +48,35 @@ DELETE /api/v1/admin/games/550e8400-e29b-41d4-a716-446655440000
 
 **Example Response:**
 
-```http
+```
 HTTP/1.1 204 No Content
 ```
 
-## Dependencies
+## Methods
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `IHardDeleteGameService` | Service Interface | Service responsible for executing the hard delete operation |
+### `hardDeleteGame`
+
+```java
+public ResponseEntity<Void> hardDeleteGame(@PathVariable UUID id)
+```
+
+Delegates the hard deletion operation to the `IHardDeleteGameService` and returns a `204 No Content` response upon successful execution.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to permanently delete |
+
+**Returns:**
+
+| Type | Description |
+|------|-------------|
+| `ResponseEntity<Void>` | HTTP response with status 204 (No Content) |
 
 ## Usage Notes
 
-- This endpoint should be protected with appropriate authentication and authorization mechanisms to ensure only authorized administrators can access it.
-- Hard deletion is irreversible; once a game is deleted, it cannot be recovered.
-- Consider implementing audit logging to track when administrators perform hard deletions.
+- This endpoint should be secured to ensure only authorized administrators can access it
+- Hard deletion is irreversible; use with caution
+- The service implementation handles the actual database operation and any cascading effects
+- The endpoint follows RESTful conventions with a clear resource path under the `/admin` prefix

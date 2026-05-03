@@ -1,53 +1,57 @@
 ---
 id: game-notification-event
-title: GameNotificationEvent
+title: GameNotificationEvent Documentation
 sidebar_label: GameNotificationEvent
 ---
 
 # GameNotificationEvent
 
-The `GameNotificationEvent` is a Java record class that represents a notification event related to a game within the application. It is part of the notification system and is used to encapsulate the essential data required to process and dispatch game-related notifications to users.
+The `GameNotificationEvent` is a Java record class that represents a notification event related to a game within the application. It is part of the notification system and is used to encapsulate the essential data required to process and dispatch notifications when specific game-related actions occur.
 
 ## Purpose
 
-This record serves as a data carrier for game notification events. When a game-related action occurs (e.g., a player joins, a game starts, or a game ends), an instance of `GameNotificationEvent` is created and passed through the notification pipeline. The record ensures that all necessary information—such as the game identifier, the acting user, the notification type, and the game title—is available in a structured and immutable format.
+This record serves as a data carrier for game notification events. It is designed to be immutable and lightweight, leveraging Java's record feature to automatically generate constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods. The primary use case is to pass notification data between different components of the system, such as from a service layer to a notification handler or event bus.
 
 ## Record Components
 
-The `GameNotificationEvent` record defines the following components:
+The `GameNotificationEvent` record contains the following components:
 
 | Component   | Type             | Description                                                                 |
 |-------------|------------------|-----------------------------------------------------------------------------|
 | `gameId`    | `UUID`           | The unique identifier of the game associated with the notification event.   |
-| `actorId`   | `UUID`           | The unique identifier of the user who triggered the notification event.     |
-| `type`      | `NotificationType` | The type of notification (e.g., GAME_START, GAME_END, PLAYER_JOIN).       |
-| `gameTitle` | `String`         | The title or name of the game for display purposes.                         |
+| `actorId`   | `UUID`           | The unique identifier of the user or entity that triggered the notification.|
+| `type`      | `NotificationType` | The type of notification being sent (e.g., GAME_INVITE, GAME_UPDATE).       |
+| `gameTitle` | `String`         | The title or name of the game for display purposes in the notification.     |
 
-## Usage
-
-Since `GameNotificationEvent` is a Java record, it automatically provides:
-- A canonical constructor
-- Accessor methods (`gameId()`, `actorId()`, `type()`, `gameTitle()`)
-- `equals()`, `hashCode()`, and `toString()` implementations
-
-This makes it ideal for use in event-driven architectures, message queues, or notification services where immutability and data integrity are important.
-
-### Example
+## Usage Example
 
 ```java
+import com.upmatches.app.features.notification.enums.NotificationType;
+import java.util.UUID;
+
+// Create a new game notification event
 GameNotificationEvent event = new GameNotificationEvent(
     UUID.randomUUID(),
     UUID.randomUUID(),
-    NotificationType.GAME_START,
-    "Chess Match #42"
+    NotificationType.GAME_INVITE,
+    "Chess Masters"
 );
 
-// Accessing components
+// Access record components
 UUID gameId = event.gameId();
-String title = event.gameTitle();
+UUID actorId = event.actorId();
+NotificationType type = event.type();
+String gameTitle = event.gameTitle();
 ```
+
+## Key Features
+
+- **Immutability**: As a Java record, all fields are final and cannot be modified after creation.
+- **Automatic Methods**: The compiler generates `equals()`, `hashCode()`, `toString()`, and accessor methods automatically.
+- **Type Safety**: Uses `UUID` for identifiers and `NotificationType` enum for type safety.
+- **Lightweight**: Minimal boilerplate code required for data transfer objects.
 
 ## Dependencies
 
-- `com.upmatches.app.features.notification.enums.NotificationType` – An enum that defines the various types of game notifications.
-- `java.util.UUID` – Used for generating and representing universally unique identifiers.
+- `java.util.UUID` - For unique identifier generation and representation.
+- `com.upmatches.app.features.notification.enums.NotificationType` - Enum defining the types of notifications available in the system.

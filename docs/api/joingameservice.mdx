@@ -6,18 +6,13 @@ sidebar_label: JoinGameService
 
 # JoinGameService
 
-The `JoinGameService` class is a Spring `@Service` component responsible for handling the business logic of a user joining a game. It implements the `IJoinGameService` interface and provides a transactional, auditable method to add a participant to a game while enforcing various business rules such as capacity limits, time overlap checks, and authorization constraints.
+The `JoinGameService` class is a Spring service responsible for handling the business logic of a user joining a game. It validates that the game is joinable, not full, and that the user does not have overlapping game commitments. Upon successful validation, it creates a `GameParticipant` record, persists it, and publishes relevant notifications.
 
 ## Purpose
 
-This service encapsulates the complete "join game" workflow, including:
-- Resolving the authenticated user
-- Looking up the game and user entities
-- Performing authorization checks (joinability, private access, duplicate participation)
-- Validating game capacity
-- Checking for overlapping game participation
-- Creating and persisting a `GameParticipant` entity
-- Publishing domain events for notifications
+- **Game Joining Logic**: Orchestrates the entire join-game flow, including authorization checks, capacity validation, overlap detection, and participant creation.
+- **Notification Publishing**: After a successful join, it publishes events for player joined, game full, and skill mismatch warnings.
+- **Transactional Integrity**: The `execute` method is annotated with `@Transactional` to ensure atomicity of the join operation.
 
 ## Dependencies
 
@@ -33,58 +28,54 @@ This service encapsulates the complete "join game" workflow, including:
 
 ### `execute(UUID id)`
 
-The main entry point for joining a game. This method is transactional and auditable.
-
-**Parameters:**
+Joins the authenticated user to the game identified by the given ID.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `id` | `UUID` | The unique identifier of the game to join |
 
-**Returns:**
-
-| Type | Description |
-|------|-------------|
-| `GameParticipantResponse` | A response object containing the participant details, activity ID, and a flag indicating if the user is the host |
+| Returns | Type | Description |
+|---------|------|-------------|
+| `GameParticipantResponse` | Object | Contains the saved participant details, activity ID, and a flag indicating if the user is the host |
 
 **Throws:**
 
 | Exception | Condition |
 |-----------|-----------|
-| `ResourceNotFoundException` | If the game or user is not found |
-| `GameFullException` | If the game has reached its maximum capacity |
-| `OverlappingGameException` | If the user already participates in another game with overlapping time |
+| `GameFullException` | The game has reached its maximum capacity |
+| `OverlappingGameException` | The user already participates in another game that overlaps with this game's time range |
+| `ResourceNotFoundException` | The game or user does not exist |
 
-**Workflow:**
+**Flow:**
 
-1. **Resolve User** - Retrieves the authenticated user's UUID
-2. **Lookup Game** - Fetches the game entity with a pessimistic lock for update
-3. **Authorization Checks** - Validates:
+1. Resolves the authenticated user's ID.
+2. Retrieves the game with a pessimistic lock for update.
+3. Performs authorization checks:
    - Game is joinable (not cancelled, completed, etc.)
-   - User has private access if the game is private
-   - User has not already joined the game
-4. **Capacity Check** - Counts active participants and throws `GameFullException` if the game is full
-5. **Overlap Check** - Verifies no other active game participation overlaps with this game's time slot
-6. **Create Participant** - Creates a new `GameParticipant` entity
-7. **Persist** - Saves the participant using `ServiceOperationExecutor`
-8. **Publish Notifications** - Fires events for:
-   - Player joined notification
-   - Game full notification (if applicable)
-   - Skill mismatch warning (if applicable)
-9. **Return Response** - Builds and returns a `GameParticipantResponse`
+   - User has private access (if the game is private)
+   - User has not already joined
+4. Counts current active participants.
+5. Checks if the game is full; throws `GameFullException` if so.
+6. Retrieves the user entity.
+7. Checks for overlapping games; throws `OverlappingGameException` if found.
+8. Creates a new `GameParticipant` entity.
+9. Persists the participant using `ServiceOperationExecutor`.
+10. Publishes notification events:
+    - `PLAYER_JOINED` always
+    - `GAME_FULL` if the game is now full
+    - `PLAYER_WARNING_MISMATCH` if there is a skill mismatch
+11. Returns a `GameParticipantResponse`.
 
 ## Private Methods
 
 ### `publishNotifications(Game game, UUID actorId, User user, long newCount)`
 
-Publishes domain events based on the join result.
-
-**Parameters:**
+Publishes notification events based on the join result.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `game` | `Game` | The game being joined |
-| `actorId` | `UUID` | The ID of the user joining |
+| `game` | `Game` | The game entity |
+| `actorId` | `UUID` | The ID of the user who joined |
 | `user` | `User` | The user entity |
 | `newCount` | `long` | The new participant count after joining |
 
@@ -93,8 +84,8 @@ Publishes domain events based on the join result.
 | Event Type | Condition |
 |------------|-----------|
 | `PLAYER_JOINED` | Always |
-| `GAME_FULL` | When the game reaches full capacity |
-| `PLAYER_WARNING_MISMATCH` | When there is a skill mismatch between the player and the game |
+| `GAME_FULL` | When `game.isFull(newCount)` is true |
+| `PLAYER_WARNING_MISMATCH` | When `GameJoinabilityService.hasSkillMismatch(game, user)` is true |
 
 ## Usage Example
 
@@ -103,21 +94,14 @@ Publishes domain events based on the join result.
 private JoinGameService joinGameService;
 
 public void joinGame(UUID gameId) {
-    try {
-        GameParticipantResponse response = joinGameService.execute(gameId);
-        // Handle successful join
-    } catch (GameFullException e) {
-        // Handle game full scenario
-    } catch (OverlappingGameException e) {
-        // Handle time overlap scenario
-    }
+    GameParticipantResponse response = joinGameService.execute(gameId);
+    // response contains participant details
 }
 ```
 
 ## Notes
 
-- The service is annotated with `@Transactional` to ensure atomicity of the join operation
-- The `@Auditable` annotation logs the action with resource type "GAME" and the game ID as the resource identifier
-- The class is declared as `non-sealed`, allowing further extension if needed
-- All authorization checks are delegated to `IGameAuthorizationService` for separation of concerns
-- Notifications are published asynchronously via Spring's `ApplicationEventPublisher`
+- The service is declared as `non-sealed`, allowing it to be extended if needed.
+- All authorization checks are delegated to `IGameAuthorizationService` for separation of concerns.
+- The `@Auditable` annotation logs the join action for audit purposes.
+- The `ServiceOperationExecutor` wraps the save operation to provide consistent error handling and logging.

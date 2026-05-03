@@ -6,33 +6,31 @@ sidebar_label: AuthDevProperties
 
 # AuthDevProperties
 
-The `AuthDevProperties` class is a Spring Boot configuration properties record that maps to the `app.auth.dev` configuration prefix. It is designed to manage development-specific authentication settings, such as enabling or disabling certain endpoints and controlling access to a token page.
+The `AuthDevProperties` class is a Spring Boot configuration properties record that maps to the `app.auth.dev` prefix in your application's configuration files (e.g., `application.yml` or `application.properties`). It centralizes development-specific authentication settings, such as enabling certain endpoints and restricting access to specific hosts.
 
-This record provides a centralized and type-safe way to configure development features for authentication, ensuring that default values are applied when properties are not explicitly set.
+## Purpose
 
-## Configuration Prefix
+This record is designed to manage development-only flags and host allowlists for authentication features. It ensures that development endpoints (like a token page or a mint endpoint) are only enabled when explicitly configured, and that access to the token page is restricted to a predefined set of allowed hosts. The compact constructor normalizes the boolean fields and ensures the host list is never null.
 
-All properties are prefixed with `app.auth.dev` in your application configuration files (e.g., `application.yml` or `application.properties`).
-
-## Properties
+## Configuration Properties
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `tokenPageEnabled` | `Boolean` | `false` | Enables or disables the token page. If not set, defaults to `false`. |
-| `mintEndpointEnabled` | `Boolean` | `false` | Enables or disables the mint endpoint. If not set, defaults to `false`. |
-| `tokenPageAllowedHosts` | `List<String>` | `[]` (empty list) | A list of allowed hosts for the token page. If not set, defaults to an empty, immutable list. |
+| `app.auth.dev.token-page-enabled` | `Boolean` | `false` | Enables the token page endpoint in development mode. |
+| `app.auth.dev.mint-endpoint-enabled` | `Boolean` | `false` | Enables the mint endpoint in development mode. |
+| `app.auth.dev.token-page-allowed-hosts` | `List<String>` | `[]` (empty list) | List of hosts allowed to access the token page. |
 
 ## Constructor Behavior
 
-The compact constructor of this record performs the following normalization:
+The compact constructor performs the following normalization:
 
-- **`tokenPageEnabled`**: Converts any non-`true` value (including `null`) to `false` using `Boolean.TRUE.equals()`.
-- **`mintEndpointEnabled`**: Same logic as `tokenPageEnabled`; defaults to `false` if not explicitly `true`.
-- **`tokenPageAllowedHosts`**: If the provided list is `null`, it defaults to an empty list. Otherwise, it creates an immutable copy of the list using `List.copyOf()`.
+- **`tokenPageEnabled`**: Converts `null` to `false` using `Boolean.TRUE.equals()`.
+- **`mintEndpointEnabled`**: Converts `null` to `false` using `Boolean.TRUE.equals()`.
+- **`tokenPageAllowedHosts`**: If the provided list is `null`, it defaults to an empty, immutable list. Otherwise, it creates an immutable copy via `List.copyOf()`.
 
-## Example Configuration
+## Usage Example
 
-### application.yml
+In your `application.yml`:
 
 ```yaml
 app:
@@ -45,54 +43,17 @@ app:
         - 127.0.0.1
 ```
 
-### application.properties
+## Public Methods
 
-```properties
-app.auth.dev.token-page-enabled=true
-app.auth.dev.mint-endpoint-enabled=false
-app.auth.dev.token-page-allowed-hosts[0]=localhost
-app.auth.dev.token-page-allowed-hosts[1]=127.0.0.1
-```
+Since `AuthDevProperties` is a Java record, the following accessor methods are automatically generated:
 
-## Usage
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `tokenPageEnabled()` | `Boolean` | Returns whether the token page endpoint is enabled. |
+| `mintEndpointEnabled()` | `Boolean` | Returns whether the mint endpoint is enabled. |
+| `tokenPageAllowedHosts()` | `List<String>` | Returns an immutable list of allowed hosts for the token page. |
 
-This record is typically injected into other Spring components using `@EnableConfigurationProperties` or by declaring it as a bean. For example:
+## Dependencies
 
-```java
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
-@EnableConfigurationProperties(AuthDevProperties.class)
-public class AuthDevConfig {
-    // AuthDevProperties is automatically bound and available for injection
-}
-```
-
-Then, you can inject it into any Spring-managed bean:
-
-```java
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-@Service
-public class AuthService {
-
-    private final AuthDevProperties authDevProperties;
-
-    @Autowired
-    public AuthService(AuthDevProperties authDevProperties) {
-        this.authDevProperties = authDevProperties;
-    }
-
-    public boolean isTokenPageEnabled() {
-        return authDevProperties.tokenPageEnabled();
-    }
-}
-```
-
-## Notes
-
-- The record is immutable after construction, ensuring thread safety.
-- The `List.copyOf()` call in the constructor guarantees that the internal list cannot be modified externally.
-- This class is part of the `com.upmatches.app.features.auth.properties` package and is intended for development environments only.
+- **Spring Boot**: `@ConfigurationProperties` annotation from `org.springframework.boot.context.properties`.
+- **Java 16+**: Record feature (or Java 14+ with preview enabled).

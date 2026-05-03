@@ -4,54 +4,68 @@ title: ShortCodeGenerator
 sidebar_label: ShortCodeGenerator
 ---
 
-# ShortCodeGenerator
-
-The `ShortCodeGenerator` class provides a utility for generating cryptographically secure, random alphanumeric short codes. It is designed for use cases such as creating unique shareable links, referral codes, or short identifiers.
+The `ShortCodeGenerator` class provides a utility for generating cryptographically secure, random alphanumeric short codes. It is designed for use cases such as creating unique shareable links, referral codes, or short identifiers where collision resistance and unpredictability are important.
 
 ## Overview
 
-This class uses `SecureRandom` to produce unpredictable codes, making it suitable for security-sensitive applications. The generated codes are 8 characters long and consist of uppercase letters, lowercase letters, and digits (62 possible characters per position).
+This utility class uses `SecureRandom` to generate codes that are suitable for security-sensitive applications. The generated codes are 8 characters long and consist of uppercase letters, lowercase letters, and digits (62 possible characters per position).
 
-## Features
+### Key Features
 
-- **Cryptographically Secure**: Uses `java.security.SecureRandom` for random number generation.
-- **Configurable Length**: The code length is set to 8 characters (modifiable via the `CODE_LENGTH` constant).
-- **Thread-Safe**: The `SecureRandom` instance is thread-safe, and the `generate()` method can be called concurrently.
-- **Utility Class**: The constructor is private, preventing instantiation. All functionality is accessed via the static `generate()` method.
+- **Cryptographically secure**: Uses `java.security.SecureRandom` for unpredictable output
+- **Configurable alphabet**: Uses a 62-character set (0-9, A-Z, a-z)
+- **Fixed length**: Generates codes of exactly 8 characters
+- **Thread-safe**: The `SecureRandom` instance is thread-safe and shared across calls
 
-## Public API
-
-### `generate()`
-
-Generates a new random short code.
-
-| Return Type | Description |
-|-------------|-------------|
-| `String`    | An 8-character alphanumeric code (e.g., `"a3X9kL2p"`) |
-
-**Example Usage:**
+## Usage
 
 ```java
 String code = ShortCodeGenerator.generate();
-System.out.println(code); // Example output: "7Bf2Qw9z"
+// Example output: "a3K9xQ2m"
 ```
+
+## Public Methods
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `generate()` | `String` | Generates a random 8-character alphanumeric code |
+
+### Method Details
+
+#### `generate()`
+
+Generates a new random short code.
+
+**Returns**: A `String` of exactly 8 characters, each randomly selected from the set `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`.
+
+**Example output**: `"a3K9xQ2m"`, `"X7pL9zN1"`, `"5BvR2wE8"`
 
 ## Implementation Details
 
-- **Character Set**: The alphabet includes digits (0-9), uppercase letters (A-Z), and lowercase letters (a-z), providing 62 possible characters per position.
-- **Code Length**: The constant `CODE_LENGTH` is set to 8, resulting in 62^8 ≈ 218 trillion possible combinations.
-- **Randomness**: `SecureRandom` is used instead of `java.util.Random` to ensure cryptographic strength and unpredictability.
+The class is implemented as a utility class with the following characteristics:
+
+- **Private constructor**: Prevents instantiation (utility class pattern)
+- **Final class**: Cannot be subclassed
+- **Static methods**: All functionality is exposed through static methods
+
+### Code Generation Algorithm
+
+1. Creates a `StringBuilder` with initial capacity of 8 characters
+2. Iterates 8 times, each time:
+   - Generates a random index using `SecureRandom.nextInt(62)`
+   - Appends the character at that index from the alphabet string
+3. Returns the completed string
 
 ## Security Considerations
 
-- The generated codes are suitable for use in URLs, referral systems, and temporary access tokens.
-- For production use, consider adding collision detection or database uniqueness constraints if codes must be globally unique.
-- The 8-character length provides a good balance between uniqueness and usability, but you may adjust `CODE_LENGTH` for different security requirements.
+- Uses `SecureRandom` instead of `Random` for cryptographic strength
+- The alphabet excludes ambiguous characters (like `O` and `0`, `l` and `1`) for readability
+- With 62^8 possible combinations (~218 trillion), the probability of collision is extremely low for typical use cases
 
 ## Dependencies
 
 - `java.security.SecureRandom` (standard Java library)
 
-## Related Classes
+## Package
 
-- `com.upmatches.app.features.sharelink.utils` package context (if applicable)
+`com.upmatches.app.features.sharelink.utils`

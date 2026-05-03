@@ -8,7 +8,9 @@ sidebar_label: IGetGameFilterOptionsService
 
 ## Purpose
 
-The `IGetGameFilterOptionsService` interface defines the contract for retrieving game filter options within the UpMatches application. It follows a sealed interface pattern, restricting implementation to only the `GetGameFilterOptionsService` class. This design ensures controlled extensibility and enforces a single, well-defined implementation for the game filter options retrieval use case.
+The `IGetGameFilterOptionsService` interface defines the contract for retrieving game filter options within the UpMatches application. It serves as a sealed interface, restricting its implementation to only the `GetGameFilterOptionsService` class. This design pattern enforces a controlled hierarchy and ensures that all filter option retrieval logic follows a consistent execution path.
+
+The interface encapsulates a single operation: executing a filter options request and returning a corresponding response. This follows the Command Pattern, promoting separation of concerns and making the service easily testable and replaceable.
 
 ## Interface Definition
 
@@ -22,37 +24,30 @@ public sealed interface IGetGameFilterOptionsService permits GetGameFilterOption
 
 ### `execute`
 
-Retrieves the available game filter options based on the provided request parameters.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `filter` | `GameFilterOptionsRequest` | The request object containing filter criteria for retrieving game filter options |
-
-| Returns | Type | Description |
-|---------|------|-------------|
-| `GameFilterOptionsResponse` | `GameFilterOptionsResponse` | The response object containing the available game filter options |
+| Property | Description |
+|----------|-------------|
+| **Signature** | `GameFilterOptionsResponse execute(GameFilterOptionsRequest filter)` |
+| **Purpose** | Processes a game filter options request and returns the available filter options. |
+| **Parameters** | `filter` - A `GameFilterOptionsRequest` object containing the criteria for which filter options should be retrieved. |
+| **Returns** | `GameFilterOptionsResponse` - An object containing the available filter options based on the provided request. |
+| **Throws** | Implementation-specific exceptions may be thrown (e.g., validation errors, data access exceptions). |
 
 ## Usage Example
 
 ```java
 // Inject the service (typically via dependency injection)
-private final IGetGameFilterOptionsService gameFilterOptionsService;
+IGetGameFilterOptionsService filterOptionsService = new GetGameFilterOptionsService();
 
-// Execute the service
+// Create a request for filter options
 GameFilterOptionsRequest request = new GameFilterOptionsRequest(/* parameters */);
-GameFilterOptionsResponse response = gameFilterOptionsService.execute(request);
+
+// Execute the service to get available filter options
+GameFilterOptionsResponse response = filterOptionsService.execute(request);
 ```
 
-## Related Classes
+## Implementation Notes
 
-| Class | Description |
-|-------|-------------|
-| `GetGameFilterOptionsService` | The sole permitted implementation of this interface |
-| `GameFilterOptionsRequest` | Request DTO containing filter criteria |
-| `GameFilterOptionsResponse` | Response DTO containing available filter options |
-
-## Notes
-
-- This interface is **sealed**, meaning only `GetGameFilterOptionsService` can implement it
-- The interface follows the **Command Pattern** with a single `execute` method
-- All implementing classes must be in the same module or explicitly permitted
+- The interface is **sealed**, meaning only `GetGameFilterOptionsService` is permitted to implement it.
+- This design ensures that all filter option retrieval logic is centralized and follows a single implementation path.
+- The interface is part of the `com.upmatches.app.features.game.services` package.
+- Related classes include `GameFilterOptionsRequest` and `GameFilterOptionsResponse` from their respective packages.

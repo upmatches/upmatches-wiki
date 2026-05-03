@@ -10,46 +10,57 @@ The `ExpelParticipantRequest` class is a Java record used to encapsulate the dat
 
 ## Purpose
 
-This record is designed to be used as a request body in API endpoints that handle participant expulsion. It ensures that the reason provided does not exceed 280 characters, enforcing a constraint that helps maintain concise and meaningful feedback.
+This record serves as a request DTO (Data Transfer Object) for the expulsion operation. It ensures that any reason provided adheres to a maximum length constraint, helping to maintain data integrity and prevent excessively long messages.
 
-## Record Structure
+## Record Definition
 
-The record is defined with a single component:
+```java
+public record ExpelParticipantRequest(
+    @Size(max = 280, message = "Reason must be at most 280 characters.")
+    String reason
+)
+```
 
-| Field    | Type     | Description                                                                 |
-|----------|----------|-----------------------------------------------------------------------------|
-| `reason` | `String` | An optional reason for expelling the participant. Must be at most 280 characters. |
+## Fields
+
+| Field    | Type     | Description                                                                 | Constraints                                      |
+|----------|----------|-----------------------------------------------------------------------------|--------------------------------------------------|
+| `reason` | `String` | An optional explanation for why the participant is being expelled.          | Maximum length of 280 characters (Jakarta Bean Validation `@Size` annotation). |
+
+## Constructor
+
+The record has an implicit canonical constructor that accepts a single `String` parameter for the `reason` field.
+
+## Methods
+
+Since this is a Java record, the following methods are automatically generated:
+
+| Method                    | Return Type | Description                                                      |
+|---------------------------|-------------|------------------------------------------------------------------|
+| `reason()`                | `String`    | Returns the reason for expulsion (may be `null`).                |
+| `toString()`              | `String`    | Returns a string representation of the record.                   |
+| `equals(Object o)`        | `boolean`   | Compares this record to another object for equality.             |
+| `hashCode()`              | `int`       | Returns a hash code value for this record.                       |
+
+## Usage Example
+
+```java
+// Creating a request with a reason
+ExpelParticipantRequest request = new ExpelParticipantRequest("Violation of community guidelines");
+
+// Creating a request without a reason
+ExpelParticipantRequest emptyRequest = new ExpelParticipantRequest(null);
+
+// Accessing the reason
+String reason = request.reason(); // Returns "Violation of community guidelines"
+```
 
 ## Validation
 
-The `reason` field is annotated with `@Size(max = 280)`, which ensures that if a reason is provided, it does not exceed 280 characters. This validation is performed by Jakarta Bean Validation when the request is processed.
-
-## Usage
-
-This record is typically used in a controller method that handles participant expulsion. For example:
-
-```java
-@PostMapping("/expel")
-public ResponseEntity<Void> expelParticipant(@Valid @RequestBody ExpelParticipantRequest request) {
-    // Process the expulsion
-}
-```
-
-## Example
-
-```java
-// Valid request with a reason
-ExpelParticipantRequest request = new ExpelParticipantRequest("Violated community guidelines");
-
-// Valid request without a reason
-ExpelParticipantRequest request = new ExpelParticipantRequest(null);
-
-// Invalid request (reason too long)
-ExpelParticipantRequest request = new ExpelParticipantRequest("A".repeat(281)); // Will fail validation
-```
+The `reason` field is validated using Jakarta Bean Validation. If a reason is provided that exceeds 280 characters, a `ConstraintViolationException` will be thrown with the message "Reason must be at most 280 characters."
 
 ## Notes
 
-- The record is immutable, meaning once created, its values cannot be changed.
-- The `reason` field is optional; if not provided, it will be `null`.
-- Validation is handled by the Jakarta Bean Validation framework, typically triggered by the `@Valid` annotation in the controller.
+- The `reason` field is optional and can be `null`.
+- This record is immutable and thread-safe.
+- The validation constraint only applies when the field is not `null`; `null` values are allowed.

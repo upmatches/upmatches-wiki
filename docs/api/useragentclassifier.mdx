@@ -6,34 +6,34 @@ sidebar_label: UserAgentClassifier
 
 # UserAgentClassifier
 
-The `UserAgentClassifier` class is a Spring `@Component` that provides a simple utility for classifying HTTP `User-Agent` strings into one of three client platforms: **iOS**, **Android**, or **Web**. This is commonly used in share-link or deep-linking workflows to determine the appropriate redirect or fallback behavior based on the user's device.
+The `UserAgentClassifier` is a Spring `@Component` that provides a simple utility for classifying HTTP `User-Agent` strings into one of three client platforms: **iOS**, **Android**, or **Web**. This is commonly used in share‑link or deep‑linking flows to determine the appropriate redirect or fallback behavior based on the user's device.
 
 ## Enum: `ClientPlatform`
 
-The class defines an inner enum `ClientPlatform` with three constants:
+The classifier returns one of the following platform identifiers:
 
-| Constant | Description |
+| Platform | Description |
 |----------|-------------|
-| `IOS`    | Represents Apple mobile devices (iPhone, iPad, iPod) |
-| `ANDROID`| Represents Android devices |
-| `WEB`    | Represents all other clients (desktop browsers, unknown, or missing User-Agent) |
+| `IOS`    | Apple mobile devices (iPhone, iPad, iPod) |
+| `ANDROID`| Android devices |
+| `WEB`    | All other clients (desktop browsers, unknown agents, or missing/blank input) |
 
 ## Public Methods
 
 ### `classify(String userAgent)`
 
-Classifies the given `User-Agent` string into a `ClientPlatform`.
+Classifies the given `User-Agent` header value into a `ClientPlatform`.
 
-| Parameter  | Type     | Description |
-|------------|----------|-------------|
-| `userAgent`| `String` | The HTTP `User-Agent` header value to classify. Can be `null` or blank. |
+| Parameter   | Type     | Description |
+|-------------|----------|-------------|
+| `userAgent` | `String` | The raw `User-Agent` string from an HTTP request. May be `null` or blank. |
 
 **Returns:** `ClientPlatform` – one of `IOS`, `ANDROID`, or `WEB`.
 
 **Behavior:**
 - If `userAgent` is `null` or blank, returns `WEB`.
-- If the string contains `"Android"` (case-sensitive), returns `ANDROID`.
-- If the string contains `"iPhone"`, `"iPad"`, or `"iPod"` (case-sensitive), returns `IOS`.
+- If the string contains `"Android"` (case‑sensitive), returns `ANDROID`.
+- If the string contains `"iPhone"`, `"iPad"`, or `"iPod"` (case‑sensitive), returns `IOS`.
 - Otherwise, returns `WEB`.
 
 **Example usage:**
@@ -41,21 +41,24 @@ Classifies the given `User-Agent` string into a `ClientPlatform`.
 ```java
 UserAgentClassifier classifier = new UserAgentClassifier();
 
-ClientPlatform platform1 = classifier.classify("Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36");
-// platform1 == ClientPlatform.ANDROID
+ClientPlatform platform = classifier.classify(
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) ..."
+);
+// platform == ClientPlatform.IOS
 
-ClientPlatform platform2 = classifier.classify("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)");
-// platform2 == ClientPlatform.IOS
+platform = classifier.classify(
+    "Mozilla/5.0 (Linux; Android 12; Pixel 6) ..."
+);
+// platform == ClientPlatform.ANDROID
 
-ClientPlatform platform3 = classifier.classify("Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-// platform3 == ClientPlatform.WEB
-
-ClientPlatform platform4 = classifier.classify(null);
-// platform4 == ClientPlatform.WEB
+platform = classifier.classify(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ..."
+);
+// platform == ClientPlatform.WEB
 ```
 
 ## Notes
 
-- The detection is based on simple substring matching and is **case-sensitive**. For example, `"android"` (lowercase) would not match `"Android"`.
-- The class is stateless and thread-safe.
-- It is annotated with `@Component`, making it eligible for automatic detection and dependency injection in a Spring Boot application.
+- The detection is based on simple substring matching and is **case‑sensitive**. Real‑world `User-Agent` strings from major browsers and mobile apps almost always use the exact casing shown in the constants.
+- The component is stateless and thread‑safe, suitable for injection into any Spring bean.
+- For more robust parsing (e.g., distinguishing tablets from phones, or detecting specific browser versions), consider using a dedicated library like `eu.bitwalker:UserAgentUtils`.

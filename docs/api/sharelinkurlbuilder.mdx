@@ -1,27 +1,28 @@
 ---
-id: sharelink-url-builder
+id: sharelinkurlbuilder
 title: ShareLinkUrlBuilder
 sidebar_label: ShareLinkUrlBuilder
 ---
 
 # ShareLinkUrlBuilder
 
-The `ShareLinkUrlBuilder` class is a Spring service responsible for constructing various types of shareable URLs for resources within the application. It implements the `IShareLinkUrlBuilder` interface and provides methods to generate share URLs, web URLs, and mobile deep-link URLs based on the resource type and identifiers.
+The `ShareLinkUrlBuilder` class is a Spring service responsible for constructing various types of URLs used in the share link feature of the application. It implements the `IShareLinkUrlBuilder` interface and provides methods to generate share URLs, web URLs, and mobile deep link URLs based on the provided parameters.
 
-This service centralizes URL construction logic, ensuring consistency across different platforms (web and mobile) and reducing duplication. It relies on configuration properties (`JwtProperties` and `ShareLinkProperties`) to obtain base URLs and mobile callback schemes.
+## Purpose
+
+This class centralizes URL building logic for share links, ensuring consistency across different URL formats (web, mobile, and generic share links). It leverages configuration properties (`JwtProperties` and `ShareLinkProperties`) to obtain base URLs and scheme information, making the URL generation configurable and environment-agnostic.
 
 ## Constructor
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `jwtProperties` | `JwtProperties` | Provides the mobile callback scheme for deep-linking. |
-| `shareLinkProperties` | `ShareLinkProperties` | Provides base URLs for share and web links. |
+| Constructor | Description |
+|-------------|-------------|
+| `ShareLinkUrlBuilder(JwtProperties jwtProperties, ShareLinkProperties shareLinkProperties)` | Initializes the builder with required configuration properties for JWT and share link settings. |
 
 ## Public Methods
 
 ### `buildShareUrl(String code)`
 
-Constructs a share URL using the base share URL and the provided code.
+Generates a generic share URL using the base URL from configuration and the provided code.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -29,41 +30,55 @@ Constructs a share URL using the base share URL and the provided code.
 
 **Returns:** `String` - The complete share URL in the format `{baseUrl}/{code}`.
 
-**Example:** If `shareLinkProperties.baseUrl()` returns `https://example.com/share` and `code` is `abc123`, the result is `https://example.com/share/abc123`.
-
----
-
 ### `buildWebUrl(ResourceType resourceType, String resourceId)`
 
-Constructs a web URL for a specific resource type and identifier.
+Constructs a web-based URL for a specific resource type and identifier.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `resourceType` | `ResourceType` | The type of resource (e.g., profile, post). Must have a `path()` method returning the URL path segment. |
+| `resourceType` | `ResourceType` | The type of resource (e.g., profile, post) which determines the path segment. |
 | `resourceId` | `String` | The unique identifier of the resource. |
 
-**Returns:** `String` - The complete web URL in the format `{webBaseUrl}/{resourceType.path()}/{resourceId}`.
-
-**Example:** If `shareLinkProperties.webBaseUrl()` returns `https://example.com`, `resourceType.path()` returns `profile`, and `resourceId` is `user123`, the result is `https://example.com/profile/user123`.
-
----
+**Returns:** `String` - The complete web URL in the format `{webBaseUrl}/{resourceType.path}/{resourceId}`.
 
 ### `buildMobileUrl(ResourceType resourceType, String resourceId)`
 
-Constructs a mobile deep-link URL for a specific resource type and identifier.
+Creates a mobile deep link URL using the mobile callback scheme from JWT configuration.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `resourceType` | `ResourceType` | The type of resource (e.g., profile, post). Must have a `path()` method returning the URL path segment. |
+| `resourceType` | `ResourceType` | The type of resource (e.g., profile, post) which determines the path segment. |
 | `resourceId` | `String` | The unique identifier of the resource. |
 
-**Returns:** `String` - The complete mobile deep-link URL in the format `{mobileCallbackScheme}://{resourceType.path()}/{resourceId}`.
+**Returns:** `String` - The complete mobile URL in the format `{mobileCallbackScheme}://{resourceType.path}/{resourceId}`.
 
-**Example:** If `jwtProperties.mobileCallbackScheme()` returns `myapp`, `resourceType.path()` returns `profile`, and `resourceId` is `user123`, the result is `myapp://profile/user123`.
+## Dependencies
 
-## Usage Notes
+- **JwtProperties**: Provides the mobile callback scheme used in mobile URL construction.
+- **ShareLinkProperties**: Supplies the base URL and web base URL for share and web URL generation.
+- **ResourceType**: An enum that defines the path segment for different resource types.
 
-- The class is annotated with `@Service`, making it a Spring-managed bean that can be injected into other components.
-- It implements the `non-sealed` interface `IShareLinkUrlBuilder`, allowing for future extension or alternative implementations.
-- The `ResourceType` enum is expected to provide a `path()` method that returns the appropriate URL segment for each resource type.
-- All URLs are constructed using constants for path separators (`/`) and mobile scheme separators (`://`), ensuring consistent formatting.
+## Usage Example
+
+```java
+// Assuming dependencies are injected
+ShareLinkUrlBuilder urlBuilder = new ShareLinkUrlBuilder(jwtProperties, shareLinkProperties);
+
+// Build a share URL
+String shareUrl = urlBuilder.buildShareUrl("abc123");
+// Result: "https://example.com/share/abc123"
+
+// Build a web URL for a profile
+String webUrl = urlBuilder.buildWebUrl(ResourceType.PROFILE, "user456");
+// Result: "https://example.com/profile/user456"
+
+// Build a mobile deep link
+String mobileUrl = urlBuilder.buildMobileUrl(ResourceType.POST, "post789");
+// Result: "myapp://post/post789"
+```
+
+## Notes
+
+- The class is declared as `non-sealed`, indicating it is part of a sealed class hierarchy (likely implementing `IShareLinkUrlBuilder`).
+- All URL components are joined using the `PATH_SEPARATOR` (`/`) and `MOBILE_SCHEME_SEPARATOR` (`://`) constants.
+- The `ResourceType` enum is expected to provide a `path()` method that returns the appropriate URL path segment for each resource type.

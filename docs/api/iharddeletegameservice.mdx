@@ -4,54 +4,57 @@ title: IHardDeleteGameService Interface
 sidebar_label: IHardDeleteGameService
 ---
 
-# IHardDeleteGameService
+# IHardDeleteGameService Interface
 
-The `IHardDeleteGameService` interface defines a contract for permanently deleting a game entity from the system. It is a **sealed interface**, meaning only the explicitly permitted class (`HardDeleteGameService`) can implement it. This design enforces a strict, single-implementation pattern for the hard-delete operation.
+The `IHardDeleteGameService` interface defines a contract for permanently deleting a game entity from the system. Unlike soft deletion (which typically marks a record as inactive), this interface represents a hard delete operation that completely removes the game data.
 
-## Purpose
+This interface is part of the game management feature within the application's service layer and follows the command pattern by exposing a single `execute` method.
 
-- Provides a clear, type-safe contract for hard-deleting a game by its unique identifier.
-- Uses Java's sealed interface feature to restrict implementation to a single service class, ensuring consistency and preventing unintended extensions.
-- Follows the command pattern, where the `execute` method encapsulates the entire deletion operation.
+## Sealed Interface
 
-## Interface Definition
-
-```java
-public sealed interface IHardDeleteGameService permits HardDeleteGameService {
-    void execute(UUID id);
-}
-```
+This interface is declared as `sealed`, meaning only explicitly permitted classes can implement it. The only permitted implementation is `HardDeleteGameService`. This design ensures controlled extension and maintains a strict hierarchy for hard deletion logic.
 
 ## Method Summary
 
 | Method | Description |
 |--------|-------------|
-| `void execute(UUID id)` | Permanently deletes the game identified by the given UUID. |
+| `void execute(UUID id)` | Permanently deletes a game identified by the provided UUID |
 
 ## Method Details
 
 ### `execute(UUID id)`
 
-- **Purpose**: Initiates the hard-delete process for a specific game.
-- **Parameter**: `id` – The unique identifier of the game to be permanently removed.
-- **Return Type**: `void` – The method performs the deletion but does not return a value.
-- **Behavior**: The implementing class (`HardDeleteGameService`) is responsible for the actual deletion logic, which may include database removal, cache invalidation, and cleanup of associated resources.
+```java
+void execute(UUID id)
+```
+
+Permanently removes the game entity with the specified unique identifier from the data store. This operation is irreversible and should be used with caution.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the game to be permanently deleted |
+
+**Returns:** `void`
+
+**Exceptions:** Implementations may throw runtime exceptions (e.g., `EntityNotFoundException` if the game does not exist, or `DataAccessException` for persistence errors).
 
 ## Usage Example
 
 ```java
-IHardDeleteGameService hardDeleteService = new HardDeleteGameService();
-UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-hardDeleteService.execute(gameId);
+@Autowired
+private IHardDeleteGameService hardDeleteGameService;
+
+public void removeGame(UUID gameId) {
+    hardDeleteGameService.execute(gameId);
+}
 ```
 
 ## Implementation Notes
 
-- The interface is **sealed**, so only `HardDeleteGameService` can implement it. This prevents accidental or unauthorized implementations.
-- The `execute` method is intentionally simple, focusing on the single responsibility of hard deletion.
-- Consider adding exception handling in the implementing class to manage cases where the game ID does not exist or deletion fails.
-
-## Related Components
-
-- **HardDeleteGameService**: The sole permitted implementation that contains the actual deletion logic.
-- **UUID**: Standard Java class used to uniquely identify games in the system.
+- The `HardDeleteGameService` class is the sole permitted implementation
+- Ensure proper authorization checks are performed before calling this service
+- Consider cascading deletes for related entities (e.g., game sessions, player statistics)
+- Implement transaction management to maintain data integrity
+- Log deletion events for audit purposes

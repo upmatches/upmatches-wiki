@@ -6,20 +6,22 @@ sidebar_label: PublicShareLinkResponse
 
 # PublicShareLinkResponse
 
-The `PublicShareLinkResponse` class is a Java record that represents the response payload for a publicly shared link. It encapsulates the essential information needed to access a shared resource, including the resource type, its identifier, and the generated URLs for both web and mobile access.
+The `PublicShareLinkResponse` class is a Java record that represents the response payload returned when a public share link is created or retrieved. It encapsulates the essential information needed by a client to access a shared resource via both web and mobile channels.
 
-This record is typically used as the return type from API endpoints that create or retrieve public share links, providing a consistent and immutable data structure for the response.
+## Purpose
+
+This record serves as the data transfer object (DTO) for share link operations. It provides a clean, immutable representation of a share link's public-facing details, including the type of resource being shared, its identifier, and the corresponding URLs for web and mobile access.
 
 ## Record Components
 
 | Component | Type | Description |
 |-----------|------|-------------|
-| `resourceType` | `ResourceType` | The type of the shared resource (e.g., document, image, video) |
+| `resourceType` | `ResourceType` | The type of resource being shared (e.g., document, image, video) |
 | `resourceId` | `String` | The unique identifier of the shared resource |
 | `webUrl` | `String` | The URL for accessing the resource via a web browser |
 | `mobileUrl` | `String` | The URL for accessing the resource via a mobile application |
 
-## Methods
+## Factory Method
 
 ### `fromShortLink`
 
@@ -33,15 +35,15 @@ Creates a `PublicShareLinkResponse` instance from a `ShortLink` entity and the g
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `link` | `ShortLink` | The short link entity containing the resource type and identifier |
-| `webUrl` | `String` | The web URL for accessing the shared resource |
-| `mobileUrl` | `String` | The mobile URL for accessing the shared resource |
+| `link` | `ShortLink` | The source `ShortLink` entity containing resource type and ID |
+| `webUrl` | `String` | The web URL for the shared resource |
+| `mobileUrl` | `String` | The mobile URL for the shared resource |
 
 **Returns:**
 
 | Type | Description |
 |------|-------------|
-| `PublicShareLinkResponse` | A new response instance populated with data from the provided short link and URLs |
+| `PublicShareLinkResponse` | A new response instance populated with data from the provided `ShortLink` and URLs |
 
 **Example Usage:**
 
@@ -59,5 +61,5 @@ PublicShareLinkResponse response = PublicShareLinkResponse.fromShortLink(shortLi
 
 ## Dependencies
 
-- `com.upmatches.app.features.sharelink.entities.ShortLink` - The entity class representing a short link
+- `com.upmatches.app.features.sharelink.entities.ShortLink` - The entity class representing a short link in the system
 - `com.upmatches.app.features.sharelink.enums.ResourceType` - Enum defining the types of resources that can be shared

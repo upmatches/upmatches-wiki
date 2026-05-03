@@ -6,17 +6,17 @@ sidebar_label: IJoinGameService
 
 # IJoinGameService Interface
 
-The `IJoinGameService` interface defines the contract for joining a game within the application. It is a sealed interface, meaning only explicitly permitted classes (in this case, `JoinGameService`) can implement it. This design enforces a controlled hierarchy and ensures that the join game logic is centralized and secure.
+The `IJoinGameService` interface defines the contract for joining a game within the UpMatches application. It is a sealed interface, meaning only explicitly permitted classes (in this case, `JoinGameService`) can implement it. This design enforces a controlled and secure implementation hierarchy, ensuring that the join game logic is centralized and cannot be extended arbitrarily.
 
 ## Purpose
 
-This interface provides a single method to execute the join game operation. It abstracts the implementation details, allowing different join strategies or future extensions while maintaining a consistent API. The use of a sealed interface enhances type safety and makes the codebase easier to reason about.
+The primary purpose of this interface is to provide a single, well-defined method for executing the "join game" use case. By using a sealed interface, the codebase enforces that only the designated implementation (`JoinGameService`) can handle this operation, which improves maintainability and security. The interface takes a game participant's unique identifier and returns the corresponding `GameParticipantResponse`.
 
 ## Method Summary
 
-| Method | Return Type | Parameters | Description |
-|--------|-------------|------------|-------------|
-| `execute` | `GameParticipantResponse` | `UUID id` | Executes the join game operation for the game identified by the given UUID. Returns a response containing participant details. |
+| Method | Description |
+|--------|-------------|
+| `execute(UUID id)` | Executes the join game operation for the participant identified by the given UUID. Returns a `GameParticipantResponse` containing the result of the operation. |
 
 ## Method Details
 
@@ -26,31 +26,34 @@ This interface provides a single method to execute the join game operation. It a
 GameParticipantResponse execute(UUID id)
 ```
 
-This method processes the request to join a game. It takes a unique identifier for the game and returns a `GameParticipantResponse` object that contains information about the participant who joined.
-
 **Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the game to join. |
+| `id` | `UUID` | The unique identifier of the game participant to join. |
 
 **Returns:**
 
 | Type | Description |
 |------|-------------|
-| `GameParticipantResponse` | A response object containing details about the game participant after a successful join operation. |
+| `GameParticipantResponse` | The response object containing details about the joined game participant. |
+
+**Throws:**
+
+This method does not explicitly declare any checked exceptions. However, implementations may throw runtime exceptions (e.g., if the participant ID is not found or the game is full).
 
 ## Usage Example
 
 ```java
-// Assuming you have an instance of IJoinGameService
-IJoinGameService joinGameService = new JoinGameService();
-UUID gameId = UUID.randomUUID();
-GameParticipantResponse response = joinGameService.execute(gameId);
+// Assuming you have an instance of IJoinGameService (e.g., JoinGameService)
+IJoinGameService joinGameService = new JoinGameService(/* dependencies */);
+
+UUID participantId = UUID.randomUUID();
+GameParticipantResponse response = joinGameService.execute(participantId);
 ```
 
 ## Implementation Notes
 
-- The interface is sealed, so only `JoinGameService` is allowed to implement it.
-- The `execute` method is the sole contract method and must be implemented by the permitted class.
-- The `GameParticipantResponse` class is expected to contain relevant participant data (e.g., player ID, join timestamp, game state).
+- The interface is sealed, so only `JoinGameService` (or other classes explicitly listed in the `permits` clause) can implement it.
+- The `execute` method is the single entry point for the join game operation, promoting a clean command pattern.
+- The `GameParticipantResponse` class is expected to contain relevant data about the participant after the join operation is completed.

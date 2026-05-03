@@ -1,37 +1,41 @@
 ---
 id: auditing-configuration
 title: Auditing Configuration
-sidebar_label: AuditingConfiguration
+sidebar_label: Auditing Configuration
 ---
 
 # Auditing Configuration
 
-The `AuditingConfiguration` class provides a Spring Boot configuration for JPA auditing. It defines a custom `AuditorAware` bean that automatically populates audit fields (such as `createdBy` and `lastModifiedBy`) in your JPA entities with the current authenticated user's identity.
+The `AuditingConfiguration` class provides Spring Data JPA auditing capabilities for the application. It configures an `AuditorAware` bean that automatically populates auditing fields (such as `createdBy`, `lastModifiedBy`) in JPA entities with the current user's identity.
 
 ## Purpose
 
-This configuration enables automatic tracking of who creates or modifies entities in your application. It integrates with Spring Security to extract the authenticated user's identity from the security context and handles various authentication scenarios:
+This configuration ensures that every database entity with auditing annotations (like `@CreatedBy` and `@LastModifiedBy`) automatically captures who created or modified the record. The class handles multiple authentication scenarios:
 
-- **Authenticated users**: Extracts the username or JWT subject
-- **Anonymous users**: Falls back to a default system auditor
-- **JWT-based authentication**: Extracts the subject claim from the JWT token
-- **Null or blank names**: Falls back to the default system auditor
+- **Authenticated users**: Extracts the username from the security context
+- **JWT-authenticated users**: Uses the JWT subject claim
+- **Anonymous/unauthenticated requests**: Falls back to a system default auditor
+- **Null or blank usernames**: Falls back to the system default auditor
 
-## Configuration
+## Configuration Details
 
-The class uses Spring's `@Configuration` and `@EnableJpaAuditing` annotations to activate JPA auditing. The `auditorAwareRef` attribute points to the custom `AuditorAware` bean defined in this class.
+| Property | Value |
+|----------|-------|
+| Package | `com.upmatches.app.shared.database.configurations` |
+| Annotations | `@Configuration`, `@EnableJpaAuditing` |
+| Auditor Reference | `auditorAware` |
 
 ## Public Methods
 
 ### `auditorAware()`
 
-Creates a bean that provides the current auditor (user) for JPA auditing.
+Returns an `AuditorAware<String>` bean that determines the current auditor for JPA auditing.
 
 | Aspect | Details |
 |--------|---------|
 | **Return Type** | `AuditorAware<String>` |
 | **Bean Name** | `auditorAware` |
-| **Description** | Returns an `AuditorAware` implementation that resolves the current user from the security context |
+| **Scope** | Singleton (default Spring bean scope) |
 
 #### Behavior
 
@@ -40,11 +44,18 @@ The method implements the following logic to determine the current auditor:
 | Condition | Result |
 |-----------|--------|
 | No authentication present | Returns `"system"` |
-| User is not authenticated | Returns `"system"` |
+| Authentication is not authenticated | Returns `"system"` |
 | Principal is `"anonymousUser"` | Returns `"system"` |
-| Principal is a `Jwt` instance | Returns the JWT subject (or `"system"` if null/blank) |
-| Authenticated user with a name | Returns the user's name |
-| Authenticated user with null/blank name | Returns `"system"` |
+| Principal is a `Jwt` instance | Returns JWT subject if non-blank, otherwise `"system"` |
+| Authentication name is non-null and non-blank | Returns the authentication name |
+| Authentication name is null or blank | Returns `"system"` |
+
+## Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `DEFAULT_AUDITOR` | `"system"` | Default auditor used when no authenticated user is available |
+| `ANONYMOUS_PRINCIPAL` | `"anonymousUser"` | Principal identifier for unauthenticated requests |
 
 ## Usage Example
 
@@ -53,7 +64,7 @@ To use this auditing configuration in your JPA entities:
 ```java
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class YourEntity {
+public class UserProfile {
     
     @CreatedBy
     @Column(updatable = false)
@@ -66,12 +77,9 @@ public class YourEntity {
 }
 ```
 
-The `createdBy` and `lastModifiedBy` fields will be automatically populated with the current user's identity when entities are created or modified.
-
 ## Dependencies
 
-This configuration requires the following dependencies in your project:
-
-- Spring Boot with Spring Data JPA
-- Spring Security (for authentication context)
-- Spring Security OAuth2 Resource Server (for JWT support)
+- Spring Context (`@Configuration`, `@Bean`)
+- Spring Data JPA (`@EnableJpaAuditing`, `AuditorAware`)
+- Spring Security (`SecurityContextHolder`, `Authentication`)
+- Spring Security OAuth2 JWT (`Jwt`)

@@ -6,13 +6,15 @@ sidebar_label: AuditEventRepository
 
 # AuditEventRepository
 
-The `AuditEventRepository` interface provides data access operations for `AuditEvent` entities. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD functionality while adding custom query methods for retrieving audit events by actor or resource.
+The `AuditEventRepository` interface provides data access methods for `AuditEvent` entities in the audit system. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD operations while adding custom query methods for retrieving audit events by actor or resource.
 
 ## Purpose
 
-This repository serves as the persistence layer for audit logging in the application. It enables efficient retrieval of audit trails based on two primary dimensions:
-- **By actor**: Find all audit events performed by a specific user or system actor, ordered chronologically (most recent first).
-- **By resource**: Find all audit events related to a specific resource (identified by type and ID), also ordered chronologically.
+This repository serves as the persistence layer for audit events, enabling efficient retrieval of audit trails based on:
+- **Actor identification** – Find all events performed by a specific user or system actor
+- **Resource identification** – Find all events related to a specific resource (by type and ID)
+
+Results are automatically sorted by occurrence timestamp in descending order (most recent first).
 
 ## Interface Definition
 
@@ -21,59 +23,46 @@ This repository serves as the persistence layer for audit logging in the applica
 public interface AuditEventRepository extends JpaRepository<AuditEvent, Long>
 ```
 
-The interface is annotated with `@Repository`, making it a Spring-managed bean eligible for dependency injection. It extends `JpaRepository<AuditEvent, Long>`, where:
-- `AuditEvent` is the entity type being persisted.
-- `Long` is the type of the entity's primary key.
+- **Entity**: `AuditEvent`
+- **Primary Key Type**: `Long`
+- **Spring Stereotype**: `@Repository` – enables exception translation and component scanning
 
-## Methods
+## Custom Query Methods
 
-### Inherited from JpaRepository
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `findByActorIdOrderByOccurredAtDesc` | `List<AuditEvent>` | `UUID actorId` | Retrieves all audit events for a given actor, ordered by most recent occurrence first |
+| `findByResourceTypeAndResourceIdOrderByOccurredAtDesc` | `List<AuditEvent>` | `String resourceType`, `String resourceId` | Retrieves all audit events for a specific resource (identified by type and ID), ordered by most recent occurrence first |
 
-The following standard CRUD and pagination methods are inherited from `JpaRepository` and `PagingAndSortingRepository`:
+### Method Details
+
+#### `findByActorIdOrderByOccurredAtDesc(UUID actorId)`
+
+- **Purpose**: Fetch the complete audit trail for a specific actor (user, system, or service)
+- **Parameter**: `actorId` – UUID identifying the actor who performed the actions
+- **Returns**: List of `AuditEvent` objects sorted by `occurredAt` in descending order
+- **Use case**: Displaying a user's activity history or auditing a specific system component
+
+#### `findByResourceTypeAndResourceIdOrderByOccurredAtDesc(String resourceType, String resourceId)`
+
+- **Purpose**: Fetch all audit events related to a specific resource
+- **Parameters**:
+  - `resourceType` – String identifying the type of resource (e.g., "User", "Order", "Document")
+  - `resourceId` – String identifying the specific resource instance
+- **Returns**: List of `AuditEvent` objects sorted by `occurredAt` in descending order
+- **Use case**: Viewing the complete audit history for a particular entity or document
+
+## Inherited Methods
+
+As a `JpaRepository<AuditEvent, Long>`, this interface also inherits standard methods including:
 
 | Method | Description |
 |--------|-------------|
-| `findAll()` | Returns all audit events. |
-| `findById(Long id)` | Finds an audit event by its primary key. |
-| `save(AuditEvent event)` | Persists a new or updates an existing audit event. |
-| `deleteById(Long id)` | Deletes an audit event by its primary key. |
-| `count()` | Returns the total number of audit events. |
-
-### Custom Query Methods
-
-#### `findByActorIdOrderByOccurredAtDesc`
-
-```java
-List<AuditEvent> findByActorIdOrderByOccurredAtDesc(UUID actorId)
-```
-
-Retrieves all audit events performed by a specific actor, ordered by occurrence timestamp in descending order (most recent first).
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `actorId` | `UUID` | The unique identifier of the actor (user or system) whose audit events to retrieve. |
-
-**Returns:** `List<AuditEvent>` - A list of audit events for the specified actor, sorted with the most recent event first. Returns an empty list if no events are found.
-
-#### `findByResourceTypeAndResourceIdOrderByOccurredAtDesc`
-
-```java
-List<AuditEvent> findByResourceTypeAndResourceIdOrderByOccurredAtDesc(
-    String resourceType, String resourceId)
-```
-
-Retrieves all audit events related to a specific resource, ordered by occurrence timestamp in descending order.
-
-**Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `resourceType` | `String` | The type of resource (e.g., "User", "Project", "Document"). |
-| `resourceId` | `String` | The unique identifier of the resource. |
-
-**Returns:** `List<AuditEvent>` - A list of audit events for the specified resource, sorted with the most recent event first. Returns an empty list if no events are found.
+| `findAll()` | Retrieve all audit events |
+| `findById(Long id)` | Find a specific audit event by its primary key |
+| `save(AuditEvent event)` | Persist a new or updated audit event |
+| `deleteById(Long id)` | Remove an audit event by its primary key |
+| `count()` | Get the total number of audit events |
 
 ## Usage Example
 
@@ -87,11 +76,11 @@ public class AuditService {
         this.auditEventRepository = auditEventRepository;
     }
     
-    public List<AuditEvent> getAuditTrailForUser(UUID userId) {
-        return auditEventRepository.findByActorIdOrderByOccurredAtDesc(userId);
+    public List<AuditEvent> getActorHistory(UUID actorId) {
+        return auditEventRepository.findByActorIdOrderByOccurredAtDesc(actorId);
     }
     
-    public List<AuditEvent> getAuditTrailForResource(String resourceType, String resourceId) {
+    public List<AuditEvent> getResourceHistory(String resourceType, String resourceId) {
         return auditEventRepository.findByResourceTypeAndResourceIdOrderByOccurredAtDesc(
             resourceType, resourceId);
     }
@@ -100,7 +89,7 @@ public class AuditService {
 
 ## Notes
 
-- The repository uses Spring Data JPA's query derivation mechanism, which automatically implements the query methods based on their method names.
-- Results are always ordered by `occurredAt` in descending order to show the most recent audit events first.
-- The `UUID` type for `actorId` provides globally unique identifiers suitable for distributed systems.
-- For large audit logs, consider adding pagination support by extending `PagingAndSortingRepository` or using Spring Data's `Pageable` parameter.
+- The `@Repository` annotation is optional when extending `JpaRepository` but is included for clarity and to enable Spring's persistence exception translation
+- Query methods follow Spring Data JPA's naming convention, automatically generating the appropriate JPQL queries
+- Results are always sorted by `occurredAt` in descending order to show the most recent events first
+- The `actorId` parameter uses `UUID` type, while resource identifiers use `String` for flexibility across different resource types

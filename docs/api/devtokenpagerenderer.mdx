@@ -6,70 +6,69 @@ sidebar_label: DevTokenPageRenderer
 
 # DevTokenPageRenderer
 
-The `DevTokenPageRenderer` class is a Spring `@Service` that generates an HTML page for development purposes. It renders authentication tokens (access and refresh tokens) in a user-friendly web interface, allowing developers to easily copy tokens during local development and testing.
+The `DevTokenPageRenderer` class is a Spring `@Service` that renders an HTML page for development purposes. It is part of the authentication services in the Upmatches application and is used to display authentication tokens (access and refresh tokens) in a user-friendly HTML format during development.
 
-This class implements the `IDevTokenPageRenderer` interface and is designed to work with the `AuthDevProperties` configuration to control when and how the token page is displayed.
+This service is particularly useful when `MOCKPASS_DEV_MODE` is enabled, as it provides a visual representation of the tokens that would normally be sent to a mobile client via deep linking.
 
 ## Purpose
 
-- Provides a visual representation of authentication tokens during development
-- Enables easy copying of access and refresh tokens for testing
-- Displays token expiration information
-- Shows mobile deep links for testing mobile authentication flows
-- Restricts access to trusted hosts (localhost, 127.0.0.1, etc.)
+- **Development Tool**: Provides a visual HTML page showing authentication tokens during development
+- **Token Display**: Renders access tokens, refresh tokens, and expiration times
+- **Deep Link Simulation**: Shows the mobile deep link that would be used in production
+- **Host Restriction**: Only serves the token page from allowed hosts (default: localhost, 127.0.0.1, IPv6 localhost)
 
-## Configuration
-
-The class uses `AuthDevProperties` to configure:
-- Whether the token page is enabled (`tokenPageEnabled`)
-- Additional allowed hosts beyond the defaults (`tokenPageAllowedHosts`)
-
-## Default Allowed Hosts
-
-| Host | Description |
-|------|-------------|
-| `localhost` | Standard localhost |
-| `127.0.0.1` | IPv4 loopback |
-| `[::1]` | IPv6 loopback |
-| `0:0:0:0:0:0:0:1` | IPv6 full notation |
-
-## Methods
+## Public Methods
 
 ### `isEnabledFor(HttpServletRequest request)`
 
-Checks if the token page should be rendered for the given request.
+Checks if the token page is enabled for the given HTTP request.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `request` | `HttpServletRequest` | The incoming HTTP request |
 
-**Returns:** `boolean` - `true` if the token page is enabled and the request comes from an allowed host
+**Returns**: `boolean` - `true` if the token page is enabled and the request comes from an allowed host, `false` otherwise.
 
 ### `render(String accessToken, String refreshToken, Long expiresAtUtc, Boolean isNewUser, String mobileRedirectUrl)`
 
-Generates the HTML page containing the authentication tokens.
+Renders the HTML page with token information.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `accessToken` | `String` | The access token to display |
 | `refreshToken` | `String` | The refresh token to display |
-| `expiresAtUtc` | `Long` | Token expiration time in UTC epoch seconds |
+| `expiresAtUtc` | `Long` | The expiration time in UTC epoch seconds |
 | `isNewUser` | `Boolean` | Whether this is a new user (shows "new user" badge) |
 | `mobileRedirectUrl` | `String` | The mobile deep link URL |
 
-**Returns:** `ResponseEntity<String>` - HTML response with `Content-Type: text/html`
+**Returns**: `ResponseEntity<String>` - An HTTP response containing the HTML page with `Content-Type: text/html`.
+
+## Configuration
+
+The service uses `AuthDevProperties` for configuration:
+
+- `tokenPageEnabled()`: Boolean flag to enable/disable the token page
+- `tokenPageAllowedHosts()`: Additional hosts allowed to access the token page (merged with default hosts)
+
+## Default Allowed Hosts
+
+The following hosts are allowed by default:
+- `localhost`
+- `127.0.0.1`
+- `[::1]` (IPv6 loopback)
+- `0:0:0:0:0:0:0:1` (IPv6 loopback)
 
 ## HTML Page Features
 
-The generated page includes:
+The rendered HTML page includes:
 
-- **Title section** with optional "new user" badge
-- **Development mode notice** indicating `MOCKPASS_DEV_MODE=true`
-- **Access Token field** with copy button
-- **Refresh Token field** with copy button
-- **Expiration time** display in UTC epoch seconds
-- **Mobile Deep Link** with clickable URL
-- **Copy functionality** with visual feedback (button changes to "Copied" with green styling)
+1. **Header**: Shows "Upmatches Dev Callback" with optional "new user" badge
+2. **Note**: Displays a warning that the dev token page is active
+3. **Access Token**: Read-only textarea with copy button
+4. **Refresh Token**: Read-only textarea with copy button
+5. **Expiration**: Shows the expiration time in UTC epoch seconds
+6. **Mobile Deep Link**: Displays the mobile redirect URL as a clickable link
+7. **Copy Functionality**: JavaScript-powered copy-to-clipboard for tokens
 
 ## Usage Example
 
@@ -80,20 +79,13 @@ private DevTokenPageRenderer renderer;
 public ResponseEntity<String> handleCallback(HttpServletRequest request) {
     if (renderer.isEnabledFor(request)) {
         return renderer.render(
-            "eyJhbGciOiJIUzI1NiIs...",
-            "dGhpcyBpcyBhIHJlZnJl...",
+            "access-token-123",
+            "refresh-token-456",
             1700000000L,
             true,
-            "myapp://callback?token=abc123"
+            "myapp://callback?token=123"
         );
     }
-    // Handle normal flow
+    // Handle non-dev mode
 }
 ```
-
-## Security Considerations
-
-- The page is only rendered for requests from allowed hosts (localhost by default)
-- All token values are HTML-escaped to prevent XSS attacks
-- The class uses `HtmlUtils.htmlEscape()` for safe rendering
-- Additional hosts can be configured via `AuthDevProperties`

@@ -6,73 +6,69 @@ sidebar_label: MintDevTokenService
 
 # MintDevTokenService
 
-The `MintDevTokenService` class is a development-only service that provides a mechanism to mint (generate) authentication tokens for testing purposes. It implements the `IMintDevTokenService` interface and is designed to be used exclusively in non-production environments.
+The `MintDevTokenService` class provides a development-only endpoint for minting authentication tokens. It is designed to be used exclusively in non-production environments (profiles other than `prod`) and is conditionally enabled via the `app.auth.dev.mint-endpoint-enabled` configuration property.
 
-## Purpose
+This service allows developers to generate valid JWT access tokens and refresh tokens for any user by providing their user ID, bypassing the normal authentication flow. This is useful for testing and development purposes.
 
-This service allows developers to generate valid JWT access tokens and refresh tokens for any user in the system by providing their user ID. This is particularly useful for:
-- Local development and testing
-- Integration testing
-- API testing without going through the full authentication flow
-- Debugging authentication-related issues
+## Class Overview
 
-## Key Characteristics
-
-- **Profile-restricted**: Only active when the Spring profile is NOT `prod`
-- **Feature-flagged**: Requires the property `app.auth.dev.mint-endpoint-enabled=true` to be set
-- **Transactional**: Token generation and storage are performed within a single database transaction
-- **Non-sealed**: The class is declared as `non-sealed`, allowing for future extension if needed
+- **Package:** `com.upmatches.app.features.auth.services`
+- **Implements:** `IMintDevTokenService`
+- **Annotations:** `@Service`, `@Profile("!prod")`, `@ConditionalOnProperty`
+- **Modifier:** `non-sealed`
 
 ## Dependencies
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `UserRepository` | Repository | Used to look up users by their UUID |
-| `IJwtTokenService` | Service | Handles JWT access token and refresh token generation |
-| `IRefreshTokenStore` | Store | Manages persistence of refresh tokens |
+| Dependency | Description |
+|------------|-------------|
+| `UserRepository` | Repository for accessing user data |
+| `IJwtTokenService` | Service for generating JWT access and refresh tokens |
+| `IRefreshTokenStore` | Store for persisting refresh tokens |
 
 ## Public Methods
 
-### `execute(UUID userId)`
+### `execute`
 
-Generates a complete token response (access token + refresh token) for the specified user.
+```java
+@Transactional
+public TokenResponse execute(final UUID userId)
+```
+
+Generates a complete token set (access token + refresh token) for the specified user.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `userId` | `UUID` | The unique identifier of the user to generate tokens for |
+| `userId` | `UUID` | The unique identifier of the user for whom to generate tokens |
 
-**Returns**: `TokenResponse` containing:
-- Access token (JWT)
-- Refresh token
-- Access token expiration timestamp (UTC)
+**Returns:**
 
-**Throws**: `AuthenticationException` if no user exists with the provided `userId`
+| Type | Description |
+|------|-------------|
+| `TokenResponse` | A response object containing the access token, refresh token, and access token expiration timestamp |
 
-**Behavior**:
-1. Looks up the user by their UUID in the database
-2. Generates an access token containing the user's ID and their various platform UUIDs (Singpass, Auth0, Apple)
+**Throws:**
+
+| Exception | Condition |
+|-----------|-----------|
+| `AuthenticationException` | If no user exists with the provided `userId` |
+
+**Behavior:**
+
+1. Retrieves the user from the database using the provided `userId`
+2. Generates an access token containing the user's ID and various UUIDs (Singpass, Auth0, Apple)
 3. Generates a new refresh token
-4. Stores the refresh token in the token store
-5. Returns a `TokenResponse` with all generated tokens
-
-## Error Handling
-
-The service throws an `AuthenticationException` with a descriptive message when the requested user ID does not exist in the system. The error message format is:
-```
-Dev token requested for unknown user '<userId>'
-```
+4. Stores the refresh token in the refresh token store
+5. Returns a `TokenResponse` containing all generated tokens and expiration information
 
 ## Configuration
 
-To enable this service, the following conditions must be met:
+This service is only active when:
 
-1. The active Spring profile must NOT be `prod`
-2. The property `app.auth.dev.mint-endpoint-enabled` must be set to `true`
+- The Spring profile is **not** `prod` (`@Profile("!prod")`)
+- The property `app.auth.dev.mint-endpoint-enabled` is set to `true` (`@ConditionalOnProperty`)
 
-Example `application-dev.yml` configuration:
-```yaml
-app:
-  auth:
-    dev:
-      mint-endpoint-enabled: true
-```
+## Error Handling
+
+If the provided `userId` does not correspond to an existing user in the database, the service throws an `AuthenticationException` with a message indicating that a dev token was requested for an unknown user.

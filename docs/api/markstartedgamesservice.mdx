@@ -6,76 +6,68 @@ sidebar_label: MarkStartedGamesService
 
 # MarkStartedGamesService
 
-The `MarkStartedGamesService` is a Spring service class responsible for automatically marking games as "started" when their scheduled start time has passed. It provides a transactional operation that updates the status of games in the database based on the current timestamp.
+The `MarkStartedGamesService` is a Spring service class responsible for marking games as "started" based on their scheduled start time. It provides a transactional operation that updates the status of games whose start time has passed, ensuring that the game state is accurately reflected in the system.
 
 ## Purpose
 
-This service handles the business logic for transitioning games from a "pending" or "scheduled" state to a "started" state. It uses the current system time to identify games whose start time has elapsed and updates their status accordingly. The operation is wrapped in a transaction to ensure data consistency.
+This service is designed to be executed periodically (e.g., via a scheduled task) to automatically transition games from a "pending" or "scheduled" state to a "started" state once their start time has elapsed. It leverages the `GameRepository` to perform a bulk update operation, marking all games that have a start time before the current moment.
 
 ## Class Details
 
-| Attribute | Value |
-|-----------|-------|
-| Package | `com.upmatches.app.features.game.services` |
-| Type | `non-sealed class` |
-| Implements | `IMarkStartedGamesService` |
-| Annotations | `@Service` |
-| Dependencies | `GameRepository` |
+| Aspect | Description |
+|--------|-------------|
+| **Package** | `com.upmatches.app.features.game.services` |
+| **Type** | `non-sealed class` implementing `IMarkStartedGamesService` |
+| **Annotations** | `@Service` |
+| **Dependencies** | `GameRepository` |
 
 ## Constructor
 
 ### `MarkStartedGamesService(GameRepository gameRepository)`
 
-Creates a new instance of the service with the required repository dependency.
+Constructs a new instance of the service with the required repository dependency.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `gameRepository` | `GameRepository` | The repository used to access game data in the database |
+| `gameRepository` | `GameRepository` | The repository used to access and update game data |
 
 ## Public Methods
 
 ### `execute()`
 
-Executes the operation to mark games as started. This method is transactional and will roll back if an error occurs.
+Executes the operation to mark games as started. This method is transactional and will roll back if an exception occurs during execution.
 
-| Aspect | Details |
-|--------|---------|
-| **Return Type** | `int` |
-| **Return Value** | The number of games that were marked as started |
-| **Annotations** | `@Transactional` |
-| **Exceptions** | `ResourceNotFoundException` (wrapped from the executor) |
+**Signature:** `@Transactional public int execute()`
 
-#### Method Logic
+**Returns:** `int` - The number of games that were marked as started.
 
-1. Captures the current timestamp using `Instant.now()`
-2. Calls `gameRepository.markStartedBefore(now, now)` to update games whose start time is before the current time
-3. The operation is executed through `ServiceOperationExecutor` with:
-   - Operation type: `UPDATE`
-   - Exception supplier: `ResourceNotFoundException::new`
+**Behavior:**
+1. Captures the current time as an `Instant`.
+2. Calls `gameRepository.markStartedBefore(now, now)` to update all games whose start time is before the current moment.
+3. Wraps the operation in `ServiceOperationExecutor.execute()` with the `UPDATE` operation status.
+4. If a `ResourceNotFoundException` occurs, it will be re-thrown as appropriate.
+
+**Example usage:**
+```java
+@Autowired
+private MarkStartedGamesService markStartedGamesService;
+
+public void processStartedGames() {
+    int updatedCount = markStartedGamesService.execute();
+    System.out.println("Marked " + updatedCount + " games as started.");
+}
+```
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `GameRepository` | Repository | Data access layer for game entities |
-| `ServiceOperationExecutor` | Utility | Handles execution of service operations with standardized error handling |
-| `ResourceNotFoundException` | Exception | Custom exception thrown when resources are not found |
-
-## Usage Example
-
-```java
-@Autowired
-private MarkStartedGamesService markStartedGamesService;
-
-public void processGameStartTimes() {
-    int updatedCount = markStartedGamesService.execute();
-    System.out.println("Marked " + updatedCount + " games as started");
-}
-```
+| `GameRepository` | Bean | Repository interface for game data access |
+| `ServiceOperationExecutor` | Utility | Executes service operations with standardized error handling |
+| `ResourceNotFoundException` | Exception | Thrown when a required resource is not found |
 
 ## Notes
 
-- The class is declared as `non-sealed`, allowing it to be extended by other classes in the same module
-- The `@Transactional` annotation ensures that the database update is atomic
-- The `ServiceOperationExecutor` provides consistent error handling and logging for the operation
-- The method uses the same `Instant` value for both the comparison and the update timestamp, ensuring temporal consistency
+- The service is declared as `non-sealed`, allowing for future extension if needed.
+- The `@Transactional` annotation ensures that the database update is atomic and consistent.
+- The operation uses `ServiceOperationExecutor` to provide consistent error handling and logging across the application.

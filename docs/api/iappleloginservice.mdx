@@ -1,16 +1,14 @@
 ---
-id: iapple-login-service
+id: iappleloginservice
 title: IAppleLoginService Interface
 sidebar_label: IAppleLoginService
 ---
 
 # IAppleLoginService Interface
 
-The `IAppleLoginService` interface defines the contract for Apple Sign-In authentication within the UpMatches application. It follows a sealed interface pattern to restrict implementation to only the `AppleLoginService` class, ensuring controlled and secure Apple authentication logic.
+The `IAppleLoginService` interface defines the contract for Apple Sign-In authentication within the UpMatches application. It serves as the abstraction layer for processing Apple login requests, ensuring a standardized implementation across the authentication module.
 
-## Purpose
-
-This interface serves as the abstraction layer for Apple login operations. By using a sealed interface, the design enforces that only the designated `AppleLoginService` can implement this contract, preventing unauthorized implementations and maintaining a clear, single-responsibility authentication flow.
+This sealed interface permits only the `AppleLoginService` class to implement it, enforcing a controlled and secure extension model for Apple authentication logic.
 
 ## Interface Definition
 
@@ -22,49 +20,37 @@ public sealed interface IAppleLoginService permits AppleLoginService {
 
 ## Methods
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `execute(AppleLoginRequest request)` | `AppleLoginResponse` | Processes an Apple login request and returns the authentication response. This is the single entry point for Apple Sign-In operations. |
+### `execute`
 
-## Parameters
-
-### `execute` Method
+Processes an Apple login request and returns the corresponding authentication response.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `AppleLoginRequest` | Contains the necessary data for Apple authentication, such as identity token, authorization code, or user information from Apple's Sign-In flow. |
+| `request` | `AppleLoginRequest` | The request object containing Apple Sign-In credentials and metadata |
 
-## Return Type
-
-| Type | Description |
-|------|-------------|
-| `AppleLoginResponse` | Encapsulates the result of the Apple login operation, including authentication tokens, user profile data, and any error information. |
+| Returns | Description |
+|---------|-------------|
+| `AppleLoginResponse` | The response object containing authentication result and user data |
 
 ## Usage Example
 
 ```java
-// The interface is typically injected and used through dependency injection
-public class AuthController {
-    private final IAppleLoginService appleLoginService;
-    
-    public AuthController(IAppleLoginService appleLoginService) {
-        this.appleLoginService = appleLoginService;
-    }
-    
-    public AppleLoginResponse handleAppleLogin(AppleLoginRequest request) {
-        return appleLoginService.execute(request);
-    }
-}
+// Inject the service
+private final IAppleLoginService appleLoginService;
+
+// Execute Apple login
+AppleLoginRequest request = new AppleLoginRequest(/* parameters */);
+AppleLoginResponse response = appleLoginService.execute(request);
 ```
-
-## Implementation Constraints
-
-- The interface is **sealed**, meaning only the `AppleLoginService` class can implement it.
-- Any attempt to create another implementation will result in a compilation error.
-- This design ensures that Apple authentication logic remains centralized and consistent across the application.
 
 ## Related Components
 
-- **`AppleLoginRequest`**: Input data transfer object for Apple login credentials.
-- **`AppleLoginResponse`**: Output data transfer object containing authentication results.
-- **`AppleLoginService`**: The sole implementation class that contains the actual Apple authentication logic.
+- **`AppleLoginRequest`**: Input data transfer object containing Apple authorization code, identity token, and user information
+- **`AppleLoginResponse`**: Output data transfer object containing authentication tokens, user profile data, and session information
+- **`AppleLoginService`**: The concrete implementation class that handles the actual Apple Sign-In business logic
+
+## Security Considerations
+
+- The sealed interface pattern ensures that only the designated `AppleLoginService` can implement this contract
+- All implementations must handle Apple's authentication tokens securely
+- The interface enforces a consistent method signature for processing Apple login requests across the application

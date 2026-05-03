@@ -1,37 +1,34 @@
 ---
 id: apple-login-response
-title: AppleLoginResponse
+title: Apple Login Response
 sidebar_label: AppleLoginResponse
 ---
 
-# AppleLoginResponse
+# Apple Login Response
 
-The `AppleLoginResponse` class is a Java record that represents the response payload returned after a successful Apple Sign-In authentication. It encapsulates the tokens and metadata required to manage the user's session and determine if the user is new to the application.
+The `AppleLoginResponse` class is a Java record that represents the response payload returned after a successful Apple Sign-In authentication. It encapsulates the essential tokens and metadata required to manage the user's session and determine if the user is new to the application.
 
 ## Purpose
 
-This record is used to deserialize and transfer authentication data from the Apple Identity Provider (IdP) to the client application. It provides a structured way to handle:
-- **Access Token**: Used for authenticating API requests.
-- **Refresh Token**: Used to obtain new access tokens when the current one expires.
+This record serves as a Data Transfer Object (DTO) for the Apple authentication flow. It provides a structured way to communicate authentication results from the backend to the client, including:
+- **Access Token**: Used for authenticating subsequent API requests.
+- **Refresh Token**: Used to obtain a new access token when the current one expires.
 - **Expiration Time**: The timestamp when the access token expires.
 - **New User Flag**: Indicates whether this is the user's first login via Apple.
 
 ## Record Components
 
-| Component      | Type      | Description                                                                 |
-|----------------|-----------|-----------------------------------------------------------------------------|
-| `accessToken`  | `String`  | The OAuth 2.0 access token issued by Apple.                                 |
-| `refreshToken` | `String`  | The OAuth 2.0 refresh token used to obtain new access tokens.               |
-| `expiresAt`    | `Long`    | The Unix timestamp (in seconds) when the access token expires.              |
-| `isNewUser`    | `Boolean` | `true` if the user is logging in for the first time via Apple; `false` otherwise. |
+| Field | Type | Description |
+|-------|------|-------------|
+| `accessToken` | `String` | The JWT access token for API authorization |
+| `refreshToken` | `String` | The refresh token for obtaining new access tokens |
+| `expiresAt` | `Long` | Unix timestamp (in seconds) when the access token expires |
+| `isNewUser` | `Boolean` | `true` if this is the user's first login, `false` otherwise |
 
 ## Public Methods
 
 ### `of`
 
-Creates a new `AppleLoginResponse` instance with the provided values.
-
-**Signature:**
 ```java
 public static AppleLoginResponse of(
     final String accessToken,
@@ -40,43 +37,37 @@ public static AppleLoginResponse of(
     final Boolean isNewUser)
 ```
 
+Creates a new `AppleLoginResponse` instance with the provided values.
+
 **Parameters:**
 
-| Parameter      | Type      | Description                                                                 |
-|----------------|-----------|-----------------------------------------------------------------------------|
-| `accessToken`  | `String`  | The OAuth 2.0 access token issued by Apple.                                 |
-| `refreshToken` | `String`  | The OAuth 2.0 refresh token used to obtain new access tokens.               |
-| `expiresAt`    | `Long`    | The Unix timestamp (in seconds) when the access token expires.              |
-| `isNewUser`    | `Boolean` | `true` if the user is logging in for the first time via Apple; `false` otherwise. |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `accessToken` | `String` | The JWT access token |
+| `refreshToken` | `String` | The refresh token |
+| `expiresAt` | `Long` | Unix timestamp for token expiration |
+| `isNewUser` | `Boolean` | Flag indicating new user status |
 
-**Returns:** A new `AppleLoginResponse` instance.
+**Returns:** `AppleLoginResponse` - A new instance with the specified values.
 
-**Example Usage:**
+## Usage Example
+
 ```java
+// Creating a response for an existing user
 AppleLoginResponse response = AppleLoginResponse.of(
-    "eyJhbGciOiJSUzI1NiIs...",
-    "rT7hG8kL9mN0bV1cX2z...",
-    1712345678L,
-    true
+    "eyJhbGciOiJSUzI1NiIs...",  // access token
+    "rT3fR8kL9pQ2wX5y...",      // refresh token
+    1700000000L,                  // expires at
+    false                         // existing user
 );
+
+// Accessing record components
+String token = response.accessToken();
+boolean isNew = response.isNewUser();
 ```
-
-## Inherited Methods
-
-Since `AppleLoginResponse` is a Java record, it automatically inherits the following methods from `java.lang.Record`:
-
-| Method            | Return Type | Description                                      |
-|-------------------|-------------|--------------------------------------------------|
-| `accessToken()`   | `String`    | Returns the access token component.              |
-| `refreshToken()`  | `String`    | Returns the refresh token component.             |
-| `expiresAt()`     | `Long`      | Returns the expiration timestamp component.      |
-| `isNewUser()`     | `Boolean`   | Returns the new user flag component.             |
-| `toString()`      | `String`    | Returns a string representation of the record.   |
-| `equals(Object)`  | `boolean`   | Compares this record to another object.          |
-| `hashCode()`      | `int`       | Returns a hash code value for this record.       |
 
 ## Notes
 
-- The `of` static factory method is a convenience method that delegates to the canonical constructor of the record.
+- This record is immutable by design, ensuring thread safety and data integrity.
+- The `of` static factory method provides a convenient way to instantiate the record while maintaining the same parameter order as the canonical constructor.
 - The `isNewUser` field is particularly useful for onboarding flows where new users may need to complete additional profile setup.
-- All fields are immutable and cannot be modified after creation, ensuring thread safety.

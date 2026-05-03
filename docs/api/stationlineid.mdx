@@ -6,68 +6,65 @@ sidebar_label: StationLineId
 
 # StationLineId
 
-The `StationLineId` class is a JPA embeddable composite primary key used to uniquely identify a relationship between a transit station and a transit line. It is designed to be used as a primary key in an entity that maps the many-to-many relationship between stations and transit lines.
+The `StationLineId` class is a JPA embeddable composite primary key used to uniquely identify a station along a specific transit line. It combines a numeric station identifier with a transit line code to create a composite key for entities that represent station-line associations (e.g., a station belonging to a particular metro or bus line).
 
-## Purpose
-
-This class serves as a composite key that combines:
-- A `stationId` (Long) representing the unique identifier of a transit station
-- A `transitLineCode` (String) representing the code of a transit line
-
-By implementing `Serializable` and providing proper `equals()` and `hashCode()` methods, this class ensures that instances can be used reliably in JPA collections and as primary keys.
+This class implements `Serializable` to support JPA's requirement for composite key classes to be serializable, and it overrides `equals()` and `hashCode()` to ensure correct behavior when used in collections or as a JPA entity identifier.
 
 ## Class Details
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `stationId` | `Long` | The unique identifier of the transit station |
-| `transitLineCode` | `String` | The code of the transit line (max 10 characters) |
+| Attribute       | Value                                                         |
+|-----------------|---------------------------------------------------------------|
+| Package         | `com.upmatches.app.features.venue.entities`                   |
+| Annotations     | `@Embeddable`, `@Getter` (Lombok)                             |
+| Implements      | `Serializable`                                                |
+| Access Modifier | `public`                                                      |
+
+## Fields
+
+| Field Name        | Type     | Column Name          | Length | Description                                      |
+|-------------------|----------|----------------------|--------|--------------------------------------------------|
+| `stationId`       | `Long`   | `station_id`         | N/A    | Unique identifier for the station                |
+| `transitLineCode` | `String` | `transit_line_code`  | 10     | Code representing the transit line (e.g., "BLUE") |
 
 ## Constructors
 
 | Constructor | Description |
 |-------------|-------------|
-| `StationLineId()` | Protected no-argument constructor required by JPA |
-| `StationLineId(Long stationId, String transitLineCode)` | Creates a new composite key with the specified station ID and transit line code |
+| `protected StationLineId()` | No-argument constructor required by JPA. Protected access prevents direct instantiation. |
+| `public StationLineId(Long stationId, String transitLineCode)` | Creates a new composite key with the specified station ID and transit line code. |
 
 ## Methods
 
 ### `equals(Object o)`
 
-Compares this `StationLineId` with another object for equality.
+Compares this `StationLineId` with another object for equality based on both `stationId` and `transitLineCode` fields.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `o` | `Object` | The object to compare with |
+| Parameter | Type    | Description |
+|-----------|---------|-------------|
+| `o`       | `Object` | The object to compare with |
 
-**Returns:** `boolean` - `true` if the objects are equal (same station ID and transit line code), `false` otherwise
+**Returns:** `boolean` - `true` if the objects are equal (same station ID and transit line code), `false` otherwise.
 
 ### `hashCode()`
 
-Returns a hash code value for this `StationLineId`.
+Generates a hash code based on the `stationId` and `transitLineCode` fields.
 
-**Returns:** `int` - A hash code computed from the station ID and transit line code
+**Returns:** `int` - The hash code value.
 
 ## Usage Example
 
 ```java
-// Creating a composite key
-StationLineId key = new StationLineId(123L, "RED");
+// Creating a composite key for station 42 on the Red Line
+StationLineId id = new StationLineId(42L, "RED");
 
-// Using in an entity
-@Entity
-public class StationLine {
-    @EmbeddedId
-    private StationLineId id;
-    
-    // other fields and methods
-}
+// Using the key in a JPA entity
+@EmbeddedId
+private StationLineId id;
 ```
 
 ## Notes
 
-- The class is annotated with `@Embeddable` to indicate it can be used as an embedded primary key in JPA entities
-- The `@Getter` annotation from Lombok generates getter methods for both fields
-- The protected no-argument constructor is required by JPA for entity instantiation
-- The `equals()` and `hashCode()` methods are implemented using `Objects.equals()` and `Objects.hash()` for proper comparison and hashing
-- The `transitLineCode` field is limited to 10 characters as specified by the `@Column(length = 10)` annotation
+- The class uses Lombok's `@Getter` annotation to automatically generate getter methods for both fields.
+- The `equals()` and `hashCode()` methods are implemented using `Objects.equals()` and `Objects.hash()` for null-safe comparisons.
+- The `transitLineCode` field is limited to 10 characters as defined by the `@Column(length = 10)` annotation.
+- This class is designed to be used as an `@EmbeddedId` in JPA entities that represent the relationship between stations and transit lines.

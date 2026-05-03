@@ -16,7 +16,7 @@ All endpoints are prefixed with `/api/v1/games`.
 
 ### Create Game
 
-Creates a new game with the specified details.
+Creates a new game.
 
 **HTTP Method:** `POST`
 
@@ -28,7 +28,7 @@ Creates a new game with the specified details.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| body | CreateGameRequest | Game creation details (validated) |
+| body | CreateGameRequest | The game creation details |
 
 **Response Body:**
 ```json
@@ -39,11 +39,9 @@ Creates a new game with the specified details.
 }
 ```
 
----
-
 ### List Games
 
-Retrieves a paginated list of games with optional filtering.
+Retrieves a paginated list of games with optional filters.
 
 **HTTP Method:** `GET`
 
@@ -54,16 +52,16 @@ Retrieves a paginated list of games with optional filtering.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | cursor | String | No | - | Pagination cursor |
-| size | Integer | No | 20 | Page size (max validated) |
+| size | Integer | No | 20 | Page size (max 100) |
 | venueIds | List<Long> | No | - | Filter by venue IDs |
 | skillLevelIds | List<Long> | No | - | Filter by skill level IDs |
 | fromDate | LocalDate | No | - | Filter by start date |
 | toDate | LocalDate | No | - | Filter by end date |
 | fromTime | LocalTime | No | - | Filter by start time |
 | toTime | LocalTime | No | - | Filter by end time |
-| latitude | BigDecimal | No | - | Location filter latitude |
-| longitude | BigDecimal | No | - | Location filter longitude |
-| radiusKm | Integer | No | - | Location filter radius |
+| latitude | BigDecimal | No | - | Filter by latitude |
+| longitude | BigDecimal | No | - | Filter by longitude |
+| radiusKm | Integer | No | - | Search radius in kilometers |
 
 **Response:** `200 OK`
 
@@ -76,11 +74,9 @@ Retrieves a paginated list of games with optional filtering.
 }
 ```
 
----
+### Get Game Filter Options
 
-### Get Filter Options
-
-Retrieves available filter options for game listings.
+Retrieves available filter options for games.
 
 **HTTP Method:** `GET`
 
@@ -97,9 +93,9 @@ Retrieves available filter options for game listings.
 | fromTime | LocalTime | No | Filter by start time |
 | toTime | LocalTime | No | Filter by end time |
 | gameType | GameType | No | Filter by game type |
-| latitude | BigDecimal | No | Location filter latitude |
-| longitude | BigDecimal | No | Location filter longitude |
-| radiusKm | Integer | No | Location filter radius |
+| latitude | BigDecimal | No | Filter by latitude |
+| longitude | BigDecimal | No | Filter by longitude |
+| radiusKm | Integer | No | Search radius in kilometers |
 
 **Response:** `200 OK`
 
@@ -112,11 +108,9 @@ Retrieves available filter options for game listings.
 }
 ```
 
----
+### Get Game Date Availability
 
-### Get Date Availability
-
-Retrieves game availability for a date range.
+Retrieves date availability for games within a date range.
 
 **HTTP Method:** `GET`
 
@@ -140,9 +134,7 @@ Retrieves game availability for a date range.
 }
 ```
 
----
-
-### Get Game
+### Get Game by ID
 
 Retrieves a specific game by its ID.
 
@@ -154,7 +146,7 @@ Retrieves a specific game by its ID.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | UUID | Game ID |
+| id | UUID | The game ID |
 
 **Response:** `200 OK`
 
@@ -167,11 +159,9 @@ Retrieves a specific game by its ID.
 }
 ```
 
----
-
 ### Update Game
 
-Updates an existing game with new details.
+Updates an existing game.
 
 **HTTP Method:** `PUT`
 
@@ -181,7 +171,7 @@ Updates an existing game with new details.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | UUID | Game ID |
+| id | UUID | The game ID |
 
 **Request Body:** `UpdateGameRequest` (validated)
 
@@ -196,8 +186,6 @@ Updates an existing game with new details.
 }
 ```
 
----
-
 ### Soft Delete Game
 
 Soft deletes a game (marks as inactive).
@@ -210,11 +198,9 @@ Soft deletes a game (marks as inactive).
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | UUID | Game ID |
+| id | UUID | The game ID |
 
 **Response:** `204 No Content`
-
----
 
 ### Join Game
 
@@ -228,7 +214,7 @@ Allows the current user to join a game.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | UUID | Game ID |
+| id | UUID | The game ID |
 
 **Response:** `201 Created`
 
@@ -240,8 +226,6 @@ Allows the current user to join a game.
   "path": "/api/v1/games/{id}/participants"
 }
 ```
-
----
 
 ### Leave Game
 
@@ -255,11 +239,9 @@ Allows the current user to leave a game.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | UUID | Game ID |
+| id | UUID | The game ID |
 
 **Response:** `204 No Content`
-
----
 
 ### List Game Participants
 
@@ -273,7 +255,7 @@ Retrieves all participants for a specific game.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | UUID | Game ID |
+| id | UUID | The game ID |
 
 **Response:** `200 OK`
 
@@ -286,11 +268,9 @@ Retrieves all participants for a specific game.
 }
 ```
 
----
-
 ### Expel Participant
 
-Removes a participant from a game (admin action).
+Expels a participant from a game.
 
 **HTTP Method:** `DELETE`
 
@@ -300,39 +280,34 @@ Removes a participant from a game (admin action).
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| gameId | UUID | Game ID |
-| participantId | UUID | Participant ID |
+| gameId | UUID | The game ID |
+| participantId | UUID | The participant ID |
 
 **Request Body (optional):** `ExpelParticipantRequest`
 
 **Response:** `204 No Content`
 
----
-
 ## Error Handling
 
 All endpoints return appropriate HTTP status codes:
-- `200 OK` - Successful retrieval/update
-- `201 Created` - Successful creation
-- `204 No Content` - Successful deletion
-- `400 Bad Request` - Invalid input parameters
-- `404 Not Found` - Resource not found
-- `500 Internal Server Error` - Server error
+- `200 OK` for successful GET and PUT requests
+- `201 Created` for successful POST requests
+- `204 No Content` for successful DELETE requests
+- `400 Bad Request` for validation errors
+- `404 Not Found` when a resource is not found
+- `500 Internal Server Error` for unexpected errors
 
 ## Dependencies
 
 The controller depends on the following service interfaces:
-
-| Service Interface | Purpose |
-|-------------------|---------|
-| ICreateGameService | Creates new games |
-| IListGamesCursorService | Lists games with cursor pagination |
-| IGetGameService | Retrieves individual games |
-| IGetGameFilterOptionsService | Gets filter options |
-| IGetGameDateAvailabilityService | Gets date availability |
-| IUpdateGameService | Updates existing games |
-| ISoftDeleteGameService | Soft deletes games |
-| IJoinGameService | Handles game joining |
-| ILeaveGameService | Handles game leaving |
-| IListGameParticipantsService | Lists game participants |
-| IExpelParticipantService | Handles participant expulsion |
+- `ICreateGameService`
+- `IListGamesCursorService`
+- `IGetGameService`
+- `IGetGameFilterOptionsService`
+- `IGetGameDateAvailabilityService`
+- `IUpdateGameService`
+- `ISoftDeleteGameService`
+- `IJoinGameService`
+- `ILeaveGameService`
+- `IListGameParticipantsService`
+- `IExpelParticipantService`

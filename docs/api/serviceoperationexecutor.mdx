@@ -8,128 +8,123 @@ sidebar_label: ServiceOperationExecutor
 
 ## Purpose
 
-The `ServiceOperationExecutor` is a utility class that provides a standardized way to execute service operations with comprehensive exception handling, logging, and tracing. It acts as a centralized error handling mechanism for service layer operations, translating various database, REST client, and runtime exceptions into meaningful, type-specific exceptions.
+The `ServiceOperationExecutor` is a utility class that provides a standardized way to execute service operations with comprehensive error handling, logging, and tracing. It wraps business logic execution with consistent exception management for database operations, REST client calls, and runtime errors. The class automatically generates or propagates trace IDs for request tracking and provides detailed logging at each step of execution.
 
-Key features include:
-- Automatic trace ID generation and propagation via MDC (Mapped Diagnostic Context)
-- Consistent logging across all operations
-- Granular exception handling for database operations (locking, entity, data access)
-- REST client exception handling with response body truncation
-- Support for both return-value and void operations
-- Programmer error detection and re-throwing
+This class is designed to be used as a static utility, not instantiated, and provides two main execution methods: one for operations that return a value and one for void operations.
 
 ## Public Methods
 
 ### `execute`
 
-```java
-public static <T> T execute(
-    Supplier<T> operation,
-    OperationStatus operationType,
-    ExceptionFactory exceptionFactory)
-```
-
-Executes a service operation with comprehensive exception handling and tracing.
+Executes a supplier operation with comprehensive error handling and tracing.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `operation` | `Supplier<T>` | The operation to execute, must not be null |
-| `operationType` | `OperationStatus` | The type of operation being performed (e.g., SAVE, UPDATE, DELETE, RETRIEVE) |
+| `operation` | `Supplier<T>` | The operation to execute, wrapped as a supplier |
+| `operationType` | `OperationStatus` | The type of operation being performed (e.g., SAVE, RETRIEVE, UPDATE, DELETE) |
 | `exceptionFactory` | `ExceptionFactory` | Factory for creating domain-specific exceptions |
 
-**Returns:** The result of the operation
+**Returns:** `T` - The result of the operation
 
 **Throws:**
-- `IllegalArgumentException` - If the operation throws it (re-thrown as-is)
-- `ResourceNotFoundException` - If the operation throws it (re-thrown as-is)
-- Various exceptions created by the `exceptionFactory` for database, REST client, and runtime errors
+- `IllegalArgumentException` - If the operation receives invalid arguments
+- `ExternalServiceException` - If a REST client call fails
+- `ResourceNotFoundException` - If a requested resource is not found
+- `InvalidFileException` - If an invalid file is encountered
+- Various database-related exceptions mapped through the `ExceptionFactory`
+
+**Example:**
+```java
+User user = ServiceOperationExecutor.execute(
+    () -> userRepository.findById(userId),
+    OperationStatus.RETRIEVE,
+    exceptionFactory
+);
+```
 
 ### `executeVoid`
 
-```java
-public static void executeVoid(
-    Runnable operation,
-    OperationStatus operationType,
-    ExceptionFactory exceptionFactory)
-```
-
-Executes a void service operation with the same exception handling and tracing as `execute`.
+Executes a void operation (Runnable) with the same error handling and tracing as `execute`.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `operation` | `Runnable` | The void operation to execute, must not be null |
+| `operation` | `Runnable` | The void operation to execute |
 | `operationType` | `OperationStatus` | The type of operation being performed |
 | `exceptionFactory` | `ExceptionFactory` | Factory for creating domain-specific exceptions |
 
-**Throws:** Same as `execute`
+**Throws:** Same as `execute` method
 
-## Exception Handling Details
-
-### Database Exceptions
-
-The executor handles the following database-related exceptions:
-
-| Exception Type | Handled As |
-|----------------|------------|
-| `OptimisticLockingFailureException` | Concurrent modification detected |
-| `DeadlockLoserDataAccessException` | Database deadlock detected |
-| `CannotAcquireLockException` | Cannot acquire database lock |
-| `PessimisticLockingFailureException` | Resource locked by another transaction |
-| `EntityNotFoundException` | Entity not found (context-dependent message) |
-| `EntityExistsException` | Entity already exists |
-| `DataIntegrityViolationException` | Data integrity violation (context-dependent) |
-| `ConstraintViolationException` | Constraint violation (context-dependent) |
-| `InvalidDataAccessResourceUsageException` | Table/column not found, SQL syntax errors |
-| `JpaSystemException` | JPA system error |
-| `InvalidDataAccessApiUsageException` | Invalid data access API usage |
-| `PersistenceException` | General persistence error |
-
-### REST Client Exceptions
-
-| Exception Type | Handled As |
-|----------------|------------|
-| `HttpStatusCodeException` | External service error with HTTP status and response body |
-| `ResourceAccessException` | External service unavailable |
-| Other `RestClientException` | General external service error |
-
-### Runtime Exceptions
-
-Programmer errors (NullPointerException, IllegalStateException, etc.) are re-thrown as-is. All other runtime exceptions are wrapped using the provided `ExceptionFactory`.
-
-## Usage Example
-
+**Example:**
 ```java
-@Service
-public class UserService {
-    
-    private final ExceptionFactory exceptionFactory;
-    
-    public UserService(ExceptionFactory exceptionFactory) {
-        this.exceptionFactory = exceptionFactory;
-    }
-    
-    public User getUserById(Long id) {
-        return ServiceOperationExecutor.execute(
-            () -> userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found")),
-            OperationStatus.RETRIEVE,
-            exceptionFactory
-        );
-    }
-    
-    public void deleteUser(Long id) {
-        ServiceOperationExecutor.executeVoid(
-            () -> userRepository.deleteById(id),
-            OperationStatus.DELETE,
-            exceptionFactory
-        );
-    }
-}
+ServiceOperationExecutor.executeVoid(
+    () -> userRepository.deleteById(userId),
+    OperationStatus.DELETE,
+    exceptionFactory
+);
 ```
 
-## Notes
+## Internal Behavior
 
-- The class is a utility class and cannot be instantiated (private constructor)
-- Trace IDs are automatically generated and managed via MDC, with cleanup in the `finally` block
-- Response bodies from REST client exceptions are truncated to prevent memory issues (configurable via `MAX_RESPONSE_BODY_SIZE`)
-- The `OperationStatus` enum determines context-specific error messages for entity and constraint violations
+### Trace ID Management
+
+The class manages trace IDs through SLF4J's MDC (Mapped Diagnostic Context). It checks for an existing trace ID in the MDC context and generates a new UUID if none exists. The trace ID is automatically cleaned up from MDC after operation completion if it was created by this executor.
+
+### Exception Handling Flow
+
+The exception handling follows a hierarchical approach:
+
+1. **IllegalArgumentException** - Logged and rethrown as-is
+2. **DataAccessException / PersistenceException** - Delegated to `handleDatabaseException()`
+3. **RestClientException** - Delegated to `handleRestClientException()`
+4. **InvalidFileException** - Wrapped using the exception factory
+5. **ResourceNotFoundException** - Logged and rethrown as-is
+6. **RuntimeException** - Checked for programmer errors (NullPointerException, IllegalStateException, etc.) or wrapped using the exception factory
+
+### Database Exception Handling
+
+Database exceptions are categorized and handled as follows:
+
+| Exception Type | Handling |
+|---------------|----------|
+| OptimisticLockingFailureException | Concurrent modification detected |
+| DeadlockLoserDataAccessException | Database deadlock detected |
+| CannotAcquireLockException | Cannot acquire database lock |
+| PessimisticLockingFailureException | Resource locked by another transaction |
+| EntityNotFoundException | Mapped based on operation type (RETRIEVE, UPDATE, DELETE) |
+| EntityExistsException | Entity already exists |
+| DataIntegrityViolationException | Mapped based on operation type |
+| ConstraintViolationException | Mapped based on operation type |
+| InvalidDataAccessResourceUsageException | Analyzes root cause for table/column/syntax errors |
+| JpaSystemException | JPA system error |
+| InvalidDataAccessApiUsageException | Invalid data access API usage |
+| PersistenceException | Persistence error |
+
+### REST Client Exception Handling
+
+REST client exceptions are handled based on their type:
+
+| Exception Type | Handling |
+|---------------|----------|
+| HttpStatusCodeException | Creates ExternalServiceException with status code and truncated response body |
+| ResourceAccessException | Creates ExternalServiceException indicating service unavailability |
+| Other RestClientException | Creates ExternalServiceException with generic error message |
+
+### Response Body Truncation
+
+Response bodies from HTTP status code exceptions are truncated to a maximum size (defined in constants) to prevent memory issues. A truncation indicator is appended to truncated responses.
+
+## Usage Guidelines
+
+1. **Always provide an ExceptionFactory** - This ensures consistent exception types across your application
+2. **Use appropriate OperationStatus** - This affects how database exceptions are mapped to user-friendly messages
+3. **Handle ExternalServiceException** - REST client calls can fail with network issues or service unavailability
+4. **Consider trace ID propagation** - The executor respects existing trace IDs, allowing for distributed tracing
+
+## Dependencies
+
+- SLF4J for logging
+- Spring Framework's DataAccessException hierarchy
+- Hibernate's ConstraintViolationException
+- Jakarta Persistence exceptions
+- Custom exception types (ExternalServiceException, InvalidFileException, ResourceNotFoundException)
+- Custom constants class (ServiceOperationExecutorConstant)

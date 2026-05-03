@@ -1,65 +1,116 @@
 ---
 id: api-response
-title: ApiResponse
+title: ApiResponse<T> - Standard API Response Wrapper
 sidebar_label: ApiResponse
 ---
 
-# ApiResponse
+# ApiResponse\<T\>
 
-The `ApiResponse` class is a generic Java record designed to standardize the structure of API responses across the application. It provides a consistent format for both successful and error responses, including a timestamp and the request path for traceability.
+The `ApiResponse` record is a generic, standardized wrapper for all API responses in the UpMatches application. It ensures consistent JSON serialization across the entire API surface, providing a predictable structure for both successful and error responses.
 
 ## Purpose
 
-- **Standardization**: Ensures all API endpoints return responses in a uniform JSON structure.
+- **Standardization**: Every endpoint returns the same envelope, making client-side parsing predictable.
 - **Clarity**: Distinguishes between success and failure via the `success` boolean.
-- **Traceability**: Includes a `timestamp` and `path` to help with debugging and logging.
-- **Flexibility**: The generic type `T` allows any data type to be returned as the payload.
+- **Metadata**: Includes a timestamp and the request path for debugging and logging.
+- **Null Safety**: Uses `@JsonInclude(JsonInclude.Include.NON_NULL)` to omit null fields from the JSON output, keeping responses compact.
 
 ## Record Components
 
-| Component | Type | Description |
-|-----------|------|-------------|
-| `success` | `Boolean` | Indicates whether the request was successful (`true`) or failed (`false`). |
-| `data` | `T` | The payload of the response. `null` for error responses. |
-| `message` | `String` | A human-readable message describing the result. |
-| `timestamp` | `Instant` | The exact time the response was generated (UTC). |
-| `path` | `String` | The request path that generated this response. |
+| Field     | Type      | Description                                                                 |
+|-----------|-----------|-----------------------------------------------------------------------------|
+| `success` | `Boolean` | `true` for successful operations, `false` for errors.                       |
+| `data`    | `T`       | The actual response payload (null on errors).                               |
+| `message` | `String`  | Human-readable message (e.g., "User created" or "Invalid credentials").     |
+| `timestamp` | `Instant` | ISO-8601 timestamp of when the response was generated.                    |
+| `path`    | `String`  | The request URI path that generated this response.                          |
 
-## Public Methods
+## Factory Methods
 
 ### `success(T data, String message, String path)`
 
 Creates a successful API response.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `data` | `T` | The response payload. |
-| `message` | `String` | A success message. |
-| `path` | `String` | The request path. |
+| Parameter | Type      | Description                                      |
+|-----------|-----------|--------------------------------------------------|
+| `data`    | `T`       | The response payload (can be any object).        |
+| `message` | `String`  | A success message (e.g., "Operation completed"). |
+| `path`    | `String`  | The request URI path.                            |
 
-**Returns**: `ApiResponse<T>` — a response with `success` set to `true`.
+**Returns**: `ApiResponse<T>` with `success = true`.
+
+**Example**:
+```java
+ApiResponse<User> response = ApiResponse.success(
+    new User("john_doe"),
+    "User retrieved successfully",
+    "/api/users/123"
+);
+```
 
 ### `error(String message, String path)`
 
 Creates an error API response.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `message` | `String` | An error message describing what went wrong. |
-| `path` | `String` | The request path. |
+| Parameter | Type      | Description                                      |
+|-----------|-----------|--------------------------------------------------|
+| `message` | `String`  | A descriptive error message.                     |
+| `path`    | `String`  | The request URI path where the error occurred.   |
 
-**Returns**: `ApiResponse<T>` — a response with `success` set to `false` and `data` set to `null`.
+**Returns**: `ApiResponse<T>` with `success = false` and `data = null`.
 
-## Usage Example
-
+**Example**:
 ```java
-// Successful response
-ApiResponse<User> response = ApiResponse.success(user, "User found", "/api/users/123");
-
-// Error response
-ApiResponse<Void> errorResponse = ApiResponse.error("User not found", "/api/users/999");
+ApiResponse<Void> response = ApiResponse.error(
+    "User not found",
+    "/api/users/999"
+);
 ```
 
-## JSON Serialization
+## Usage in Controllers
 
-Due to the `@JsonInclude(JsonInclude.Include.NON_NULL)` annotation, any field that is `null` (such as `data` in error responses) will be omitted from the serialized JSON output. This keeps the response payload clean and minimal.
+```java
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @GetMapping("/{id}")
+    public ApiResponse<User> getUser(@PathVariable Long id) {
+        try {
+            User user = userService.findById(id);
+            return ApiResponse.success(user, "User found", "/api/users/" + id);
+        } catch (UserNotFoundException e) {
+            return ApiResponse.error(e.getMessage(), "/api/users/" + id);
+        }
+    }
+}
+```
+
+## JSON Output Examples
+
+**Success Response**:
+```json
+{
+  "success": true,
+  "data": { "id": 1, "name": "John Doe" },
+  "message": "User retrieved successfully",
+  "timestamp": "2025-03-15T10:30:00Z",
+  "path": "/api/users/1"
+}
+```
+
+**Error Response**:
+```json
+{
+  "success": false,
+  "message": "User not found",
+  "timestamp": "2025-03-15T10:30:00Z",
+  "path": "/api/users/999"
+}
+```
+
+## Notes
+
+- The `@JsonInclude(JsonInclude.Include.NON_NULL)` annotation ensures that `data` is omitted entirely from error responses, keeping the payload minimal.
+- Timestamps are generated at the moment of response creation using `Instant.now()`.
+- The record is immutable by design (Java records are final and all fields are private final).

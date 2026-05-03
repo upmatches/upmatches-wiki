@@ -6,19 +6,19 @@ sidebar_label: SkillLevelController
 
 # SkillLevelController
 
-The `SkillLevelController` is a REST controller in the UpMatches application that handles HTTP requests related to skill levels. It provides an endpoint to retrieve skill levels associated with a specific activity.
+The `SkillLevelController` is a REST controller that provides endpoints for retrieving skill levels associated with a specific activity. It acts as the entry point for skill level-related operations in the UpMatches application, delegating business logic to the `ISkillLevelService` interface.
 
 ## Purpose
 
-This controller serves as the API entry point for fetching skill level data. It delegates the business logic to the `ISkillLevelService` interface and returns standardized API responses wrapped in an `ApiResponse` object.
+This controller handles HTTP GET requests to fetch skill levels for a given activity. It validates that the `activityId` parameter is provided and not null, then returns a standardized API response containing the list of skill levels.
 
 ## Endpoints
 
 ### GET /api/v1/skill-levels
 
-Retrieves all skill levels for a given activity.
+Retrieves all skill levels associated with a specific activity.
 
-#### Parameters
+#### Request Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -26,13 +26,21 @@ Retrieves all skill levels for a given activity.
 
 #### Response
 
-Returns a `200 OK` response containing an `ApiResponse` object with the following structure:
+The endpoint returns a `200 OK` response with the following structure:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | `List<SkillLevelResponse>` | List of skill level objects for the specified activity |
-| `message` | `String` | Success message: "Skill levels retrieved successfully." |
-| `path` | `String` | The request URI that was called |
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "string",
+      "description": "string"
+    }
+  ],
+  "message": "Skill levels retrieved successfully.",
+  "path": "/api/v1/skill-levels?activityId=..."
+}
+```
 
 #### Example Request
 
@@ -46,34 +54,33 @@ GET /api/v1/skill-levels?activityId=550e8400-e29b-41d4-a716-446655440000
 {
   "data": [
     {
-      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
       "name": "Beginner",
-      "description": "Suitable for newcomers"
+      "description": "Suitable for newcomers to the activity"
     },
     {
-      "id": "123e4567-e89b-12d3-a456-426614174001",
+      "id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
       "name": "Intermediate",
-      "description": "For those with some experience"
+      "description": "For participants with some experience"
     }
   ],
   "message": "Skill levels retrieved successfully.",
-  "path": "/api/v1/skill-levels"
+  "path": "/api/v1/skill-levels?activityId=550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
+## Public Methods
+
+| Method | Return Type | Parameters | Description |
+|--------|-------------|------------|-------------|
+| `getSkillLevels` | `ResponseEntity<ApiResponse<List<SkillLevelResponse>>>` | `@RequestParam @NotNull UUID activityId`, `HttpServletRequest request` | Retrieves all skill levels for the specified activity |
+
 ## Dependencies
 
-- **ISkillLevelService**: The service interface that provides the business logic for retrieving skill levels by activity.
-- **ApiResponse**: A shared response wrapper that standardizes API responses across the application.
-- **SkillLevelResponse**: The DTO (Data Transfer Object) representing skill level data returned to clients.
+- **ISkillLevelService**: Service interface that provides the business logic for retrieving skill levels by activity
+- **ApiResponse**: Shared response wrapper that standardizes API responses with data, message, and path information
+- **SkillLevelResponse**: DTO representing a skill level in the API response
 
 ## Error Handling
 
-The controller uses Spring's `@Validated` annotation to enable validation. If the `activityId` parameter is missing or null, a validation error will be thrown by the framework. The `@NotNull` annotation on the `activityId` parameter ensures that the request must include this parameter.
-
-## Implementation Details
-
-- The controller is mapped to the base path `/api/v1/skill-levels`.
-- It uses constructor injection to receive the `ISkillLevelService` dependency.
-- The `getSkillLevels` method is annotated with `@GetMapping`, making it respond to HTTP GET requests.
-- The method captures the request URI via the `HttpServletRequest` parameter to include it in the response for traceability.
+The controller uses the `@Validated` annotation and `@NotNull` constraint on the `activityId` parameter. If the parameter is missing or null, Spring will automatically return a `400 Bad Request` response with validation error details.

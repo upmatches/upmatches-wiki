@@ -6,30 +6,47 @@ sidebar_label: IMarkNotificationReadService
 
 # IMarkNotificationReadService Interface
 
-The `IMarkNotificationReadService` interface defines a contract for marking a notification as read within the application. It is a sealed interface, meaning only the explicitly permitted class `MarkNotificationReadService` can implement it. This design enforces a controlled and secure implementation pattern, ensuring that the logic for marking notifications as read is centralized and cannot be extended arbitrarily.
+The `IMarkNotificationReadService` interface defines a contract for marking a notification as read within the UpMatches application. It follows a sealed interface pattern, restricting its implementation to the `MarkNotificationReadService` class only.
 
 ## Purpose
 
-- **Sealed Contract**: Restricts implementation to a single, known class (`MarkNotificationReadService`), promoting encapsulation and maintainability.
-- **Single Responsibility**: Provides a single method to mark a notification as read by its unique identifier.
-- **Type Safety**: Uses `UUID` for the notification ID and returns a `NotificationResponse` object, ensuring clear input and output types.
+This interface provides a single method to execute the business logic of updating a notification's read status. By using a sealed interface, the design enforces a controlled implementation hierarchy, ensuring that only the designated service class can fulfill this contract.
 
-## Public Method
+## Interface Definition
 
-| Method | Description | Parameters | Returns |
-|--------|-------------|------------|---------|
-| `execute(UUID id)` | Marks a notification as read based on its unique identifier. | `id` - The UUID of the notification to mark as read. | `NotificationResponse` - The response object containing the result of the operation. |
+```java
+public sealed interface IMarkNotificationReadService permits MarkNotificationReadService {
+    NotificationResponse execute(UUID id);
+}
+```
+
+## Method Summary
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute(UUID id)` | `NotificationResponse` | Marks the notification identified by the given UUID as read and returns the updated notification response. |
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | `UUID` | The unique identifier of the notification to be marked as read. |
+
+## Return Type
+
+The method returns a `NotificationResponse` object, which contains the updated state of the notification after the read status has been applied.
+
+## Implementation Details
+
+- The interface is declared as `sealed`, meaning only the classes specified in the `permits` clause can implement it.
+- The sole permitted implementation is `MarkNotificationReadService`.
+- This design pattern ensures type safety and controlled extensibility within the notification service layer.
 
 ## Usage Example
 
 ```java
-// Assuming you have an instance of MarkNotificationReadService
-IMarkNotificationReadService service = new MarkNotificationReadService();
+// Assuming dependency injection provides an instance of IMarkNotificationReadService
+IMarkNotificationReadService markReadService = new MarkNotificationReadService();
 UUID notificationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-NotificationResponse response = service.execute(notificationId);
+NotificationResponse response = markReadService.execute(notificationId);
 ```
-
-## Related Components
-
-- **`MarkNotificationReadService`**: The sole permitted implementation of this interface.
-- **`NotificationResponse`**: The response DTO returned by the `execute` method.

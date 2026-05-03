@@ -6,79 +6,118 @@ sidebar_label: ImportVenuesService
 
 # ImportVenuesService
 
-The `ImportVenuesService` class is a Spring service responsible for importing venue data from a JSON file into the system. It handles the complete import workflow including parsing the JSON file, validating station codes, resolving or creating transit lines and stations, and persisting venues with their associated data. The service is designed to be idempotent, skipping venues that already exist based on their source ID.
+The `ImportVenuesService` class is a Spring service responsible for importing venue data from a JSON file into the system. It handles parsing, validation, and persistence of venues along with their associated stations and transit lines. The service ensures data integrity by checking for duplicates, caching entities, and performing transactional operations.
 
-## Key Features
+## Purpose
 
-- **JSON File Import**: Parses a JSON array of venue objects from a multipart file upload
-- **Idempotent Processing**: Skips venues that already exist in the database by source ID
-- **Station Code Parsing**: Supports single and dual station codes (e.g., "A1" or "A1 / B2")
-- **Automatic Resource Creation**: Creates transit lines and stations if they don't already exist
-- **Audit Logging**: Annotated with `@Auditable` for tracking import operations
-- **Transactional**: Entire import process is wrapped in a database transaction
+- Parse a JSON file containing venue import requests
+- Validate and process venue data, including associated stations and transit lines
+- Persist new venues, stations, and transit lines to the database
+- Handle duplicate detection and entity caching for performance
+- Provide audit logging for import operations
 
 ## Public Methods
 
 ### `execute(MultipartFile file)`
 
+Processes a JSON file containing venue import requests and persists the data.
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `file` | `MultipartFile` | The JSON file containing venue data to import |
+| `file` | `MultipartFile` | The JSON file containing venue import data |
 
-| Returns | Type |
-|---------|------|
-| `VenueImportResponse` | Response object containing the count of successfully imported venues |
+| Returns | Type | Description |
+|---------|------|-------------|
+| `VenueImportResponse` | `VenueImportResponse` | Response object containing the count of imported venues |
 
-**Description**: Main entry point for importing venues. Parses the JSON file, processes each venue, and returns a response with the import count. The method is transactional and auditable.
+**Throws:**
+- `InvalidFileException` - If the JSON file cannot be parsed or contains invalid data
+- `ResourceNotFoundException` - If a referenced activity is not found
 
-**Throws**:
-- `InvalidFileException` - If the JSON file cannot be parsed or contains invalid station codes
-- `ResourceNotFoundException` - If a referenced activity is not found in the database
+**Example usage:**
+```java
+@Autowired
+private ImportVenuesService importVenuesService;
 
-## Internal Processing Flow
+public void importVenues(MultipartFile file) {
+    VenueImportResponse response = importVenuesService.execute(file);
+    System.out.println("Imported " + response.importedCount() + " venues");
+}
+```
 
-1. **Parse JSON**: The uploaded file is parsed into a list of `VenueImportRequest` objects using Jackson's `ObjectMapper`
-2. **Process Each Venue**: For each venue request:
-   - Check if venue already exists by source ID (skip if found)
-   - Resolve the associated activity from cache or database
-   - Create the venue entity with formatted postal code
-   - Resolve and associate stations with their transit lines
-   - Save the venue
-3. **Return Response**: Return a `VenueImportResponse` with the count of imported venues
+## Internal Methods
 
-## Station Code Format
+### `parseJsonFile(MultipartFile file)`
 
-Station codes follow the pattern: `[LineCode][StationNumber]` or `[LineCode][StationNumber] / [LineCode][StationNumber]` for dual codes.
+Parses the JSON file into a list of `VenueImportRequest` objects.
 
-| Component | Description | Example |
-|-----------|-------------|---------|
-| Line Code | Alphabetic characters representing the transit line | `A`, `B`, `RED` |
-| Station Number | Optional numeric identifier for the station | `1`, `23` |
-| Dual Code Separator | Two codes separated by ` / ` | `A1 / B2` |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `file` | `MultipartFile` | The JSON file to parse |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| `List<VenueImportRequest>` | `List<VenueImportRequest>` | List of parsed venue import requests |
+
+**Throws:**
+- `InvalidFileException` - If parsing fails
+
+### `processImport(List<VenueImportRequest> venueDtos)`
+
+Processes the list of venue import requests and persists them to the database.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `venueDtos` | `List<VenueImportRequest>` | List of venue import requests to process |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| `VenueImportResponse` | `VenueImportResponse` | Response object with import count |
+
+### `resolveStation(StationImportRequest stationDto, Map<String, TransitLine> transitLineCache, Map<String, Station> stationCache)`
+
+Resolves a station from the import request, creating new entities if necessary.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `stationDto` | `StationImportRequest` | Station import request data |
+| `transitLineCache` | `Map<String, TransitLine>` | Cache of transit lines by code |
+| `stationCache` | `Map<String, Station>` | Cache of stations by name |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| `Station` | `Station` | The resolved station entity |
+
+**Throws:**
+- `InvalidFileException` - If station code format is invalid
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `VenueRepository` | Repository | Persistence for venue entities |
-| `ActivityRepository` | Repository | Lookup for activity entities |
-| `StationRepository` | Repository | Persistence and lookup for station entities |
-| `TransitLineRepository` | Repository | Persistence and lookup for transit line entities |
-| `ObjectMapper` | Jackson | JSON parsing utility |
+| `VenueRepository` | Repository | Data access for venue entities |
+| `ActivityRepository` | Repository | Data access for activity entities |
+| `StationRepository` | Repository | Data access for station entities |
+| `TransitLineRepository` | Repository | Data access for transit line entities |
+| `ObjectMapper` | Utility | JSON parsing and serialization |
+
+## Annotations
+
+- `@Service` - Marks the class as a Spring service component
+- `@Transactional` - Ensures the import operation is performed within a transaction
+- `@Auditable(action = "VENUES_IMPORTED", resourceType = "VENUE", sensitive = true)` - Enables audit logging for the import operation
 
 ## Error Handling
 
-| Error Condition | Exception | Message |
-|-----------------|-----------|---------|
-| Invalid JSON format | `InvalidFileException` | "Failed to parse venues JSON file '{filename}'. Expected a JSON array of venue objects at the root. Reason: {reason}" |
-| Invalid station code | `InvalidFileException` | "Invalid station code format: {code}" |
-| Activity not found | `ResourceNotFoundException` | "Activity with ID {id} not found." |
+The service handles the following error scenarios:
 
-## Usage Example
+1. **Invalid JSON format**: Throws `InvalidFileException` with a descriptive message
+2. **Missing activity**: Throws `ResourceNotFoundException` with the activity ID
+3. **Invalid station code**: Throws `InvalidFileException` with the invalid code
+4. **Duplicate venues**: Skips venues that already exist in the database (checked by `sourceId`)
 
-```java
-// Assuming ImportVenuesService is injected as importVenuesService
-MultipartFile file = // ... get file from request
-VenueImportResponse response = importVenuesService.execute(file);
-System.out.println("Imported " + response.importedCount() + " venues");
-```
+## Performance Considerations
+
+- Entity caching is used for activities, transit lines, and stations to minimize database queries
+- Batch processing is performed within a single transaction
+- Duplicate detection prevents unnecessary database operations

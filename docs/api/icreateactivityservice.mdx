@@ -1,55 +1,64 @@
 ---
-id: icreateactivityservice
+id: icreate-activity-service
 title: ICreateActivityService Interface
 sidebar_label: ICreateActivityService
 ---
 
-## Overview
+# ICreateActivityService Interface
 
-The `ICreateActivityService` interface defines the contract for creating a new activity within the UpMatches application. It serves as the abstraction layer for the activity creation use case, ensuring that any implementation (currently `CreateActivityService`) adheres to a consistent method signature.
+The `ICreateActivityService` interface defines the contract for creating new activities within the UpMatches application. It serves as the abstraction layer between the presentation/API layer and the concrete implementation responsible for processing activity creation requests.
 
-This interface is declared as `sealed`, meaning only explicitly permitted classes (in this case, `CreateActivityService`) can implement it. This design pattern enforces a controlled hierarchy and improves code maintainability by restricting inheritance.
+This interface is declared as a **sealed interface**, meaning only explicitly permitted classes (in this case, `CreateActivityService`) can implement it. This design pattern enforces a controlled hierarchy and ensures that all activity creation logic flows through a single, well-defined implementation.
 
 ## Interface Definition
 
 ```java
 public sealed interface ICreateActivityService permits CreateActivityService {
-
     ActivityResponse execute(CreateActivityRequest request);
-
 }
 ```
 
 ## Methods
 
-### `execute`
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `execute(CreateActivityRequest request)` | `ActivityResponse` | Processes the provided activity creation request and returns the corresponding response containing the created activity details. |
 
-The sole method of this interface, responsible for processing a `CreateActivityRequest` and returning an `ActivityResponse`.
+### Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `CreateActivityRequest` | The request object containing all necessary data to create a new activity (e.g., activity name, description, date, location). |
+| `request` | `CreateActivityRequest` | The request object containing all necessary data to create a new activity (e.g., title, description, date, location, etc.). |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `ActivityResponse` | `ActivityResponse` | The response object containing the result of the activity creation operation (e.g., the created activity's ID, status, or error details). |
+### Return Type
+
+| Type | Description |
+|------|-------------|
+| `ActivityResponse` | The response object containing the details of the successfully created activity, including its unique identifier and other relevant information. |
 
 ## Usage Example
 
 ```java
-// Assuming you have an instance of ICreateActivityService
-ICreateActivityService service = new CreateActivityService();
-CreateActivityRequest request = new CreateActivityRequest(/* ... */);
-ActivityResponse response = service.execute(request);
+// Inject the service (typically via dependency injection)
+ICreateActivityService createActivityService = new CreateActivityService();
+
+// Create a request with the necessary activity data
+CreateActivityRequest request = new CreateActivityRequest(
+    "Hiking Trip",
+    "A group hike through the mountains",
+    LocalDateTime.of(2024, 6, 15, 9, 0),
+    "Mountain Trail Head"
+);
+
+// Execute the creation
+ActivityResponse response = createActivityService.execute(request);
+
+// Use the response (e.g., return to client, log, etc.)
+System.out.println("Created activity with ID: " + response.getId());
 ```
 
 ## Related Components
 
-- **`CreateActivityRequest`**: The input data transfer object (DTO) for activity creation.
-- **`ActivityResponse`**: The output DTO representing the result of the creation operation.
-- **`CreateActivityService`**: The concrete implementation of this interface.
-
-## Notes
-
-- The `sealed` keyword ensures that only `CreateActivityService` can implement this interface, providing a clear and restricted API contract.
-- This interface follows the Command pattern, encapsulating the activity creation logic behind a single `execute` method.
+- **`CreateActivityRequest`**: The input data transfer object (DTO) containing the fields required to create a new activity.
+- **`ActivityResponse`**: The output DTO representing the result of the activity creation operation.
+- **`CreateActivityService`**: The concrete implementation of this interface that contains the business logic for creating activities.

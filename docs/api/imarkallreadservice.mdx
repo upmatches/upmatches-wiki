@@ -6,31 +6,51 @@ sidebar_label: IMarkAllReadService
 
 # IMarkAllReadService Interface
 
-The `IMarkAllReadService` interface defines a contract for marking all notifications as read within the notification system. It is a **sealed interface**, meaning that only the explicitly permitted implementation (`MarkAllReadService`) can extend or implement it. This design enforces a controlled hierarchy and ensures that the behavior for marking all notifications as read is centralized and predictable.
+The `IMarkAllReadService` interface defines a contract for marking all notifications as read within the notification system of the UpMatches application. It serves as the abstraction layer for the "mark all read" functionality, allowing different implementations to be swapped in without affecting the calling code.
 
-## Purpose
+This interface is declared as a **sealed interface**, meaning only explicitly permitted classes (in this case, `MarkAllReadService`) can implement it. This design pattern ensures controlled inheritance and provides compile-time safety by restricting the set of possible implementations.
 
-- **Sealed Contract**: Restricts implementation to a single service class, preventing unauthorized extensions.
-- **Single Action**: Provides a single method to execute the "mark all read" operation.
-- **Return Value**: Returns an `Integer` representing the number of notifications that were updated or affected.
+## Interface Definition
 
-## Public Method
+```java
+public sealed interface IMarkAllReadService permits MarkAllReadService {
+    Integer execute();
+}
+```
+
+## Methods
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `execute()` | `Integer` | Executes the operation to mark all notifications as read. Returns the count of notifications that were updated. |
+| `execute()` | `Integer` | Executes the operation to mark all notifications as read. Returns the number of notifications that were updated. |
 
-## Usage Example
+## Usage
+
+The `IMarkAllReadService` interface is typically injected into controllers or other services that need to trigger a bulk "mark all read" operation. The concrete implementation `MarkAllReadService` handles the actual database or repository logic.
+
+### Example
 
 ```java
-// Assuming an instance of MarkAllReadService is injected
-IMarkAllReadService markAllReadService = new MarkAllReadService();
+// Inject the service
+private final IMarkAllReadService markAllReadService;
 
-Integer updatedCount = markAllReadService.execute();
-System.out.println("Marked " + updatedCount + " notifications as read.");
+// Use it in a method
+public void markAllNotificationsAsRead() {
+    Integer updatedCount = markAllReadService.execute();
+    // Handle the result (e.g., log, return response)
+}
 ```
 
-## Notes
+## Sealed Interface Details
 
-- The interface is sealed to `MarkAllReadService` only. Any attempt to implement this interface with another class will result in a compilation error.
-- The exact behavior of `execute()` depends on the implementation in `MarkAllReadService`, which typically interacts with a data store to update notification statuses.
+- **Permitted Implementations**: `MarkAllReadService`
+- **Purpose**: Restricts implementation to a single, known class, ensuring that the behavior is predictable and controlled.
+- **Benefits**: 
+  - Compile-time safety against unauthorized implementations
+  - Clear documentation of allowed subtypes
+  - Enables exhaustive pattern matching in future Java versions
+
+## Related Components
+
+- `MarkAllReadService` - The concrete implementation of this interface
+- Notification domain entities and repositories used by the implementation

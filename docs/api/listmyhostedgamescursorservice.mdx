@@ -8,53 +8,48 @@ sidebar_label: ListMyHostedGamesCursorService
 
 ## Purpose
 
-The `ListMyHostedGamesCursorService` is a Spring service class responsible for retrieving a cursor-based paginated list of games hosted by the currently authenticated user. It implements the `IListMyHostedGamesCursorService` interface and provides transactional read-only access to the database.
+The `ListMyHostedGamesCursorService` is a Spring service class responsible for retrieving a paginated list of games hosted by the currently authenticated user. It implements cursor-based pagination to efficiently fetch game records, including participant counts for each game. The service ensures that only the authenticated user's hosted games are returned, and it handles the encoding/decoding of cursor values for seamless pagination.
 
-This service handles the complexity of cursor-based pagination by decoding an incoming cursor token, querying the database for the next page of hosted games, counting active participants for each game, and encoding a new cursor for subsequent requests.
+## Key Features
 
-## Dependencies
-
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `GameRepository` | Repository | Data access for `Game` entities |
-| `GameParticipantRepository` | Repository | Data access for game participant counts |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID |
-| `GameCursor` | Helper | Encodes and decodes cursor tokens for pagination |
+- **Cursor-based pagination**: Uses a cursor (encoded timestamp + ID) for efficient, stable pagination
+- **Authenticated user context**: Automatically resolves the current user's identity
+- **Participant counting**: Includes the count of active participants for each game
+- **Transactional read-only**: Ensures data consistency without locking
+- **Error handling**: Wraps operations with standardized error handling via `ServiceOperationExecutor`
 
 ## Public Methods
 
 ### `execute(String cursor, int size)`
 
-Retrieves a cursor-based paginated list of games hosted by the authenticated user.
-
-**Parameters:**
+Retrieves a cursor-paginated list of games hosted by the authenticated user.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `cursor` | `String` | The cursor token from the previous page request. Pass `null` or empty string for the first page. |
-| `size` | `int` | The maximum number of results to return per page |
+| `cursor` | `String` | Encoded cursor string for pagination. Pass `null` or empty for the first page. |
+| `size` | `int` | Maximum number of records to return per page. |
 
-**Returns:**
-
-| Return Type | Description |
-|-------------|-------------|
-| `CursorPagedResponse<GameResponse>` | A paginated response containing the list of `GameResponse` objects and an optional next cursor token |
+| Returns | Description |
+|---------|-------------|
+| `CursorPagedResponse<GameResponse>` | A paginated response containing the list of `GameResponse` objects and the next cursor value. |
 
 **Behavior:**
-
-1. Resolves the authenticated user's UUID via `userResolver.requireUserId()`
-2. Decodes the provided cursor token using `gameCursor.decode()`
-3. Queries the database for games hosted by the user, using the cursor's start time and ID for pagination
+1. Resolves the authenticated user's UUID
+2. Decodes the cursor (if provided) to extract the `startTime` and `id` of the last record
+3. Queries the database for games hosted by the user, ordered by start time and ID
 4. Counts active participants for each retrieved game
-5. Maps each `Game` entity to a `GameResponse` using `GameResponse.fromGameForViewer()`
-6. Encodes a new cursor token from the last game in the result set (if the page is full)
-7. Returns a `CursorPagedResponse` containing the content and next cursor
+5. Maps games to `GameResponse` objects with participant counts
+6. Encodes the next cursor if more records exist
+7. Returns a `CursorPagedResponse` with the content and next cursor
 
-**Exceptions:**
+**Example usage:**
+```java
+// First page
+CursorPagedResponse<GameResponse> firstPage = service.execute(null, 20);
 
-| Exception | Condition |
-|-----------|-----------|
-| `ResourceNotFoundException` | Thrown via `ServiceOperationExecutor` when the operation fails (wrapped from underlying exceptions) |
+// Subsequent pages
+CursorPagedResponse<GameResponse> nextPage = service.execute(firstPage.getNextCursor(), 20);
+```
 
 ## Private Methods
 
@@ -62,45 +57,39 @@ Retrieves a cursor-based paginated list of games hosted by the authenticated use
 
 Counts active participants for a list of games.
 
-**Parameters:**
-
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `games` | `List<Game>` | The list of games to count participants for |
+| `games` | `List<Game>` | List of games to count participants for. |
 
-**Returns:**
-
-| Return Type | Description |
-|-------------|-------------|
+| Returns | Description |
+|---------|-------------|
 | `Map<UUID, Long>` | A map of game IDs to their active participant counts. Returns an empty map if the input list is empty. |
 
 **Behavior:**
-
 - Extracts game IDs from the provided list
 - Returns an empty map if the list is empty
-- Queries `participantRepository` for active participant counts grouped by game ID
-- Converts the result to a `Map<UUID, Long>` for efficient lookup
+- Queries the `GameParticipantRepository` for counts of participants with `ACTIVE` status
+- Converts the result to a map keyed by game ID
 
-## Usage Example
+## Dependencies
 
-```java
-@Service
-public class GameController {
-    private final ListMyHostedGamesCursorService listMyHostedGamesService;
+| Dependency | Type | Description |
+|------------|------|-------------|
+| `GameRepository` | Repository | Data access for `Game` entities |
+| `GameParticipantRepository` | Repository | Data access for participant counts |
+| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user |
+| `GameCursor` | Helper | Encodes/decodes cursor values for pagination |
+| `ServiceOperationExecutor` | Utility | Provides standardized error handling and logging |
 
-    public GameController(ListMyHostedGamesCursorService listMyHostedGamesService) {
-        this.listMyHostedGamesService = listMyHostedGamesService;
-    }
+## Error Handling
 
-    public CursorPagedResponse<GameResponse> getMyHostedGames(String cursor, int size) {
-        return listMyHostedGamesService.execute(cursor, size);
-    }
-}
-```
+The service wraps its main operation in `ServiceOperationExecutor.execute()`, which:
+- Logs the operation with status `RETRIEVE`
+- Throws `ResourceNotFoundException` if the operation fails
+- Provides consistent error handling across the application
 
 ## Notes
 
-- The service is annotated with `@Transactional(readOnly = true)` to optimize database access for read operations
-- The `non-sealed` modifier indicates this class is part of a sealed interface hierarchy
-- Cursor-based pagination is more efficient than offset-based pagination for large datasets as it avoids the "offset drift" problem
-- The `ServiceOperationExecutor` wraps the operation in a standardized error handling and logging framework
+- The service is annotated with `@Transactional(readOnly = true)`, ensuring no database modifications occur
+- The class is declared as `non-sealed`, allowing for future extension if needed
+- Cursor encoding uses the game's `startTime` and `id` to ensure stable ordering even if records are inserted or deleted between pages

@@ -6,42 +6,44 @@ sidebar_label: JoinabilityReason
 
 # JoinabilityReason Enum
 
-The `JoinabilityReason` enum defines the possible reasons why a user may be unable to join a game session. It provides a standardized set of failure reasons that can be returned by game join validation logic, enabling consistent error handling and user feedback across the application.
+The `JoinabilityReason` enum defines the possible reasons why a user may be unable to join a game session. It is used throughout the game matching system to provide clear, descriptive feedback when a join attempt fails.
 
-## Package Location
+## Purpose
 
-`com.upmatches.app.features.game.enums`
+This enum serves as a standardized set of error codes for game join validation. Instead of using arbitrary strings or boolean flags, the system uses these typed constants to communicate specific failure reasons to both the UI layer and the API responses. This approach ensures consistency across the application and makes error handling more predictable.
 
-## Enum Values
+## Enum Constants
 
-| Enum Constant | Description |
-|---|---|
-| `ALREADY_JOINED` | The user is already a participant in the game and cannot join again. |
-| `NOT_JOINABLE` | The game is not currently accepting new players (e.g., it has already started or is in a non-joinable state). |
-| `PRIVATE_ACCESS_DENIED` | The game is private and the user does not have the required permissions or invitation to join. |
-| `GAME_FULL` | The game has reached its maximum player capacity and cannot accommodate additional players. |
-| `OVERLAPPING` | The user has a scheduling conflict or is already participating in another game that overlaps with this game's time slot. |
+| Constant | Description |
+|----------|-------------|
+| `ALREADY_JOINED` | The user is already a participant in this game session |
+| `NOT_JOINABLE` | The game is not currently accepting new players (e.g., game has started or is cancelled) |
+| `PRIVATE_ACCESS_DENIED` | The game is private and the user does not have permission to join |
+| `GAME_FULL` | The game has reached its maximum player capacity |
+| `OVERLAPPING` | The user has a scheduling conflict with another game or event |
 
-## Usage
-
-This enum is typically used as a return type from game join validation methods or as a field in response objects to indicate why a join attempt failed.
-
-### Example
+## Usage Example
 
 ```java
-public JoinabilityReason canJoinGame(User user, Game game) {
-    if (game.isFull()) {
-        return JoinabilityReason.GAME_FULL;
+public class GameJoinService {
+    
+    public JoinResult attemptJoin(User user, Game game) {
+        if (game.isFull()) {
+            return new JoinResult(false, JoinabilityReason.GAME_FULL);
+        }
+        if (game.isPrivate() && !game.hasAccess(user)) {
+            return new JoinResult(false, JoinabilityReason.PRIVATE_ACCESS_DENIED);
+        }
+        // ... additional validation logic
+        return new JoinResult(true, null);
     }
-    if (game.isPrivate() && !game.hasAccess(user)) {
-        return JoinabilityReason.PRIVATE_ACCESS_DENIED;
-    }
-    // Additional validation logic...
-    return null; // or throw an exception if not joinable
 }
 ```
 
 ## Related Components
 
-- **GameService**: Service layer that uses this enum to determine join eligibility.
-- **JoinGameResponse**: DTO that may include a `JoinabilityReason` field to communicate failure reasons to the client.
+This enum is typically used in conjunction with:
+- Game join validation services
+- REST API response objects
+- UI error message mapping
+- Game session management logic

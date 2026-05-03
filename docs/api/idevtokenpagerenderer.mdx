@@ -1,52 +1,65 @@
 ---
 id: idevtokenpagerenderer
-title: IDevTokenPageRenderer Interface
+title: IDevTokenPageRenderer
 sidebar_label: IDevTokenPageRenderer
 ---
 
-# IDevTokenPageRenderer Interface
+# IDevTokenPageRenderer
 
-## Purpose
+The `IDevTokenPageRenderer` interface defines a contract for rendering a developer token page in the authentication flow. It provides methods to check if the renderer is enabled for a given request and to generate an HTML response containing authentication tokens.
 
-The `IDevTokenPageRenderer` interface defines a contract for rendering developer token pages in the authentication flow. It provides methods to check if the token page rendering is enabled for a given request and to generate HTML responses containing access and refresh tokens. This interface is part of the authentication services layer and is designed to be implemented by `DevTokenPageRenderer`.
+This sealed interface permits only the `DevTokenPageRenderer` class as its implementation, ensuring controlled extensibility within the authentication services package.
 
 ## Interface Definition
 
 ```java
-public sealed interface IDevTokenPageRenderer permits DevTokenPageRenderer
-```
+package com.upmatches.app.features.auth.services;
 
-The interface is declared as `sealed`, meaning only the specified class `DevTokenPageRenderer` is permitted to implement it. This ensures controlled extension and maintains security in the authentication flow.
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
+
+public sealed interface IDevTokenPageRenderer permits DevTokenPageRenderer {
+
+    boolean isEnabledFor(HttpServletRequest request);
+
+    ResponseEntity<String> render(
+        String accessToken,
+        String refreshToken,
+        Long expiresAtUtc,
+        Boolean isNewUser,
+        String mobileRedirectUrl);
+}
+```
 
 ## Methods
 
 ### `isEnabledFor`
 
-Determines whether the developer token page rendering is enabled for the given HTTP request.
+Determines whether the developer token page renderer is enabled for the given HTTP request.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `HttpServletRequest` | The incoming HTTP servlet request to evaluate |
+| `request` | `HttpServletRequest` | The incoming HTTP request to evaluate |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `boolean` | `boolean` | `true` if token page rendering is enabled for this request, `false` otherwise |
+| Returns | Description |
+|---------|-------------|
+| `boolean` | `true` if the renderer is enabled for this request, `false` otherwise |
 
 ### `render`
 
-Generates an HTML response containing authentication tokens for the developer.
+Generates an HTML response containing the authentication tokens and related information.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `accessToken` | `String` | The JWT access token to be displayed |
-| `refreshToken` | `String` | The JWT refresh token to be displayed |
-| `expiresAtUtc` | `Long` | The UTC timestamp (in milliseconds) when the tokens expire |
+| `accessToken` | `String` | The JWT access token to display |
+| `refreshToken` | `String` | The refresh token for obtaining new access tokens |
+| `expiresAtUtc` | `Long` | The expiration timestamp of the access token in UTC milliseconds |
 | `isNewUser` | `Boolean` | Flag indicating whether this is a new user registration |
 | `mobileRedirectUrl` | `String` | The URL to redirect mobile clients after successful authentication |
 
-| Returns | Type | Description |
-|---------|------|-------------|
-| `ResponseEntity<String>` | `ResponseEntity<String>` | HTTP response containing the rendered HTML page with token information |
+| Returns | Description |
+|---------|-------------|
+| `ResponseEntity<String>` | HTTP response containing the rendered HTML page with token information |
 
 ## Usage Example
 
@@ -58,20 +71,14 @@ if (tokenRenderer.isEnabledFor(request)) {
         "dGhpcyBpcyBhIHJlZnJl...",
         1700000000000L,
         false,
-        "com.example.app://callback"
+        "upmatches://auth/callback"
     );
     return response;
 }
 ```
 
-## Dependencies
+## Notes
 
-- `jakarta.servlet.http.HttpServletRequest` - Jakarta Servlet API for HTTP request handling
-- `org.springframework.http.ResponseEntity` - Spring Framework's HTTP response entity wrapper
-
-## Implementation Notes
-
-- The interface uses a sealed class hierarchy to restrict implementation to `DevTokenPageRenderer` only
-- The `render` method returns a `ResponseEntity<String>` to allow full control over HTTP response headers and status codes
-- Token expiration is provided as a UTC timestamp in milliseconds for consistent timezone handling
-- The `mobileRedirectUrl` parameter supports deep linking for mobile applications
+- The interface is sealed, meaning only `DevTokenPageRenderer` can implement it
+- This design pattern ensures that the token rendering logic remains centralized and controlled
+- The `render` method returns a `ResponseEntity<String>` to allow for proper HTTP status codes and headers

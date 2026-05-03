@@ -6,56 +6,52 @@ sidebar_label: SoftDeleteGameService
 
 # SoftDeleteGameService
 
+The `SoftDeleteGameService` class is a Spring service responsible for performing a soft delete operation on a `Game` entity. Instead of permanently removing a game from the database, this service marks the game as deleted, allowing for potential recovery or audit trails. It ensures that only the authorized organizer of the game can perform this action and publishes a notification event upon successful deletion.
+
 ## Purpose
 
-The `SoftDeleteGameService` class is a Spring service responsible for performing a soft delete operation on a `Game` entity. Instead of permanently removing a game from the database, this service marks the game as deleted, cancels it, and publishes a notification event to inform other parts of the system about the deletion.
-
-This class implements the `ISoftDeleteGameService` interface and is annotated with `@Service`, making it a Spring-managed bean. It is declared as `non-sealed`, indicating it is part of a sealed interface hierarchy.
+- **Soft Deletion**: Marks a game as deleted without physically removing it from the database.
+- **Authorization**: Verifies that the authenticated user is the organizer of the game.
+- **Auditing**: Logs the soft delete action using the `@Auditable` annotation.
+- **Notification**: Publishes a `GameNotificationEvent` to notify other parts of the system about the deletion.
 
 ## Dependencies
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `GameRepository` | Repository | Data access layer for `Game` entities |
-| `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's ID |
-| `IGameLookupService` | Service | Provides game lookup functionality |
-| `IGameAuthorizationService` | Service | Handles authorization checks for game operations |
-| `ApplicationEventPublisher` | Spring Event | Publishes application events for notification purposes |
+| Dependency | Description |
+|------------|-------------|
+| `GameRepository` | Repository for persisting game entities. |
+| `IAuthenticatedUserResolver` | Resolves the currently authenticated user's ID. |
+| `IGameLookupService` | Service for looking up games by ID. |
+| `IGameAuthorizationService` | Service for checking if the user is the game organizer. |
+| `ApplicationEventPublisher` | Publishes application events for notification. |
 
 ## Public Methods
 
 ### `execute(UUID id)`
 
-Performs a soft delete operation on a game identified by the given UUID.
+Performs the soft delete operation on the game identified by the given ID.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | `UUID` | The unique identifier of the game to soft delete |
+| `id` | `UUID` | The unique identifier of the game to be soft deleted. |
 
 **Return Type:** `void`
 
 **Behavior:**
 
-1. **Authentication:** Retrieves the currently authenticated user's ID using `userResolver.requireUserId()`.
-2. **Game Lookup:** Finds the game by its ID using `lookupService.findGameOrThrow(id)`. Throws a `ResourceNotFoundException` if the game does not exist.
-3. **Authorization:** Verifies that the authenticated user is the organizer of the game using `authorizationService.assertIsOrganizer(game, userId)`. Throws an authorization exception if the user is not the organizer.
-4. **State Changes:**
-   - Calls `game.cancel()` to cancel the game.
-   - Calls `game.markDeleted()` to mark the game as deleted (soft delete).
-5. **Persistence:** Saves the updated game entity to the database using `ServiceOperationExecutor.execute()` with the `DELETE` operation status.
-6. **Notification:** Publishes a `GameNotificationEvent` with:
-   - The game's ID
-   - The user's ID
-   - `NotificationType.GAME_REMOVED`
-   - The game's activity name (if available)
-
-**Annotations:**
-- `@Transactional`: Ensures the entire operation is executed within a database transaction.
-- `@Auditable`: Records an audit log entry with action `"GAME_SOFT_DELETED"`, resource type `"GAME"`, and the game ID extracted from the method argument.
+1. Retrieves the authenticated user's ID.
+2. Looks up the game by its ID; throws `ResourceNotFoundException` if not found.
+3. Verifies that the authenticated user is the organizer of the game.
+4. Calls `game.cancel()` and `game.markDeleted()` to update the game's state.
+5. Persists the updated game entity using `ServiceOperationExecutor`.
+6. Publishes a `GameNotificationEvent` with the game ID, user ID, notification type `GAME_REMOVED`, and the game's activity name (if available).
 
 **Exceptions:**
-- `ResourceNotFoundException`: Thrown if the game is not found or if the database save operation fails.
-- Authorization exceptions: Thrown if the authenticated user is not the game organizer.
+
+| Exception | Condition |
+|-----------|-----------|
+| `ResourceNotFoundException` | Thrown if the game is not found or if the save operation fails. |
+| `AuthorizationException` | Thrown if the user is not the organizer of the game. |
 
 ## Usage Example
 
@@ -65,12 +61,11 @@ private SoftDeleteGameService softDeleteGameService;
 
 public void deleteGame(UUID gameId) {
     softDeleteGameService.execute(gameId);
-    // Game is now soft-deleted and a notification has been published
 }
 ```
 
 ## Notes
 
-- This service implements a soft delete pattern, meaning the game record remains in the database but is marked as deleted.
-- The service publishes a notification event after successful deletion, allowing other components (e.g., email services, real-time updates) to react to the deletion.
-- The `ServiceOperationExecutor` provides standardized error handling and logging for database operations.
+- The service is annotated with `@Service` and `@Transactional`, ensuring that the operation is executed within a database transaction.
+- The `@Auditable` annotation logs the soft delete action with the resource type `GAME` and the resource ID extracted from the method argument.
+- The `ServiceOperationExecutor` handles the save operation and wraps any exceptions into a `ResourceNotFoundException` if the operation fails.

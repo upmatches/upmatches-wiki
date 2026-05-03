@@ -6,70 +6,52 @@ sidebar_label: IImportVenuesService
 
 # IImportVenuesService
 
-The `IImportVenuesService` is a **sealed interface** that defines the contract for importing venue data from a file. It is part of the venue management feature in the UpMatches application and serves as the abstraction layer for bulk venue import operations.
-
-This interface is sealed, meaning only the explicitly permitted class (`ImportVenuesService`) can implement it. This design ensures controlled extension and enforces a single, well-defined implementation for the import logic.
+The `IImportVenuesService` is a **sealed interface** that defines the contract for importing venue data from a file. It is part of the venue feature module in the `com.upmatches.app` application.
 
 ## Purpose
 
-- **Define a standardized import contract**: Provides a single method for importing venues from a multipart file upload.
-- **Encapsulate import logic**: Separates the import operation from the controller layer, promoting clean architecture and testability.
-- **Enforce implementation constraints**: The sealed keyword restricts implementation to `ImportVenuesService`, preventing unintended or unauthorized implementations.
+This interface establishes a single, standardized method for processing venue import operations. By using a sealed interface, the design ensures that only the permitted implementation (`ImportVenuesService`) can fulfill this contract, providing controlled extensibility and enhanced security.
 
-## Method Summary
+## Interface Definition
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `execute(MultipartFile file)` | `VenueImportResponse` | Processes the uploaded file and imports venue data. Returns a response object containing the result of the import operation. |
+```java
+public sealed interface IImportVenuesService permits ImportVenuesService {
+    VenueImportResponse execute(MultipartFile file);
+}
+```
 
-## Method Details
+## Methods
 
-### `execute(MultipartFile file)`
+### `execute`
 
-Processes the provided multipart file to import venue data into the system.
-
-**Parameters:**
+Processes an uploaded file containing venue data and returns the result of the import operation.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `file` | `MultipartFile` | The uploaded file containing venue data to be imported. Expected formats (e.g., CSV, Excel) are determined by the implementing class. |
+| `file` | `MultipartFile` | The uploaded file containing venue data to be imported. |
 
-**Returns:**
-
-| Type | Description |
-|------|-------------|
-| `VenueImportResponse` | An object containing the results of the import operation, such as the number of venues successfully imported, any errors encountered, or other relevant metadata. |
-
-**Throws:**
-
-| Exception | Condition |
-|-----------|-----------|
-| `IllegalArgumentException` | If the provided file is null or empty. |
-| `ImportException` (or similar runtime exception) | If the file cannot be parsed or the import process fails. |
+| Returns | Description |
+|---------|-------------|
+| `VenueImportResponse` | An object containing the results of the import operation (e.g., success count, failure count, error messages). |
 
 ## Usage Example
 
 ```java
-// Inject the service
 @Autowired
 private IImportVenuesService importVenuesService;
 
-// In a controller method
-@PostMapping("/venues/import")
-public ResponseEntity<VenueImportResponse> importVenues(@RequestParam("file") MultipartFile file) {
+public void handleVenueImport(MultipartFile file) {
     VenueImportResponse response = importVenuesService.execute(file);
-    return ResponseEntity.ok(response);
+    // Process the response
 }
 ```
 
-## Implementation Notes
+## Implementation Details
 
-- The interface is sealed to `ImportVenuesService` only, ensuring a single implementation.
-- The `MultipartFile` parameter allows flexible file uploads from HTTP requests.
-- The `VenueImportResponse` should be designed to provide clear feedback on the import operation's success or failure.
+The sole permitted implementation of this interface is `ImportVenuesService`. This class must provide the concrete logic for parsing the uploaded file, validating venue data, and persisting valid venues to the database.
 
 ## Related Components
 
-- **`ImportVenuesService`**: The sole permitted implementation of this interface.
-- **`VenueImportResponse`**: The response DTO that encapsulates the import results.
+- **`VenueImportResponse`**: The response object returned by the `execute` method.
+- **`ImportVenuesService`**: The concrete implementation class that fulfills this interface contract.
 - **`MultipartFile`**: Spring's standard interface for handling file uploads.

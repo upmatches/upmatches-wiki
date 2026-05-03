@@ -6,34 +6,29 @@ sidebar_label: GameType
 
 # GameType Enum
 
-The `GameType` enum defines the possible game modes for a match in the UpMatches application. It is used to distinguish between singles and doubles matches, which affects player count, scoring rules, and match logic.
+The `GameType` enum defines the possible types of games within the application. It is used to distinguish between single-player and double-player (or team-based) game modes.
 
-## Location
+## Package
 
-- **Package:** `com.upmatches.app.features.game.enums`
-- **File:** `GameType.java`
+`com.upmatches.app.features.game.enums`
 
-## Values
+## Enum Values
 
-| Constant | Description |
-|----------|-------------|
-| `SINGLE` | A match played between two individual players (1 vs 1). |
-| `DOUBLE` | A match played between two teams of two players each (2 vs 2). |
+| Value    | Description                                                                 |
+|----------|-----------------------------------------------------------------------------|
+| `SINGLE` | Represents a single-player game mode, where one participant competes alone. |
+| `DOUBLE` | Represents a double-player (or team) game mode, where two participants compete together. |
 
 ## Usage
 
-This enum is typically used in match creation, game logic, and UI components to determine the appropriate configuration for a match. For example:
+This enum is typically used in game-related classes to specify the type of match or game session. For example, it can be used as a field in a `Game` entity or as a parameter in service methods to determine game logic or scoring rules.
 
-- **Player count validation:** Ensure the correct number of players are assigned.
-- **Scoring rules:** Apply different scoring logic for singles vs. doubles.
-- **Display:** Show the correct match type label in the user interface.
-
-## Example
+### Example
 
 ```java
 GameType type = GameType.SINGLE;
 
 if (type == GameType.DOUBLE) {
-    // Handle doubles match logic
+    // Handle double player logic
 }
 ```

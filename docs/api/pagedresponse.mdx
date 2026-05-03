@@ -4,89 +4,133 @@ title: PagedResponse
 sidebar_label: PagedResponse
 ---
 
-# PagedResponse\<T\>
+# PagedResponse
 
-A generic paginated response wrapper designed for REST API responses. It encapsulates a list of items for the current page along with comprehensive pagination metadata. The class is built as a Java `record`, providing a concise and immutable data carrier.
+A generic paginated response wrapper designed for REST API responses. This record provides a standardized way to return paginated data along with comprehensive pagination metadata, making it easy for clients to navigate through large datasets.
 
 ## Purpose
 
-The primary goal of `PagedResponse` is to standardize paginated API responses across the application. By wrapping Spring Data `Page` objects, it ensures that all endpoints return a consistent JSON structure containing both the data and pagination details. This simplifies client-side handling and improves API discoverability.
+The `PagedResponse` class serves as a universal response format for any paginated API endpoint. It wraps a list of items (the current page's content) together with detailed pagination information, ensuring consistent pagination handling across the entire application.
 
-## Features
+Key features:
+- Generic type support for flexible content types
+- Automatic mapping of domain entities to DTOs
+- Comprehensive pagination metadata
+- JSON serialization with `@JsonInclude(NON_NULL)` to omit null fields
+- OpenAPI/Swagger documentation annotations
 
-- **Generic Type Support**: Works with any data type `T`.
-- **Mapping Capability**: Provides a static factory method to transform page content from one type to another using a `Function`.
-- **JSON Serialization Control**: Uses `@JsonInclude(JsonInclude.Include.NON_NULL)` to omit null fields from the JSON output.
-- **OpenAPI Documentation**: Annotated with `@Schema` for clear API documentation generation.
+## Constructor
 
-## Public Methods
+### `PagedResponse(List<T> content, PageInfo page)`
+
+Creates a new paginated response with the given content and page information.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `content` | `List<T>` | The list of items for the current page |
+| `page` | `PageInfo` | Pagination metadata |
+
+## Factory Methods
 
 ### `of(Page<T> page)`
 
 Creates a `PagedResponse` directly from a Spring Data `Page` object.
 
+```java
+public static <T> PagedResponse<T> of(final Page<T> page)
+```
+
+**Parameters:**
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `page` | `Page<T>` | The Spring Data page containing items and pagination metadata. |
+| `page` | `Page<T>` | A Spring Data Page containing the items and pagination info |
 
-**Returns**: `PagedResponse<T>` - A new paginated response with the original content type.
+**Returns:** `PagedResponse<T>` - A paginated response with the same content type as the input page.
+
+**Example:**
+```java
+Page<User> userPage = userRepository.findAll(pageable);
+return PagedResponse.of(userPage);
+```
 
 ### `of(Page<T> page, Function<T, R> mapper)`
 
-Creates a `PagedResponse` from a Spring Data `Page` object, transforming each item using the provided mapper function.
+Creates a `PagedResponse` with transformed content using a mapping function. This is useful when you need to convert domain entities to DTOs or other response objects.
+
+```java
+public static <T, R> PagedResponse<R> of(final Page<T> page, final Function<T, R> mapper)
+```
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `page` | `Page<T>` | The Spring Data page containing items of type `T`. |
-| `mapper` | `Function<T, R>` | A function to convert each item from type `T` to type `R`. |
+| `page` | `Page<T>` | A Spring Data Page containing the source items |
+| `mapper` | `Function<T, R>` | A function to transform each item from type `T` to type `R` |
 
-**Returns**: `PagedResponse<R>` - A new paginated response with the mapped content type `R`.
+**Returns:** `PagedResponse<R>` - A paginated response with the mapped content type.
 
-## Inner Record: `PageInfo`
-
-A nested record that holds all pagination metadata.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `number` | `Integer` | Current page number (zero-based). |
-| `size` | `Integer` | Number of items per page. |
-| `totalElements` | `Long` | Total number of items across all pages. |
-| `totalPages` | `Integer` | Total number of pages. |
-| `first` | `Boolean` | Whether this is the first page. |
-| `last` | `Boolean` | Whether this is the last page. |
-| `hasNext` | `Boolean` | Whether there is a next page. |
-| `hasPrevious` | `Boolean` | Whether there is a previous page. |
-
-## Usage Examples
-
-### Basic Usage
-
+**Example:**
 ```java
-// Assume you have a Page<User> from a repository
 Page<User> userPage = userRepository.findAll(pageable);
-PagedResponse<User> response = PagedResponse.of(userPage);
+return PagedResponse.of(userPage, user -> new UserDTO(user.getId(), user.getName()));
 ```
 
-### With Mapping
+## Inner Record: PageInfo
+
+The `PageInfo` record encapsulates all pagination metadata returned to the client.
+
+### Fields
+
+| Field | Type | Description | Example |
+|-------|------|-------------|---------|
+| `number` | `Integer` | Current page number (zero-based) | `0` |
+| `size` | `Integer` | Number of items per page | `20` |
+| `totalElements` | `Long` | Total number of items across all pages | `100` |
+| `totalPages` | `Integer` | Total number of pages | `5` |
+| `first` | `Boolean` | Whether this is the first page | `true` |
+| `last` | `Boolean` | Whether this is the last page | `false` |
+| `hasNext` | `Boolean` | Whether there is a next page | `true` |
+| `hasPrevious` | `Boolean` | Whether there is a previous page | `false` |
+
+## Usage Example
 
 ```java
-// Convert User entities to UserDTOs
-Page<User> userPage = userRepository.findAll(pageable);
-PagedResponse<UserDTO> response = PagedResponse.of(userPage, user -> new UserDTO(user.getId(), user.getName()));
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    @GetMapping
+    public ResponseEntity<PagedResponse<UserDTO>> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> userPage = userRepository.findAll(pageable);
+        
+        PagedResponse<UserDTO> response = PagedResponse.of(userPage, 
+            user -> new UserDTO(user.getId(), user.getName(), user.getEmail()));
+        
+        return ResponseEntity.ok(response);
+    }
+}
 ```
 
-## JSON Output Example
+## JSON Response Example
 
 ```json
 {
   "content": [
     {
       "id": 1,
-      "name": "John Doe"
+      "name": "John Doe",
+      "email": "john@example.com"
     },
     {
       "id": 2,
-      "name": "Jane Smith"
+      "name": "Jane Smith",
+      "email": "jane@example.com"
     }
   ],
   "page": {

@@ -4,31 +4,37 @@ title: AuditOutcome Enum
 sidebar_label: AuditOutcome
 ---
 
-# AuditOutcome
+# AuditOutcome Enum
 
-The `AuditOutcome` enum is part of the `com.upmatches.app.features.audit.enums` package. It defines the possible outcomes for an audit event within the application. This enum is used to standardize and represent the result of an auditable action, such as a login attempt, data modification, or access control check.
+The `AuditOutcome` enum is part of the `com.upmatches.app.features.audit.enums` package. It defines the possible outcomes for audit events within the application, providing a standardized way to represent the result of an audited operation.
 
 ## Purpose
 
-The primary purpose of `AuditOutcome` is to provide a clear, type-safe set of constants that describe the result of an audit event. By using an enum, the application ensures that only valid outcomes are recorded, reducing errors and improving code readability.
+This enum is used to categorize the result of an audit log entry. It helps in tracking and analyzing the success or failure of operations, as well as cases where access was explicitly denied. By using a dedicated enum, the application ensures type safety and consistency when recording audit outcomes.
 
 ## Enum Constants
 
 | Constant  | Description                                                                 |
 |-----------|-----------------------------------------------------------------------------|
-| `SUCCESS` | Indicates that the audited action completed successfully.                   |
-| `FAILURE` | Indicates that the audited action failed due to an error or invalid input.  |
-| `DENIED`  | Indicates that the audited action was denied, typically due to permissions. |
+| `SUCCESS` | Indicates that the audited operation completed successfully.                |
+| `FAILURE` | Indicates that the audited operation failed due to an error or exception.   |
+| `DENIED`  | Indicates that the audited operation was denied, typically due to authorization or permission issues. |
 
-## Usage
-
-This enum is typically used in audit logging components, where each auditable event is recorded with its outcome. For example:
+## Usage Example
 
 ```java
-AuditOutcome outcome = AuditOutcome.SUCCESS;
+import com.upmatches.app.features.audit.enums.AuditOutcome;
+
+public class AuditService {
+    public void logAuditEvent(String action, AuditOutcome outcome) {
+        // Record the audit event with the given outcome
+        System.out.println("Action: " + action + ", Outcome: " + outcome);
+    }
+}
 ```
 
-## See Also
+## Related Components
 
-- AuditEvent class (if applicable)
-- AuditService interface (if applicable)
+- **Audit Log Service**: Typically uses this enum when creating audit log entries.
+- **Security Filters**: May set the outcome to `DENIED` when access is rejected.
+- **Error Handlers**: May set the outcome to `FAILURE` when an operation throws an exception.

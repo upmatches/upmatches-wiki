@@ -10,24 +10,52 @@ The `AuditCategory` enum defines the categories of audit events within the appli
 
 ## Purpose
 
-This enum provides a standardized set of categories for audit logging, enabling consistent classification of security-relevant events. Each constant represents a distinct category of operations that may be audited for compliance, security monitoring, or debugging purposes.
+This enum provides a standardized set of categories for audit logging, enabling consistent classification of security-relevant events. Each constant represents a distinct category of auditable action:
+
+- **WRITE**: Data modification operations (create, update, delete)
+- **AUTH**: Authentication events (login, logout, password changes)
+- **AUTHZ**: Authorization events (access control decisions, permission checks)
+- **SENSITIVE_READ**: Read operations on sensitive or protected data
 
 ## Enum Constants
 
 | Constant | Description |
 |----------|-------------|
-| `WRITE` | Represents data write operations (e.g., create, update, delete). |
-| `AUTH` | Represents authentication events (e.g., login, logout, token refresh). |
-| `AUTHZ` | Represents authorization events (e.g., access granted, access denied). |
-| `SENSITIVE_READ` | Represents read operations on sensitive data (e.g., PII, financial records). |
+| `WRITE` | Represents data write operations such as creating, updating, or deleting records. |
+| `AUTH` | Represents authentication-related events including user login, logout, and credential changes. |
+| `AUTHZ` | Represents authorization events such as access control checks and permission evaluations. |
+| `SENSITIVE_READ` | Represents read operations on sensitive data that require special audit tracking. |
 
-## Usage
-
-This enum is typically used in conjunction with an audit logging framework to tag log entries with their corresponding category. Example usage:
+## Usage Example
 
 ```java
+// Using AuditCategory to classify an audit event
 AuditCategory category = AuditCategory.WRITE;
+
+// Switch on category for different handling
+switch (category) {
+    case WRITE:
+        // Handle write audit event
+        break;
+    case AUTH:
+        // Handle authentication audit event
+        break;
+    case AUTHZ:
+        // Handle authorization audit event
+        break;
+    case SENSITIVE_READ:
+        // Handle sensitive read audit event
+        break;
+}
 ```
+
+## Related Components
+
+This enum is typically used in conjunction with:
+
+- Audit logging services that record events with their category
+- Audit event filters that allow querying by category
+- Audit report generators that group events by category
 
 ## Package
 

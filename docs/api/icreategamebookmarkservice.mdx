@@ -1,47 +1,51 @@
 ---
 id: icreate-game-bookmark-service
-title: ICreateGameBookmarkService Interface
+title: ICreateGameBookmarkService
 sidebar_label: ICreateGameBookmarkService
 ---
 
 # ICreateGameBookmarkService
 
-The `ICreateGameBookmarkService` interface defines the contract for creating a game bookmark within the application. It is a sealed interface, meaning only the explicitly permitted class (`CreateGameBookmarkService`) can implement it. This design enforces a controlled hierarchy and ensures that the bookmark creation logic is centralized and consistent.
-
 ## Purpose
 
-The primary purpose of this interface is to abstract the operation of bookmarking a game. By defining a single `execute` method, it provides a clear and testable entry point for the bookmark creation use case. The sealed nature of the interface restricts implementation to a single concrete service, promoting encapsulation and reducing the risk of unintended implementations.
+The `ICreateGameBookmarkService` interface defines the contract for creating a game bookmark within the application. It is a sealed interface, meaning only the explicitly permitted class (`CreateGameBookmarkService`) can implement it. This design enforces a controlled implementation hierarchy and ensures that the bookmark creation logic is centralized and consistent.
 
-## Method Summary
+## Interface Definition
+
+```java
+public sealed interface ICreateGameBookmarkService permits CreateGameBookmarkService {
+    GameBookmarkResponse execute(UUID gameId);
+}
+```
+
+## Methods
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
-| `execute` | `GameBookmarkResponse` | `UUID gameId` | Creates a bookmark for the game identified by the given `gameId`. Returns a `GameBookmarkResponse` containing the result of the operation. |
+| `execute` | `GameBookmarkResponse` | `UUID gameId` | Creates a bookmark for the specified game and returns the response containing bookmark details. |
 
 ## Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `gameId` | `UUID` | The unique identifier of the game to be bookmarked. Must not be null. |
+- **gameId** (`UUID`): The unique identifier of the game to be bookmarked. This is a required parameter and must not be null.
 
-## Return Type
+## Return Value
 
-- **`GameBookmarkResponse`**: An object representing the outcome of the bookmark creation. The exact structure of this response is defined in the `GameBookmarkResponse` class.
+The method returns a `GameBookmarkResponse` object, which contains the details of the newly created bookmark. The exact structure of this response is defined in the `GameBookmarkResponse` class.
 
 ## Usage Example
 
 ```java
-// Assuming the service is injected or instantiated appropriately
+// Assuming you have an instance of CreateGameBookmarkService
 ICreateGameBookmarkService bookmarkService = new CreateGameBookmarkService();
+
+// Create a bookmark for a specific game
 UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 GameBookmarkResponse response = bookmarkService.execute(gameId);
 ```
 
-## Implementation Details
+## Implementation Notes
 
-The only permitted implementation of this interface is `CreateGameBookmarkService`. This class must provide the concrete logic for persisting the bookmark, handling any business rules (e.g., duplicate bookmarks, user authentication), and returning the appropriate response.
-
-## Related Components
-
-- **`CreateGameBookmarkService`**: The sole concrete implementation of this interface.
-- **`GameBookmarkResponse`**: The response object returned by the `execute` method.
+- The interface is sealed, so only `CreateGameBookmarkService` can implement it.
+- The `execute` method is the single entry point for creating a game bookmark.
+- The `gameId` parameter should correspond to an existing game in the system.
+- The implementation should handle validation, persistence, and response generation.

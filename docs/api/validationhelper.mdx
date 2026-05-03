@@ -6,13 +6,14 @@ sidebar_label: ValidationHelper
 
 # ValidationHelper
 
-The `ValidationHelper` class is a **final utility class** that provides static methods for validating common input parameters in API endpoints, specifically for pagination and sorting operations. It is designed to be used across the application to ensure consistent validation logic and reduce code duplication.
+The `ValidationHelper` class is a **final utility class** that provides static methods for validating common input parameters in REST API endpoints, specifically for pagination and sorting operations. It is designed to be used across the application to ensure consistent validation logic and reduce code duplication.
 
 ## Class Overview
 
 - **Package:** `com.upmatches.app.shared.helpers`
-- **Modifiers:** `public final`
-- **Constructor:** Private to prevent instantiation (throws `IllegalStateException`)
+- **Type:** `public final class`
+- **Constructor:** Private (prevents instantiation, throws `IllegalStateException`)
+- **Purpose:** Centralizes validation logic for pagination and sorting parameters
 
 ## Constants
 
@@ -26,51 +27,55 @@ The `ValidationHelper` class is a **final utility class** that provides static m
 
 Validates both page index and page size for offset-based pagination.
 
-| Parameter | Type | Description | Validation Rules |
-|-----------|------|-------------|------------------|
+| Parameter | Type | Description | Constraints |
+|-----------|------|-------------|-------------|
 | `page` | `int` | The page index (zero-based) | Must be >= 0 |
 | `size` | `int` | The number of items per page | Must be > 0 and <= 1000 |
 
 **Throws:**
-- `IllegalArgumentException` if `page` is negative
-- `IllegalArgumentException` if `size` is <= 0 or > 1000
+- `IllegalArgumentException` if `page < 0`
+- `IllegalArgumentException` if `size <= 0` or `size > 1000`
 
 **Example:**
 ```java
-ValidationHelper.validatePaginationParameters(0, 50);  // Valid
-ValidationHelper.validatePaginationParameters(-1, 50); // Throws IllegalArgumentException
-ValidationHelper.validatePaginationParameters(0, 0);   // Throws IllegalArgumentException
-```
+// Valid
+ValidationHelper.validatePaginationParameters(0, 20);
 
----
+// Throws IllegalArgumentException
+ValidationHelper.validatePaginationParameters(-1, 20);
+ValidationHelper.validatePaginationParameters(0, 0);
+ValidationHelper.validatePaginationParameters(0, 1001);
+```
 
 ### `validateCursorPaginationParameters(int size)`
 
-Validates the page size for cursor-based pagination (no page index validation needed).
+Validates the page size for cursor-based pagination (no page index required).
 
-| Parameter | Type | Description | Validation Rules |
-|-----------|------|-------------|------------------|
+| Parameter | Type | Description | Constraints |
+|-----------|------|-------------|-------------|
 | `size` | `int` | The number of items per page | Must be > 0 and <= 1000 |
 
 **Throws:**
-- `IllegalArgumentException` if `size` is <= 0 or > 1000
+- `IllegalArgumentException` if `size <= 0` or `size > 1000`
 
 **Example:**
 ```java
-ValidationHelper.validateCursorPaginationParameters(100);  // Valid
-ValidationHelper.validateCursorPaginationParameters(2000); // Throws IllegalArgumentException
-```
+// Valid
+ValidationHelper.validateCursorPaginationParameters(50);
 
----
+// Throws IllegalArgumentException
+ValidationHelper.validateCursorPaginationParameters(0);
+ValidationHelper.validateCursorPaginationParameters(1001);
+```
 
 ### `validateSortBy(String sortBy, String... allowedFields)`
 
 Validates that the `sortBy` parameter matches one of the allowed field names.
 
-| Parameter | Type | Description | Validation Rules |
-|-----------|------|-------------|------------------|
-| `sortBy` | `String` | The field name to sort by | Must not be null or empty |
-| `allowedFields` | `String...` | Varargs of allowed field names | At least one field must match |
+| Parameter | Type | Description | Constraints |
+|-----------|------|-------------|-------------|
+| `sortBy` | `String` | The field name to sort by | Cannot be null or empty |
+| `allowedFields` | `String...` | Varargs of valid field names | At least one field must be provided |
 
 **Throws:**
 - `IllegalArgumentException` if `sortBy` is null or empty
@@ -78,21 +83,28 @@ Validates that the `sortBy` parameter matches one of the allowed field names.
 
 **Example:**
 ```java
-ValidationHelper.validateSortBy("name", "name", "email", "createdAt");  // Valid
-ValidationHelper.validateSortBy("invalid", "name", "email");            // Throws IllegalArgumentException
-ValidationHelper.validateSortBy(null, "name");                          // Throws IllegalArgumentException
+// Valid
+ValidationHelper.validateSortBy("name", "name", "email", "createdAt");
+
+// Throws IllegalArgumentException
+ValidationHelper.validateSortBy(null, "name", "email");
+ValidationHelper.validateSortBy("", "name", "email");
+ValidationHelper.validateSortBy("invalidField", "name", "email");
 ```
 
 ## Usage Notes
 
-1. **Utility Class Pattern:** The class follows the standard Java utility class pattern with a private constructor and static methods.
-2. **Thread Safety:** All methods are stateless and thread-safe.
-3. **Error Messages:** Exception messages are descriptive and include the specific validation failure reason.
-4. **Performance:** The `validateSortBy` method performs a linear search through the allowed fields array, which is acceptable for typical use cases with a small number of allowed fields.
+1. **Utility Class Pattern:** The class follows the standard Java utility class pattern with a private constructor that throws an exception, preventing both instantiation and subclassing.
+
+2. **Thread Safety:** All methods are stateless and thread-safe, making them suitable for concurrent use.
+
+3. **Error Messages:** Exception messages are descriptive and include the specific constraint violation, making debugging easier.
+
+4. **Performance:** The `validateSortBy` method performs a linear search through the allowed fields array. For large arrays, consider using a `Set` for O(1) lookup performance.
 
 ## Best Practices
 
-- Call these validation methods at the beginning of your API endpoint handlers before processing any business logic.
-- Use `validatePaginationParameters` for offset-based pagination (e.g., page/size parameters).
-- Use `validateCursorPaginationParameters` for cursor-based pagination (e.g., after/before cursors with size).
-- Always define the allowed sort fields explicitly when calling `validateSortBy` to prevent SQL injection or unexpected behavior.
+- Always call validation methods at the beginning of your API endpoint handlers
+- Use `validatePaginationParameters` for offset-based pagination (e.g., page number + size)
+- Use `validateCursorPaginationParameters` for cursor-based pagination (e.g., last seen ID + size)
+- Provide meaningful error messages to API consumers by catching `IllegalArgumentException` and returning appropriate HTTP responses (e.g., 400 Bad Request)

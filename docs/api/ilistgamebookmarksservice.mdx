@@ -6,15 +6,17 @@ sidebar_label: IListGameBookmarksService
 
 # IListGameBookmarksService
 
-The `IListGameBookmarksService` interface defines the contract for retrieving a paginated list of game bookmarks. It uses a cursor-based pagination strategy to efficiently fetch bookmarks in a scalable manner, avoiding the performance pitfalls of traditional offset-based pagination.
+The `IListGameBookmarksService` interface defines the contract for retrieving a paginated list of game bookmarks. It uses a cursor-based pagination strategy to efficiently fetch bookmarks in a scalable manner, particularly useful for infinite scroll or "load more" UI patterns.
 
-This interface is declared as a **sealed interface**, meaning only the permitted class `ListGameBookmarksService` can implement it. This design enforces a controlled hierarchy and ensures that all implementations adhere to the same pagination contract.
+This is a **sealed interface**, meaning only the explicitly permitted class (`ListGameBookmarksService`) can implement it. This design enforces a controlled hierarchy and ensures that all implementations adhere to the same pagination contract.
 
 ## Interface Definition
 
 ```java
 public sealed interface IListGameBookmarksService permits ListGameBookmarksService {
+
     CursorPagedResponse<GameBookmarkResponse> execute(String cursor, int size);
+
 }
 ```
 
@@ -24,57 +26,33 @@ public sealed interface IListGameBookmarksService permits ListGameBookmarksServi
 |--------|-------------|-------------|
 | `execute(String cursor, int size)` | `CursorPagedResponse<GameBookmarkResponse>` | Retrieves a cursor-based paginated list of game bookmarks. |
 
-## Method Details
-
-### `execute`
-
-```java
-CursorPagedResponse<GameBookmarkResponse> execute(String cursor, int size)
-```
-
-Executes the query to fetch a page of game bookmarks based on the provided cursor and page size.
-
-**Parameters:**
+## Parameters
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `cursor` | `String` | The cursor indicating the starting point for the next page of results. Pass `null` or an empty string to retrieve the first page. |
 | `size` | `int` | The maximum number of bookmarks to return in a single page. Must be a positive integer. |
 
-**Returns:**
+## Return Type
 
-| Type | Description |
-|------|-------------|
-| `CursorPagedResponse<GameBookmarkResponse>` | A paginated response containing the list of game bookmarks and the cursor for the next page. |
+The method returns a `CursorPagedResponse<GameBookmarkResponse>` object, which encapsulates:
 
-**Throws:**
-
-| Exception | Condition |
-|-----------|-----------|
-| `IllegalArgumentException` | If `size` is less than or equal to zero. |
+- A list of `GameBookmarkResponse` objects representing the bookmarks for the current page.
+- A cursor string to be used in subsequent requests to fetch the next page.
+- Additional metadata such as whether there are more results available.
 
 ## Usage Example
 
 ```java
-// Inject the service (e.g., via Spring)
-@Autowired
-private IListGameBookmarksService listGameBookmarksService;
+// First page request
+CursorPagedResponse<GameBookmarkResponse> firstPage = service.execute(null, 20);
 
-// Fetch the first page of 20 bookmarks
-CursorPagedResponse<GameBookmarkResponse> firstPage = listGameBookmarksService.execute(null, 20);
-
-// Process results
-List<GameBookmarkResponse> bookmarks = firstPage.getContent();
-String nextCursor = firstPage.getNextCursor();
-
-// Fetch the next page using the cursor
-if (nextCursor != null) {
-    CursorPagedResponse<GameBookmarkResponse> nextPage = listGameBookmarksService.execute(nextCursor, 20);
-}
+// Subsequent page request using the cursor from the previous response
+CursorPagedResponse<GameBookmarkResponse> nextPage = service.execute(firstPage.getNextCursor(), 20);
 ```
 
-## Related Types
+## Implementation Notes
 
-- `CursorPagedResponse<T>` - Generic wrapper for cursor-based paginated responses.
-- `GameBookmarkResponse` - Data transfer object representing a single game bookmark.
-- `ListGameBookmarksService` - The sole permitted implementation of this interface.
+- The sealed interface pattern ensures that only `ListGameBookmarkService` can implement this contract, providing compile-time safety and clear documentation of the implementation hierarchy.
+- Cursor-based pagination is preferred over offset-based pagination for large datasets as it provides consistent results even when data is being added or removed.
+- The `size` parameter should be validated to ensure it falls within acceptable bounds (typically between 1 and 100).

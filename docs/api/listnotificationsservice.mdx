@@ -6,11 +6,11 @@ sidebar_label: ListNotificationsService
 
 # ListNotificationsService
 
-The `ListNotificationsService` class is a Spring service component responsible for retrieving a paginated list of notifications for the currently authenticated user. It implements the `IListNotificationsService` interface and provides a read-only transactional operation that fetches notifications ordered by creation date in descending order.
+The `ListNotificationsService` class is a Spring service component responsible for retrieving a paginated list of notifications for the currently authenticated user. It implements the `IListNotificationsService` interface and provides a read-only transactional operation that fetches notifications ordered by creation time in descending order.
 
 ## Purpose
 
-This service encapsulates the logic for fetching user notifications with pagination support. It resolves the authenticated user's identity, queries the notification repository for notifications addressed to that user, and transforms the results into a standardized paginated response format. The service leverages `ServiceOperationExecutor` for consistent error handling and operation status tracking.
+This service encapsulates the logic for fetching user notifications with pagination support. It resolves the authenticated user's identity, queries the notification repository for notifications addressed to that user, and transforms the results into a standardized `PagedResponse` format. The service leverages `ServiceOperationExecutor` for consistent error handling and operation status tracking.
 
 ## Dependencies
 
@@ -19,48 +19,64 @@ This service encapsulates the logic for fetching user notifications with paginat
 | `NotificationRepository` | Repository | Data access layer for notification entities |
 | `IAuthenticatedUserResolver` | Service | Resolves the currently authenticated user's UUID |
 
+## Constructor
+
+### `ListNotificationsService(NotificationRepository notificationRepository, IAuthenticatedUserResolver userResolver)`
+
+Creates a new instance of the service with the required dependencies injected via constructor injection.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `notificationRepository` | `NotificationRepository` | Repository for notification data access |
+| `userResolver` | `IAuthenticatedUserResolver` | Service to resolve the authenticated user |
+
 ## Public Methods
 
 ### `execute(Pageable pageable)`
 
-Retrieves a paginated list of notifications for the authenticated user, ordered by creation date (newest first).
+Retrieves a paginated list of notifications for the authenticated user, ordered by creation date in descending order.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `pageable` | `Pageable` | Spring Data pagination object containing page number, size, and sort parameters |
+| `pageable` | `Pageable` | Pagination and sorting information |
 
 | Returns | Type | Description |
 |---------|------|-------------|
-| Success | `PagedResponse<NotificationResponse>` | A paginated response containing notification data |
-| Failure | Throws `ResourceNotFoundException` | If no notifications are found or an error occurs during retrieval |
+| Success | `PagedResponse<NotificationResponse>` | Paginated response containing notification data |
+| Error | `ResourceNotFoundException` | Thrown when no notifications are found or user cannot be resolved |
 
 **Behavior:**
 1. Resolves the authenticated user's UUID via `userResolver.requireUserId()`
-2. Queries the `notificationRepository` for notifications where `recipientId` matches the user ID, ordered by `createdAt` in descending order
-3. Maps each notification entity to a `NotificationResponse` DTO using the `fromNotification` factory method
+2. Queries the `notificationRepository` for notifications where `recipientId` matches the user ID, ordered by `createdAt` descending
+3. Maps each notification entity to a `NotificationResponse` using the `fromNotification` factory method
 4. Wraps the result in a `PagedResponse` object
-5. Executes the operation through `ServiceOperationExecutor` with `RETRIEVE` status and `ResourceNotFoundException` as the error type
+5. Executes the operation through `ServiceOperationExecutor` with `RETRIEVE` status
 
 **Example usage:**
 ```java
 @Autowired
 private ListNotificationsService listNotificationsService;
 
-// Get first page of 10 notifications
-Pageable pageable = PageRequest.of(0, 10);
-PagedResponse<NotificationResponse> notifications = listNotificationsService.execute(pageable);
+public void displayNotifications() {
+    Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+    PagedResponse<NotificationResponse> response = listNotificationsService.execute(pageable);
+    // Process the paginated response
+}
 ```
 
 ## Transactional Behavior
 
-The method is annotated with `@Transactional(readOnly = true)`, which:
-- Ensures the database operation runs within a read-only transaction context
-- Optimizes performance by allowing the database to use read replicas if configured
-- Prevents any accidental write operations during the query
+The `execute` method is annotated with `@Transactional(readOnly = true)`, indicating that:
+- The operation runs within a read-only transaction context
+- No database modifications are performed
+- Performance is optimized for read operations
 
 ## Error Handling
 
-The service uses `ServiceOperationExecutor.execute()` which provides:
-- Consistent error handling across all service operations
-- Automatic wrapping of exceptions into `ResourceNotFoundException` when retrieval fails
-- Standardized operation status tracking via the `RETRIEVE` enum value
+The service uses `ServiceOperationExecutor.execute()` with:
+- `RETRIEVE` operation status for consistent logging and monitoring
+- `ResourceNotFoundException::new` as the exception supplier for error cases
+
+## Implementation Details
+
+The class is declared as `non-sealed`, implementing the `IListNotificationsService` interface. This design allows for future extension while maintaining the contract defined by the interface. The service follows a clean separation of concerns by delegating user resolution, data access, and response transformation to specialized components.

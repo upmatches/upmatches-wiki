@@ -1,5 +1,5 @@
 ---
-id: iregisterdevicetokenservice
+id: iregister-device-token-service
 title: IRegisterDeviceTokenService Interface
 sidebar_label: IRegisterDeviceTokenService
 ---
@@ -8,9 +8,9 @@ sidebar_label: IRegisterDeviceTokenService
 
 ## Purpose
 
-The `IRegisterDeviceTokenService` interface defines the contract for registering a device token within the notification system of the UpMatches application. It follows a sealed interface pattern to restrict implementation to a single concrete class (`RegisterDeviceTokenService`), ensuring controlled and secure extension of the service layer.
+The `IRegisterDeviceTokenService` interface defines the contract for registering a device token within the notification system of the UpMatches application. It serves as the abstraction layer for persisting or associating a device token with a user or device, enabling push notification delivery.
 
-This interface is part of the notification feature and is responsible for persisting or updating a device token associated with a user's device, enabling push notification delivery.
+This interface is declared as a **sealed interface**, meaning only explicitly permitted classes (in this case, `RegisterDeviceTokenService`) can implement it. This design enforces a controlled hierarchy and ensures that the registration logic is centralized and not extended arbitrarily.
 
 ## Interface Definition
 
@@ -20,49 +20,55 @@ public sealed interface IRegisterDeviceTokenService permits RegisterDeviceTokenS
 }
 ```
 
-### Sealed Interface
-
-The interface is declared as `sealed`, meaning only the explicitly permitted class (`RegisterDeviceTokenService`) can implement it. This design enforces a strict hierarchy and prevents unauthorized implementations, which is beneficial for security-sensitive operations like device token registration.
-
 ## Method Summary
 
 | Method | Description |
 |--------|-------------|
-| `execute(RegisterDeviceTokenRequest request)` | Processes the registration of a device token based on the provided request data. |
+| `void execute(RegisterDeviceTokenRequest request)` | Executes the device token registration process using the provided request data. |
 
 ## Method Details
 
-### `execute(RegisterDeviceTokenRequest request)`
+### `execute`
 
-- **Purpose**: Executes the device token registration logic. The implementation should handle storing or updating the token in the system, associating it with the appropriate user or device.
-- **Parameters**:
-  | Parameter | Type | Description |
-  |-----------|------|-------------|
-  | `request` | `RegisterDeviceTokenRequest` | Contains the necessary data for registering a device token, such as the token string, device identifier, and user context. |
-- **Return Type**: `void` — The method performs an action and does not return a value.
-- **Exceptions**: The interface does not declare any checked exceptions, but implementations may throw runtime exceptions (e.g., `IllegalArgumentException` for invalid request data, or persistence-related exceptions).
+```java
+void execute(RegisterDeviceTokenRequest request)
+```
+
+**Description:**  
+Performs the core operation of registering a device token. The implementation is responsible for handling the request, which typically includes the device token string, user identifier, and possibly platform information (e.g., iOS, Android). The method does not return a value; any success or failure handling is expected to be managed within the implementation or through exceptions.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `request` | `RegisterDeviceTokenRequest` | The request object containing the device token and associated metadata required for registration. |
+
+**Returns:**  
+`void` – This method does not return a value.
+
+**Throws:**  
+The interface does not declare any checked exceptions, but implementations may throw runtime exceptions (e.g., `IllegalArgumentException` for invalid requests, or persistence-related exceptions).
 
 ## Usage Example
 
 ```java
-// Assuming RegisterDeviceTokenService is instantiated via dependency injection
+// Assuming an instance is obtained via dependency injection
 IRegisterDeviceTokenService service = new RegisterDeviceTokenService();
 
+// Create a request with the device token
 RegisterDeviceTokenRequest request = new RegisterDeviceTokenRequest(
-    "device-token-abc123",
+    "fcm-token-abc123",
     "user-456",
-    "iOS"
+    DevicePlatform.ANDROID
 );
 
+// Execute registration
 service.execute(request);
 ```
 
-## Related Components
+## Implementation Notes
 
-- **`RegisterDeviceTokenRequest`**: The data transfer object (DTO) that encapsulates the device token registration details.
-- **`RegisterDeviceTokenService`**: The sole permitted implementation of this interface, containing the actual business logic for token registration.
-
-## Notes
-
-- The sealed interface pattern ensures that only the designated implementation class can fulfill this contract, which is particularly useful in modular or security-critical codebases.
-- Implementations should handle idempotency to avoid duplicate token registrations for the same device.
+- The interface is **sealed**, restricting implementation to `RegisterDeviceTokenService` only.
+- The `RegisterDeviceTokenRequest` class is expected to contain at minimum a device token string and user identifier.
+- Implementations should handle token persistence, deduplication, and any necessary validation.
+- This interface follows the **Command Pattern**, encapsulating the registration operation into a single method.

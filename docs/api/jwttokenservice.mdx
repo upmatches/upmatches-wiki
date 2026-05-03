@@ -6,7 +6,7 @@ sidebar_label: JwtTokenService
 
 # JwtTokenService
 
-The `JwtTokenService` class is a Spring service responsible for generating JWT access tokens and refresh tokens for authentication in the UpMatches application. It implements the `IJwtTokenService` interface and uses Nimbus JOSE + JWT library for JWT creation and signing with ES256 (ECDSA using P-256 and SHA-256) algorithm.
+The `JwtTokenService` class is a Spring service responsible for generating JWT access tokens and refresh tokens for user authentication. It implements the `IJwtTokenService` interface and uses Nimbus JOSE + JWT library for JWT creation and signing with ES256 (ECDSA using P-256 and SHA-256) algorithm.
 
 ## Purpose
 
@@ -14,31 +14,29 @@ This service handles token generation for multiple authentication providers (Sin
 
 ## Dependencies
 
-- **SigningKeyProvider**: Provides the ECDSA signing key and key ID for JWT signing
+- **SigningKeyProvider**: Provides the signing key and key ID for JWT signing
 - **JwtProperties**: Configuration properties for JWT (issuer, audience, token expiry)
 
 ## Public Methods
 
-### `generateAccessToken`
+### generateAccessToken
 
 Generates a signed JWT access token for a user.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `userId` | `UUID` | The unique identifier of the user |
-| `singpassUuid` | `String` | UUID from Singpass authentication (nullable) |
-| `auth0Uuid` | `String` | UUID from Auth0 authentication (nullable) |
-| `appleUuid` | `String` | UUID from Apple authentication (nullable) |
+| `userId` | `UUID` | The user's unique identifier |
+| `singpassUuid` | `String` | Singpass UUID (nullable) |
+| `auth0Uuid` | `String` | Auth0 UUID (nullable) |
+| `appleUuid` | `String` | Apple UUID (nullable) |
 
-**Returns**: `AccessTokenResult` - A record containing:
-- `token` (`String`): The serialized JWT access token
-- `expiresAtUtc` (`Long`): Unix timestamp (seconds) when the token expires
+**Returns**: `AccessTokenResult` - A record containing the serialized JWT token and its expiration timestamp (UTC epoch seconds).
 
 **Throws**:
-- `IllegalArgumentException` if more than one authentication provider UUID is provided
-- `IllegalStateException` if JWT signing fails
+- `IllegalArgumentException` if multiple authentication provider UUIDs are provided
+- `IllegalStateException` if token signing fails
 
-### `generateRefreshToken`
+### generateRefreshToken
 
 Generates a cryptographically secure random refresh token.
 
@@ -46,31 +44,46 @@ Generates a cryptographically secure random refresh token.
 |-----------|------|-------------|
 | None | | |
 
-**Returns**: `String` - A Base64 URL-encoded refresh token (32 random bytes, 43 characters)
+**Returns**: `String` - A Base64 URL-encoded refresh token (32 random bytes, no padding).
 
-## Internal Implementation Details
+## Inner Types
 
-### Token Claims
+### AccessTokenResult
 
-The generated access token includes the following claims:
-- `sub`: User UUID
-- `iss`: Issuer (from `JwtProperties`)
-- `aud`: Audience (from `JwtProperties`)
-- `iat`: Issued at time
-- `nbf`: Not before time
-- `exp`: Expiration time
-- Provider-specific claims (only one of the following):
-  - `singpass_uuid` + `auth_provider: "singpass"`
-  - `auth0_uuid` + `auth_provider: "auth0"`
-  - `apple_uuid` + `auth_provider: "apple"`
+A record that encapsulates the result of access token generation.
 
-### Provider Validation
+| Field | Type | Description |
+|-------|------|-------------|
+| `token` | `String` | The serialized JWT token |
+| `expiresAtUtc` | `Long` | Token expiration time in UTC epoch seconds |
 
-The `applyProviderClaims` method ensures that only one authentication provider UUID is provided. If multiple provider UUIDs are non-null and non-blank, it throws an `IllegalArgumentException`.
+### ProviderClaim (private)
 
-### Token Signing
+An internal record used to manage authentication provider claims.
 
-Tokens are signed using ES256 (ECDSA with P-256 curve) algorithm. The signing key is obtained from the `SigningKeyProvider` and the key ID (`kid`) is included in the JWT header.
+| Field | Type | Description |
+|-------|------|-------------|
+| `uuidClaim` | `String` | The claim name for the provider UUID |
+| `provider` | `String` | The provider identifier |
+| `value` | `String` | The provider UUID value |
+
+## Key Implementation Details
+
+1. **Single Provider Enforcement**: The `applyProviderClaims` method ensures that only one authentication provider UUID is set per token. If multiple providers are detected, it throws an `IllegalArgumentException`.
+
+2. **JWT Claims**: Each generated token includes:
+   - `sub`: User UUID
+   - `iss`: Issuer from configuration
+   - `aud`: Audience from configuration
+   - `iat`: Issued at time
+   - `nbf`: Not before time
+   - `exp`: Expiration time
+   - Provider-specific claim (e.g., `singpass_uuid`, `auth0_uuid`, `apple_uuid`)
+   - `auth_provider`: The authentication provider name
+
+3. **Token Signing**: Uses ES256 (ECDSA with P-256 curve) algorithm with the signing key provided by `SigningKeyProvider`.
+
+4. **Refresh Token Security**: Uses `SecureRandom` to generate cryptographically strong random bytes for refresh tokens.
 
 ## Usage Example
 
@@ -86,23 +99,6 @@ AccessTokenResult result = jwtTokenService.generateAccessToken(
     null
 );
 
-String accessToken = result.token();
-Long expiresAt = result.expiresAtUtc();
-
 // Generate refresh token
 String refreshToken = jwtTokenService.generateRefreshToken();
 ```
-
-## Configuration
-
-The service requires the following configuration via `JwtProperties`:
-- `accessTokenExpiryMinutes`: Token expiration time in minutes
-- `issuer`: JWT issuer claim value
-- `audience`: JWT audience claim value
-
-## Notes
-
-- The service is conditionally loaded with `@ConditionalOnBean(SigningKeyProvider.class)`
-- The class is declared as `non-sealed`, allowing it to be extended if needed
-- Refresh tokens are generated using `SecureRandom` for cryptographic security
-- Token expiry is calculated in seconds from the current time

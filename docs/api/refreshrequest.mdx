@@ -6,11 +6,7 @@ sidebar_label: RefreshRequest
 
 # RefreshRequest
 
-The `RefreshRequest` class is a Java record used to encapsulate the data required for refreshing an authentication token. It ensures that the refresh token is not blank through Jakarta Bean Validation annotations.
-
-## Purpose
-
-This record serves as a Data Transfer Object (DTO) for authentication refresh requests. It contains a single field, `refreshToken`, which must be provided and cannot be blank. The record overrides the default `toString()` method to mask the sensitive token value for security purposes.
+The `RefreshRequest` class is a Java record used for encapsulating the refresh token data sent in authentication refresh requests. It ensures that the refresh token is not blank through Jakarta Bean Validation annotations and provides a secure `toString()` implementation that masks the actual token value for logging and debugging purposes.
 
 ## Record Definition
 
@@ -18,25 +14,48 @@ This record serves as a Data Transfer Object (DTO) for authentication refresh re
 public record RefreshRequest(@NotBlank String refreshToken)
 ```
 
-## Constructor Parameters
-
-| Parameter | Type | Validation | Description |
-|-----------|------|------------|-------------|
-| `refreshToken` | `String` | `@NotBlank` | The refresh token used to obtain a new access token |
+The record has a single component:
+- `refreshToken`: The JWT refresh token string, validated to be non-blank using the `@NotBlank` annotation from Jakarta Bean Validation.
 
 ## Public Methods
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `refreshToken()` | `String` | Returns the refresh token value |
+| `refreshToken()` | `String` | Returns the refresh token value (auto-generated getter from record) |
 | `toString()` | `String` | Returns a masked representation of the request, hiding the actual token value |
 
-## Security Considerations
+## Method Details
 
-The `toString()` method is overridden to prevent accidental exposure of the refresh token in logs or debugging output. The masked string format is:
+### `toString()`
 
+```java
+@Override
+public String toString()
 ```
-RefreshRequest[refreshToken=***]
+
+Returns a masked string representation of the `RefreshRequest` object. The actual refresh token value is replaced with `***` to prevent sensitive data exposure in logs or debugging output.
+
+**Returns:** A string in the format `RefreshRequest[refreshToken=***]`
+
+## Usage Example
+
+```java
+// Creating a refresh request
+RefreshRequest request = new RefreshRequest("eyJhbGciOiJIUzI1NiJ9...");
+
+// Accessing the token
+String token = request.refreshToken();
+
+// Safe logging - token is masked
+System.out.println(request.toString());
+// Output: RefreshRequest[refreshToken=***]
 ```
 
-This ensures that sensitive authentication credentials are not leaked through standard Java string representations.
+## Validation
+
+The `@NotBlank` annotation ensures that:
+- The `refreshToken` cannot be `null`
+- The `refreshToken` cannot be an empty string
+- The `refreshToken` cannot contain only whitespace characters
+
+This validation is enforced when the object is processed by a Jakarta Bean Validation validator, typically in a Spring Boot controller or service layer.

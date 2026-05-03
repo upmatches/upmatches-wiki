@@ -6,12 +6,12 @@ sidebar_label: Health Check Controller
 
 # Health Check Controller
 
-The `HealthCheckController` is a REST controller that provides a simple health check endpoint for the UpMatches application. It is used to verify that the service is running and responsive, which is essential for monitoring, load balancers, and container orchestration platforms (e.g., Kubernetes).
+The `HealthCheckController` is a REST controller that provides a simple health check endpoint for the UpMatches application. It is used to verify that the service is running and responsive, making it useful for monitoring, load balancers, and deployment health checks.
 
 ## Location
 
 - **Package:** `com.upmatches.app.features.health.controllers`
-- **Base URL:** `/api/v1/public/health`
+- **Base Path:** `/api/v1/public/health`
 
 ## Endpoints
 
@@ -23,21 +23,21 @@ Returns a simple health check response indicating that the service is operationa
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `HttpServletRequest` | Injected automatically by Spring. Used to capture the request URI for the response. |
+| `request` | `HttpServletRequest` | The HTTP request object (injected automatically by Spring) |
 
 #### Response
 
 | Status Code | Description |
 |-------------|-------------|
-| `200 OK` | The service is running. |
+| `200 OK` | Service is running |
 
-The response body is an `ApiResponse<String>` with the following structure:
+The response body is an `ApiResponse<String>` object with the following structure:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `status` | `String` | Always `"OK"` |
-| `message` | `String` | Always `"Service is running"` |
-| `data` | `String` | The request URI (e.g., `/api/v1/public/health`) |
+| `status` | `String` | Always returns `"OK"` |
+| `message` | `String` | Always returns `"Service is running"` |
+| `path` | `String` | The request URI path |
 
 #### Example Response
 
@@ -45,7 +45,7 @@ The response body is an `ApiResponse<String>` with the following structure:
 {
   "status": "OK",
   "message": "Service is running",
-  "data": "/api/v1/public/health"
+  "path": "/api/v1/public/health"
 }
 ```
 
@@ -53,18 +53,11 @@ The response body is an `ApiResponse<String>` with the following structure:
 
 This endpoint is typically used by:
 
-- **Monitoring systems** (e.g., Prometheus, Grafana) to check service availability.
-- **Load balancers** (e.g., AWS ELB, Nginx) for health checks.
-- **Container orchestration** (e.g., Kubernetes liveness/readiness probes).
-- **CI/CD pipelines** to verify deployment success.
+- **Load balancers** to determine if the service instance is healthy and should receive traffic
+- **Monitoring systems** to check service availability
+- **CI/CD pipelines** to verify successful deployments
+- **Kubernetes** readiness and liveness probes
 
 ## Implementation Details
 
-The controller uses:
-
-- `@RestController` – Marks the class as a REST controller.
-- `@RequestMapping("/api/v1/public/health")` – Maps all requests to the base path.
-- `@GetMapping` – Handles HTTP GET requests.
-- `ApiResponse.success()` – A static factory method that creates a standardized success response.
-
-The response is wrapped in `ResponseEntity.ok()` to return HTTP 200 with the response body.
+The controller uses the `ApiResponse.success()` static method to construct a standardized response. The `HttpServletRequest` parameter is automatically injected by Spring and used to populate the `path` field in the response, providing context about which endpoint was called.

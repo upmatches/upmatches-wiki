@@ -10,7 +10,7 @@ The `IDeleteActivityService` interface defines the contract for deleting an acti
 
 ## Purpose
 
-The primary purpose of this interface is to abstract the operation of deleting an activity identified by its unique ID. By defining a single method `execute`, it provides a clear and consistent API for performing deletions, allowing the underlying implementation to handle specifics such as database operations, validation, and error handling.
+The primary purpose of this interface is to abstract the operation of deleting an activity identified by its unique ID. By defining a single `execute` method, it provides a clear and consistent API for triggering activity deletion, while the actual implementation details (e.g., database operations, validation, event publishing) are encapsulated within the permitted implementing class.
 
 ## Interface Definition
 
@@ -22,33 +22,27 @@ public sealed interface IDeleteActivityService permits DeleteActivityService {
 
 ## Methods
 
-| Method | Description | Parameters | Returns |
-|--------|-------------|------------|---------|
-| `execute(UUID id)` | Executes the deletion of an activity identified by the given unique identifier. | `id` - The UUID of the activity to delete. | `void` |
+### `execute`
 
-## Usage
+| Parameter | Type   | Description                                      |
+|-----------|--------|--------------------------------------------------|
+| `id`      | `UUID` | The unique identifier of the activity to delete. |
 
-The interface is intended to be injected into other components (e.g., controllers, services) that need to delete activities. The actual deletion logic is implemented in the `DeleteActivityService` class.
+This method performs the deletion of an activity based on its UUID. The implementation is responsible for handling any necessary validation, persistence operations, and side effects (such as logging or event emission). The method does not return a value; any errors or exceptions should be thrown as runtime exceptions or handled within the implementation.
 
-### Example
+## Usage Example
 
 ```java
-// Assuming IDeleteActivityService is injected
-public class ActivityController {
-    private final IDeleteActivityService deleteActivityService;
+// Assuming an instance of DeleteActivityService is available
+IDeleteActivityService deleteService = new DeleteActivityService();
 
-    public ActivityController(IDeleteActivityService deleteActivityService) {
-        this.deleteActivityService = deleteActivityService;
-    }
-
-    public void deleteActivity(UUID activityId) {
-        deleteActivityService.execute(activityId);
-    }
-}
+// Delete an activity with a specific UUID
+UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+deleteService.execute(activityId);
 ```
 
 ## Implementation Notes
 
-- The interface is sealed, so only `DeleteActivityService` is allowed to implement it.
-- The `execute` method does not return a value; any errors or exceptions should be handled within the implementation.
-- The use of `UUID` ensures globally unique identification of activities.
+- The interface is **sealed**, which restricts implementation to the `DeleteActivityService` class. This is a Java 17+ feature that enhances security and maintainability by preventing unintended extensions.
+- The `execute` method is intentionally void; it does not return a success indicator. Implementations should throw exceptions (e.g., `ActivityNotFoundException`, `IllegalStateException`) to signal failure conditions.
+- The use of `UUID` as the identifier ensures globally unique identification of activities, which is critical for distributed systems or when activities are referenced across different services.

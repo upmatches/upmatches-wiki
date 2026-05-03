@@ -6,72 +6,81 @@ sidebar_label: CompleteProfileRequest
 
 # CompleteProfileRequest
 
-The `CompleteProfileRequest` class is a Java record used to encapsulate the data required for completing a user's profile in the UpMatches application. It serves as a Data Transfer Object (DTO) for the profile completion endpoint, ensuring that incoming requests contain valid and properly formatted information.
+The `CompleteProfileRequest` class is a Java record used to encapsulate the data required for completing a user's profile in the UpMatches application. It serves as a Data Transfer Object (DTO) for the profile completion endpoint, ensuring that all necessary fields are provided and validated before processing.
 
 ## Purpose
 
-This record defines the structure for a profile completion request, which includes:
-- The user's display name
-- A list of contact methods (e.g., email, phone, social media)
-- A list of skill level selections
+This record defines the structure for a profile completion request, including the user's name, email, contact methods, and skill level selections. It leverages Jakarta Bean Validation annotations to enforce data integrity and business rules, such as requiring at least one contact method and limiting field sizes.
 
-The class leverages Jakarta Bean Validation annotations to enforce data integrity and business rules before the request reaches the service layer.
+## Record Definition
 
-## Record Structure
+```java
+public record CompleteProfileRequest(
+    @NotBlank
+    @Size(max = CompleteProfileRequest.MAX_NAME_LENGTH)
+    String name,
 
-The record is immutable and consists of three components:
+    @NotBlank
+    @Email
+    @Size(max = CompleteProfileRequest.MAX_EMAIL_LENGTH)
+    String email,
 
-| Component | Type | Validation | Description |
-|-----------|------|------------|-------------|
-| `name` | `String` | `@NotBlank`, `@Size(max=200)` | The user's display name. Must not be blank and cannot exceed 200 characters. |
-| `contactMethods` | `List<ContactMethod>` | `@AtLeastOneContactMethod`, `@Size(max=10)` | A list of contact methods. Must contain at least one valid method and cannot exceed 10 entries. |
-| `skillLevels` | `List<SkillLevelSelection>` | `@NotNull`, `@Valid`, `@Size(max=50)` | A list of skill level selections. Must not be null, each element is validated, and cannot exceed 50 entries. |
+    @AtLeastOneContactMethod
+    @Size(max = CompleteProfileRequest.MAX_CONTACT_METHODS)
+    List<ContactMethod> contactMethods,
+
+    @NotNull
+    @Valid
+    @Size(max = CompleteProfileRequest.MAX_SKILL_LEVELS)
+    List<SkillLevelSelection> skillLevels
+) { ... }
+```
 
 ## Constants
 
-The class defines three package-private constants that serve as maximum size constraints:
-
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `MAX_NAME_LENGTH` | `200` | Maximum allowed length for the user's name |
-| `MAX_CONTACT_METHODS` | `10` | Maximum number of contact methods allowed |
-| `MAX_SKILL_LEVELS` | `50` | Maximum number of skill level selections allowed |
+| `MAX_NAME_LENGTH` | 200 | Maximum length for the user's name |
+| `MAX_EMAIL_LENGTH` | 320 | Maximum length for the email address |
+| `MAX_CONTACT_METHODS` | 10 | Maximum number of contact methods allowed |
+| `MAX_SKILL_LEVELS` | 50 | Maximum number of skill level selections allowed |
 
-## Validation Details
+## Fields
 
-### Name Validation
-- **`@NotBlank`**: Ensures the name is not null and contains at least one non-whitespace character
-- **`@Size(max=200)`**: Limits the name to a maximum of 200 characters
+| Field | Type | Validation | Description |
+|-------|------|------------|-------------|
+| `name` | `String` | `@NotBlank`, `@Size(max=200)` | The user's full name |
+| `email` | `String` | `@NotBlank`, `@Email`, `@Size(max=320)` | The user's email address |
+| `contactMethods` | `List<ContactMethod>` | `@AtLeastOneContactMethod`, `@Size(max=10)` | List of contact methods (at least one required) |
+| `skillLevels` | `List<SkillLevelSelection>` | `@NotNull`, `@Valid`, `@Size(max=50)` | List of skill level selections |
 
-### Contact Methods Validation
-- **`@AtLeastOneContactMethod`**: Custom validator that ensures at least one contact method is provided
-- **`@Size(max=10)`**: Limits the number of contact methods to a maximum of 10
+## Validation Rules
 
-### Skill Levels Validation
-- **`@NotNull`**: Ensures the skill levels list is not null
-- **`@Valid`**: Triggers validation of each `SkillLevelSelection` object within the list
-- **`@Size(max=50)`**: Limits the number of skill level selections to a maximum of 50
+- **name**: Must not be blank and cannot exceed 200 characters.
+- **email**: Must not be blank, must be a valid email format, and cannot exceed 320 characters.
+- **contactMethods**: Must contain at least one contact method (enforced by `@AtLeastOneContactMethod` custom annotation) and cannot exceed 10 items.
+- **skillLevels**: Must not be null, must contain valid items (enforced by `@Valid`), and cannot exceed 50 items.
 
 ## Usage Example
 
 ```java
-// Creating a valid CompleteProfileRequest
 CompleteProfileRequest request = new CompleteProfileRequest(
     "John Doe",
-    List.of(new ContactMethod("email", "john@example.com")),
-    List.of(new SkillLevelSelection("Java", 5))
+    "john.doe@example.com",
+    List.of(new ContactMethod(...)),
+    List.of(new SkillLevelSelection(...))
 );
 ```
 
 ## Dependencies
 
-- **`jakarta.validation`**: Jakarta Bean Validation API for declarative validation
-- **`com.upmatches.app.features.user.validators.AtLeastOneContactMethod`**: Custom validation annotation for ensuring at least one contact method is provided
-- **`ContactMethod`**: Represents a single contact method (e.g., email, phone)
-- **`SkillLevelSelection`**: Represents a skill and its associated proficiency level
+- `jakarta.validation.constraints.*` - Jakarta Bean Validation annotations
+- `com.upmatches.app.features.user.validators.AtLeastOneContactMethod` - Custom validation annotation
+- `ContactMethod` - Represents a single contact method
+- `SkillLevelSelection` - Represents a skill level selection
 
 ## Notes
 
-- The record is immutable, meaning its components cannot be modified after creation
-- Package-private constants (`MAX_NAME_LENGTH`, `MAX_CONTACT_METHODS`, `MAX_SKILL_LEVELS`) are used for validation constraints and can be referenced in other classes within the same package
-- The `@Valid` annotation on `skillLevels` ensures cascading validation of nested objects
+- This record is immutable by design, as all Java records are.
+- The `@Valid` annotation on `skillLevels` ensures that each `SkillLevelSelection` object within the list is also validated according to its own validation constraints.
+- The `@AtLeastOneContactMethod` annotation is a custom validator that enforces the business rule requiring at least one contact method to be provided.

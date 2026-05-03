@@ -1,63 +1,52 @@
 ---
 id: transit-line
-title: TransitLine Entity
+title: TransitLine
 sidebar_label: TransitLine
 ---
 
 # TransitLine
 
-The `TransitLine` class is a JPA entity that represents a public transit line (e.g., a subway or bus line) within the venue features module. It maps to the `transit_lines` database table and stores basic identifying information such as a unique code, a human-readable name, and a display color.
+The `TransitLine` class is a JPA entity that represents a public transit line (e.g., a bus or train route) within the venue features module of the UpMatches application. It maps to the `transit_lines` database table and provides a simple, immutable data model for storing transit line metadata such as its unique code, human-readable name, and display color.
 
-## Purpose
-
-This entity is used to model transit lines that serve a venue. Each line is uniquely identified by its `code` (e.g., "RED", "BLUE", "L1") and includes a descriptive name and a color value (typically a hex color code) for UI display purposes.
-
-## Annotations
-
-- `@Entity` – Marks this class as a JPA entity.
-- `@Table(name = "transit_lines")` – Maps the entity to the `transit_lines` table.
-- `@Getter` (Lombok) – Automatically generates getter methods for all fields.
-- `@Id` – Designates the `code` field as the primary key.
-- `@Column` – Specifies column details such as name, length, and nullability.
+This entity uses Lombok's `@Getter` annotation to automatically generate getter methods for all fields, and it enforces immutability by providing no public setters. Instead, instances are created via the static factory method `create()`.
 
 ## Fields
 
 | Field | Type | Database Column | Constraints | Description |
-|-------|------|-----------------|-------------|-------------|
-| `code` | `String` | `code` | Primary key, max length 10 | Unique identifier for the transit line (e.g., "RED", "BLUE"). |
-| `name` | `String` | `name` | Not null, max length 100 | Human-readable name of the transit line (e.g., "Red Line"). |
-| `color` | `String` | `color` | Not null, max length 7 | Hex color code for UI display (e.g., "#FF0000"). |
-
-## Constructor
-
-The class has a **protected no-argument constructor** required by JPA. External instantiation should be done via the static factory method.
+|-------|------|----------------|-------------|-------------|
+| `code` | `String` | `code` | Primary key, max length 10 | Unique identifier for the transit line (e.g., "BART-YL") |
+| `name` | `String` | `name` | Not null, max length 100 | Human-readable name of the transit line (e.g., "Yellow Line") |
+| `color` | `String` | `color` | Not null, max length 7 | Hex color code for the transit line (e.g., "#FFD700") |
 
 ## Methods
 
-### `create(String code, String name, String color)`
+### `create`
+
+```java
+public static TransitLine create(String code, String name, String color)
+```
+
+Static factory method to create a new `TransitLine` instance. This is the only way to instantiate the entity, ensuring that all required fields are provided at creation time.
+
+**Parameters:**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `code` | `String` | Unique identifier for the transit line. |
-| `name` | `String` | Human-readable name of the transit line. |
-| `color` | `String` | Hex color code for UI display (e.g., "#FF0000"). |
+| `code` | `String` | Unique identifier for the transit line (max 10 characters) |
+| `name` | `String` | Human-readable name of the transit line (max 100 characters) |
+| `color` | `String` | Hex color code for the transit line (max 7 characters, e.g., "#RRGGBB") |
 
-**Returns:** `TransitLine` – A new instance with the specified values.
+**Returns:** A new `TransitLine` instance with the specified values.
 
-This static factory method creates a fully initialized `TransitLine` entity. It is the preferred way to instantiate new transit lines outside of JPA context.
-
-## Usage Example
+**Example usage:**
 
 ```java
-TransitLine redLine = TransitLine.create("RED", "Red Line", "#FF0000");
+TransitLine yellowLine = TransitLine.create("BART-YL", "Yellow Line", "#FFD700");
 ```
 
-## Database Schema
+## Notes
 
-The corresponding `transit_lines` table has the following structure:
-
-| Column | Type | Constraints |
-|--------|------|-------------|
-| `code` | `VARCHAR(10)` | PRIMARY KEY |
-| `name` | `VARCHAR(100)` | NOT NULL |
-| `color` | `VARCHAR(7)` | NOT NULL |
+- The class uses a **protected no-argument constructor** required by JPA for entity instantiation. This constructor should not be called directly by application code.
+- All fields are **immutable** after creation — there are no setter methods exposed.
+- The `color` field is expected to be a valid 7-character hex color code (including the `#` prefix), though this is not validated at the entity level.
+- The entity is mapped to the `transit_lines` table in the database, which should be created as part of the application's schema.

@@ -6,69 +6,50 @@ sidebar_label: ICreateGameService
 
 # ICreateGameService Interface
 
-The `ICreateGameService` interface defines the contract for creating a new game within the UpMatches application. It follows a sealed interface pattern to restrict implementation to a single concrete class, ensuring type safety and controlled extensibility.
+The `ICreateGameService` interface defines the contract for creating a new game within the UpMatches application. It follows a sealed interface pattern to restrict implementation to a single concrete class (`CreateGameService`), ensuring controlled and secure extension of the game creation logic.
 
 ## Purpose
 
-This interface serves as the abstraction layer for game creation logic. By defining a single `execute` method, it enforces a consistent API for creating games while allowing the underlying implementation (`CreateGameService`) to handle the specific business rules and data persistence.
+This interface serves as the abstraction layer for the game creation use case. By defining a single `execute` method, it enforces a consistent API for creating games while allowing the underlying implementation to handle business logic, validation, and persistence. The sealed modifier guarantees that only the permitted `CreateGameService` class can implement this interface, preventing unauthorized extensions.
 
-## Sealed Interface
+## Interface Definition
 
-The interface is declared as `sealed`, which means only the explicitly permitted class (`CreateGameService`) can implement it. This design choice provides:
+```java
+public sealed interface ICreateGameService permits CreateGameService {
+    GameResponse execute(CreateGameRequest request);
+}
+```
 
-- **Controlled inheritance**: Only authorized implementations can exist
-- **Compile-time safety**: The compiler ensures no other classes implement this interface
-- **Clear documentation**: Developers immediately know which class provides the implementation
-
-## Method Summary
-
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `execute(CreateGameRequest request)` | `GameResponse` | Creates a new game based on the provided request data and returns the resulting game information |
-
-## Method Details
+## Methods
 
 ### `execute`
 
-```java
-GameResponse execute(CreateGameRequest request)
-```
-
-Creates a new game entity using the data provided in the `CreateGameRequest` object.
-
-**Parameters:**
+Creates a new game based on the provided request data and returns the resulting game information.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `request` | `CreateGameRequest` | Contains the necessary data to create a new game (e.g., game name, settings, player information) |
+| `request` | `CreateGameRequest` | The request object containing all necessary data to create a new game (e.g., game name, settings, participants) |
 
-**Returns:**
+| Returns | Type | Description |
+|---------|------|-------------|
+| `GameResponse` | `GameResponse` | The response object containing the details of the newly created game (e.g., game ID, status, creation timestamp) |
 
-| Type | Description |
-|------|-------------|
-| `GameResponse` | Contains the details of the newly created game, including its unique identifier and current state |
-
-**Exceptions:**
-
-The method does not declare any checked exceptions in its signature. However, implementations may throw runtime exceptions for validation failures or persistence errors.
-
-## Usage Example
+**Usage Example:**
 
 ```java
-// Assuming dependency injection provides the implementation
 ICreateGameService gameService = new CreateGameService();
-
-CreateGameRequest request = new CreateGameRequest();
-// Populate request with game details
-
+CreateGameRequest request = new CreateGameRequest(/* ... */);
 GameResponse response = gameService.execute(request);
-// Use response data (e.g., game ID, status)
 ```
 
-## Related Components
+## Related Classes
 
-| Component | Description |
-|-----------|-------------|
-| `CreateGameRequest` | Input data transfer object containing game creation parameters |
-| `GameResponse` | Output data transfer object containing the created game's details |
-| `CreateGameService` | The sole permitted implementation of this interface |
+- **`CreateGameService`**: The sole permitted implementation of this interface, containing the actual game creation logic.
+- **`CreateGameRequest`**: The input data transfer object (DTO) encapsulating game creation parameters.
+- **`GameResponse`**: The output DTO representing the result of a successful game creation operation.
+
+## Design Considerations
+
+- **Sealed Interface**: The `sealed` keyword restricts implementation to only the `CreateGameService` class, providing compile-time safety and preventing unintended implementations.
+- **Single Responsibility**: The interface focuses solely on the game creation use case, adhering to the Interface Segregation Principle.
+- **Immutability**: Both request and response objects are designed to be immutable, ensuring thread safety and predictable behavior.

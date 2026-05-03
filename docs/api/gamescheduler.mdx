@@ -6,73 +6,76 @@ sidebar_label: GameScheduler
 
 # GameScheduler
 
-The `GameScheduler` class is a Spring `@Component` that provides scheduled task execution for updating game statuses. It runs two distinct cron jobs every five minutes to automatically mark games as `STARTED` or `EXPIRED` based on their current state and timing conditions.
+The `GameScheduler` class is a Spring Boot component that automatically manages game lifecycle transitions. It runs two scheduled tasks every five minutes to update game statuses:
 
-## Purpose
+1. **Mark games as STARTED** – Updates games whose scheduled start time has passed.
+2. **Mark games as EXPIRED** – Updates games that have exceeded their allowed duration.
 
-This scheduler automates the lifecycle management of games within the application. By periodically executing two services, it ensures that:
-
-- Games that should have started are transitioned to the `STARTED` status.
-- Games that have passed their expiration time are transitioned to the `EXPIRED` status.
-
-This eliminates the need for manual intervention and keeps the game state consistent with real-world time.
+This scheduler ensures that game states remain consistent without manual intervention, relying on dedicated service interfaces for the actual business logic.
 
 ## Dependencies
 
-The scheduler relies on two service interfaces injected via constructor injection:
+The scheduler depends on two service interfaces injected via constructor injection:
 
-| Dependency | Type | Description |
-|------------|------|-------------|
-| `markStartedGamesService` | `IMarkStartedGamesService` | Service responsible for marking eligible games as `STARTED`. |
-| `markExpiredGamesService` | `IMarkExpiredGamesService` | Service responsible for marking eligible games as `EXPIRED`. |
+| Dependency | Type | Purpose |
+|------------|------|---------|
+| `IMarkStartedGamesService` | Interface | Marks eligible games as STARTED |
+| `IMarkExpiredGamesService` | Interface | Marks eligible games as EXPIRED |
 
 ## Scheduled Methods
 
-Both methods are triggered by the same cron expression: `0 */5 * * * *` (every five minutes).
+Both methods run on the same cron schedule: every 5 minutes (`0 */5 * * * *`).
 
 ### `markStartedGames()`
 
 ```java
-@Scheduled(cron = CRON_EVERY_FIVE_MINUTES)
+@Scheduled(cron = "0 */5 * * * *")
 public void markStartedGames()
 ```
 
-**Description:** Executes the `markStartedGamesService` to identify and update games that should be marked as `STARTED`. Logs the number of games updated.
-
-**Parameters:** None
+**Behavior:**
+- Calls `markStartedGamesService.execute()` to process games that should transition to STARTED status.
+- Logs the number of games updated using the format: `Marked {count} games as STARTED.`
 
 **Returns:** `void`
-
-**Logging:** Logs at `INFO` level with the message format: `"Marked {} games as STARTED."`
 
 ### `markExpiredGames()`
 
 ```java
-@Scheduled(cron = CRON_EVERY_FIVE_MINUTES)
+@Scheduled(cron = "0 */5 * * * *")
 public void markExpiredGames()
 ```
 
-**Description:** Executes the `markExpiredGamesService` to identify and update games that should be marked as `EXPIRED`. Logs the number of games updated.
-
-**Parameters:** None
+**Behavior:**
+- Calls `markExpiredGamesService.execute()` to process games that should transition to EXPIRED status.
+- Logs the number of games updated using the format: `Marked {count} games as EXPIRED.`
 
 **Returns:** `void`
 
-**Logging:** Logs at `INFO` level with the message format: `"Marked {} games as EXPIRED."`
-
 ## Configuration
 
-The cron schedule is defined as a constant:
+The cron expression is defined as a constant:
 
 ```java
 private static final String CRON_EVERY_FIVE_MINUTES = "0 */5 * * * *";
 ```
 
-This expression runs the tasks at the start of every 5th minute (e.g., 12:00, 12:05, 12:10, etc.).
+This expression runs at the start of every 5th minute (e.g., 12:00, 12:05, 12:10, etc.).
+
+## Logging
+
+The class uses SLF4J logging with the following constants:
+
+| Constant | Value |
+|----------|-------|
+| `LOG_STARTED` | `"Marked {} games as STARTED."` |
+| `LOG_EXPIRED` | `"Marked {} games as EXPIRED."` |
+
+The `{}` placeholder is replaced with the count of updated games returned by the respective service.
 
 ## Usage Notes
 
-- The scheduler is automatically discovered and registered by Spring's component scanning due to the `@Component` annotation.
-- Both scheduled methods run independently and concurrently if the underlying services are thread-safe.
-- The actual business logic for determining which games to update is delegated to the injected service implementations.
-- Logging uses SLF4J with a dedicated logger for this class, making it easy to monitor scheduler activity in log files.
+- The scheduler is automatically activated when the Spring context loads due to the `@Component` annotation.
+- Both scheduled methods run independently and can execute concurrently.
+- The actual game status update logic is delegated to the injected service implementations, making the scheduler testable and the business logic reusable.
+- If either service throws an exception, the scheduler will log the error but will not affect the other scheduled task.

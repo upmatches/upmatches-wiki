@@ -6,76 +6,54 @@ sidebar_label: SendFcmTestNotificationRequest
 
 # SendFcmTestNotificationRequest
 
-The `SendFcmTestNotificationRequest` record is a Java data transfer object (DTO) used to encapsulate the payload for sending a test Firebase Cloud Messaging (FCM) notification. It is designed for testing notification delivery to either a specific device token or an email address.
-
-This record leverages Jakarta Bean Validation annotations to enforce constraints on its fields, ensuring that the request data is valid before processing. A custom validation method, `isTargetProvided()`, ensures that at least one of `deviceToken` or `email` is supplied.
-
 ## Purpose
 
-- **Notification Testing**: Allows developers to send test push notifications to a device or email for debugging and verification purposes.
-- **Data Validation**: Enforces business rules (e.g., field lengths, required fields, and target presence) using standard validation annotations.
-- **Immutability**: As a Java record, it provides a concise, immutable data carrier with automatically generated constructors, accessors, `equals()`, `hashCode()`, and `toString()` methods.
+The `SendFcmTestNotificationRequest` record is a Java data transfer object (DTO) used to encapsulate the payload for sending a test Firebase Cloud Messaging (FCM) notification. It defines the required and optional fields for constructing a notification, including validation constraints to ensure data integrity before processing.
+
+This record is part of the notification feature in the UpMatches application and is designed to be used with Jakarta Bean Validation (e.g., Hibernate Validator) to enforce input rules.
 
 ## Fields
 
 | Field | Type | Constraints | Description |
 |-------|------|-------------|-------------|
-| `deviceToken` | `String` | `@Size(max = 512)` | The FCM device token to send the notification to. Optional if `email` is provided. |
-| `email` | `String` | `@Email`, `@Size(max = 254)` | The email address to send the notification to. Optional if `deviceToken` is provided. |
-| `type` | `NotificationType` | `@NotNull` | The type of notification (e.g., game invite, reminder). |
+| `deviceToken` | `String` | `@Size(max = 512)` | The FCM device token to send the notification to. Either this or `email` must be provided. |
+| `email` | `String` | `@Email`, `@Size(max = 254)` | The email address of the recipient. Either this or `deviceToken` must be provided. |
+| `type` | `NotificationType` | `@NotNull` | The type of notification to send (e.g., GAME_INVITE, MATCH_REMINDER). |
 | `gameTitle` | `String` | `@NotBlank`, `@Size(max = 120)` | The title of the game associated with the notification. |
-| `venue` | `String` | `@Size(max = 120)` | The venue where the game takes place. |
+| `venue` | `String` | `@Size(max = 120)` | The venue or location of the game. |
 | `courtCount` | `Integer` | `@Min(1)`, `@Max(20)` | The number of courts for the game. |
 | `date` | `LocalDate` | None | The date of the game. |
 | `startTime` | `LocalTime` | None | The start time of the game. |
 | `endTime` | `LocalTime` | None | The end time of the game. |
-| `skillLevel` | `String` | `@Size(max = 60)` | The required skill level for the game. |
+| `skillLevel` | `String` | `@Size(max = 60)` | The skill level required for the game (e.g., Beginner, Intermediate). |
 | `gameUrl` | `String` | `@Size(max = 2048)` | A URL linking to the game details. |
 | `badge` | `Integer` | `@Min(0)`, `@Max(999)` | A badge number to display on the notification icon. |
 
-## Methods
+## Validation
 
-### `isTargetProvided()`
-
-```java
-@AssertTrue(message = "Either deviceToken or email must be provided")
-public boolean isTargetProvided()
-```
-
-- **Purpose**: Validates that at least one of `deviceToken` or `email` is non-null and non-blank.
-- **Returns**: `true` if either `deviceToken` or `email` is provided; `false` otherwise.
-- **Usage**: This method is automatically invoked by the Bean Validation framework when the object is validated (e.g., with `@Valid` in a controller). If it returns `false`, a validation error with the message "Either deviceToken or email must be provided" is raised.
+The record includes a custom validation method `isTargetProvided()` annotated with `@AssertTrue`. This method ensures that at least one of `deviceToken` or `email` is provided (non-blank). If both are missing or blank, validation will fail with the message: "Either deviceToken or email must be provided".
 
 ## Usage Example
 
 ```java
-// Creating a valid request with a device token
 SendFcmTestNotificationRequest request = new SendFcmTestNotificationRequest(
-    "fcm_device_token_12345",
+    "fcm_device_token_123",
     null,
     NotificationType.GAME_INVITE,
-    "Sunday Pickup Basketball",
-    "Community Center Gym",
+    "Sunday Pickup Soccer",
+    "Central Park Field 3",
     2,
-    LocalDate.of(2025, 4, 15),
+    LocalDate.of(2025, 6, 15),
     LocalTime.of(10, 0),
     LocalTime.of(12, 0),
     "Intermediate",
-    "https://example.com/game/123",
+    "https://upmatches.app/game/456",
     5
 );
-
-// Validation (assuming a Validator is used)
-ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-Validator validator = factory.getValidator();
-Set<ConstraintViolation<SendFcmTestNotificationRequest>> violations = validator.validate(request);
-// violations should be empty if the request is valid
 ```
 
-## Validation Summary
+## Notes
 
-- **Required**: `type` and `gameTitle` must not be null/blank.
-- **Conditional**: Either `deviceToken` or `email` must be provided (enforced by `isTargetProvided()`).
-- **Length Constraints**: Most string fields have maximum length limits to prevent excessively large payloads.
-- **Range Constraints**: `courtCount` must be between 1 and 20; `badge` must be between 0 and 999.
-- **Format**: `email` must be a valid email address format.
+- This record is immutable by design (Java `record`), making it safe for use in concurrent environments.
+- All validation annotations are from the `jakarta.validation.constraints` package, ensuring compatibility with Jakarta EE / Spring Boot validation frameworks.
+- The `NotificationType` enum is expected to be defined in the `com.upmatches.app.features.notification.enums` package.

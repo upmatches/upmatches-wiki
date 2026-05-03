@@ -6,24 +6,27 @@ sidebar_label: DevAuthController
 
 # DevAuthController
 
-The `DevAuthController` is a development-only REST controller that provides an endpoint for minting authentication tokens during local development and testing. It is designed to be **disabled in production** environments and only accessible from localhost connections.
+The `DevAuthController` is a development-only REST controller that provides an endpoint for minting authentication tokens in non-production environments. It is designed to facilitate local development and testing by allowing developers to generate tokens without going through the full authentication flow.
 
 ## Purpose
 
-This controller serves as a convenience utility for developers to quickly generate authentication tokens without going through the full authentication flow. It is particularly useful for:
+This controller serves as a convenience endpoint for development environments, enabling developers to quickly obtain authentication tokens for testing purposes. It is strictly disabled in production environments through both profile and property-based conditions.
 
-- Local development and debugging
-- Integration testing
-- API testing with tools like Postman or cURL
-- Frontend development that requires authenticated API access
+## Conditions for Activation
 
-## Security Constraints
+The controller is only active when **both** conditions are met:
+1. The active Spring profile is **not** `prod` (via `@Profile("!prod")`)
+2. The property `app.auth.dev.mint-endpoint-enabled` is set to `true` (via `@ConditionalOnProperty`)
 
-The controller enforces strict security measures:
+## Security
 
-- **Profile Restriction**: Only active when the Spring profile is NOT `prod`
-- **Conditional Property**: Requires the property `app.auth.dev.mint-endpoint-enabled=true` to be set
-- **Host Restriction**: Only accepts requests from localhost (IPv4 and IPv6)
+The controller enforces a security measure by only allowing requests from localhost addresses. Any request originating from a non-localhost host will be rejected with an `AuthenticationException`.
+
+### Allowed Hosts
+- `localhost`
+- `127.0.0.1`
+- `[::1]`
+- `0:0:0:0:0:0:0:1`
 
 ## Endpoints
 
@@ -35,73 +38,47 @@ Mints a new development authentication token for the specified user.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `userId` | String | Yes | The unique identifier of the user to mint a token for |
+| `userId` | String | Yes | The unique identifier of the user for whom to mint the token |
 
 #### Response
 
 | Status Code | Description |
 |-------------|-------------|
-| 200 OK | Token minted successfully |
-| 400 Bad Request | Invalid request body (validation error) |
-| 403 Forbidden | Request from non-localhost host |
-| 500 Internal Server Error | Token minting service failure |
+| `200 OK` | Token minted successfully |
 
-#### Example Request
+#### Response Body
 
-```json
-{
-  "userId": "user-12345"
-}
-```
+The response follows the standard `ApiResponse` format:
 
-#### Example Response
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | `TokenResponse` | The minted token details |
+| `message` | String | Success message: "Dev token minted successfully." |
+| `path` | String | The request URI |
 
-```json
-{
-  "success": true,
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIs...",
-    "expiresAt": "2024-12-31T23:59:59Z"
-  },
-  "message": "Dev token minted successfully.",
-  "path": "/api/v1/auth/dev/tokens"
-}
-```
+#### Error Responses
+
+| Status Code | Description |
+|-------------|-------------|
+| `403 Forbidden` | Request originates from a non-localhost host |
+| `400 Bad Request` | Invalid request body (validation failure) |
 
 ## Dependencies
 
 | Dependency | Type | Description |
 |------------|------|-------------|
-| `IMintDevTokenService` | Service | Interface for token minting logic |
-| `MintDevTokenRequest` | DTO | Request validation object |
-| `TokenResponse` | DTO | Token response data |
-| `ApiResponse` | Utility | Standard API response wrapper |
-
-## Configuration
-
-To enable this controller, add the following to your application properties:
-
-```properties
-# Enable dev token minting endpoint
-app.auth.dev.mint-endpoint-enabled=true
-```
-
-## Error Handling
-
-The controller throws an `AuthenticationException` when a request originates from a non-localhost host. This exception should be handled by a global exception handler to return an appropriate HTTP 403 response.
+| `IMintDevTokenService` | Service | Interface for minting development tokens |
 
 ## Usage Example
 
 ```bash
-# Mint a token for user "dev-user-1"
 curl -X POST http://localhost:8080/api/v1/auth/dev/tokens \
   -H "Content-Type: application/json" \
-  -d '{"userId": "dev-user-1"}'
+  -d '{"userId": "user123"}'
 ```
 
 ## Notes
 
-- This endpoint should **never** be exposed in production environments
-- The host restriction check is case-insensitive
-- The controller uses constructor injection for its service dependency
-- All validation is handled by Jakarta Bean Validation annotations on the request body
+- This controller should **never** be exposed in production environments
+- The localhost restriction provides a basic security layer to prevent accidental exposure
+- The endpoint is intended for development and testing purposes only

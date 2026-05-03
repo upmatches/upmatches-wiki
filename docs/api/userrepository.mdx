@@ -10,93 +10,77 @@ The `UserRepository` interface provides data access operations for the `User` en
 
 ## Purpose
 
-This repository serves as the persistence layer for user records, supporting multiple authentication providers (Singpass, Auth0, Apple) and email-based lookups. It also includes a pessimistic locking mechanism for concurrency-safe user updates.
-
-## Class Definition
-
-```java
-public interface UserRepository extends JpaRepository<User, UUID>
-```
-
-- **Package:** `com.upmatches.app.features.user.repositories`
-- **Entity:** `User`
-- **Primary Key Type:** `UUID`
+This repository serves as the persistence layer for user accounts, supporting multiple authentication providers (Singpass, Auth0, Apple) and email-based lookups. It also includes a pessimistic locking mechanism for concurrency-safe updates to user records.
 
 ## Methods
 
-### Standard CRUD Methods
+### Standard Inherited Methods
 
 The following methods are inherited from `JpaRepository<User, UUID>`:
 
 | Method | Description |
 |--------|-------------|
-| `save(User entity)` | Persists a new user or updates an existing one |
-| `findById(UUID id)` | Retrieves a user by their UUID |
-| `findAll()` | Returns all users |
-| `delete(User entity)` | Removes a user record |
+| `findById(UUID id)` | Retrieves a user by their primary key |
+| `findAll()` | Returns all users in the database |
+| `save(User user)` | Persists a new user or updates an existing one |
+| `delete(User user)` | Removes a user from the database |
+| `deleteById(UUID id)` | Deletes a user by their ID |
 | `count()` | Returns the total number of users |
 
 ### Custom Query Methods
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
-| `findBySingpassUuid(String singpassUuid)` | `Optional<User>` | `singpassUuid` - The Singpass unique identifier | Finds a user by their Singpass UUID |
-| `findByAuth0Uuid(String auth0UserId)` | `Optional<User>` | `auth0UserId` - The Auth0 user identifier | Finds a user by their Auth0 UUID |
-| `findByAppleUuid(String appleUuid)` | `Optional<User>` | `appleUuid` - The Apple user identifier | Finds a user by their Apple UUID |
+| `findBySingpassUuid(String singpassUuid)` | `Optional<User>` | `singpassUuid` - The unique identifier from Singpass | Finds a user by their Singpass UUID |
+| `findByAuth0Uuid(String auth0UserId)` | `Optional<User>` | `auth0UserId` - The unique identifier from Auth0 | Finds a user by their Auth0 user ID |
+| `findByAppleUuid(String appleUuid)` | `Optional<User>` | `appleUuid` - The unique identifier from Apple | Finds a user by their Apple UUID |
 | `findFirstByEmail(String email)` | `Optional<User>` | `email` - The user's email address | Returns the first user matching the given email |
 | `findForUpdateById(UUID id)` | `Optional<User>` | `id` - The user's UUID | Retrieves a user with a pessimistic write lock for safe concurrent updates |
 
-## Method Details
+## Usage Examples
 
-### `findBySingpassUuid(String singpassUuid)`
-
-Searches for a user who authenticated via Singpass. Returns an empty `Optional` if no match is found.
-
-### `findByAuth0Uuid(String auth0UserId)`
-
-Searches for a user who authenticated via Auth0. Returns an empty `Optional` if no match is found.
-
-### `findByAppleUuid(String appleUuid)`
-
-Searches for a user who authenticated via Apple Sign-In. Returns an empty `Optional` if no match is found.
-
-### `findFirstByEmail(String email)`
-
-Returns the first user record with the specified email address. Useful when email uniqueness is enforced at the application level rather than the database level.
-
-### `findForUpdateById(UUID id)`
-
-This method applies a `PESSIMISTIC_WRITE` lock to the selected row, preventing other transactions from modifying or reading the row until the current transaction completes. Use this method when performing critical updates that require exclusive access to the user record.
-
-**Lock Behavior:**
-- Acquires a database-level write lock
-- Blocks other write transactions
-- Blocks `PESSIMISTIC_READ` locks
-- Does not block standard reads (non-locked queries)
-
-## Usage Example
+### Finding a User by Authentication Provider
 
 ```java
-@Service
-public class UserService {
-    private final UserRepository userRepository;
+// Find user by Singpass UUID
+Optional<User> singpassUser = userRepository.findBySingpassUuid("singpass-12345");
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+// Find user by Auth0 UUID
+Optional<User> auth0User = userRepository.findByAuth0Uuid("auth0|abc123");
 
-    @Transactional
-    public void updateUserEmail(UUID userId, String newEmail) {
-        User user = userRepository.findForUpdateById(userId)
-            .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        user.setEmail(newEmail);
-        userRepository.save(user);
-    }
+// Find user by Apple UUID
+Optional<User> appleUser = userRepository.findByAppleUuid("apple-uid-98765");
+```
+
+### Email Lookup
+
+```java
+Optional<User> user = userRepository.findFirstByEmail("user@example.com");
+```
+
+### Pessimistic Locking for Updates
+
+```java
+@Transactional
+public void updateUserProfile(UUID userId, String newEmail) {
+    User user = userRepository.findForUpdateById(userId)
+        .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    
+    user.setEmail(newEmail);
+    userRepository.save(user);
 }
 ```
+
+## Locking Behavior
+
+The `findForUpdateById` method applies a `PESSIMISTIC_WRITE` lock, which prevents other transactions from reading or modifying the selected row until the current transaction completes. This is essential for operations that require exclusive access to user data, such as:
+
+- Updating sensitive profile information
+- Processing financial transactions
+- Handling concurrent registration attempts
 
 ## Dependencies
 
 - **Spring Data JPA** - Provides the repository infrastructure
-- **Jakarta Persistence API** - Used for lock mode types and query annotations
-- **User Entity** - The domain object this repository manages
+- **Jakarta Persistence API** - For lock mode types and query annotations
+- **User entity** - The domain object this repository manages

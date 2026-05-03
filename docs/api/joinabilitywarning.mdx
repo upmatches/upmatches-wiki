@@ -6,33 +6,38 @@ sidebar_label: JoinabilityWarning
 
 # JoinabilityWarning
 
-The `JoinabilityWarning` enum defines a set of warnings that can be returned when a user attempts to join a game session. These warnings indicate potential issues that may prevent or discourage a user from joining a particular game, without necessarily blocking the action entirely.
+The `JoinabilityWarning` enum defines a set of warnings that can be raised when a player attempts to join a game session. These warnings indicate potential issues that may prevent the player from joining or that the player should be aware of before joining.
 
 ## Purpose
 
-This enum is used to communicate specific reasons why a join attempt might be problematic. It provides a lightweight, type-safe way to represent these conditions throughout the application, particularly in the game matching and session management features.
+This enum is used to communicate specific reasons why a player's join request might be problematic. It helps the application provide clear feedback to users about why they cannot join a particular game or what they should consider before joining.
 
 ## Enum Values
 
 | Value | Description |
 |-------|-------------|
-| `IS_ORGANIZER` | Indicates that the user attempting to join is already the organizer of the game session. This warning suggests the user may not need to join their own game. |
-| `SKILL_MISMATCH` | Indicates that the user's skill level does not match the expected skill range for the game session. This warning alerts the user to a potential imbalance in gameplay experience. |
+| `IS_ORGANIZER` | Indicates that the player attempting to join is the organizer of the game session. This warning typically means the organizer cannot join their own game as a participant. |
+| `SKILL_MISMATCH` | Indicates that the player's skill level does not match the expected skill level for the game session. This warning helps maintain balanced gameplay and fair competition. |
 
 ## Usage
 
-The `JoinabilityWarning` enum is typically used in conjunction with a joinability check result, where multiple warnings can be returned to inform the user of all potential issues with their join request. For example:
+This enum is typically used in conjunction with join validation logic. When a player attempts to join a game, the system checks for potential issues and returns the appropriate warning if any are found.
+
+### Example
 
 ```java
-// Example usage in a joinability check
-List<JoinabilityWarning> warnings = new ArrayList<>();
-if (userIsOrganizer) {
-    warnings.add(JoinabilityWarning.IS_ORGANIZER);
+// Example usage in a join validation method
+public JoinabilityWarning validateJoinRequest(Player player, GameSession session) {
+    if (session.getOrganizer().equals(player)) {
+        return JoinabilityWarning.IS_ORGANIZER;
+    }
+    
+    if (player.getSkillLevel() != session.getRequiredSkillLevel()) {
+        return JoinabilityWarning.SKILL_MISMATCH;
+    }
+    
+    return null; // No warnings, player can join
 }
-if (skillMismatch) {
-    warnings.add(JoinabilityWarning.SKILL_MISMATCH);
-}
-return warnings;
 ```
 
 ## Package

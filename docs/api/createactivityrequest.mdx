@@ -6,35 +6,49 @@ sidebar_label: CreateActivityRequest
 
 # CreateActivityRequest
 
-The `CreateActivityRequest` class is a Java record used as a Data Transfer Object (DTO) for creating a new activity in the UpMatches application. It encapsulates the input data required when a user submits a request to create an activity, ensuring that the provided data meets basic validation constraints before being processed by the service layer.
+The `CreateActivityRequest` class is a Java record used as a Data Transfer Object (DTO) for creating a new activity. It encapsulates the input data required when a user submits a request to create an activity, ensuring that the provided name meets validation constraints before being processed by the application.
 
 ## Purpose
 
-This record serves as the request payload for activity creation endpoints. By using a Java record, the class automatically generates constructors, getters, `equals()`, `hashCode()`, and `toString()` methods, reducing boilerplate code. The validation annotations ensure that the activity name is not blank and does not exceed 100 characters.
+This record serves as the request payload for activity creation endpoints. By using Jakarta Bean Validation annotations, it enforces business rules at the API boundary, preventing invalid or malformed data from reaching the service layer.
 
-## Record Fields
+## Record Definition
+
+```java
+public record CreateActivityRequest(
+    @NotBlank
+    @Size(max = 100)
+    String name
+) {}
+```
+
+## Fields
 
 | Field | Type   | Validation Constraints | Description |
 |-------|--------|------------------------|-------------|
-| `name`| String | `@NotBlank`, `@Size(max = 100)` | The name of the activity to be created. Must not be blank and must be at most 100 characters long. |
+| `name`| String | `@NotBlank`<br/>`@Size(max = 100)` | The name of the activity. Must not be blank and cannot exceed 100 characters. |
 
 ## Validation Details
 
 - **`@NotBlank`**: Ensures the `name` field is not `null` and contains at least one non-whitespace character.
-- **`@Size(max = 100)`**: Limits the `name` field to a maximum of 100 characters.
+- **`@Size(max = 100)`**: Restricts the `name` length to a maximum of 100 characters, preventing excessively long activity names.
 
 ## Usage Example
 
-```java
-// Creating a valid request
-CreateActivityRequest request = new CreateActivityRequest("Morning Yoga");
+The record is typically used in a Spring Boot controller as a request body parameter:
 
-// Creating an invalid request (blank name)
-CreateActivityRequest invalidRequest = new CreateActivityRequest(""); // Will fail validation
+```java
+@PostMapping("/activities")
+public ResponseEntity<ActivityResponse> createActivity(
+    @Valid @RequestBody CreateActivityRequest request) {
+    // Process the validated request
+    Activity activity = activityService.create(request.name());
+    return ResponseEntity.ok(new ActivityResponse(activity));
+}
 ```
 
-## Related Components
+## Notes
 
-- **Controller**: Typically used in a REST controller method annotated with `@PostMapping` to accept the request body.
-- **Service**: Passed to a service layer method that processes the creation logic.
-- **Validation**: Validation is triggered automatically when the record is used with `@Valid` annotation in a Spring controller.
+- As a Java record, `CreateActivityRequest` automatically provides a canonical constructor, `equals()`, `hashCode()`, `toString()`, and an accessor method `name()`.
+- The `@Valid` annotation on the controller parameter triggers validation of the request body against the record's constraints.
+- This DTO pattern separates the API contract from the internal domain model, allowing the activity entity to evolve independently.

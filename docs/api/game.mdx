@@ -6,73 +6,80 @@ sidebar_label: Game
 
 # Game Entity
 
-The `Game` class is a JPA entity that represents a scheduled sports game or match within the UpMatches application. It encapsulates all game-related data including scheduling, venue, skill levels, pricing, and status management. This entity serves as the core domain object for organizing and managing competitive matches between participants.
+The `Game` class is a JPA entity that represents a scheduled sporting event or match within the UpMatches application. It encapsulates all the core attributes of a game, including its activity type, organizer, venue, skill level requirements, pricing structure, scheduling details, and lifecycle status.
 
-## Class Overview
+This entity serves as the central domain object for managing game creation, updates, and state transitions. It enforces business rules through validation methods and provides a structured approach to pricing through the `Pricing` value object.
 
-- **Package**: `com.upmatches.app.features.game.entities`
-- **Database Table**: `games`
-- **Key Dependencies**: Activity, User (organizer), Venue, SkillLevel, Pricing
+## Entity Overview
+
+The `Game` entity is mapped to the `games` database table and uses UUID-based primary key generation. It maintains relationships with several other entities:
+
+- **Activity**: The type of sport or activity being played
+- **User (organizer)**: The user who created and manages the game
+- **Venue**: The location where the game takes place
+- **SkillLevel**: Both a minimum (`skillLevelFrom`) and maximum (`skillLevelTo`) skill level range
 
 ## Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | `UUID` | Unique identifier (auto-generated) |
-| `activity` | `Activity` | The sport/activity type |
-| `organizer` | `User` | The user who created the game |
-| `venue` | `Venue` | Location where the game takes place |
-| `skillLevelFrom` | `SkillLevel` | Minimum skill level required |
-| `skillLevelTo` | `SkillLevel` | Maximum skill level allowed |
+| `id` | `UUID` | Primary key, auto-generated |
+| `activity` | `Activity` | The sport/activity type (Many-to-One) |
+| `organizer` | `User` | The game organizer (Many-to-One) |
+| `venue` | `Venue` | The game venue (Many-to-One) |
+| `skillLevelFrom` | `SkillLevel` | Minimum skill level (Many-to-One) |
+| `skillLevelTo` | `SkillLevel` | Maximum skill level (Many-to-One) |
 | `currency` | `String` | ISO 4217 currency code (3 characters) |
 | `price` | `BigDecimal` | Representative price amount |
-| `pricingMode` | `PricingMode` | Pricing strategy (FLAT, GENDER_BASED, etc.) |
-| `flatPrice` | `BigDecimal` | Flat price for all participants |
+| `pricingMode` | `PricingMode` | Pricing strategy (enum) |
+| `flatPrice` | `BigDecimal` | Flat rate price |
 | `malePrice` | `BigDecimal` | Price for male participants |
 | `femalePrice` | `BigDecimal` | Price for female participants |
 | `basePrice` | `BigDecimal` | Base price before adjustments |
-| `pricePerShuttle` | `BigDecimal` | Price per shuttle (for badminton) |
+| `pricePerShuttle` | `BigDecimal` | Price per shuttle (e.g., for badminton) |
 | `slots` | `Integer` | Maximum number of participants |
 | `startTime` | `Instant` | Game start time |
 | `endTime` | `Instant` | Game end time |
-| `visibility` | `GameVisibility` | Who can see the game |
-| `gameType` | `GameType` | Type of game (SINGLES, DOUBLES, etc.) |
-| `remark` | `String` | Additional notes (max 500 characters) |
-| `status` | `GameStatus` | Current game status |
-| `createdAt` | `Instant` | Creation timestamp |
+| `visibility` | `GameVisibility` | Game visibility setting (enum) |
+| `gameType` | `GameType` | Type of game (enum) |
+| `remark` | `String` | Optional remarks (max 500 characters) |
+| `status` | `GameStatus` | Current game status (enum) |
+| `createdAt` | `Instant` | Creation timestamp (non-updatable) |
 | `updatedAt` | `Instant` | Last update timestamp |
-| `deletedAt` | `Instant` | Deletion timestamp (soft delete) |
+| `deletedAt` | `Instant` | Deletion timestamp (null if not deleted) |
 
 ## Public Methods
 
 ### Static Factory Method
 
 #### `create()`
-Creates a new Game instance with comprehensive validation.
+
+Creates a new `Game` instance with comprehensive validation.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `activity` | `Activity` | The sport/activity type |
 | `organizer` | `User` | The game organizer |
-| `venue` | `Venue` | Game location |
+| `venue` | `Venue` | The game venue |
 | `skillLevelFrom` | `SkillLevel` | Minimum skill level |
 | `skillLevelTo` | `SkillLevel` | Maximum skill level |
 | `pricing` | `Pricing` | Pricing configuration |
 | `slots` | `Integer` | Maximum participants |
-| `startTime` | `Instant` | Start time |
-| `endTime` | `Instant` | End time |
+| `startTime` | `Instant` | Game start time |
+| `endTime` | `Instant` | Game end time |
 | `visibility` | `GameVisibility` | Visibility setting |
-| `gameType` | `GameType` | Game type |
-| `remark` | `String` | Optional notes |
+| `gameType` | `GameType` | Type of game |
+| `remark` | `String` | Optional remarks |
 
-**Returns**: `Game` - A new Game instance with status set to `SCHEDULED`
+**Returns**: `Game` - A new game instance with status set to `SCHEDULED`
 
 **Throws**: `IllegalArgumentException` if validation fails
 
 ### Instance Methods
 
 #### `update()`
-Updates game details with validation.
+
+Updates the game's mutable properties with validation.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -80,7 +87,7 @@ Updates game details with validation.
 | `skillLevelFrom` | `SkillLevel` | New minimum skill level |
 | `skillLevelTo` | `SkillLevel` | New maximum skill level |
 | `pricing` | `Pricing` | New pricing configuration |
-| `slots` | `Integer` | New slot count |
+| `slots` | `Integer` | New participant limit |
 | `startTime` | `Instant` | New start time |
 | `endTime` | `Instant` | New end time |
 | `gameType` | `GameType` | New game type |
@@ -89,98 +96,111 @@ Updates game details with validation.
 **Throws**: `IllegalArgumentException` if validation fails
 
 #### `updateSlots()`
-Updates the number of available slots.
+
+Updates only the participant slot count.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `slots` | `Integer` | New slot count |
+| `slots` | `Integer` | New participant limit |
 
 #### `markStarted()`
-Changes game status to `STARTED`.
+
+Transitions the game status to `STARTED`.
 
 #### `markExpired()`
-Changes game status to `EXPIRED`.
+
+Transitions the game status to `EXPIRED`.
 
 #### `cancel()`
-Changes game status to `CANCELLED`.
+
+Transitions the game status to `CANCELLED`.
 
 #### `markDeleted()`
-Sets the `deletedAt` timestamp to the current time (soft delete).
 
-### Transient/Computed Methods
+Sets the `deletedAt` timestamp to the current time.
 
 #### `isDeleted()`
-Checks if the game has been soft-deleted.
 
-**Returns**: `boolean` - `true` if `deletedAt` is not null
+**Returns**: `boolean` - `true` if the game has been soft-deleted (`deletedAt` is not null)
 
 #### `isFull()`
-Checks if the game has reached maximum capacity.
+
+Checks if the game has reached its participant capacity.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `participantCount` | `long` | Current number of participants |
 
-**Returns**: `boolean` - `true` if participant count >= slots
+**Returns**: `boolean` - `true` if participant count meets or exceeds slots
 
 #### `isPastOrInactive()`
-Checks if the game is no longer active or has passed.
+
+Checks if the game is no longer active or scheduled.
 
 **Returns**: `boolean` - `true` if status is not `SCHEDULED` or end time has passed
 
 #### `getPricing()`
-Reconstructs the structured Pricing object from persisted fields.
 
-**Returns**: `Pricing` - A Pricing object with appropriate mode and amounts
+Reconstructs the structured `Pricing` object from persisted fields. For legacy rows where `pricingMode` is null, it falls back to creating a flat pricing using the stored `price` and `currency` fields.
+
+**Returns**: `Pricing` - The reconstructed pricing configuration
 
 ## Validation Rules
+
+The entity enforces several business rules through private validation methods:
 
 1. **Time Validation**: End time must be after start time
 2. **Skill Level Validation**: 
    - Both skill levels must belong to the same activity as the game
-   - The "to" skill level must have a sort order >= the "from" skill level
+   - The "to" skill level's sort order must be greater than or equal to the "from" skill level's sort order
 3. **Pricing Validation**: Pricing object must not be null
 
 ## Lifecycle Callbacks
 
-- **`@PrePersist`**: Automatically sets `createdAt` and `updatedAt` timestamps before first persistence
-- **`@PreUpdate`**: Automatically updates `updatedAt` timestamp before any update operation
+- **`@PrePersist` (`onCreate()`)**: Sets `createdAt` and `updatedAt` to the current time before persisting
+- **`@PreUpdate` (`onUpdate()`)**: Updates `updatedAt` to the current time before updating
 
 ## Usage Example
 
 ```java
-// Creating a new game
+// Create a new game
 Game game = Game.create(
     badmintonActivity,
     organizerUser,
     sportsVenue,
-    beginnerSkillLevel,
-    intermediateSkillLevel,
+    beginnerLevel,
+    intermediateLevel,
     Pricing.flat(new BigDecimal("15.00"), Currency.create("USD")),
     20,
-    Instant.now().plus(7, ChronoUnit.DAYS),
-    Instant.now().plus(7, ChronoUnit.DAYS).plus(2, ChronoUnit.HOURS),
+    Instant.parse("2024-01-15T10:00:00Z"),
+    Instant.parse("2024-01-15T12:00:00Z"),
     GameVisibility.PUBLIC,
-    GameType.DOUBLES,
+    GameType.SINGLES,
     "Bring your own racket"
 );
 
-// Updating game details
+// Update game details
 game.update(
     newVenue,
-    newSkillLevelFrom,
-    newSkillLevelTo,
-    newPricing,
-    25,
-    newStartTime,
-    newEndTime,
-    GameType.SINGLES,
-    "Updated remarks"
+    beginnerLevel,
+    advancedLevel,
+    Pricing.perPerson(new BigDecimal("10.00"), Currency.create("USD")),
+    16,
+    Instant.parse("2024-01-15T14:00:00Z"),
+    Instant.parse("2024-01-15T16:00:00Z"),
+    GameType.DOUBLES,
+    "Updated time and format"
 );
 
-// Managing game lifecycle
-game.markStarted();
-game.markExpired();
+// Check game state
+if (game.isFull(currentParticipants)) {
+    System.out.println("Game is full");
+}
+
+if (game.isPastOrInactive()) {
+    System.out.println("Game is no longer active");
+}
+
+// Cancel the game
 game.cancel();
-game.markDeleted();
 ```

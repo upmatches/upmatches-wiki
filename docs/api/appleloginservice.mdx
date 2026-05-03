@@ -6,16 +6,16 @@ sidebar_label: AppleLoginService
 
 # AppleLoginService
 
-The `AppleLoginService` class is a Spring service that handles Apple Sign-In authentication for the UpMatches application. It implements the `IAppleLoginService` interface and provides a complete authentication flow: verifying Apple identity tokens, creating or finding users, and generating JWT access and refresh tokens.
+The `AppleLoginService` class is a Spring service that handles Apple Sign-In authentication for the UpMatches application. It implements the `IAppleLoginService` interface and provides a complete authentication flow including token verification, user creation/lookup, and JWT token generation.
 
 ## Purpose
 
-This service manages the entire Apple authentication lifecycle:
-- Verifies the integrity and validity of Apple identity tokens
-- Ensures the token's subject matches the provided user identifier
-- Creates new user accounts or retrieves existing ones based on Apple UUID
-- Generates JWT access tokens and refresh tokens for authenticated sessions
-- Handles concurrent user creation scenarios gracefully
+This service manages the entire Apple Sign-In authentication process:
+- Verifies Apple identity tokens
+- Matches token claims with user-provided identifiers
+- Creates new users or retrieves existing ones based on Apple UUID
+- Generates JWT access and refresh tokens
+- Stores refresh tokens for session management
 
 ## Dependencies
 
@@ -35,7 +35,7 @@ This service manages the entire Apple authentication lifecycle:
 public AppleLoginResponse execute(final AppleLoginRequest request)
 ```
 
-The main entry point for Apple login authentication. This method orchestrates the entire login flow.
+Executes the complete Apple Sign-In authentication flow.
 
 **Parameters:**
 
@@ -47,19 +47,19 @@ The main entry point for Apple login authentication. This method orchestrates th
 
 | Type | Description |
 |------|-------------|
-| `AppleLoginResponse` | Contains the access token, refresh token, expiration timestamp, and whether the user is new |
+| `AppleLoginResponse` | Contains access token, refresh token, expiration timestamp, and new user flag |
 
 **Throws:**
 
 | Exception | Condition |
 |-----------|-----------|
-| `AuthenticationException` | Token verification fails, user identifier mismatch, or user creation/find fails |
+| `AuthenticationException` | Token verification fails or user identifier mismatch |
 
 **Flow:**
 1. Verifies the Apple identity token
 2. Validates that the token's subject matches the provided user identifier
-3. Finds or creates a user account
-4. Generates an access token
+3. Finds or creates a user based on the Apple UUID
+4. Generates an access token with the user's ID and Apple UUID
 5. Generates and stores a refresh token
 6. Returns the authentication response
 
@@ -83,7 +83,7 @@ Verifies the Apple identity token and extracts claims.
 
 | Type | Description |
 |------|-------------|
-| `AppleVerifiedClaims` | Contains verified claims including subject (`sub`), email, and other Apple-provided data |
+| `AppleVerifiedClaims` | Contains verified claims including subject, email, and other token data |
 
 **Throws:**
 
@@ -115,7 +115,8 @@ Finds an existing user by Apple UUID or creates a new one.
 
 **Behavior:**
 - If user exists: updates email, records login, returns existing user
-- If user doesn't exist: creates new user, handles concurrent creation via `DataIntegrityViolationException`
+- If user doesn't exist: creates new user, handles concurrent creation race conditions
+- On `DataIntegrityViolationException`: attempts to find existing user (handles race condition)
 
 ## Internal Records
 
@@ -125,31 +126,24 @@ Finds an existing user by Apple UUID or creates a new one.
 private record UpsertResult(User user, Boolean isNewUser)
 ```
 
-A simple record to encapsulate the result of user creation or lookup.
+Internal record to encapsulate the result of user creation/lookup.
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `user` | `User` | The user entity |
-| `isNewUser` | `Boolean` | `true` if the user was just created, `false` if existing |
+| `isNewUser` | `Boolean` | Whether the user was newly created |
 
 ## Error Handling
 
 The service handles several error scenarios:
 
-| Scenario | Exception | Message |
-|----------|-----------|---------|
-| Invalid token payload | `AuthenticationException` | "The Apple identity token payload is invalid." |
-| Token verification failure | `AuthenticationException` | "Apple authentication failed. Please try again." |
-| User identifier mismatch | `AuthenticationException` | "Apple identity token subject does not match the supplied user identifier." |
-| Unable to create/find user | `AuthenticationException` | "Unable to create or find user." |
+| Scenario | Error Message | Log Level |
+|----------|---------------|-----------|
+| Invalid token payload | "The Apple identity token payload is invalid." | WARN |
+| Token verification failure | "Apple authentication failed. Please try again." | WARN |
+| User identifier mismatch | "Apple identity token subject does not match the supplied user identifier." | ERROR |
+| Unable to create/find user | "Unable to create or find user." | ERROR |
 
-## Logging
+## Thread Safety
 
-The service uses SLF4J logging with the following log levels:
-
-| Log Level | Message | Purpose |
-|-----------|---------|---------|
-| WARN | "Apple identity token verification failed" | Token verification errors |
-| INFO | "Created new user {id} from Apple" | New user registration |
-| INFO | "Existing user {id} logged in via Apple" | Existing user login |
-| INFO | "Concurrent Apple user creation detected, looking up existing user" | Race condition handling |
+The service uses `@Transactional` annotation to ensure atomicity during user creation and update operations. The `DataIntegrityViolationException` handling provides protection against concurrent user creation attempts.

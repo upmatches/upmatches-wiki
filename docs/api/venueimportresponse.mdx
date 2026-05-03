@@ -10,50 +10,43 @@ The `VenueImportResponse` class is a Java record that encapsulates the result of
 
 ## Purpose
 
-This record is used as the response object returned by venue import endpoints or services. It allows the caller to quickly determine the number of venues that were processed and imported, enabling straightforward success/failure evaluation and logging.
+This record is used as a response object returned by venue import endpoints or services. It allows the caller to quickly determine the number of venues that were imported in a single operation, enabling straightforward success/failure reporting and logging.
 
 ## Record Definition
 
 ```java
-public record VenueImportResponse(Integer imported)
+public record VenueImportResponse(Integer imported) {}
 ```
 
-The record has a single component:
+## Constructor and Components
 
 | Component | Type      | Description                                      |
 |-----------|-----------|--------------------------------------------------|
-| `imported`| `Integer` | The number of venues successfully imported.      |
+| `imported` | `Integer` | The number of venues successfully imported.      |
 
 ## Public Methods
 
 Since `VenueImportResponse` is a Java record, the compiler automatically generates the following public methods:
 
-| Method                  | Return Type | Description                                                                 |
-|-------------------------|-------------|-----------------------------------------------------------------------------|
-| `imported()`            | `Integer`   | Returns the number of venues that were imported.                            |
-| `toString()`            | `String`    | Returns a string representation of the record, e.g., `VenueImportResponse[imported=5]`. |
-| `equals(Object o)`      | `boolean`   | Compares this record to another object for equality based on the `imported` value. |
-| `hashCode()`            | `int`       | Returns a hash code value for the record based on the `imported` value.     |
+| Method          | Return Type | Description                                      |
+|-----------------|-------------|--------------------------------------------------|
+| `imported()`    | `Integer`   | Returns the number of venues that were imported. |
+| `toString()`    | `String`    | Returns a string representation of the record.   |
+| `equals(Object)`| `boolean`   | Compares this record to another object for equality based on the `imported` value. |
+| `hashCode()`    | `int`       | Returns a hash code value for this record.       |
 
 ## Usage Example
 
 ```java
-// Creating a response indicating 10 venues were imported
-VenueImportResponse response = new VenueImportResponse(10);
+// Creating a response indicating 25 venues were imported
+VenueImportResponse response = new VenueImportResponse(25);
 
 // Accessing the imported count
-Integer count = response.imported(); // returns 10
-
-// Using in a service method
-public VenueImportResponse importVenues(List<Venue> venues) {
-    // ... import logic ...
-    int importedCount = performImport(venues);
-    return new VenueImportResponse(importedCount);
-}
+Integer count = response.imported(); // returns 25
 ```
 
 ## Notes
 
-- The `imported` field can be `null` if no import count is available or if the import operation did not complete.
+- The `imported` field can be `null` if the import count is unknown or not applicable.
 - This record is immutable and thread-safe by design.
-- It is typically used in REST API responses or as a return type for service layer methods.
+- It is typically used in REST API responses or service layer return values.

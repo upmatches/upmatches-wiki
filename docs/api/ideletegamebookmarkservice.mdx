@@ -8,39 +8,29 @@ sidebar_label: IDeleteGameBookmarkService
 
 ## Purpose
 
-The `IDeleteGameBookmarkService` is a **sealed interface** that defines the contract for deleting a game bookmark. It serves as the abstraction layer for the bookmark deletion use case, ensuring that only the permitted implementation (`DeleteGameBookmarkService`) can fulfill this contract.
+The `IDeleteGameBookmarkService` interface defines the contract for deleting a game bookmark within the UpMatches application. It is a **sealed interface**, meaning only the permitted implementation (`DeleteGameBookmarkService`) can implement it. This design enforces a controlled hierarchy and ensures that the deletion logic is centralized and consistent across the application.
 
-This interface follows the **Command Pattern** by exposing a single `execute` method that encapsulates the deletion logic. By sealing the interface, the design enforces a controlled hierarchy where only specific implementations are allowed, improving type safety and maintainability.
+The interface exposes a single method, `execute`, which takes a game ID as a parameter and performs the deletion operation. Implementations are responsible for handling the actual removal of the bookmark from the data store.
 
-## Interface Definition
+## Public Methods
 
-```java
-public sealed interface IDeleteGameBookmarkService permits DeleteGameBookmarkService {
-    void execute(UUID gameId);
-}
-```
-
-## Methods
-
-### `execute`
-
-| Parameter | Type   | Description                                      |
-|-----------|--------|--------------------------------------------------|
-| `gameId`  | `UUID` | The unique identifier of the game bookmark to delete. |
-
-This method performs the deletion of a game bookmark identified by the provided `UUID`. The implementation (`DeleteGameBookmarkService`) is responsible for handling the actual deletion logic, such as validating the existence of the bookmark, interacting with the data store, and managing any side effects.
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `execute` | `UUID gameId` – The unique identifier of the game whose bookmark is to be deleted. | `void` | Executes the deletion of the game bookmark associated with the provided game ID. |
 
 ## Usage Example
 
 ```java
-// Assuming dependency injection provides the implementation
-IDeleteGameBookmarkService deleteService = new DeleteGameBookmarkService(/* dependencies */);
+// Assuming an instance of DeleteGameBookmarkService is injected
+IDeleteGameBookmarkService deleteService = new DeleteGameBookmarkService();
+
+// Delete the bookmark for a specific game
 UUID gameId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 deleteService.execute(gameId);
 ```
 
-## Notes
+## Implementation Notes
 
-- The interface is **sealed**, meaning only `DeleteGameBookmarkService` is allowed to implement it.
-- The method signature uses `UUID` for type-safe identification of game bookmarks.
-- This design promotes loose coupling and testability by depending on an abstraction rather than a concrete implementation.
+- The interface is **sealed** to `DeleteGameBookmarkService`, ensuring that no other class can implement it.
+- The `execute` method does not return a value; any errors during deletion should be handled by the implementation (e.g., throwing runtime exceptions).
+- The `UUID` parameter guarantees a globally unique identifier for the game, preventing conflicts in distributed systems.

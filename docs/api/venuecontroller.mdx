@@ -6,23 +6,23 @@ sidebar_label: VenueController
 
 # VenueController
 
-The `VenueController` class is a REST controller that handles venue-related HTTP requests. It provides endpoints for listing venues with pagination and importing venue data via file upload. The controller is part of the UpMatches application's venue management feature and is secured with role-based access control for administrative operations.
+The `VenueController` class is a REST controller that exposes endpoints for managing venues in the UpMatches application. It provides functionality for listing venues with pagination and importing venues via CSV file uploads. The controller is secured with role-based access control for administrative operations.
 
 ## Endpoints
 
 ### List Venues
 
-Retrieves a paginated list of venues sorted by name.
+Retrieves a paginated list of venues sorted alphabetically by name.
 
 **HTTP Method:** `GET`  
-**Path:** `/api/v1/venues`
+**Endpoint:** `/api/v1/venues`
 
 #### Query Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `page` | Integer | `0` | Page number (zero-based) |
-| `size` | Integer | `20` | Number of items per page |
+| `page` | Integer | `0` | The page number to retrieve (zero-indexed) |
+| `size` | Integer | `20` | The number of items per page |
 
 #### Response
 
@@ -31,8 +31,11 @@ Returns a paginated response containing venue data.
 **Status Code:** `200 OK`
 
 **Response Body:**
+
 ```json
 {
+  "success": true,
+  "message": "Venues retrieved successfully.",
   "data": {
     "content": [
       {
@@ -53,65 +56,87 @@ Returns a paginated response containing venue data.
     "totalElements": 100,
     "totalPages": 5
   },
-  "message": "Venues retrieved successfully.",
-  "path": "/api/v1/venues",
-  "timestamp": "2024-01-01T00:00:00Z"
+  "path": "/api/v1/venues"
 }
 ```
 
+#### Example Request
+
+```bash
+curl -X GET "http://localhost:8080/api/v1/venues?page=0&size=20" \
+  -H "Accept: application/json"
+```
+
+---
+
 ### Import Venues
 
-Imports venue data from an uploaded file. This endpoint requires ADMIN role.
+Uploads a CSV file to import venues into the system. This endpoint requires ADMIN role.
 
 **HTTP Method:** `POST`  
-**Path:** `/api/v1/venues/imports`  
+**Endpoint:** `/api/v1/venues/imports`  
 **Content-Type:** `multipart/form-data`
 
 #### Request Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `file` | MultipartFile | Yes | The file containing venue data to import |
+| `file` | MultipartFile | Yes | CSV file containing venue data |
 
 #### Response
 
-Returns the import operation result.
+Returns the result of the import operation.
 
 **Status Code:** `201 Created`
 
 **Response Body:**
+
 ```json
 {
+  "success": true,
+  "message": "Venues imported successfully.",
   "data": {
-    "importedCount": 50,
-    "failedCount": 2,
+    "totalRecords": 50,
+    "successfulImports": 48,
+    "failedImports": 2,
     "errors": [
       {
         "row": 15,
-        "message": "Invalid venue name format"
+        "message": "Invalid zip code format"
+      },
+      {
+        "row": 32,
+        "message": "Duplicate venue name"
       }
     ]
   },
-  "message": "Venues imported successfully.",
-  "path": "/api/v1/venues/imports",
-  "timestamp": "2024-01-01T00:00:00Z"
+  "path": "/api/v1/venues/imports"
 }
+```
+
+#### Example Request
+
+```bash
+curl -X POST "http://localhost:8080/api/v1/venues/imports" \
+  -H "Authorization: Bearer <token>" \
+  -F "file=@venues.csv"
 ```
 
 ## Security
 
-- The `listVenues` endpoint is publicly accessible (no authentication required).
-- The `createVenueImport` endpoint requires the user to have the `ADMIN` role.
+The import endpoint is secured with Spring Security and requires the `ADMIN` role. The list endpoint is publicly accessible.
 
 ## Dependencies
 
-The controller depends on two service interfaces:
+- **IListVenuesService**: Service interface for retrieving paginated venue data
+- **IImportVenuesService**: Service interface for processing venue imports from CSV files
+- **ValidationHelper**: Utility class for validating pagination parameters
 
-| Service Interface | Description |
-|-------------------|-------------|
-| `IListVenuesService` | Handles the business logic for retrieving paginated venue data |
-| `IImportVenuesService` | Handles the business logic for importing venue data from files |
+## Error Handling
 
-## Validation
+The controller returns appropriate HTTP status codes and error messages for invalid requests:
 
-The controller uses `ValidationHelper.validatePaginationParameters()` to ensure that pagination parameters (`page` and `size`) are valid before processing the request. Invalid parameters will result in a validation error response.
+- `400 Bad Request`: Invalid pagination parameters (e.g., negative page number)
+- `401 Unauthorized`: Missing or invalid authentication token for import endpoint
+- `403 Forbidden`: Non-admin user attempting to access import endpoint
+- `500 Internal Server Error`: Unexpected server errors during processing

@@ -6,52 +6,57 @@ sidebar_label: VenueResponse
 
 # VenueResponse
 
-The `VenueResponse` class is a Java record that serves as a Data Transfer Object (DTO) for representing venue information in API responses. It encapsulates all relevant venue data including location details, associated activity, and nearby stations. The record provides a static factory method to convert a `Venue` entity into this response format.
+The `VenueResponse` class is a Java record that serves as a Data Transfer Object (DTO) for representing venue information in API responses. It encapsulates all relevant venue data, including location details, associated activity, and nearby stations, while providing a convenient factory method for converting from the domain entity `Venue`.
+
+## Purpose
+
+- **API Response Representation**: Provides a structured, immutable representation of venue data for REST API responses.
+- **Data Transformation**: Converts the internal `Venue` entity into a format suitable for external consumption, including nested `ActivityResponse` and `StationResponse` objects.
+- **Immutability**: As a Java record, it guarantees that the data cannot be modified after creation, ensuring thread safety and data integrity.
 
 ## Record Components
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `Long` | Unique identifier for the venue |
-| `sourceId` | `String` | External source identifier |
-| `activity` | `ActivityResponse` | Associated activity information |
-| `name` | `String` | Venue name |
-| `address` | `String` | Street address |
-| `postalCode` | `String` | Postal/ZIP code |
-| `latitude` | `BigDecimal` | Geographic latitude coordinate |
-| `longitude` | `BigDecimal` | Geographic longitude coordinate |
-| `stations` | `List<StationResponse>` | List of nearby stations |
-| `createdAt` | `Instant` | Timestamp when the venue was created |
-| `updatedAt` | `Instant` | Timestamp when the venue was last updated |
+| Component    | Type                | Description                                      |
+|--------------|---------------------|--------------------------------------------------|
+| `id`         | `Long`              | Unique identifier for the venue                  |
+| `sourceId`   | `String`            | External source identifier for the venue         |
+| `activity`   | `ActivityResponse`  | Associated activity details                      |
+| `name`       | `String`            | Name of the venue                                |
+| `address`    | `String`            | Street address of the venue                      |
+| `postalCode` | `String`            | Postal/ZIP code of the venue                     |
+| `latitude`   | `BigDecimal`        | Geographic latitude coordinate                   |
+| `longitude`  | `BigDecimal`        | Geographic longitude coordinate                  |
+| `stations`   | `List<StationResponse>` | List of nearby stations associated with the venue |
+| `createdAt`  | `Instant`           | Timestamp when the venue was created             |
+| `updatedAt`  | `Instant`           | Timestamp when the venue was last updated        |
 
 ## Methods
 
 ### `fromVenue(Venue venue)`
 
-Converts a `Venue` entity into a `VenueResponse` DTO.
+Converts a `Venue` domain entity into a `VenueResponse` DTO.
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `venue` | `Venue` | The venue entity to convert |
+| Parameter | Type    | Description                        |
+|-----------|---------|------------------------------------|
+| `venue`   | `Venue` | The venue entity to be transformed |
 
-**Returns:** `VenueResponse` - A new response object populated with data from the provided venue entity.
+**Returns:** `VenueResponse` — A new instance containing all venue data, with nested `ActivityResponse` and `StationResponse` objects.
 
 **Behavior:**
-- Maps all fields from the `Venue` entity to the corresponding record components
-- Converts the venue's station list to `StationResponse` objects using `StationResponse.fromStation()`
-- Converts the venue's activity to an `ActivityResponse` using `ActivityResponse.fromActivity()`
+- Iterates over the venue's stations collection and maps each `Station` entity to a `StationResponse` using `StationResponse.fromStation()`.
+- Converts the venue's associated `Activity` entity to an `ActivityResponse` using `ActivityResponse.fromActivity()`.
+- Constructs and returns a new `VenueResponse` record with all mapped data.
 
 ## Usage Example
 
 ```java
-// Assuming you have a Venue entity
-Venue venue = venueRepository.findById(1L);
+// Assuming 'venue' is a Venue entity retrieved from the database
 VenueResponse response = VenueResponse.fromVenue(venue);
 
-// Access response fields
+// Access response data
 String venueName = response.name();
-BigDecimal lat = response.latitude();
+BigDecimal latitude = response.latitude();
 List<StationResponse> stations = response.stations();
 ```

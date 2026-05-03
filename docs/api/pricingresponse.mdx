@@ -6,65 +6,77 @@ sidebar_label: PricingResponse
 
 # PricingResponse
 
-The `PricingResponse` record is a Data Transfer Object (DTO) used to expose pricing information from the backend to the client. It is designed to be a read-only representation of the domain `Pricing` object, ensuring that internal domain logic is not exposed directly to API consumers.
+The `PricingResponse` class is a Java record that serves as a Data Transfer Object (DTO) for exposing pricing information from the backend to API consumers. It encapsulates all pricing-related fields in a flat, immutable structure suitable for serialization (e.g., to JSON).
+
+This record is typically used in REST API responses to provide clients with a clear, structured view of pricing details, including different prices for different genders, a flat price, a base price, and a per-shuttle price.
 
 ## Purpose
 
-- **Decoupling**: Separates the internal domain model (`Pricing`) from the API response layer.
-- **Immutability**: As a Java `record`, all fields are final and the object is immutable after creation.
-- **Null Safety**: The static factory method `fromPricing` safely handles `null` input by returning `null`.
+- **Data Transfer**: Transforms the internal `Pricing` value object into a format suitable for external API responses.
+- **Immutability**: As a Java record, all fields are final and the class is thread-safe.
+- **Null Safety**: The static factory method `fromPricing` handles `null` input gracefully by returning `null`.
 
-## Fields
+## Constructor / Record Components
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `mode` | `PricingMode` | The pricing mode (e.g., FLAT, PER_SHUTTLE, GENDER_BASED). |
-| `currency` | `String` | The currency code (e.g., "USD", "EUR"). |
-| `flatPrice` | `BigDecimal` | The flat price for the entire service. |
-| `malePrice` | `BigDecimal` | The price for male participants (used in gender-based pricing). |
-| `femalePrice` | `BigDecimal` | The price for female participants (used in gender-based pricing). |
-| `basePrice` | `BigDecimal` | The base price before any adjustments. |
-| `pricePerShuttle` | `BigDecimal` | The price per shuttle (used in per-shuttle pricing). |
+The record has the following components, which are automatically available as accessor methods:
 
-## Methods
+| Component       | Type          | Description                                                                 |
+|-----------------|---------------|-----------------------------------------------------------------------------|
+| `mode`          | `PricingMode` | The pricing mode (e.g., flat, per-shuttle, etc.).                           |
+| `currency`      | `String`      | The currency code (e.g., "USD", "EUR").                                     |
+| `flatPrice`     | `BigDecimal`  | The flat price for the service.                                             |
+| `malePrice`     | `BigDecimal`  | The price for male participants.                                            |
+| `femalePrice`   | `BigDecimal`  | The price for female participants.                                          |
+| `basePrice`     | `BigDecimal`  | The base price before any additional charges.                               |
+| `pricePerShuttle` | `BigDecimal`| The price per shuttle (e.g., per transport unit).                           |
 
-### `fromPricing(Pricing pricing)`
+## Public Methods
 
-Converts a domain `Pricing` object into a `PricingResponse` DTO.
+### `fromPricing`
+
+```java
+public static PricingResponse fromPricing(Pricing pricing)
+```
+
+Creates a `PricingResponse` instance from a `Pricing` value object.
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `pricing` | `Pricing` | The domain pricing object to convert. Can be `null`. |
+| Parameter | Type      | Description                               |
+|-----------|-----------|-------------------------------------------|
+| `pricing` | `Pricing` | The pricing value object to convert. Can be `null`. |
 
 **Returns:**
 
-| Type | Description |
-|------|-------------|
-| `PricingResponse` | A new `PricingResponse` instance, or `null` if the input is `null`. |
+| Type               | Description                                                                 |
+|--------------------|-----------------------------------------------------------------------------|
+| `PricingResponse`  | A new `PricingResponse` with data extracted from the `Pricing` object, or `null` if the input is `null`. |
 
-**Example usage:**
+**Behavior:**
+
+- If `pricing` is `null`, the method returns `null`.
+- Otherwise, it extracts the following fields from the `Pricing` object:
+  - `mode()` → mapped directly.
+  - `currency().value()` → the currency string value.
+  - `flatPrice()`, `malePrice()`, `femalePrice()`, `basePrice()`, `pricePerShuttle()` → mapped directly.
+
+## Usage Example
 
 ```java
-Pricing domainPricing = new Pricing(
-    PricingMode.FLAT,
-    new Currency("USD"),
-    new BigDecimal("50.00"),
-    null,
-    null,
-    new BigDecimal("50.00"),
-    null
-);
+// Assume pricing is a Pricing object retrieved from a service
+Pricing pricing = new Pricing(PricingMode.FLAT, new Currency("USD"), 
+                               new BigDecimal("100.00"), null, null, 
+                               new BigDecimal("80.00"), null);
 
-PricingResponse response = PricingResponse.fromPricing(domainPricing);
+PricingResponse response = PricingResponse.fromPricing(pricing);
 // response.mode() == PricingMode.FLAT
 // response.currency() == "USD"
-// response.flatPrice() == 50.00
+// response.flatPrice() == 100.00
+// response.basePrice() == 80.00
 ```
 
 ## Notes
 
-- The `currency` field is extracted from the domain's `Currency` value object using `.value()`.
+- The `currency` field is a `String` in the response, while the original `Pricing` object likely uses a custom `Currency` value object. This conversion is handled in `fromPricing`.
 - All monetary values are represented as `BigDecimal` to avoid floating-point precision issues.
-- This record is typically used in REST API responses and serialized to JSON automatically by frameworks like Spring Boot.
+- The record is immutable and can be safely used in concurrent environments.

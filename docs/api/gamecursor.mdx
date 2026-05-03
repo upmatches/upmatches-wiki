@@ -6,55 +6,56 @@ sidebar_label: GameCursor
 
 # GameCursor
 
-The `GameCursor` class is a Spring `@Component` that provides encoding and decoding of pagination cursors for game-related data. It uses a URL-safe Base64 encoding scheme to serialize and deserialize cursor payloads containing a timestamp (`Instant`) and a unique identifier (`UUID`). This is commonly used in cursor-based pagination for APIs where you need to pass a token that represents a specific point in a dataset.
+The `GameCursor` class is a Spring `@Component` that provides encoding and decoding functionality for pagination cursors in a game-related feature. It uses a URL-safe Base64 encoding scheme to serialize and deserialize cursor payloads containing a timestamp (`Instant`) and a unique identifier (`UUID`). This is commonly used for implementing keyset pagination where the cursor encodes the starting point for the next page of results.
 
-## How It Works
-
-- **Encoding**: Takes a `startTime` (Instant) and an `id` (UUID), serializes them into a JSON payload, and then Base64 URL-encodes the result without padding.
-- **Decoding**: Takes a Base64 URL-encoded string, decodes it, deserializes the JSON payload, and returns an `Optional<Value>` containing the original `startTime` and `id`. Returns `Optional.empty()` for null or blank input, and throws `IllegalArgumentException` for invalid cursors.
+The class leverages Jackson's `ObjectMapper` for JSON serialization/deserialization and ensures that the cursor is compact, URL-safe, and opaque to clients.
 
 ## Public Methods
 
-### `encode`
+### `encode(Instant startTime, UUID id)`
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `startTime` | `Instant` | The timestamp to encode in the cursor |
-| `id` | `UUID` | The unique identifier to encode in the cursor |
-| **Returns** | `String` | A URL-safe Base64 encoded cursor string |
-| **Throws** | `IllegalStateException` | If JSON serialization fails |
+Encodes a cursor payload into a URL-safe Base64 string.
 
-Encodes the given `startTime` and `id` into a URL-safe Base64 cursor string.
+| Parameter   | Type     | Description                                      |
+|-------------|----------|--------------------------------------------------|
+| `startTime` | `Instant` | The timestamp representing the cursor position. |
+| `id`        | `UUID`    | The unique identifier for the cursor position.   |
 
-### `decode`
+**Returns:** `String` - A URL-safe Base64 encoded string representing the cursor.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `cursor` | `String` | The Base64 URL-encoded cursor string to decode |
-| **Returns** | `Optional<Value>` | An `Optional` containing the decoded `Value` (with `startTime` and `id`), or empty if the input is null or blank |
-| **Throws** | `IllegalArgumentException` | If the cursor is invalid (e.g., malformed JSON, missing fields, or decoding failure) |
+**Throws:** `IllegalStateException` if JSON serialization fails.
 
-Decodes a Base64 URL-encoded cursor string back into its original `Value` components.
+### `decode(String cursor)`
+
+Decodes a Base64 encoded cursor string back into a `Value` object.
+
+| Parameter | Type     | Description                           |
+|-----------|----------|---------------------------------------|
+| `cursor`  | `String` | The Base64 encoded cursor string.     |
+
+**Returns:** `Optional<Value>` - An `Optional` containing the decoded `Value` if the cursor is valid, or `Optional.empty()` if the cursor is `null` or blank.
+
+**Throws:** `IllegalArgumentException` if the cursor is malformed, contains invalid data, or cannot be decoded.
 
 ## Inner Types
 
-### `Value` (public record)
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `startTime` | `Instant` | The timestamp from the decoded cursor |
-| `id` | `UUID` | The unique identifier from the decoded cursor |
+### `Value` (Record)
 
 A public record representing the decoded cursor data.
 
-### `Payload` (private record)
+| Field       | Type     | Description                                      |
+|-------------|----------|--------------------------------------------------|
+| `startTime` | `Instant` | The timestamp from the cursor.                  |
+| `id`        | `UUID`    | The unique identifier from the cursor.          |
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `startTime` | `Instant` | The timestamp to serialize |
-| `id` | `UUID` | The unique identifier to serialize |
+### `Payload` (Private Record)
 
-A private record used internally for JSON serialization/deserialization.
+An internal record used for JSON serialization/deserialization. It mirrors the `Value` record structure.
+
+| Field       | Type     | Description                                      |
+|-------------|----------|--------------------------------------------------|
+| `startTime` | `Instant` | The timestamp to be serialized.                 |
+| `id`        | `UUID`    | The unique identifier to be serialized.         |
 
 ## Usage Example
 
@@ -64,9 +65,8 @@ GameCursor cursor = new GameCursor(new ObjectMapper());
 
 // Encode a cursor
 Instant now = Instant.now();
-UUID gameId = UUID.randomUUID();
-String encoded = cursor.encode(now, gameId);
-// encoded is a URL-safe Base64 string like "eyJzdGFydFRpbWUiOiIyMDI0LTAxLTE1VDEwOjMwOjAwWiIsImlkIjoiMTIzZS00NTY3LTg5YWItY2RlZiJ9"
+UUID id = UUID.randomUUID();
+String encoded = cursor.encode(now, id);
 
 // Decode a cursor
 Optional<GameCursor.Value> decoded = cursor.decode(encoded);
@@ -75,3 +75,10 @@ decoded.ifPresent(value -> {
     System.out.println("ID: " + value.id());
 });
 ```
+
+## Notes
+
+- The encoding uses URL-safe Base64 without padding, making it suitable for use in URLs and query parameters.
+- The `decode` method returns `Optional.empty()` for `null` or blank input, allowing callers to handle missing cursors gracefully.
+- Invalid or malformed cursors result in an `IllegalArgumentException` to clearly indicate the error.
+- The class is thread-safe as it relies on the thread-safe `ObjectMapper` and immutable records.

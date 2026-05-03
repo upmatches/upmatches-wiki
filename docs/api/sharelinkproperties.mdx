@@ -6,46 +6,97 @@ sidebar_label: ShareLinkProperties
 
 # ShareLinkProperties
 
-The `ShareLinkProperties` class is a Spring Boot configuration properties record that manages the URLs and identifiers required for generating shareable links within the Upmatches application. It provides default values for all properties, ensuring that the application can function even when specific configuration values are not explicitly provided.
+The `ShareLinkProperties` class is a Spring Boot configuration properties record that manages the URLs and identifiers required for generating shareable links within the Upmatches application. It provides a centralized way to configure the base URLs for the API, web frontend, and mobile app store links, with sensible defaults for development and production environments.
 
 ## Purpose
 
-This class centralizes the configuration for share link generation, including:
-- API base URLs for short link creation
-- Web application base URL
-- App store URLs for both iOS and Android platforms
-- Apple App Store application identifier
+This class serves as a configuration holder for share link generation. It allows developers to customize the following aspects of share links:
 
-By using Spring Boot's `@ConfigurationProperties` with the prefix `app.share-link`, these values can be easily configured through standard Spring Boot configuration files (application.yml, application.properties, environment variables, etc.).
+- **API base URL**: The base URL for shortened share links
+- **Web base URL**: The base URL for web-based share links
+- **App Store URL**: The direct link to the iOS App Store listing
+- **Play Store URL**: The direct link to the Google Play Store listing
+- **App Store App ID**: The Apple App Store application identifier
 
-## Configuration Properties
+## Configuration
 
-| Property | Type | Default Value | Description |
-|----------|------|---------------|-------------|
-| `baseUrl` | `String` | `https://api.upmatches.dev/s` | Base URL for generating short share links |
-| `webBaseUrl` | `String` | `https://api.upmatches.dev` | Base URL for the web application |
-| `appStoreUrl` | `String` | `https://apps.apple.com/app/idXXXXXXXXXX` | Apple App Store URL for the application |
-| `playStoreUrl` | `String` | `https://play.google.com/store/apps/details?id=com.upmatches.android` | Google Play Store URL for the application |
-| `appStoreAppId` | `String` | `""` (empty string) | Apple App Store application identifier |
+The properties are bound to the `app.share-link` prefix in your application configuration files (e.g., `application.yml` or `application.properties`).
+
+### Example Configuration
+
+```yaml
+app:
+  share-link:
+    base-url: https://api.upmatches.dev/s
+    web-base-url: https://api.upmatches.dev
+    app-store-url: https://apps.apple.com/app/idXXXXXXXXXX
+    play-store-url: https://play.google.com/store/apps/details?id=com.upmatches.android
+    app-store-app-id: ""
+```
+
+## Default Values
+
+The class defines sensible defaults for all properties, ensuring the application can function without explicit configuration:
+
+| Property | Default Value |
+|----------|---------------|
+| `baseUrl` | `https://api.upmatches.dev/s` |
+| `webBaseUrl` | `https://api.upmatches.dev` |
+| `appStoreUrl` | `https://apps.apple.com/app/idXXXXXXXXXX` |
+| `playStoreUrl` | `https://play.google.com/store/apps/details?id=com.upmatches.android` |
+| `appStoreAppId` | `""` (empty string) |
 
 ## Constructor Behavior
 
-The compact constructor of this record implements fallback logic for each property. If a property is `null` or blank (for string properties), it defaults to the predefined constant value. This ensures that the application always has valid configuration values, even when properties are not explicitly set.
+The compact constructor validates and applies defaults for each property:
+
+- If `baseUrl` is `null` or blank, it defaults to `https://api.upmatches.dev/s`
+- If `webBaseUrl` is `null` or blank, it defaults to `https://api.upmatches.dev`
+- If `appStoreUrl` is `null` or blank, it defaults to `https://apps.apple.com/app/idXXXXXXXXXX`
+- If `playStoreUrl` is `null` or blank, it defaults to `https://play.google.com/store/apps/details?id=com.upmatches.android`
+- If `appStoreAppId` is `null`, it defaults to an empty string
+
+## Public Methods
+
+Since this is a Java record, the following accessor methods are automatically generated:
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `baseUrl()` | `String` | Returns the base URL for shortened share links |
+| `webBaseUrl()` | `String` | Returns the base URL for web-based share links |
+| `appStoreUrl()` | `String` | Returns the direct link to the iOS App Store listing |
+| `playStoreUrl()` | `String` | Returns the direct link to the Google Play Store listing |
+| `appStoreAppId()` | `String` | Returns the Apple App Store application identifier |
 
 ## Usage Example
 
-```yaml
-# application.yml
-app:
-  share-link:
-    base-url: https://custom-api.example.com/s
-    web-base-url: https://custom-web.example.com
-    app-store-url: https://apps.apple.com/app/id123456789
-    play-store-url: https://play.google.com/store/apps/details?id=com.custom.app
-    app-store-app-id: "123456789"
+```java
+@Service
+public class ShareLinkService {
+    
+    private final ShareLinkProperties properties;
+    
+    public ShareLinkService(ShareLinkProperties properties) {
+        this.properties = properties;
+    }
+    
+    public String generateShareLink(String shortCode) {
+        return properties.baseUrl() + "/" + shortCode;
+    }
+    
+    public String getAppStoreLink() {
+        return properties.appStoreUrl();
+    }
+}
 ```
 
 ## Dependencies
 
-- Spring Boot: `@ConfigurationProperties` annotation
-- Java 16+ (Record feature)
+- **Spring Boot**: `@ConfigurationProperties` annotation from `org.springframework.boot.context.properties`
+- **Java 16+**: Record feature used for immutable data carrier
+
+## Notes
+
+- The class is immutable by design (Java record), ensuring thread safety
+- Properties are automatically bound by Spring Boot when the `@ConfigurationProperties` annotation is enabled with `@EnableConfigurationProperties` or through configuration processor scanning
+- Default values are applied only when the provided value is `null` or blank, allowing explicit empty strings to be preserved if needed

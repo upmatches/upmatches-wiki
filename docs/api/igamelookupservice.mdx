@@ -4,40 +4,75 @@ title: IGameLookupService Interface
 sidebar_label: IGameLookupService
 ---
 
-## Overview
+# IGameLookupService Interface
 
-The `IGameLookupService` interface defines a contract for retrieving domain entities within the game management context. It serves as a centralized lookup service that provides type-safe methods for fetching core business objects such as `Game`, `Activity`, `Venue`, `User`, and `SkillLevel` by their respective identifiers.
-
-This interface is declared as a **sealed interface**, meaning only explicitly permitted classes (in this case, `GameLookupService`) can implement it. This design enforces a controlled implementation hierarchy and ensures that all lookup operations follow a consistent pattern.
+The `IGameLookupService` interface defines a contract for looking up various domain entities within the game management system. It provides a set of methods for retrieving entities such as games, activities, venues, users, and skill levels, with specific behaviors for handling missing entities (throwing exceptions) and supporting optimistic locking scenarios.
 
 ## Purpose
 
-The primary purpose of this interface is to abstract the retrieval of domain entities from their persistence layer. By providing dedicated lookup methods, it promotes:
+This interface serves as the abstraction layer for entity retrieval operations. By using a sealed interface, it restricts implementation to only the `GameLookupService` class, ensuring controlled and consistent lookup behavior across the application. The methods are designed to throw exceptions when entities are not found, enforcing strict validation and preventing null references in business logic.
 
-- **Consistency**: All entity lookups follow the same pattern and error handling strategy.
-- **Type Safety**: Each method returns a specific entity type, eliminating the need for casting.
-- **Separation of Concerns**: The interface isolates lookup logic from business logic, making the codebase more maintainable and testable.
+## Interface Definition
+
+```java
+public sealed interface IGameLookupService permits GameLookupService
+```
+
+The interface is declared as `sealed`, meaning only the `GameLookupService` class is permitted to implement it. This design pattern ensures that all entity lookups follow the same contract and behavior.
 
 ## Methods
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
 | `findGameOrThrow` | `Game` | `UUID id` | Retrieves a game by its unique identifier. Throws an exception if the game is not found. |
-| `findGameForUpdateOrThrow` | `Game` | `UUID id` | Retrieves a game with a pessimistic lock for update operations. Throws an exception if not found. |
-| `findGameIgnoringDeletedOrThrow` | `Game` | `UUID id` | Retrieves a game even if it has been soft-deleted. Throws an exception if not found. |
+| `findGameForUpdateOrThrow` | `Game` | `UUID id` | Retrieves a game for update operations (typically with pessimistic locking). Throws an exception if not found. |
+| `findGameIgnoringDeletedOrThrow` | `Game` | `UUID id` | Retrieves a game regardless of its deletion status. Throws an exception if the game does not exist. |
 | `findActivityOrThrow` | `Activity` | `UUID id` | Retrieves an activity by its unique identifier. Throws an exception if not found. |
 | `findVenueOrThrow` | `Venue` | `Long id` | Retrieves a venue by its unique identifier. Throws an exception if not found. |
 | `findUserOrThrow` | `User` | `UUID id` | Retrieves a user by their unique identifier. Throws an exception if not found. |
-| `findUserForUpdateOrThrow` | `User` | `UUID id` | Retrieves a user with a pessimistic lock for update operations. Throws an exception if not found. |
+| `findUserForUpdateOrThrow` | `User` | `UUID id` | Retrieves a user for update operations (typically with pessimistic locking). Throws an exception if not found. |
 | `findSkillLevelOrThrow` | `SkillLevel` | `Long id` | Retrieves a skill level by its unique identifier. Throws an exception if not found. |
 
-## Usage Notes
+## Entity Types
 
-- All methods follow the "or throw" naming convention, indicating that they will throw an exception (typically a `NotFoundException` or similar) if the requested entity does not exist.
-- The interface uses `UUID` for `Game`, `Activity`, and `User` identifiers, while `Venue` and `SkillLevel` use `Long` identifiers.
-- The `findGameForUpdateOrThrow` and `findUserForUpdateOrThrow` methods are designed for scenarios where concurrent modifications need to be prevented, typically by acquiring a database-level lock.
-- The `findGameIgnoringDeletedOrThrow` method is useful for administrative operations where soft-deleted records need to be accessed.
+The interface works with the following domain entities:
 
-## Implementation
+- **Game**: Represents a game session or match
+- **Activity**: Represents an activity associated with a game
+- **Venue**: Represents the location where a game takes place
+- **User**: Represents a user/player in the system
+- **SkillLevel**: Represents a skill level classification
 
-The only permitted implementation of this interface is `GameLookupService`. Implementations must provide concrete logic for each lookup method, typically delegating to corresponding repository classes and handling the "not found" scenarios by throwing appropriate exceptions.
+## Exception Handling
+
+All methods in this interface are designed to throw exceptions when the requested entity is not found. The specific exception type is not defined in the interface but is expected to be implemented by the `GameLookupService` class. This pattern ensures that:
+
+1. Null values are never returned from lookup operations
+2. Business logic can rely on the existence of returned entities
+3. Error handling is consistent across all entity lookups
+
+## Usage Example
+
+```java
+// Example usage in a service class
+public class GameService {
+    private final IGameLookupService lookupService;
+    
+    public GameService(IGameLookupService lookupService) {
+        this.lookupService = lookupService;
+    }
+    
+    public void updateGame(UUID gameId, UUID userId) {
+        Game game = lookupService.findGameForUpdateOrThrow(gameId);
+        User user = lookupService.findUserOrThrow(userId);
+        // Perform update logic
+    }
+}
+```
+
+## Implementation Notes
+
+- The interface uses `UUID` for game, activity, and user identifiers, while `Long` is used for venue and skill level identifiers
+- The `findGameForUpdateOrThrow` and `findUserForUpdateOrThrow` methods are specifically designed for scenarios requiring database-level locking
+- The `findGameIgnoringDeletedOrThrow` method allows retrieval of soft-deleted games when necessary
+- All methods follow the "OrThrow" naming convention to clearly indicate that exceptions will be thrown for missing entities

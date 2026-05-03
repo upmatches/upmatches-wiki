@@ -8,73 +8,53 @@ sidebar_label: ResendProperties
 
 The `ResendProperties` class is a Spring Boot configuration properties record that maps application properties prefixed with `app.resend` to a structured Java object. It encapsulates the configuration required to connect to the Resend email service, including the API key, sender address, and sender name.
 
-This record automatically normalizes blank or null values to `null` during construction, ensuring that downstream consumers can safely check for the presence of required configuration values.
+This record is designed to be used with Spring Boot's `@ConfigurationProperties` annotation, allowing externalized configuration from `application.yml` or `application.properties` files. The record automatically sanitizes blank or null values by converting them to `null`, and provides a convenient method to check if the API key is configured.
 
-## Configuration Properties
+## Constructor
 
-The following table describes the properties that can be set in your `application.yml` or `application.properties` file under the `app.resend` prefix.
+The compact constructor automatically sanitizes all three fields (`apiKey`, `fromAddress`, `fromName`) by converting blank or null strings to `null` using the private helper method `blankToNull`.
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `app.resend.api-key` | `String` | The API key used to authenticate with the Resend service. |
-| `app.resend.from-address` | `String` | The email address used as the sender for outgoing emails. |
-| `app.resend.from-name` | `String` | The display name associated with the sender email address. |
-
-## Public Methods
+## Methods
 
 | Method | Return Type | Description |
 |--------|-------------|-------------|
-| `apiKey()` | `String` | Returns the API key, or `null` if the property was blank or not set. |
-| `fromAddress()` | `String` | Returns the sender email address, or `null` if the property was blank or not set. |
-| `fromName()` | `String` | Returns the sender display name, or `null` if the property was blank or not set. |
-| `hasApiKey()` | `boolean` | Returns `true` if the API key is present (non-null), `false` otherwise. |
+| `hasApiKey()` | `boolean` | Returns `true` if the `apiKey` field is not null (i.e., a valid API key has been configured), otherwise returns `false`. |
+
+## Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `apiKey` | `String` | The API key for authenticating with the Resend email service. Will be `null` if not provided or blank. |
+| `fromAddress` | `String` | The email address used as the sender for outgoing emails. Will be `null` if not provided or blank. |
+| `fromName` | `String` | The display name associated with the sender email address. Will be `null` if not provided or blank. |
 
 ## Usage Example
 
-```java
-@Configuration
-@EnableConfigurationProperties(ResendProperties.class)
-public class ResendConfig {
-
-    private final ResendProperties properties;
-
-    public ResendConfig(ResendProperties properties) {
-        this.properties = properties;
-    }
-
-    public void configureResendClient() {
-        if (properties.hasApiKey()) {
-            // Initialize Resend client with properties.apiKey()
-            // Use properties.fromAddress() and properties.fromName() for sender info
-        } else {
-            throw new IllegalStateException("Resend API key is not configured");
-        }
-    }
-}
-```
-
-## Application Configuration
-
-In your `application.yml`:
+To configure this properties record, add the following to your `application.yml`:
 
 ```yaml
 app:
   resend:
-    api-key: "re_xxxxxxxxxxxxx"
-    from-address: "noreply@example.com"
-    from-name: "My Application"
+    apiKey: "your-resend-api-key"
+    fromAddress: "noreply@example.com"
+    fromName: "Your App Name"
 ```
 
-Or in `application.properties`:
+Then inject the properties into a Spring component:
 
-```properties
-app.resend.api-key=re_xxxxxxxxxxxxx
-app.resend.from-address=noreply@example.com
-app.resend.from-name=My Application
+```java
+@Component
+public class EmailService {
+    private final ResendProperties resendProperties;
+
+    public EmailService(ResendProperties resendProperties) {
+        this.resendProperties = resendProperties;
+    }
+
+    public void sendEmail() {
+        if (resendProperties.hasApiKey()) {
+            // Use resendProperties.apiKey(), resendProperties.fromAddress(), etc.
+        }
+    }
+}
 ```
-
-## Notes
-
-- All string properties are automatically normalized: blank or null values become `null`.
-- Use `hasApiKey()` to safely check if the API key is configured before attempting to use it.
-- This record is immutable after construction, making it thread-safe for concurrent access.

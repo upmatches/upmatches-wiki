@@ -6,7 +6,7 @@ sidebar_label: SkillLevelRepository
 
 # SkillLevelRepository
 
-The `SkillLevelRepository` interface provides database access operations for `SkillLevel` entities within the UpMatches application. It extends Spring Data JPA's `JpaRepository`, inheriting standard CRUD functionality while adding a custom query method to retrieve skill levels ordered by their sort position for a specific activity.
+The `SkillLevelRepository` interface provides database access operations for `SkillLevel` entities. It extends Spring Data JPA's `JpaRepository` to inherit standard CRUD functionality and defines a custom query method for retrieving skill levels ordered by their sort position within a specific activity.
 
 ## Interface Definition
 
@@ -14,25 +14,23 @@ The `SkillLevelRepository` interface provides database access operations for `Sk
 public interface SkillLevelRepository extends JpaRepository<SkillLevel, Long>
 ```
 
-The repository works with `SkillLevel` entities that have a primary key of type `Long`.
+This repository manages `SkillLevel` entities with a primary key of type `Long`.
 
 ## Methods
 
-### Inherited Methods
+### Inherited Methods from JpaRepository
 
 The following standard CRUD methods are inherited from `JpaRepository<SkillLevel, Long>`:
 
 | Method | Description |
 |--------|-------------|
-| `findAll()` | Returns all `SkillLevel` entities |
-| `findById(Long id)` | Finds a `SkillLevel` by its primary key |
-| `save(SkillLevel entity)` | Persists a new or updates an existing `SkillLevel` |
-| `delete(SkillLevel entity)` | Removes a `SkillLevel` from the database |
-| `deleteById(Long id)` | Deletes a `SkillLevel` by its primary key |
-| `count()` | Returns the total number of `SkillLevel` entities |
-| `existsById(Long id)` | Checks if a `SkillLevel` exists with the given primary key |
+| `findAll()` | Returns all skill level entities |
+| `findById(Long id)` | Finds a skill level by its primary key |
+| `save(SkillLevel entity)` | Saves or updates a skill level |
+| `deleteById(Long id)` | Deletes a skill level by its primary key |
+| `count()` | Returns the total number of skill levels |
 
-### Custom Methods
+### Custom Query Methods
 
 #### `findByActivityIdOrderBySortOrder`
 
@@ -52,7 +50,7 @@ Retrieves all skill levels associated with a specific activity, ordered by their
 
 | Type | Description |
 |------|-------------|
-| `List<SkillLevel>` | An ordered list of `SkillLevel` entities belonging to the specified activity |
+| `List<SkillLevel>` | An ordered list of skill levels belonging to the specified activity, sorted by their sort order |
 
 **Example Usage:**
 
@@ -60,13 +58,18 @@ Retrieves all skill levels associated with a specific activity, ordered by their
 @Autowired
 private SkillLevelRepository skillLevelRepository;
 
-public List<SkillLevel> getSkillLevelsForActivity(UUID activityId) {
-    return skillLevelRepository.findByActivityIdOrderBySortOrder(activityId);
-}
+// Retrieve skill levels for a specific activity
+UUID activityId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+List<SkillLevel> skillLevels = skillLevelRepository.findByActivityIdOrderBySortOrder(activityId);
 ```
 
 ## Dependencies
 
-- **Spring Data JPA**: Provides the `JpaRepository` base interface and query derivation
-- **SkillLevel entity**: The domain object this repository manages
-- **UUID**: Used for activity identification in the custom query method
+- **Spring Data JPA**: Provides the `JpaRepository` base interface and automatic query implementation
+- **Entity**: Works with the `SkillLevel` entity class from `com.upmatches.app.features.skilllevels.entities`
+
+## Notes
+
+- The `findByActivityIdOrderBySortOrder` method leverages Spring Data JPA's query derivation mechanism, which automatically generates the appropriate SQL query based on the method name
+- The `sortOrder` field in the `SkillLevel` entity should be a numeric type (e.g., `int` or `Integer`) to ensure proper ordering
+- Results are returned in ascending order by `sortOrder`; for descending order, use `findByActivityIdOrderBySortOrderDesc`

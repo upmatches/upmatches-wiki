@@ -6,52 +6,39 @@ sidebar_label: OpenApiConfiguration
 
 # OpenApiConfiguration
 
-The `OpenApiConfiguration` class is a Spring `@Configuration` class that provides a bean for customizing the OpenAPI documentation for the Upmatches API. It defines metadata such as the API title, version, description, contact information, license, and server details. This configuration is used by SpringDoc OpenAPI (or similar libraries) to generate the API documentation automatically.
-
 ## Purpose
 
-- **Centralized API Metadata**: Defines the API's title, version, description, contact, and license in one place.
-- **Dynamic Server URL**: Uses the `server.port` property (defaulting to `8080`) to construct the local server URL, making it easy to run the application on different ports.
-- **Bean for OpenAPI**: Exposes a `OpenAPI` bean that can be consumed by SpringDoc to generate the Swagger UI or OpenAPI specification.
+The `OpenApiConfiguration` class is a Spring Boot configuration class that sets up and customizes the OpenAPI documentation for the Upmatches API. It defines the API metadata (title, version, description, contact, and license) and configures the server URL dynamically based on the application's runtime port. This class is annotated with `@Configuration` and produces a single `OpenAPI` bean that is used by Swagger/OpenAPI tools to generate interactive API documentation.
 
 ## Public Methods
 
 | Method | Return Type | Parameters | Description |
 |--------|-------------|------------|-------------|
-| `openApi()` | `OpenAPI` | None | Creates and returns an `OpenAPI` instance configured with the API's title, version, description, contact, license, and a local server. |
+| `openApi()` | `OpenAPI` | None | Creates and returns an `OpenAPI` instance configured with API information (title, version, description, contact, license) and a list of servers (one local server with the port from `server.port` property, defaulting to `8080`). |
 
 ## Configuration Details
 
-The class uses the following constants and properties:
+- **API Title**: `Upmatches API`
+- **API Version**: `0.0.1`
+- **API Description**: `Upmatches API`
+- **Contact Name**: `Upmatches`
+- **License**: `All Rights Reserved`
+- **Server URL**: `http://localhost:{server.port}` (default port `8080`)
+- **Server Description**: `Local`
 
-| Constant / Property | Value | Description |
-|---------------------|-------|-------------|
-| `API_TITLE` | `"Upmatches API"` | The title of the API. |
-| `API_VERSION` | `"0.0.1"` | The version of the API. |
-| `API_DESCRIPTION` | `"Upmatches API"` | A brief description of the API. |
-| `CONTACT_NAME` | `"Upmatches"` | The name of the contact person or organization. |
-| `LICENSE_NAME` | `"All Rights Reserved"` | The license under which the API is provided. |
-| `SERVER_URL_PREFIX` | `"http://localhost:"` | The prefix for the local server URL. |
-| `SERVER_DESCRIPTION` | `"Local"` | A description of the server environment. |
-| `server.port` (property) | `8080` (default) | The port on which the server runs, injected via `@Value`. |
+The server port is injected via the `@Value("${server.port:8080}")` annotation, allowing it to be overridden in application properties or environment variables.
 
-## Example Usage
+## Usage
 
-Once this configuration is loaded, the OpenAPI bean is automatically available. You can access the generated API documentation at the default SpringDoc endpoint (e.g., `http://localhost:8080/swagger-ui.html` or `http://localhost:8080/v3/api-docs`).
+This configuration is automatically picked up by Spring Boot's auto-configuration when the `springdoc-openapi` or similar dependency is present on the classpath. No additional setup is required beyond including this class in your project.
 
 ## Dependencies
 
 - `io.swagger.v3.oas.models.OpenAPI`
-- `io.swagger.v3.oas.models.info.Info`
 - `io.swagger.v3.oas.models.info.Contact`
+- `io.swagger.v3.oas.models.info.Info`
 - `io.swagger.v3.oas.models.info.License`
 - `io.swagger.v3.oas.models.servers.Server`
 - `org.springframework.beans.factory.annotation.Value`
 - `org.springframework.context.annotation.Bean`
 - `org.springframework.context.annotation.Configuration`
-
-## Notes
-
-- The server URL is dynamically constructed using the `server.port` property, making it suitable for local development.
-- The license is set to "All Rights Reserved," indicating that the API is proprietary.
-- This configuration is intended for use with SpringDoc OpenAPI (or similar libraries) to generate API documentation automatically.
